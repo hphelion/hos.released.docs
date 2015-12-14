@@ -223,7 +223,7 @@ git commit -m "My config or other commit message"</codeblock></li>
         use the command below to obtain the proper bus address:</p>
       <codeblock>sudo lspci -D | grep -i eth</codeblock>
       <p>Once you have the proper bus address, follow these steps to finish the reimage:</p>
-      <ul>
+      <ol>
         <li>Remove the node that failed from Cobbler using this command: <codeblock>sudo cobbler system remove --name &lt;node name></codeblock>
           <note>Use <codeph>sudo cobbler system list</codeph> to get a list of your nodes in
             Cobbler.</note></li>
@@ -235,11 +235,36 @@ git add -A
 git commit -m "My config or other commit message"</codeblock></li>
         <li>Re-run the <codeph>bm-reimage.yml</codeph> playbook and confirm the error is not
           received again.</li>
-      </ul>
+      </ol>
     </section>
 
     <!-- FOR ISSUES DURING CONFIG PROCESSOR STEP -->
     <section id="config_processor"><title>Issues while Updating Configuration Files</title>
+      <p><b>Configuration Processor Fails Due to Wrong yml Format</b></p>
+      <p>If you receive the error below when running the configuration processor then you may have a
+        formatting error:</p>
+      <codeblock>TASK: [fail msg="Configuration processor run failed, see log output above for details"]</codeblock>
+      <p>First you should check the ansible log in the location below for more details on which yml
+        file in your input model has the error:</p>
+      <codeblock>~/.ansible/ansible.log</codeblock>
+      <p>Check the configuration file to locate and fix the error, keeping in mind the following
+        tips below.</p>
+      <p>Check your files to ensure that they don't contain the following:</p>
+      <ul>
+        <li>Non-ascii characters</li>
+        <li>Unneeded spaces</li>
+      </ul>
+      <p>Once you have fixed the formatting error in your files, commit the changes with these
+        steps:</p>
+      <ol>
+        <li>Commit your changes to git:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Re-run the configuration processor playbook and confirm the error is not received
+          again.</li>
+      </ol>
+      <p><b>Changes Made to your Configuration Files</b></p>
       <p>If you have made corrections to your configuration files and need to re-run the
         Configuration Proceessor, the only thing you need to do is commit your changes to your local
         git:</p>
