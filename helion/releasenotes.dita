@@ -588,66 +588,12 @@ ansible-playbook -i hosts/verb_hosts site.yml</codeblock></li>
       </table>
       
       
-      
-      <p><b>Issue: Logrotate Settings for MySQL, keepalived, and RabbitMQ are Invalid</b></p>
-      <p>There is currently a workaround needed on the controller nodes to fix the logrotate
-        settings for the MySQL, keepalived, and RabbitMQ services.</p> The logrotate for MySQL,
-      keepalived and RabbitMQ is being overwritten by an invalid logrotate configuration supplied in
-      the logging-server component. A valid logrotate configuration for these services is supplied
-      in the following files on the deployer:
-        <codeblock>/home/stack/scratch/ansible/next/hos/ansible</codeblock><p>The files in that
-        directory are:</p><codeblock>
-mysql: ./roles/FND-MDB/templates/etc/logrotate.d/mysql
-keepalived: ./roles/keepalived/templates/keepalived.logrotate.j2
-rabbit: ./roles/rabbitmq/templates/rabbitmq-server.logrotate.j2</codeblock>
-      <p>To correct this problem if the above configuration is copied manually into
-          <codeph>/etc/logrotate.d</codeph> on the controller nodes to replace the existing
-        configuration then this should correct the logrotate configuration for these
-        services.</p><p>Note any variables such as <codeph>{{ }}</codeph> need to be replaced
-        correctly.</p> In the case of RabbitMQ and keepalived this can be achieved by editing the
-        <codeph>logrotate.j2</codeph> with a comment and running a reconfigure
-      (rabbitmq-reconfigure.yml and FND-CLU-reconfigure.yml on the deployer) <p>In the case of MySQL
-        this needs to be corrected manually as below: <codeblock>File ./roles/FND-MDB/templates/etc/logrotate.d/mysql</codeblock>
-        <codeblock>
-{ log_dir }}/*.log {
-        daily
-        rotate 7
-        missingok
-        create 640 mysql adm
-        notifempty
-        compress
-        delaycompress
-        sharedscripts
-        postrotate
-               if test -x /usr/bin/mysqladmin &#38;&#38; \
-                   /usr/bin/mysqladmin ping &#38;>/dev/null
-               then
-                   roothome=~root
-                  /usr/bin/mysqladmin --defaults-file=${roothome}/.my.cnf --socket="{{ server_socket}}" flush-logs
-               fi
-        endscript
-}</codeblock></p>
-      <p>should be copied into /etc/logrotate.d/mysql on the controller nodes and variables replaced
-        to result in this config:</p>
-      <codeblock>
-/var/log/mysql/*.log {
-          daily
-          rotate 7
-          missingok
-          create 640 mysql adm
-          notifempty
-          compress
-          delaycompress
-          sharedscripts
-          postrotate
-                  if test -x /usr/bin/mysqladmin &#38;&#38; \
-                     /usr/bin/mysqladmin ping &#38;>/dev/null
-                  then
-                     roothome="$(realpath ~root)"
-                     /usr/bin/mysqladmin --defaults-file=${roothome}/.my.cnf --socket="/var/run/mysqld/mysqld.sock" flush-logs
-                  fi
-          endscript
-}</codeblock>
+      <!-- https://jira.hpcloud.net/browse/DOCS-1683 -->
+      <!-- This was fixed in HOS2.0 so removing from here -->
+      <!--  
+        <p id="DOCS-1683"><b>Issue: Logrotate Settings for MySQL, keepalived, and RabbitMQ are Invalid</b></p> 
+      -->
+
       
       
       <!-- BLOCK STORAGE -->
