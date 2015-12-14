@@ -160,6 +160,7 @@ bnx2x: [bnx2x_panic_dump:1163(eth0)]end crash dump -----------------</codeblock>
         system.</p>
       <p>This is normal and nothing to be concerned with. The imaging process will continue on after
         this pause.</p>
+      <!-- RECEIVED VIA USER FEEDBACK -->
       <p><b>Unable to SSH to a Compute Node after the bm-reimage Step Even Though SSH Keys Are In
           Place</b></p>
       <p>If after running the <codeph>bm-reimage.yml</codeph> playbook you get a reported failure
@@ -184,8 +185,32 @@ git commit -m "My config or other commit message"</codeblock></li>
         <li>Re-run the <codeph>bm-reimage.yml</codeph> playbook and confirm the error is not
           received again.</li>
       </ol>
+      <!-- RECEIVED VIA USER FEEDBACK -->
+      <p><b>Server Crashes During Imaging</b></p>
+      <p>If your server suffers a kernel panic just after it gets PXE booted, a possible cause could
+        be that you have an incorrect bus address for the server specified in the
+          <codeph>nic_mappings.yml</codeph> file.</p>
+      <p>To resolve this issue you will need to obtain the proper bus address. You can do this by
+        installing HP Linux for OpenStack on the node and once you receive a terminal prompt you can
+        use the command below to obtain the proper bus address:</p>
+      <codeblock>sudo lspci -D | grep -i eth</codeblock>
+      <p>Once you have the proper bus address, follow these steps to finish the reimage:</p>
+      <ul>
+        <li>Remove the node that failed from Cobbler using this command: <codeblock>sudo cobbler system remove --name &lt;node name></codeblock>
+          <note>Use <codeph>sudo cobbler system list</codeph> to get a list of your nodes in
+            Cobbler.</note></li>
+        <li>Correct the bus address in your
+            <codeph>~/helion/my_cloud/definition/data/nic_mappings.yml</codeph> file.</li>
+        <li>Commit your changes to git:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Re-run the <codeph>bm-reimage.yml</codeph> playbook and confirm the error is not
+          received again.</li>
+      </ul>
     </section>
 
+    <!-- FOR ISSUES DURING CONFIG PROCESSOR STEP -->
     <section id="config_processor"><title>Issues while Updating Configuration Files</title>
       <p>If you have made corrections to your configuration files and need to re-run the
         Configuration Proceessor, the only thing you need to do is commit your changes to your local
@@ -198,6 +223,7 @@ git commit -m "commit message"</codeblock>
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
     </section>
 
+    <!-- FOR ISSUES DURING READY DEPLOYMENT OR SITE.YML STEP -->
     <section id="deploy_cloud"><title>Issues while Deploying the Cloud</title>
       <p><b>Issue: If the site.yml playbook fails, you can query the log for the reason</b></p>
       <p>Ansible is good about outputting the errors into the command line output, however if you'd
@@ -256,6 +282,53 @@ vg/root"], "delta": "0:00:00.022983", "end": "2015-09-29 10:54:18.925855", "fail
         of your logical-volume. The default values in the configuration files is based on a 500GB
         disk, so if your logical-volumes are smaller you may need to increase the percentage so
         there is enough room.</p>
+      
+      <!-- RECEIVED VIA USER FEEDBACK -->
+      <p><b>Multiple Keystone Failures Received during Site.yml</b></p>
+      <p>If you receive the Keystone error below during your <codeph>site.yml</codeph> run then
+        follow these steps:</p>
+      <codeblock>TASK: [OPS-MON | _keystone_conf | Create Ops Console service in Keystone] *****
+failed: [helion-cp1-c1-m1-mgmt] => {"failed": true}
+msg: An unexpected error prevented the server from fulfilling your request. (HTTP 500) (Request-ID: req-23a09c72-5991-4685-b09f-df242028d742), failed
+
+FATAL: all hosts have already failed -- aborting</codeblock>
+      <p>The most likely cause of this error is that the virtual IP address is having issues and the
+        Keystone API communication through the virtual IP address is not working properly. You will
+        want to check the Keystone log on the controller where you will likely see authorization
+        failure errors.</p>
+      <p>Verify that your virtual IP address is active and listening on the proper port on all of
+        your controllers using this command:</p>
+      <codeblock>netstat -tplan | grep 35357</codeblock>
+      <p>Ensure that your lifecycle manager did not pick the wrong (unusable) IP address from the
+        list of IP addresses assigned to your Management network.</p>
+      <p>The lifecycle manager will take the first available IP address after the
+          <codeph>gateway-ip</codeph> defined in your
+          <codeph>~/helion/my_cloud/definition/data/networks.yml</codeph> file. This IP will be used
+        as the virtual IP address for that particular network. If this IP address is used and
+        reserved for another purpose outside of your HPE Helion OpenStack deployment then you will
+        receive the error above.</p>
+      <p>To resolve this issue we recommend that you utilize the <codeph>start-address</codeph> and
+        possibly the <codeph>end-address</codeph> (if needed) options in your
+          <codeph>networks.yml</codeph> file to further define which IP addresses you want your
+        cloud deployment to use. See <xref href="#input_model/co_networks">Input Model -
+          Networks</xref> for more details.</p>
+      <p>After you have made changes to your <codeph>networks.yml</codeph> file, follow these steps
+        to commit the changes:</p>
+      <ol>
+        <li>Commit your changes to git:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Re-run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Setup your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Re-run the site.yml playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock></li>
+      </ol>
     </section>
   </body>
 </topic>
