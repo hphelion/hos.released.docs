@@ -160,13 +160,30 @@ bnx2x: [bnx2x_panic_dump:1163(eth0)]end crash dump -----------------</codeblock>
         system.</p>
       <p>This is normal and nothing to be concerned with. The imaging process will continue on after
         this pause.</p>
-      <p><b>Issue: The --limit switch does not do anything</b></p>
-      <p>If the <codeph>bm-reimage.yml</codeph> playbook fails, it makes a mention that to retry you
-        should use the <codeph>--limit</codeph> switch, as seen below:</p>
-      <codeblock>to retry, use: --limit @/home/stack/bm-reimage.retry</codeblock>
-      <p>This is a standard Ansible message but it is not needed in this context. Note that using
-        the <codeph>--limit</codeph> switch does not cause any harm and won't prevent the playbook
-        from completing, it's just not a necessary step.</p>
+      <p><b>Unable to SSH to a Compute Node after the bm-reimage Step Even Though SSH Keys Are In
+          Place</b></p>
+      <p>If after running the <codeph>bm-reimage.yml</codeph> playbook you get a reported failure
+        when attempting to SSH to one or more Compute nodes stating that permission was denied and
+        you've confirmed that the SSH keys are correctly coped from the lifecycle manager to the
+        Compute node then you can follow the steps below to resolve this issue.</p>
+      <p>The suspected root cause of this issue is that the bm-reimage playbook is finding a
+        different MAC address when attempting to SSH to the Compute node than was specified in the
+          <codeph>servers.yml</codeph> file. This could be because you entered an incorrect MAC
+        address or you may have specified the same IP address to two different Compute nodes.</p>
+      <p>To resolve this issue you can follow these steps:</p>
+      <ol>
+        <li>Remove the Compute node that failed from Cobbler using this command: <codeblock>sudo cobbler system remove --name &lt;node name></codeblock>
+          <note>Use <codeph>sudo cobbler system list</codeph> to get a list of your nodes in
+            Cobbler.</note></li>
+        <li>Correct the IP and MAC address information in your
+            <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file.</li>
+        <li>Commit your changes to git:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Re-run the <codeph>bm-reimage.yml</codeph> playbook and confirm the error is not
+          received again.</li>
+      </ol>
     </section>
 
     <section id="config_processor"><title>Issues while Updating Configuration Files</title>
