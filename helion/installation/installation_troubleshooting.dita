@@ -39,6 +39,34 @@
           <codeph>/etc/resolv.conf</codeph> file and then re-run the script.</p>
     </section>
     <section id="deploy_cobbler"><title>Issues while Provisioning your Baremetal Nodes</title>
+      <!-- RECEIVED VIA USER FEEDBACK -->
+      <p><b>Cobbler Deployment Fails due to CIDR Error</b></p>
+      <p>The error will look similar to this:</p>
+      <codeblock>TASK: [cobbler | set variables | Find baremetal nic] **************************
+failed: [localhost] => {"failed": true}
+msg: matchcidr: no nic matching 10.242.115.0/24
+lo 127.0.0.1/8
+eth0 10.242.115.18/26</codeblock>
+      <p>The most likely cause of this is that your <codeph>netmask</codeph> entry in the
+          <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file is incorrect.</p>
+      <p>To resolve this issue ensure that you have the correct <codeph>subnet</codeph> and
+          <codeph>netmask</codeph> entries in the
+          <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> for your Management
+        network.</p>
+      <p>You can also verify these values exist in the
+          <codeph>/etc/network/interfaces.d/ethX</codeph> file on your lifecycle manager. These
+        should match the entries in the <codeph>servers.yml</codeph> file.</p>
+      <p>Once you make your corrections to your configuration files, commit the chnages with these
+        steps:</p>
+      <ol>
+        <li>Commit your changes to git:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Redeploy Cobbler:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
+      </ol>
       <p><b>Issue: Configuration changes needed after Cobbler deploy</b></p>
       <p>If you've made a mistake or wish to change your
           <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> configuration file after
@@ -282,7 +310,6 @@ vg/root"], "delta": "0:00:00.022983", "end": "2015-09-29 10:54:18.925855", "fail
         of your logical-volume. The default values in the configuration files is based on a 500GB
         disk, so if your logical-volumes are smaller you may need to increase the percentage so
         there is enough room.</p>
-      
       <!-- RECEIVED VIA USER FEEDBACK -->
       <p><b>Multiple Keystone Failures Received during Site.yml</b></p>
       <p>If you receive the Keystone error below during your <codeph>site.yml</codeph> run then
