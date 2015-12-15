@@ -12,6 +12,7 @@
         <li><xref href="vpnaas.dita#HP2.0VPNaaS/Prerequisites">Prerequisites</xref></li>
         <li><xref href="vpnaas.dita#HP2.0VPNaaS/Considerations">Considerations</xref></li>
         <li><xref href="vpnaas.dita#HP2.0VPNaaS/Configuration">Configuration</xref></li>
+        <li><xref href="vpnaas.dita#HP2.0VPNaaS/Troubleshooting">Troubleshooting</xref></li>
         <li><xref href="vpnaas.dita#HP2.0VPNaaS/MoreInfo">More Information</xref></li>
       </ul>
     </p>
@@ -198,6 +199,24 @@ ping ###.###.###.###</codeblock></li>
           <li>You will find encrypted packets containing ‘ESP’ in the tcpdump trace.</li>
         </ol>
       </sectiondiv>
+    </section>
+
+    <section id="troubleshooting">
+      <title>Troubleshooting</title>
+      <p>You can use the following information here for assistance with troubleshooting the VPNaaS service. </p>
+      <ul>
+        <li>When the VPN services and/or IPSEC site connections become hung in a <i>PENDING_CREATE</i> status, 
+          the problem might be with PLUTO processes under the router namespaces. Executing <codeph>ipsec verify</codeph>
+          under the respective router namespace should display <i>OK</i> for listening on ports 500 and 4500. 
+          If <codeph>ipsec verify</codeph> does not correct the status, follow the steps included below.
+        <ol>
+          <li>Delete all <i>pluto.pid</i> and <i>pluto.ctl</i> files under <codeph>/var/run/neutron/ipsec/&lt;router-id&gt;/var/run/</codeph></li>
+          <li>Restart <i>ipsec</i> service. <codeblock>sudo service ipsec restart</codeblock></li>
+          <li>Restart <i>neutron-vpn-agent</i>. <codeblock>sudo service neutron-vpn-agent restart</codeblock></li>
+        </ol>
+        <p>After few minutes, <codeph>ipsec verify</codeph> under router namespace should result in 
+          <i>OK</i> for 500 and 4500 port listeners.</p></li>
+      </ul>
     </section>
 
     <section id="MoreInfo">
