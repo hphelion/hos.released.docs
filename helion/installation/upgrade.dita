@@ -92,7 +92,11 @@ ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock></li>
           the last control plane node. This final control plane node can be the one that runs the
           deployer, if your deployer is in the control plane. </p>
         <p>Another option is to reboot the control plane first, and not reboot compute hosts until
-          later, after migrating the VMs.</p></sectiondiv></section>
+          later, after migrating the VMs.</p>
+      <p>Depending on your storage configuration you may have to follow a different order. See below. The critical aspect is that you 
+      wait long enough between reboots of the control plane nodes so that there are always two running, fully functional, and completely reintegrated..</p>
+      
+      </sectiondiv></section>
 
     <section id="vsa"><title outputclass="headerH">Node Reboot Order for VSA
         Deployments</title><sectiondiv outputclass="insideSection"> If your cloud is deployed with
@@ -107,10 +111,10 @@ ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock></li>
           is as follows:</p> 
         <ol>
           <li>Identify all VSA node of a given cluster </li>
-          <li>Reboot VSA node </li>
-          <li>Check VSA service status </li>
-          <li>Check cluster status using CMC </li>
-          <li>Repeat step 2-4 for remaining node of VSA cluster. </li>
+          <li>Pick one of VSA node of the cluster and reboot it manually</li>
+          <li>Check VSA VM's status : <codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit &lt;vsa_node name></codeblock></li>
+          <li>Wait for VSA to come up, Check cluster status using CMC ( cluster should be in healthy state)</li>
+          <li>Repeat step 2-4 for other remaining nodes of the same VSA cluster. </li>
           <li>Go to step (1) and repeat all steps for other clusters</li>
         </ol>
       </sectiondiv>
@@ -121,11 +125,27 @@ ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock></li>
       <sectiondiv outputclass="insideSection"> Note that Ceph has two components: <ul>
           <li>monitor nodes</li>
           <li>OSD nodes</li>
-        </ul> Monitor nodes can be deployed on a controller node. In this case, the reboot sequence
-        will be: <ol>
+        </ul> If a monitor is deployed on controller node, then the rebooting sequence of the
+        controller takes precedence over monitor nodes. You should reboot the group of nodes in
+        specified order. For a given group (say controller or compute or VSA or ceph OSD etc),
+        reboot should be done one-by-one, in series. For example, if there are three OSD nodes say
+        OSD1, OSD2, OSD3 then you should reboot OSD1 and then OSD2 and so on.<ol>
           <li>Controller node (reboot of this will take care of the monitor as well) </li>
           <li>Compute node </li>
-          <li>Ceph OSD nodes </li>
+          <li>Standalone storage or dedicated storage, including:
+          <ul>
+            
+            <li>VSA</li>
+            <li>Ceph OSD</li>
+            <li>Ceph monitor (if deployed on stand alone node). 
+              If monitor is deployed on controller node then rebooting sequence of controller 
+              takes precedence over monitor nodes.</li>
+          </ul>
+          
+          
+          
+          
+          </li>
         </ol>More commonly, the monitor is deployed as a standalone; i.e., as separate set of
         resource nodes. In this case the reboot sequence will be: <ol>
           <li>Controller node </li>
@@ -160,7 +180,7 @@ ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock></li>
     </section>
 
 
-    <section id="rebootCompute"><title outputclass="headerH">Rebooting Compute Nodes</title>
+    <section id="rebootCompute"><title outputclass="headerH">Compute Node Reboot Process</title>
       <sectiondiv outputclass="insideSection">
         <p>To reboot a compute node the following operations will need to be performed:</p>
         <ul>
@@ -218,11 +238,10 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></co
           <li> Restart any instances you
             stopped.<codeblock>nova start &lt;instance-uuid></codeblock>
           </li>
-
         </ol>
       </sectiondiv>
     </section>
-    <section id="rebootControllers"><title outputclass="headerH">Rebooting Controller Nodes</title>
+    <section id="rebootControllers"><title outputclass="headerH">Controller Node Reboot Process</title>
       <sectiondiv outputclass="insideSection"><p>In order to reboot the controller nodes, you must
           first retrieve a list of nodes in your cloud running control plane services.</p>
         <b>TODO: Either put info here or point to existing section on this</b>. <p>After retrieving
