@@ -44,6 +44,63 @@ ansible-playbook -i hosts/verb_hosts neutron-cloud-configure.yml -e EXT_NET_CIDR
         </table>
       </p>
     </section>
+    <section id="CLI"><title>Using the NeutronClient CLI</title>
+    <p>For more granularity you can utilize the Neutron command line tool to create your external network.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Source the Admin creds:
+        <codeblock>source ~/services.osrc</codeblock></li>
+        <li>Create the External Network:
+          <codeblock>neutron net-create --shared --router:external &lt;external-network-name&gt;</codeblock></li>
+        <li>Create the Subnet for the External Network: <codeblock>neutron subnet-create &lt;external-network-name&gt; &lt;CIDR&gt; --gateway &lt;gateway&gt; --allocation-pool start=&lt;IP_start&gt;,end=&lt;IP_end&gt; [--enable-dhcp] </codeblock>
+          <p>Where:</p>
+          <table frame="all" rowsep="1" colsep="1" id="table_zqb_3yy_35">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1.0*"/>
+              <colspec colname="c2" colnum="2" colwidth="1.0*"/>
+              <thead>
+                <row>
+                  <entry>Value</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>external-network-name</entry>
+                  <entry>This is the name given to your external network. This is a unique value
+                    that you will choose. The value <codeph>ext-net</codeph> is usually
+                    used.</entry>
+                </row>
+                <row>
+                  <entry>CIDR</entry>
+                  <entry>
+                    <p>You can use this switch to specify the external network CIDR. If you choose
+                      not to this switch, or use a wrong value, the VMs will not be accessible over
+                      the network.</p>
+                    <p>This CIDR will be from the EXTERNAL VM network.</p>
+                  </entry>
+                </row>
+                <row>
+                  <entry>--gateway</entry>
+                  <entry>Optional switch to specify the gateway IP for your subnet. If this is not
+                    included then it will choose the first available IP.</entry>
+                </row>
+                <row>
+                  <entry>--allocation-pool <p>         start</p>
+                    <p>         end</p></entry>
+                  <entry>Optional switch to specify a start and end IP address to use as the
+                    allocation pool for this subnet.</entry>
+                </row>
+                <row>
+                  <entry>--enable-dhcp</entry>
+                  <entry>Optional switch if you want to enable DHCP on this subnet.  If this is not
+                    included then DHCP will be disabled.</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table></li>
+      </ol>
+    </section>
     <section id="next"><title>Next Steps</title>
       <p>Once the external network is created, users can create a Private Network to complete their
         networking setup. For instructions, see <xref
