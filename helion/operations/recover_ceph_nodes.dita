@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="recover_ceph_nodes">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Recovering Ceph Nodes After a
+    Reboot</title>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="about">
+      <p>If you have one or more Ceph nodes that have been rebooted, these steps will assist you in
+        the recovery.</p>
+    </section>
+    <section id="steps"><title>Recovering Ceph Nodes After a Reboot</title>
+      <ol>
+        <li>Reboot the Ceph monitor node.</li>
+        <li>From the lifecycle manager, once the Ceph monitor node comes up, give it a minute and
+          then execute the following playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostname&gt;</codeblock></li>
+        <li>If the playbook executes successfully, repeat the steps above for each Ceph monitor node
+          that was rebooted.</li>
+        <li>Once all the Ceph monitor nodes have been rebooted and are confirmed to be up then you
+          need to execute the command below on each monitor node: <codeblock>ceph quorum_status</codeblock>
+          <p>Ensure that all of the monitor nodes have joined the quorum by observing that in the
+            output the <codeph>quorum_names</codeph> section lists all of the monitors in the Ceph
+            cluster.</p></li>
+        <li>Next, reboot the OSD node in the cluster.</li>
+        <li>Once the OSD node comes up, wait around five minutes and then execute the following
+          playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname&gt;</codeblock></li>
+        <li>If the playbook executes successfully, repeat steps 5-6 for each OSD node in the
+          cluster.</li>
+        <li>Once the entire cluster is rebooted then execute the command below and observe that it
+          is <codeph>HEALTH_OK</codeph>: <codeblock>ceph health details</codeblock></li>
+      </ol>
+    </section>
+  </body>
+</topic>
