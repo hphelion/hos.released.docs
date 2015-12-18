@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="topic_ijj_45j_nt">
+<topic id="replacing_controller">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Replacing a Controller Node</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
@@ -8,8 +8,15 @@
       <p>For <keyword keyref="kw-hos-phrase"/> versions, you must have three controller nodes.
         Therefore, adding or removing nodes is not an option. However, if you need to repair or
         replace a controller node, you may do so by following the steps outlined here. Note that to
-        run any playbooks whatsoever for cloud maintenance, you will always run from the lifecycle
-        manager.</p>
+        run any playbooks whatsoever for cloud maintenance, you will always run the steps from the
+        lifecycle manager.</p>
+      <p>These steps will depend on whether you are needing to replace a shared lifecycle
+        manager/controller node or whether this is a standalone controller node.</p>
+      <ul>
+        <li><xref href="replace_controller.dita#replacing_controller/shared">Shared Lifecycle
+            Manager/Controller Node</xref></li>
+        <li>Standalone Controller Node</li>
+      </ul>
     </section>
     <section id="notes"><title>Notes</title>
       <p>Do not add entries for a new server; instead, just update the entries for the broken one.
@@ -19,8 +26,8 @@
       <p>Be aware that all management commands are run on the node where the lifecycle manager is
         running.</p>
     </section>
-    <section id="steps"><title>Procedure for Replacing a Controller Node</title>
-      <p><b>Additional Instructions for a Shared Lifecycle Manager/Controller Node</b></p>
+    <section id="shared"><title>Procedure for Replacing a Shared Lifecycle Manager/Controller
+        Node</title>
       <p>If the controller node you need to replace was also being used as your lifecycle manager
         then use these steps below. If this is not a shared controller then skip to the next
         section.</p>
@@ -34,12 +41,6 @@
         <li>Then you will want to restore your data using the <xref
             href="../bura/cloud_control_plane_recovery.dita#topic_tb4_lqy_qt/deployer">Deployer
             Disaster Recovery</xref> instructions.</li>
-        <li>Once that is complete you can continue on to the <xref
-            href="replace_controller.dita#topic_ijj_45j_nt/image">Image the new node</xref> steps,
-          starting on step #5.</li>
-      </ol>
-      <p><b>Update your model with replacement server information</b></p>
-      <ol>
         <li> Update your cloud model (<codeph>servers.yml</codeph>) with the new
             <codeph>mac-addr</codeph>, <codeph>ilo-ip</codeph>, <codeph>ilo-password</codeph>, or
             <codeph>ilo-user</codeph> fields where these have changed. Do not change the
@@ -59,11 +60,45 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
           Then run ready-deployment:
           <codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
+        <li>Once that is complete, copy the Cobbler images to the correct location:
+          <codeblock>mkdir /srv/www/cobbler/ks_mirror/hlinux-cattleprod 
+cp /opt/hlm_packager/hlm/hlinux/dists/cattleprod/main/installer-amd64/current/images/netboot/debian-installer/amd64/linux /srv/www/cobbler/ks_mirror/hlinux-cattleprod
+cp /opt/hlm_packager/hlm/hlinux/dists/cattleprod/main/installer-amd64/current/images/netboot/debian-installer/amd64/initrd.gz /srv/www/cobbler/ks_mirror/hlinux-cattleprod</codeblock></li>
+        <li>Deploy Cobbler:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
+        <li>Delete the haproxy user: <codeblock>deluser haproxy</codeblock></li>
+        <li>Install the software on your new lifecycle manager/controller node with these three
+          playbooks:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-rebuild-pretasks.yml
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml -e rebuild=True --limit=&lt;controller-hostname&gt;
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname&gt;,&lt;first-proxy-hostname&gt;</codeblock></li>
       </ol>
     </section>
-    <section id="image">
-      <p><b>Image the new node</b></p>
+
+    <section id="standalone"><title>Procedure for Replacing a Standalone Controller Node</title>
+      <p>If the controller node you need to replace is a standalone controller node, these steps
+        will assist you in replacing it.</p>
       <ol>
+        <li> Update your cloud model (<codeph>servers.yml</codeph>) with the new
+            <codeph>mac-addr</codeph>, <codeph>ilo-ip</codeph>, <codeph>ilo-password</codeph>, or
+            <codeph>ilo-user</codeph> fields where these have changed. Do not change the
+            <codeph>id</codeph>, <codeph>ip-addr</codeph>, <codeph>role</codeph>, or
+            <codeph>server-group</codeph> settings. (Please follow the procedure for updating your
+          cloud model in the git repo)</li>
+        <li> Get the <b>servers.yml</b> file stored in git:
+          <codeblock>cd ~/helion/my_cloud/definition/data
+git checkout site</codeblock> then change,
+          as necessary, the <codeph>mac-addr</codeph>, <codeph>ilo-ip</codeph>,
+            <codeph>ilo-password</codeph>, and <codeph>ilo-user</codeph> fields of this existing
+          controller node. Save and commit the change
+          <codeblock>git commit -a -m "repaired node X"</codeblock></li>
+        <li>Run the configuration processor as follows:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
+          Then run ready-deployment:
+          <codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>Log onto the node that is running the lifecycle manager. Remove the broken control plane
           node from cobbler by running sudo cobbler system remove --name &lt;server-id>. Here's an
           example:<codeblock> sudo cobbler system remove --name controller2</codeblock>
