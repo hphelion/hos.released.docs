@@ -47,7 +47,7 @@
         <li>Unpack the following
           tarball:<codeblock>tar faxv /media/cdrom/hos/hos-2.1.0-20151211T063256Z.tar</codeblock></li>
         <li>Run the included initialization script to update the deployer:
-          <codeblock>~/hos-2.0.1/hos-init.bash</codeblock></li>
+          <codeblock>~/hos-2.1.0/hos-init.bash</codeblock></li>
         <li>If you have made any made any changes to your configuration files, ensure that you
           commit them to your local git:
           <codeblock>cd ~/helion
@@ -80,13 +80,11 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
           section.</li>
       </ol> Note you may run the hlm-status.yml playbook any time you like from the aforementioned
       directory for status information. </section>
-    <section id="rebooting_general"><title>Rebooting Your Nodes</title>
-      <p>To complete the upgrade and for Linux for HPE Helion updates to take effect, you must
-        reboot all your nodes. The instructions for rebooting controller, compute, and storage nodes
-        are found below. Note that you should follow the order prescribed for each type of
-        deployment, for example, Swift, VSA, or Ceph. Expand the sections below for those
-        instructions.</p>
-    </section>
+    <section id="rebooting_general"><title>Rebooting Your Nodes</title>To complete the upgrade and
+      for Linux for HPE Helion updates to take effect, you must reboot all your nodes. The
+      instructions for rebooting controller, compute, and storage nodes are found below. Note that
+      you should follow the order prescribed for each type of deployment, for example, Swift, VSA,
+      or Ceph. Expand the sections below for those instructions.</section>
     <section id="expandCollapse">
       <sectiondiv outputclass="expandall">Expand All</sectiondiv>
       <sectiondiv outputclass="collapseall">Collapse All</sectiondiv>
@@ -128,10 +126,9 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
           <codeblock>ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock>
           Later, when the node has been rebooted successfully, you can follow the procedures in
           reverse to migrate any services back to their original nodes.</p>
-        <p><b>Reboot the Controllers</b></p>
-        <p>In order to reboot the controller nodes, you must first retrieve a list of nodes in your
-          cloud running control plane services.</p>
-        <codeblock>stack@localhost:~/helion/hos/ansible$ for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); 
+        <p><b>Reboot the Controllers</b></p> In order to reboot the controller nodes, you must first 
+          retrieve a list of nodes in your cloud running control plane services.
+            <codeblock>stack@localhost:~/helion/hos/ansible$ for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); 
           do grep $i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts | grep ansible_ssh_host | awk '{print $1}'; done</codeblock>
         <p>Then perform the following steps on each controller node in turn:</p>
         <ol>
@@ -139,7 +136,8 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
 
           <li>If any singleton services are active on this node, they will be unavailable while the
             node is down. If you want to retain the service during the reboot, you should take
-            special action to maintain the service, such as migrating the service as appropriate: <ol>
+            special action to maintain the service, such as migrating the service as appropriate: 
+            <ol>
               <li>Cinder volume and Cinder backup services: instructions for migrating these are
                 found in Managing Cinder Volume and Backup Services. </li>
               <li>Nova-consoleauth service: This runs by default on the first controller node, that
@@ -159,7 +157,8 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock>
           </li>
-          <li>Reboot the controller node, e.g. run the following command on the controller itself: <codeblock>sudo reboot</codeblock>
+          <li>Reboot the controller node, e.g. run the following command on the controller itself: 
+            <codeblock>sudo reboot</codeblock>
             <p>Note that the current node being rebooted could be hosting the lifecycle manager.</p>
           </li>
           <li>Wait for the controller node to become ssh-able and allow an additional minimum of
@@ -273,11 +272,10 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></co
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;swift node></codeblock>
           </li>
-          <li>Reboot the controller node by running the following command on the controller itself:
+          <li>Reboot the Swift node by running the following command on the Swift node itself:
             <codeblock>sudo reboot</codeblock>
           </li>
-          <li>Wait for the node to become ssh-able and then start all services on the controller
-            node:
+          <li>Wait for the node to become ssh-able and then start all services on the Swift node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </codeblock>
           </li>
