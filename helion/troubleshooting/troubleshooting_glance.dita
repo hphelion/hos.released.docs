@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="troubleshooting_glance">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Troubleshooting the Glance Service</title>
+  <body>
+    <section id="about">
+      <p>We have gathered some of the common issues and troubleshooting steps that will help when
+        resolving issues that occur with the Glance service.</p>
+    </section>
+    <section id="image_upload"><title>Images Created in Horizon UI Get Stuck in a Queued
+        State</title>
+      <p>In <ph conkeyref="HOS-conrefs/product-title"/> when creating a new image in the Horizon UI
+        you will see the option for <codeph>Image Location</codeph> which allows you to enter a HTTP
+        source to use when creating a new image for your cloud. However, this option does not work
+        by default because it is disabled in Glance. This results in any new images created via this
+        method getting stuck in a <codeph>Queued</codeph> state.</p>
+      <p><b>Resolution:</b> You will need your cloud administrator to enable the HTTP store option
+        in Glance for your cloud.</p>
+      <p>Here are the steps to enable this option:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Edit the file below:
+          <codeblock>~/helion/hos/ansible/roles/GLA-API/defaults/main.yml</codeblock></li>
+        <li>Locate the <codeph>Glance Store</codeph> options and add the
+            <codeph>glance.store.http.Store</codeph> value in the <codeph>glance_stores</codeph>
+          field. <p>Example:</p>
+          <codeblock>## Glance Store
+glance_stores: "swift,glance.store.http.Store</codeblock></li>
+        <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
+            repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "changing Admin password"</codeblock></li>
+        <li>Run the configuration processor with this command:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Use the playbook below to create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Run the Glance service reconfigure playbook which will update these settings:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
+      </ol>
+    </section>
+  </body>
+</topic>
