@@ -36,9 +36,6 @@
       <p>For more details, refer to <xref
           href="../blockstorage/ceph/deploy_monitor_stand_alone_node.dita">Install a monitor service
           on a dedicated resource node</xref>.</p>
-      <p>While executing the <codeph>site.yml</codeph> playbook with the <codeph>--limit</codeph>
-        option, it is also expected to include the Ceph Monitor nodes in the list of restricted
-        nodes if the cloud is deployed with a Ceph cluster.</p>
       <p>We include steps below to configure Ceph as your Glance backend. This replaces Swift which
         is the default backend option in HPE Helion OpenStack. So if you have any pre-existing
         images in your Glance repo you will want to download them locally prior to configuring Ceph
@@ -285,6 +282,13 @@ git commit -m "&lt;commit message>"</codeblock></li>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts ceph-client-prepare.yml</codeblock>
       <p>This will also create Ceph users and Ceph pools on the resource nodes.</p>
+      <p>
+        <note>The steps below install required packages and configure existing client nodes (i.e.
+          Cinder, Glance and Nova Compute nodes) to use the Ceph cluster. However, for any new
+          client nodes added later on that need to be configured to use the Ceph cluster, just
+          execute the above playbook with the additon of the <codeph>--limit
+            &lt;new-client-node&gt;</codeph> switch.</note>
+      </p>
       <p><b>Ceph Configuration</b></p>
       <p>Continue with the Ceph configuration with the steps below:</p>
       <ol>
@@ -497,6 +501,7 @@ rbd_secret_uuid = &lt;secret-uuid></codeblock>
                 OpenStack instance, the instance must be rebooted after the new backend has been
                 added.</note></li>
           </ol></li>
+        <!-- DOCS-2313
         <li>Copy the corresponding keyring files to the controller nodes: <ol>
             <li>Log in to the controller nodes as a user with sudo access and run the following
               commands: <p>For Ceph as your volume backend:
@@ -515,6 +520,7 @@ rbd_secret_uuid = &lt;secret-uuid></codeblock>
               <p>For Ceph as your Glance backend:</p>
               <codeblock>scp /etc/ceph/ceph.client.glance.keyring</codeblock></li>
           </ol></li>
+          -->
         <li>Commit your configuration to a <xref href="using_git.dita">local repository</xref>: <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "&lt;your commit message>"</codeblock>
@@ -532,13 +538,12 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
         <li>If Nova has been configured to attach Ceph backend volumes, run the Nova reconfigure
-          playbook: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock>
-          <note>The above steps configure existing Compute nodes to use the Ceph cluster. However,
-            for any new compute nodes added later on that need to be configured to use the Ceph
-            cluster just repeat the above steps with the additon of the <codeph>--limit
-              &lt;new-compute-node></codeph> switch to the <codeph>nova-reconfigure.yml</codeph>
-            playbook above.</note></li>
+          playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
+        <li>If Ceph has been configured as the Glance backend, run the Glance reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
       </ol>
     </section>
 
