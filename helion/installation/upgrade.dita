@@ -141,15 +141,15 @@ ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock>
           service, such as migrating the service. Cinder volume and backup migration instructions
           can be found in <xref
             href="../blockstorage/singleton_service_cinder.dita#topic_l1p_vpy_jt">Managing Cinder
-            Volume and Backup Services</xref>.</p><p> Execute the following command on each
+            Volume and Backup Services</xref>.</p><p>Execute the following command on each
           controller node to determine which node is hosting the cinder volume singleton. It should
           be running on only one node: </p>
         <codeblock>$ps auxww | grep cinder-volume | -v grep</codeblock>
-        <p>Nova-consoleauth runs by default on the first controller node, that is, the host with
-          consoleauth_host_index=0. To move it to another controller node before rebooting
-          controller 0, run the ansible playbook <codeph>nova-start.yml</codeph> and pass it the
-          index of the next controller node. For example, to move it to controller 2 (index of 1),
-          run:
+        <p>The <codeph>nova-consoleauth</codeph> component runs by default on the first controller
+          node, that is, the host with consoleauth_host_index=0. To move it to another controller
+          node before rebooting controller 0, run the ansible playbook
+            <codeph>nova-start.yml</codeph> and pass it the index of the next controller node. For
+          example, to move it to controller 2 (index of 1), run:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock>
           Later, when the node has been rebooted successfully, you can follow the procedures in
@@ -159,8 +159,6 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_ho
           do grep $i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts | grep ansible_ssh_host | awk '{print $1}'; done</codeblock>
         <p>Then perform the following steps on each controller node in turn:</p>
         <ol>
-
-
           <li>If any singleton services are active on this node, they will be unavailable while the
             node is down. If you want to retain the service during the reboot, you should take
             special action to maintain the service, such as migrating the service as appropriate: <ol>
@@ -174,11 +172,6 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_ho
                 <codeblock>ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock>
               </li>
             </ol></li>
-
-
-
-
-
           <li>stop all services on the controller node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock>
@@ -192,7 +185,6 @@ ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock>
           </li>
-
           <li>Verify that the status of all services on that is OK on the controller node:
             <codeblock> cd ~/scratch/ansible/next/hos/ansible</codeblock> ansible-playbook -i
             hosts/verb_hosts hlm-status.yml --limit &lt;controller node> </li>
