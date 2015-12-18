@@ -40,10 +40,19 @@
 
     <section id="upgradesteps"><title>Upgrade Instructions</title>
       <ol>
+        <li>Sign in and download the HPE Helion OpenStack 2.1 product and signature files at the
+          links below: <ol>
+            <li><xref
+                href="https://helion.hpwsportal.com/catalog.html#/Category/%7B%22categoryId%22%3A10389%7D/Show"
+                format="html" scope="external">HPE Helion OpenStack Files</xref></li>
+            <li><xref
+                href="https://helion.hpwsportal.com/catalog.html#/Category/%7B%22categoryId%22%3A10507%7D/Show"
+                format="html" scope="external">HPE Helion OpenStack Signature Files</xref></li>
+          </ol></li>
         <li>To begin the upgrade process, log in to the lifecycle manager as the user you created
           during the HPE Helion OpenStack 2.0 deployment, and mount the install media at
             <codeph>/media/cdrom</codeph>; for example:
-          <codeblock>sudo mount hLinux-cattleprod-amd64-blaster-netinst-20151119-hlm.2015-12-11T07:42:36_8230c52.iso /media/cdrom</codeblock></li>
+          <codeblock>sudo mount Helion-OpenStack-2.1.iso /media/cdrom</codeblock></li>
         <li>Unpack the following
           tarball:<codeblock>tar faxv /media/cdrom/hos/hos-2.1.0-20151211T063256Z.tar</codeblock></li>
         <li>Run the included initialization script to update the deployer:
@@ -126,9 +135,8 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
           <codeblock>ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock>
           Later, when the node has been rebooted successfully, you can follow the procedures in
           reverse to migrate any services back to their original nodes.</p>
-        <p><b>Reboot the Controllers</b></p> In order to reboot the controller nodes, you must first 
-          retrieve a list of nodes in your cloud running control plane services.
-            <codeblock>stack@localhost:~/helion/hos/ansible$ for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); 
+        <p><b>Reboot the Controllers</b></p> In order to reboot the controller nodes, you must first
+        retrieve a list of nodes in your cloud running control plane services. <codeblock>stack@localhost:~/helion/hos/ansible$ for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); 
           do grep $i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts | grep ansible_ssh_host | awk '{print $1}'; done</codeblock>
         <p>Then perform the following steps on each controller node in turn:</p>
         <ol>
@@ -136,8 +144,7 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
 
           <li>If any singleton services are active on this node, they will be unavailable while the
             node is down. If you want to retain the service during the reboot, you should take
-            special action to maintain the service, such as migrating the service as appropriate: 
-            <ol>
+            special action to maintain the service, such as migrating the service as appropriate: <ol>
               <li>Cinder volume and Cinder backup services: instructions for migrating these are
                 found in Managing Cinder Volume and Backup Services. </li>
               <li>Nova-consoleauth service: This runs by default on the first controller node, that
@@ -157,8 +164,7 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock>
           </li>
-          <li>Reboot the controller node, e.g. run the following command on the controller itself: 
-            <codeblock>sudo reboot</codeblock>
+          <li>Reboot the controller node, e.g. run the following command on the controller itself: <codeblock>sudo reboot</codeblock>
             <p>Note that the current node being rebooted could be hosting the lifecycle manager.</p>
           </li>
           <li>Wait for the controller node to become ssh-able and allow an additional minimum of
