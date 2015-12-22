@@ -25,8 +25,8 @@
                 automatically when the scheduler executes any request to the API. If you want to
                 execute the registration explicitly, you can use the --register scheduler
                 option.</p>The following example lists all the freezer scheduler
-            clients:<codeblock> root@padawan-ccp-c0-m1-mgmt:/home/stack/scratch/ansible/next/hos/ansible# freezer-scheduler  client-list
-+---------------------------+---------------------------+-------------+
+            clients:<codeblock> root@padawan-ccp-c0-m1-mgmt:/home/stack/scratch/ansible/next/hos/ansible# freezer-scheduler  client-list</codeblock>
+          <codeblock>+---------------------------+---------------------------+-------------+
 |         client_id         |          hostname         | description |
 +---------------------------+---------------------------+-------------+
 | padawan-ccp-comp0001-mgmt | padawan-ccp-comp0001-mgmt |             |
@@ -46,18 +46,12 @@
                     job.</li>
                 <li>Remember to source the operating system variables and use the correct client_id.
                     (The client-id corresponds to the node where the backup files/directory/database
-                    resides.)
-                    
-                    In helion the sourcing of variable should be done like this when the user needs to use hlm_backup user and backup tenant (used for infrastructure backup): 
-                    <codeblock>source /opt/stack/service/freezer-agent/backup.osrc</codeblock>
-                    And with the following when the user needs to use admin user and admin tenant:
-                    <codeblock>source /home/stack/service.osrc</codeblock> 
-                    
-                    
-                    
-                   
- 
-    <codeblock>{
+                    resides.) In Helion the sourcing of the variable should be done like this when
+                    you need to use hlm_backup user and backup tenant (used for infrastructure
+                    backup):
+                    <codeblock>source /opt/stack/service/freezer-agent/backup.osrc</codeblock> And
+                    with the following when you need to use admin user and admin tenant: <codeblock>source /home/stack/service.osrc</codeblock>
+                    <!--                    <codeblock>{
         "job_actions": [
             {
                 "freezer_action": {
@@ -85,13 +79,14 @@
                     <codeblock>"job_schedule" : {
     "schedule_interval": "1 days",
     "schedule_start_date": "2015-06-30T03:00:00"
-},</codeblock></li>
+},</codeblock>-->
+                </li>
                 <li>Upload it into the api using the correct client_id:
-                    <codeblock>
-freezer-scheduler job-create -c client_node_1 --file job-backup-mysql.conf</codeblock></li>
+                    
+<codeblock>freezer-scheduler job-create -c client_node_1 --file job-backup-mysql.conf</codeblock></li>
                 <li>The status of the jobs can be checked with:
-                    <codeblock>
-freezer-scheduler -c client_node_1 job-list</codeblock></li>
+                    
+<codeblock>freezer-scheduler -c client_node_1 job-list</codeblock></li>
                 <li>If no scheduling information is provided, the job will be executed as soon as
                     possible so its status will go into a "running" state, then "completed".</li>
             </ol>
@@ -103,10 +98,8 @@ freezer-scheduler -c client_node_1 job-list</codeblock></li>
         <section>
             <title>Restore from a Different Node</title>
             <p>The scheduler can be used to restore from a different node using restore_from_host
-                parameter:
-                <codeblock>
-cat > job-restore-mysql.conf
-{
+                parameter that you see in the JSON below. To see the file, run this:<codeblock>cat > job-restore-mysql.conf</codeblock>
+                <codeblock>{
     "job_actions": [
         {
             "freezer_action": {
@@ -122,10 +115,9 @@ cat > job-restore-mysql.conf
         }
     ],
     "description": "mysql test restore"
-}
- 
- 
-freezer-scheduler job-create -c client_node_1 --file job-restore-mysql.conf</codeblock></p>
+}</codeblock>
+                Create the job like
+                so:<codeblock>freezer-scheduler job-create -c client_node_1 --file job-restore-mysql.conf</codeblock></p>
         </section>
         <section>
             <title>Differential Backup and Restore</title>
@@ -135,11 +127,10 @@ freezer-scheduler job-create -c client_node_1 --file job-restore-mysql.conf</cod
         </section>
         <section>
             <title>Example Backup Job File</title>
-            <p>
-                <codeblock>
-cat > job-backup.conf
+            <p>To see a sample backup file run this:</p>
+                <codeblock>cat > job-backup.conf</codeblock>
  
- {
+ <codeblock>{
      "job_actions": [
          {
              "freezer_action": {
@@ -161,18 +152,17 @@ cat > job-backup.conf
      "job_schedule" : {
      },
      "description": "mysql backup"
- }
+ }</codeblock>
  
- 
- freezer-scheduler job-create -c client_node_1 --file job-backup.conf</codeblock>
-            </p>
+ To create the job:
+ <codeblock>freezer-scheduler job-create -c client_node_1 --file job-backup.conf</codeblock>
+            
         </section>
         <section>
             <title>Example Restore Job File</title>
-            <p>The restore job is the same as "Create a restore job and push it into the api":
-                <codeblock>
-cat > job-restore.conf
-{
+            <p>The restore job is the same as "Create a restore job and push it into the api" as you
+                see when you take a look at the file by executing:<codeblock>cat > job-restore.conf</codeblock>
+                <codeblock>{
     "job_actions": [
         {
             "freezer_action": {
@@ -188,10 +178,9 @@ cat > job-restore.conf
         }
     ],
     "description": "mysql test restore"
-}
- 
- 
-freezer-scheduler job-create -c client_node_1 --file job-restore.conf</codeblock></p>
+}</codeblock>
+                To create the job:
+                <codeblock>freezer-scheduler job-create -c client_node_1 --file job-restore.conf</codeblock></p>
         </section>
     </body>
 </topic>
