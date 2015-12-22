@@ -129,20 +129,15 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml</codeblock>
       <p>or if you have encryption enabled, use:</p>
       <codeblock>ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml --ask-vault-pass</codeblock>
     </section>
-    <section id="hlm"><title>Restarting the Lifecycle Manager</title>
-      <ol>
-        <li>Log into the lifecycle manager and execute the hlm-start playbook for the 3 controller
-          nodes. <codeblock>cd ~/scratch/ansible/next/hos/ansible
+    <section id="hlm"><title>Restarting Services on the Controller Nodes</title>
+      <p>Log into the lifecycle manager and execute the hlm-start playbook for each node you want to
+        bring back up:</p>
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=&lt;host_var name&gt;</codeblock>
-          <p>Here is an example using the above command using the example in the previous step.</p>
-          <codeblock>ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=helion-cp-c1-m1-mgmt,helion-cp-c1-m2-mgmt,helion-cp-c1-m3-mgmt</codeblock>
-        </li>
-        <li>Now run the hlm-start playbook for all nodes. When this playbook completes, all services
-          should be started.
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml</codeblock>
-        </li>
-      </ol>
+      <p>If you leave off the <codeph>--limit</codeph> switch, the playbook will be run against all
+        nodes.</p>
+      <p>Here is an example using the above command using the example in the previous step.</p>
+      <codeblock>ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=helion-cp-c1-m1-mgmt,helion-cp-c1-m2-mgmt,helion-cp-c1-m3-mgmt</codeblock>
     </section>
   </body>
 </topic>
