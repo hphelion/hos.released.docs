@@ -38,7 +38,7 @@
     </section>
 
     <section id="kibana_visualization"><title>Error When Creating a Kibana Visualization</title>
-    <p conkeyref="HOS-conrefs/applies-to-21"/>
+      <p conkeyref="HOS-conrefs/applies-to-21"/>
       <p>When creating a visualization in Kibana you may get an error similiar to this:
         <codeblock>"logstash-*" index pattern does not contain any of the following field types: number</codeblock></p>
       <p>To resolve this issue:</p>
@@ -49,6 +49,49 @@
         <li>Click the refresh button. You may see a mapping conflict warning after refreshing the
           index.</li>
         <li>Re-create the visualization.</li>
+      </ol>
+    </section>
+    <section id="curator"><title>Elasticsearch Wil Stop Storing Data in it's Shards When the
+        Elasticsearch Disk Partition Reaches 90% Capacity</title>
+      <p>To resolve this issue, we recommend changing the default value for
+          <codeph>curator_high_watermark_percent</codeph> from 95% to 89% to ensure that this
+        doesn't happen:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+
+        <li>Edit the ~/helion/my_cloud/config/logging/main.yml file and change the value of
+            <codeph>curator_high_watermark_percent</codeph> from the default setting of
+            <codeph>95</codeph> to the new value of <codeph>89</codeph>
+          <p>Example:</p>
+          <codeblock># The following high watermark will be used to decide if it is time to delete old indices.
+# The following approach is taken:
+# An hourly cronjob checks if the current used ES parition size is over this value.
+# If it is, curator will be run to delete old indices per the curator_num_of_indices_to_keep setting.
+# Then, a check is made again to see if the partition size is below the high watermark percent.
+# If it is still high, curator will be run again to delete all indices except the current one that
+# are over curator_max_index_size_in_gb size.
+# A check is made again and if it is still high, curator will be run to delete all indices except
+# the current one. Finally, if the usage is still high, just an error message is written to the log
+# file but the current index is NOT deleted.
+<b>curator_high_watermark_percent: 95</b>
+curator_max_index_size_in_gb: 30</codeblock></li>
+
+        <li>Save the changes to the file and commit the changes to your local git:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+
+        <li>Run the configuration processor, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+
+        <li>Run the following command to create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+
+        <li>Run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts logging-reconfigure.yml</codeblock></li>
       </ol>
     </section>
   </body>
