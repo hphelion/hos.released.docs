@@ -44,14 +44,20 @@
             <ol>
                 <li>Log into any machine (for example, lifecycle manager or controller) and create the
                     job.</li>
-                <li>Remember to source the operating system variables and use the correct client_id. (The
-                    client-id corresponds to the node where the backup files/directory/database
+                <li>Remember to source the operating system variables and use the correct client_id.
+                    (The client-id corresponds to the node where the backup files/directory/database
                     resides.)
-                    <codeblock>
-# source os_variables fproject fuser  cat > job-backup-mysql.conf
+                    
+                    In helion the sourcing of variable should be done like this when the user needs to use hlm_backup user and backup tenant (used for infrastructure backup): 
+                    <codeblock>source /opt/stack/service/freezer-agent/backup.osrc</codeblock>
+                    And with the following when the user needs to use admin user and admin tenant:
+                    <codeblock>source /home/stack/service.osrc</codeblock> 
+                    
+                    
+                    
+                   
  
- 
-    {
+    <codeblock>{
         "job_actions": [
             {
                 "freezer_action": {
@@ -82,10 +88,10 @@
 },</codeblock></li>
                 <li>Upload it into the api using the correct client_id:
                     <codeblock>
-# freezer-scheduler job-create -c client_node_1 --file job-backup-mysql.conf</codeblock></li>
+freezer-scheduler job-create -c client_node_1 --file job-backup-mysql.conf</codeblock></li>
                 <li>The status of the jobs can be checked with:
                     <codeblock>
-# freezer-scheduler -c client_node_1 job-list</codeblock></li>
+freezer-scheduler -c client_node_1 job-list</codeblock></li>
                 <li>If no scheduling information is provided, the job will be executed as soon as
                     possible so its status will go into a "running" state, then "completed".</li>
             </ol>
