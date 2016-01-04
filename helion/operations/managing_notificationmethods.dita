@@ -3,6 +3,47 @@
 <topic id="notification_methods">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Managing Notification Methods for Alarms</title>
   <body>
+    <section id="about">
+      <p><ul>
+          <li><xref href="managing_notificationmethods.dita#notification_methods/proxy">Enabling a
+              Proxy for Notifications</xref></li>
+          <li><xref href="managing_notificationmethods.dita#notification_methods/create">Creating a
+              New Notification Method</xref></li>
+          <li><xref href="managing_notificationmethods.dita#notification_methods/apply">Applying a
+              Notification Method to an Alarm Definition</xref></li>
+        </ul></p>
+    </section>
+    <section id="proxy"><title>Enabling a Proxy for Notifications</title>
+      <p>If your environment requires a proxy address in order for communications to function then
+        these steps will show you how you can enable one.</p>
+      <p>These steps will require access to the lifecycle manager in your cloud deployment so you
+        may need to contact your Administrator. You can make these changes during the initial
+        configuration phase prior to the first installation or you can modify your existing
+        environment, the only difference being the last step.</p>
+      <p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Edit
+              <codeph>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeph>
+            file and at the bottom of the file add this line with your proxy address values: <codeblock>notification_environment: '"http_proxy=http://your_proxy:8080" "https_proxy=http://your_proxy:8080"'</codeblock>
+            <note>There are single quotation marks around the entire value of this entry and then
+              double quotation marks around the individual proxy entries. This formatting must exist
+              when you enter these values into your configuration file.</note></li>
+          <li>Edit
+              <codeph>~/helion/hos/ansible/roles/monasca-notification/templates/monasca-notification.service.j2</codeph>
+            file and underneath the <codeph>[Service]</codeph> section add the line below:
+            <codeblock>[Service]
+Environment={{ notification_environment }}</codeblock>
+          </li>
+          <li>If you are making these chnages prior to your intial installation then you are done
+            and can continue on with the installation. However, if you are modifying an existing
+            environment, you will need to run the Monasca reconfigure playbook to enable these
+            changes:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml --tags notification</codeblock></li>
+        </ol>
+      </p>
+    </section>
     <section id="create"><title>Creating a New Notification Method</title>
       <ol>
         <li>Log in to the Operations Console. See <xref
