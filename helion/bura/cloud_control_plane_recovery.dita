@@ -3,10 +3,37 @@
 <topic id="topic_tb4_lqy_qt">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Recovering the Cloud Control Plane</title>
   <body>
-    <p conkeyref="HOS-conrefs/applies-to"/>
-    <section><title>Point in time database recovery</title><p>Everything is still running (lifecycle
-        manager, cloud controller nodes (CCNs), and compute nodes (CPNs) but you want to restore the
-        MySQL database to an old state.</p></section>
+    <p conkeyref="HOS-conrefs/applies-to"/>  
+    
+    <section>There are seven supported recovery scenarios, which are explained in the following
+      sections:</section>
+    <section>
+      <ul>
+        <li><p outputclass="pageAnchor1" id="pointdb">Point in time database recovery</p>Everything
+          is still running (lifecycle manager, control plane nodes, and compute nodes, but you want
+          to restore the MySQL database to an old state.</li>
+        <li><p outputclass="pageAnchor1" id="pointswift">Point in time swift rings
+          recovery</p>Everything is still running (lifecycle manager, control plane nodes, and
+          compute nodes) but you want to restore the Swift rings to an old state.</li>
+        <li><p outputclass="pageAnchor1" id="pointlifecycle">Point in time lifecycle manager
+            recovery</p>Everything is still running (lifecycle manager, control plane nodes, and
+          compute nodes) but you want to restore the lifecycle manager to an old state.</li>
+        <li><p outputclass="pageAnchor1" id="onecontroller">One or two control plane node disaster
+            recovery</p>Everything is still running (lifecycle manager, control plane nodes, and
+          compute nodes) but you lost one or two control plane nodes.</li>
+        <li><p outputclass="pageAnchor1" id="allcontrollers">3 control plane node disaster
+            recovery</p>All control plane nodes are destroyed.</li>
+        <li><p outputclass="pageAnchor1" id="nolifecycle">Deployer disaster recovery</p>Everything
+          is still running (control plane nodes and compute nodes) but you lost the lifecycle
+          manager.</li>
+        <li><p outputclass="pageAnchor1" id="full">Full disaster recovery</p>Everything is dead.</li>
+  
+      </ul>
+      
+      
+    </section>
+    <section outputclass="pageTarget1" id="pointdb_target"><title>Point in time database recovery</title><p>In this scenario, everything is still running (lifecycle manager, cloud controller nodes, and
+        compute nodes)  but you want to restore the MySQL database to a previous state. </p></section>
     <section><title>Restore from a Swift backup</title></section>
     <ol>
       <li>On the first MySQL node, run the following steps:
@@ -124,9 +151,8 @@ ok: [helion-cp1-c1-m3-mgmt] => {
 }</codeblock></li>
       </ol>
     </section>
-    <section><title>Point in time swift rings recovery</title><p>Everything is still running
-        (lifecycle manager, CCNs, and CPNs) but you want to restore the Swift rings to an old
-        state.</p><note>Freezer backs up and restores for Swift rings only, not Swift
+    <section outputclass="pageTarget1" id="pointswift_target"><title>Point in time swift rings recovery</title><p>Everything is still running (lifecycle manager, control plane nodes, and compute nodes) but you
+        want to restore the Swift rings to an old state.</p><note>Freezer backs up and restores for Swift rings only, not Swift
       data.</note></section>
     <section><title>Restore from a Swift backup</title><ol>
         <li>On the first Swift Proxy (SWF-PRX[0]) node run the following
@@ -163,9 +189,8 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
       </ol></section>
     <section><title>Restore from an SSH backup</title><p>Follow the same procedure as for Swift but
         select the job "HLM Default: Swift restore from SSH".</p></section>
-    <section><title>Point in time lifecycle manager recovery</title><p>Everything is still running
-        (lifecycle manager, CCNs, and CPNs) but you want to restore the lifecycle manager to an old
-        state.</p></section>
+    <section outputclass="pageTarget1" id="pointlifecycle_target"><title>Point in time lifecycle manager recovery</title><p>Everything is still running (lifecycle manager, control plane nodes, and compute nodes) but you
+        want to restore the lifecycle manager to an old state.</p></section>
     <section>
       <title>Restore from a Swift backup</title><p>On the lifecycle manager, run the following
         steps:
@@ -194,8 +219,8 @@ systemctl start dayzero</codeblock></p>
     </section>
     <section><title>Restore from an SSH backup</title><p> Follow the same procedure as for Swift but
         select the job "HLM Default: Deployer restore from SSH".</p></section>
-    <section><title>One or two CCN disaster recovery</title><p>Everything is still running
-        (lifecycle manager, CCN, and CPNs) but you lost one or two CCNs.</p></section>
+    <section outputclass="pageTarget1" id="onecontroller_target"><title>One or two control plane node disaster recovery</title><p>Everything is still running (lifecycle manager, control plane node, and compute nodes) but you
+        lost one or two CCNs.</p></section>
     <section><title>Restore from other nodes</title><p>On the lifecycle manager, install the nodes
         that got destroyed:
         <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -204,11 +229,11 @@ ansible-playbook -i hosts/verb_hosts site.yml --limit padawan-ccp-c1-m2-mgmt</co
         the MySQL database will be recovered automatically from other running nodes.</p></section>
     <section><title>Restore from an SSH backup </title><p>You shouldn’t need to restore anything:
         the MySQL database will be recovered automatically from other running nodes.</p></section>
-    <section><title>3 CCN disaster recovery</title><p>All CCNs are destroyed.</p><ul>
+    <section outputclass="pageTarget1" id="allcontrollers_target"><title>3 control plane node disaster recovery</title><p>All control plane nodes are destroyed.</p><ul>
         <li><b>Restore from a Swift backup: </b><p>This is not possible (Swift is gone).</p></li>
         <li><b>Restore from an SSH backup: </b><p>
             <ol>
-              <li>On lifecycle manager, follow the procedure to deploy the CCNs:
+              <li>On lifecycle manager, follow the procedure to deploy the control plane nodes:
                 <codeblock>
 cd ~/scratch/ansible/next/hos/ansible
  
@@ -222,8 +247,8 @@ ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
             </ol>
           </p></li>
       </ul></section>
-    <section id="deployer"><title>Deployer disaster recovery</title><p>Everything is still running (CCNs and CPNs)
-        but you lost the lifecycle manager.</p><ul>
+    <section outputclass="pageTarget1" id="nolifecycle_target"><title>Deployer disaster recovery</title><p>Everything is still running (control plane nodes and compute nodes) but you lost the lifecycle
+        manager.</p><ul>
         <li><b>Restore from a Swift backup</b>
           <ol>
             <li>On the lifecycle manager, install the freezer-agent, as
@@ -316,7 +341,7 @@ cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
           </ol></li>
       </ul></section>
-    <section><title>Full disaster recovery</title><p>Everything is dead.</p><ul>
+    <section outputclass="pageTarget1" id="full_target"><title>Full disaster recovery</title><p>Everything is dead.</p><ul>
         <li><b>Restore from a Swift backup:</b><p>This is not possible (Swift is gone).</p></li>
         <li><b>Restore from an SSH backup: </b><ol>
             <li>On the lifecycle manager, edit the following file so it contains the same
