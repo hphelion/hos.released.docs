@@ -15,9 +15,13 @@
         needs to be configured with an email server. The email server is not provided by <keyword
           keyref="kw-hos"/>, but must be specified in the configuration file described below. The
         email server must support SMTP.</p>
-      <p>To configure the SMTP server, edit the <codeph>cloudConfig.yml</codeph> file during
-        installation. There should be a section at the bottom for <codeph>smtp-settings</codeph>
-        that looks like this below. If it doesn't exist, you can add it:</p>
+      <p>You can specify your SMTP server either during the installation phase of your cloud
+        deployment or post-installation if need be. We will show both methods below.</p>
+      <p><b>During Initial Installation</b></p>
+      <p>To configure the SMTP server, edit the
+          <codeph>~/helion/my_cloud/definition/cloudConfig.yml</codeph> file during installation.
+        There should be a section at the bottom for <codeph>smtp-settings</codeph> that looks like
+        this below. If it doesn't exist, you can add it:</p>
       <codeblock>smtp-settings:
   #  server: mailserver.examplecloud.com
   #  port: 25
@@ -62,6 +66,41 @@
           </tgroup>
         </table>
       </p>
+      <p>Then you will continue on with your installation steps.</p>
+      <p><b>After Initial Installation</b></p>
+      <p>If you need to configure a SMTP server or make changes to your existing SMTP server after
+        your initial installation, these steps will show you how:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>To configure the SMTP server, edit the
+            <codeph>~/helion/my_cloud/definition/cloudConfig.yml</codeph> file. There should be a
+          section at the bottom for <codeph>smtp-settings</codeph> that looks like the example
+          below. If it doesn't exist, you can add it. <p>We have a table above showing descriptions
+            of each of these lines.</p>
+          <codeblock>smtp-settings:
+  #  server: mailserver.examplecloud.com
+  #  port: 25
+  #  timeout: 15
+  # These are only needed if your server requires authentication
+  #  user:
+  #  password:</codeblock>
+          <p>Ensure that you uncomment these lines by removing the hash marks.</p></li>
+        <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
+            repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Run the configuration processor with this command:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Use the playbook below to update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Run the Monasca reconfigure playbook to deploy the changes: <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml --tags notification</codeblock>
+          <note>You may need to use the <codeph>--ask-vault-pass</codeph> switch if you opted for
+            encryption during the initial deployment.</note></li>
+      </ol>
     </section>
     <section id="database"><title>Choosing a Metrics Database Options</title>
       <p>The Monitoring service supports two different database options. The default metrics
