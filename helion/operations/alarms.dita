@@ -15,6 +15,7 @@
       <p>Alarms for the following services are described below:</p>
       <ul>
         <li><xref href="#alarmdefinitions/metering">Ceilometer</xref></li>
+        <li><xref href="#alarmdefinitions/ceph">Ceph</xref></li>
         <li><xref href="#alarmdefinitions/blockstorage">Cinder</xref></li>
         <li><xref href="#alarmdefinitions/cue">Cue</xref></li>
         <li><xref href="#alarmdefinitions/glance">Glance</xref></li>
@@ -31,6 +32,7 @@
         <li><xref href="#alarmdefinitions/opsconsole">Operations Console</xref></li>
         <li><xref href="#alarmdefinitions/rabbitmq">RabbitMQ</xref></li>
         <li><xref href="#alarmdefinitions/objectstorage">Swift</xref></li>
+        <li><xref href="#alarmdefinitions/vsa">VSA</xref></li>
       </ul>
     </section>
     <section id="metering"><title>Ceilometer</title>
@@ -86,6 +88,38 @@
                   <p>For further troubleshooting, look into the Ceilometer access log in the
                     Ceilometer log directory for the ceilometer_modwsgi file and ceilometer-api
                     logs.</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></p>
+    </section>
+    <section id="ceph"><title>Ceph</title>
+      <p><table frame="all" rowsep="1" colsep="1" id="ceph_table">
+          <tgroup cols="4">
+            <colspec colname="c1" colnum="1" colwidth="1*"/>
+            <colspec colname="c2" colnum="2" colwidth="2*"/>
+            <colspec colname="c3" colnum="3" colwidth="1*"/>
+            <colspec colname="c4" colnum="4" colwidth="2*"/>
+            <thead>
+              <row>
+                <entry>Alarm Name</entry>
+                <entry>Description</entry>
+                <entry>Likely Cause</entry>
+                <entry>Mitigation Tasks to Perform</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Process Check</entry>
+                <entry>process_name=&lt;cluster_name>-osd.&lt;id></entry>
+                <entry>Process crashed.</entry>
+                <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry>process_name=&lt;cluster_name>-mon.&lt;id></entry>
+                <entry>Process crashed.</entry>
+                <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
               </row>
             </tbody>
           </tgroup>
@@ -168,7 +202,7 @@
                   the number of executing Cinder processes</entry>
                 <entry>Review the monasca agent collector.log file on the affected node to determine
                   why the service check did not execute as expected. <p>See <xref
-                    href="../releasenotes.dita#release_notes/DOCS-1833">release notes</xref> for
+                      href="../releasenotes.dita#release_notes/DOCS-1833">release notes</xref> for
                     additional information about this alarm.</p></entry>
               </row>
             </tbody>
@@ -1188,6 +1222,42 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>If the <codeph>service</codeph> dimension is <codeph>object-store</codeph>, see
                 the description of the "Swift host socket connect" alarm for possible mitigation
                 tasks.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    <section id="vsa">
+      <title>VSA</title>
+      <table frame="all" rowsep="1" colsep="1" id="vsa_table">
+        <tgroup cols="4">
+          <colspec colname="c1" colnum="1" colwidth="1.0*"/>
+          <colspec colname="c2" colnum="2" colwidth="1.0*"/>
+          <colspec colname="c3" colnum="3" colwidth="1.0*"/>
+          <colspec colname="c4" colnum="4" colwidth="1.0*"/>
+          <thead>
+            <row>
+              <entry>Alarm Name</entry>
+              <entry>Description</entry>
+              <entry>Likely Cause</entry>
+              <entry>Mitigation Tasks to Perform</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>VSA VM Status</entry>
+              <entry>Raises alarm when vsa_vm_status is non zero (Not running)</entry>
+              <entry>
+                <p>Node reboot (or)</p>
+                <p>VM in paused state due to disk errors</p>
+              </entry>
+              <entry>Investigate the VSA VM status in the node.</entry>
+            </row>
+            <row>
+              <entry>VSA VM Network Status</entry>
+              <entry>Raises alarm when vsa_vm_net_status is non zero (Not running)</entry>
+              <entry>Network/Bridge issues</entry>
+              <entry>Investigate the VSA VM network status in the node.</entry>
             </row>
           </tbody>
         </tgroup>
