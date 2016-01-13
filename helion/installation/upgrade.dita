@@ -184,7 +184,8 @@ ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml --extra-vars "mig
 ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock></p>
         <p><b>Reboot the Controllers</b></p> In order to reboot the controller nodes, you must first
         retrieve a list of nodes in your cloud running control plane services. <codeblock>for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); do grep $i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts | grep ansible_ssh_host | awk '{print $1}'; done</codeblock>
-        <p>Then perform the following steps on each controller node in turn:</p>
+        <p>Then perform the following steps from your lifecycle manager for each of your controller
+          nodes:</p>
         <ol>
           <li>If any singleton services are active on this node, they will be unavailable while the
             node is down. If you want to retain the service during the reboot, you should take
