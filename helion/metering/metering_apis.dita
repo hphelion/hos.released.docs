@@ -5,12 +5,12 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="pipeline"><title>Separate pipeline.yml for Ceilometer Post Samples API</title> The
-      Post Sample API is disabled by default in <keyword keyref="kw-hos-phrase"/> and its configured with a
-      pipeline configuration different than the agents. The API pipeline has no meters enabled, so
-      it needs to be configured with meters when the Post Samples API is enabled. Exercise caution
-      when adding meters to the API pipeline. Ensure that only those meters are added to this
-      pipeline which are already present in the notification agent and the central agent pipeline.
-        <p>Ceilometer API (ceilometer-api) pipeline.yml is located at
+      Post Sample API is disabled by default in <keyword keyref="kw-hos-phrase"/> and its configured
+      with a pipeline configuration different than the agents. The API pipeline has no meters
+      enabled, so it needs to be configured with meters when the Post Samples API is enabled.
+      Exercise caution when adding meters to the API pipeline. Ensure that only those meters are
+      added to this pipeline which are already present in the notification agent and the central
+      agent pipeline. <p>Ceilometer API (ceilometer-api) pipeline.yml is located at
           /<b>opt/stack/service/ceilometer-api/etc/pipeline-api.yml</b></p> Here is a sample of the
       API pipeline:
       <codeblock>---
@@ -136,7 +136,8 @@ sinks:
       </ul> They are disabled via a custom rule, hp_disabled_rule:not_implemented, which is added to
       each of those APIs in Ceilometer's policy.json. (<b>/etc/ceilometer/policy.json</b> on
       controller nodes). Attempts to access any of the Alarm APIs, Post Meter API or Query-sample
-      API will result in an HTTP response 501 Not Implemented.<p>To manually enable any of the APIs, remove the corresponding rule and restart Apache</p>
+      API will result in an HTTP response 501 Not Implemented.<p>To manually enable any of the APIs,
+        remove the corresponding rule and restart Apache</p>
       <codeblock>{
 	"context_is_admin": "role:admin",
 	"context_is_project": "project_id:%(target.project_id)s",
@@ -166,25 +167,32 @@ sinks:
         <li>PUT /v2/alarms/(alarm_id)/state </li>
         <li>GET /v2/alarms/(alarm_id)/state </li>
         <li>POST /v2/query/alarms </li>
-        <li>POST /v2/query/alarms/history</li></ul>
-      In addition, these APIs are disabled:
-      <ul>
+        <li>POST /v2/query/alarms/history</li>
+      </ul> In addition, these APIs are disabled: <ul>
         <li>Post Sampes API: POST /v2/meters/(meter_name)</li>
         <li>Query Sample API: POST /v2/query/samples</li>
       </ul>
     </section>
+
+    <section><title>Data Access API</title> Ceilometer only provides a data access API. It does not
+      by itself provide a data visualization or aggregation function. These functions are provided
+      by external, downstream applications that support various use cases like usage billing and
+      software license policy adherence. Each application calls the specific Ceilometer API needed
+      for their use case. The resultant data is then aggregated and visualized based on the unique
+      functions provided by each application. More information about the Ceilometer API can be found
+      at http://docs.openstack.org/developer/ceilometer/webapi/v2.html. </section>
     
-    <section><title>Data Access API</title>
-    
-    
-    
-    Ceilometer only provides a data access API.  It does not by itself provide a data visualization or aggregation function.
-    These functions are provided by external, downstream applications that support various use cases like usage billing and 
-    software license policy adherence. Each application calls the specific Ceilometer API needed for their use case.  
-    The resultant data is then aggregated and visualized based on the unique functions provided by each application.  More information
-    about the Ceilometer API can be found at http://docs.openstack.org/developer/ceilometer/webapi/v2.html.
-    
-    
+    <section><title>Ceilometer Resource API</title>
+      <p>The Ceilometer Resource API can provide a list of resources that Ceilometer has collected. </p>
+      
+      <p>By default, meter links will be generated for each resource, which provide all meters' link associated with this resource, 
+      but such functionality has a high cost. For a large deployment, in order to reduce the response time it is recommended that you do not return meter links. You can avoid returning them
+      by passing the query filter <codeph>meter_links=0</codeph> (for the REST API only).</p>
+      
+      <p><codeph>resource-list</codeph> (found in /v2/resources) can be filtered by project_id, user_id, source, resource_id, timestamp and metadata. 
+      It is highly recommended that you use timestamp and/or project query filters to get a quick response in a scaled deployment.</p>
+      
+     <codeblock>ceilometer resource-list -q "project_id=7aa0fe3f02ff4e11a70a41e97d0db5e3;timestamp>=2015-10-22T15:44:00;timestamp&lt;=2015-10-23T15:44:00"</codeblock>
     
     </section>
     <section><title>Improving Reporting API responsiveness</title> Reporting APIs are the main
@@ -200,9 +208,10 @@ sinks:
         <li>Only the top 20 meters associated with the sample query results are displayed. </li>
         <li>Period duration selection should be much less than the default retention period
           (currently 7 days), to get statistics for multiple groups. </li>
-      </ul> <keyword keyref="kw-hos"/> uses the Apache2 Web Server to provide API access. It is possible to tune
-      performance to optimize the front end as well as the back-end database. Experience indicates
-      that an excessive increase of concurrent access to the front-end tends to put a strain in the
-      database. </section>
+      </ul>
+      <keyword keyref="kw-hos"/> uses the Apache2 Web Server to provide API access. It is possible
+      to tune performance to optimize the front end as well as the back-end database. Experience
+      indicates that an excessive increase of concurrent access to the front-end tends to put a
+      strain in the database. </section>
   </body>
 </topic>

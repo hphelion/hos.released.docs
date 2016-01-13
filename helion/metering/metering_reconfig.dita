@@ -93,13 +93,19 @@ ceilome+ 31433 31427 10 16:29 ? 00:02:43 /usr/sbin/apache2 -k start </codeblock>
 
 
     <section id="reconfig"><title>Reconfigure</title> Make changes in the Ceilometer available
-      configuration files at on lifecycle manager machine. Make changes in the target configuration file
-      found is these directories. <p>For a temporary change go
-      to:</p><codeblock>cd /home/stack/scratch/ansible/next/my_cloud/config/ceilometer/</codeblock>
-      For a persistent change, go to
-      <codeblock>cd /home/stack/helion/my_cloud/config/ceilometer/</codeblock> After making your
-      changes, run the <b>ceilometer-reconfigure.yml
-      </b>playbook<codeblock>cd /home/stack/scratch/ansible/next/hos/ansible/
+      configuration files on lifecycle manager machine in
+        <codeph>/home/stack/helion/my_cloud/config/ceilometer/</codeph>
+      <p>Make changes in the target configuration file (ie.,
+        pipeline-agent-notification.yaml.j2)</p><codeblock>cd /home/stack/helion
+git add -A
+git commit -m "My config"</codeblock>
+      Run the configuration processor:
+      <codeblock>cd /home/stack/helion/hos/ansible/
+ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""</codeblock>
+      Run ready-deployment:
+      <codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock> Run
+      reconfigure.yml:
+      <codeblock>cd /home/stack/scratch/ansible/next/hos/ansible/
 ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock>
     </section>
   </body>
