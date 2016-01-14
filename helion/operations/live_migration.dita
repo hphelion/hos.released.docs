@@ -2,29 +2,91 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="liveInstMigration">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Live Migration of Instances</title>
-  
   <body>
-   <p conkeyref="HOS-conrefs/applies-to"/>    
-   <section id="liveMigrate">
-     <p>To perform a live migration of a running instance, follow these steps:</p>
-     <ol>
- 
-       <li> Live migrate existing instances. Identify the instances on the compute node.Note: The
-         following command must be run with nova admin
-         credentials.<codeblock>nova list --host &lt;hostname&gt; --all-tenants</codeblock></li>
-       <li> Migrate or Stop the intances on the compute node. <p> Migrate the instances off the node
-            by running one of the following commands for each of the instances:</p><p>The only
-            live-migration cases that will work are the following:</p><p>If your instance is booted
-            from a volume and has any number of Cinder volume attached, use the nova live-migration
-            command:</p><codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
-          If your instance has local (ephemeral) disk(s) only, you can use the --block-migrate
-          option:<codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
-          Note: The [&lt;target compute host&gt;] option is optional. If you do not specify a target
-          host then the nova scheduler will choose a node for you.<p>OR</p><p>Stop the instances on
-            the node by running the following command for each of the
-          instances:</p><codeblock>nova stop &lt;instance-uuid&gt;</codeblock></li>
-     
-     </ol>
-   </section>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="about">
+      <p>HPE Helion OpenStack Nova offers a feature that allows you to move Compute instances
+        between Compute nodes. This feature is called live migration.</p>
+      <p>You can perform a live migration on instances that have block storage volumes attached or
+        instances that utilize their local ephemeral storage. Your Compute instance must remain
+        powered on and in an <codeph>Active</codeph> status during the migration process. There
+        should be zero downtime, thus your Compute instance should remain accessible during the
+        process.</p>
+      <p>HPE Helion OpenStack does not currently support offline or cold migration. A cold migration
+        is one that requires the Compute instance to be powered off during the migration
+        process.</p>
+    </section>
+    <section id="limitations"><title>Limitations of the Live Migration Feature</title>
+      <p>There are limitations that prevent the use of this feature:</p>
+      <ul>
+        <li>If you are using both block storage volumes and ephemeral storage on your Compute
+          instances, then live migration will not work. If you are using either block storage
+          volumes OR ephemeral storage, but not both, then live migration can proceed.</li>
+        <li>Your Compute instances must be in an <codeph>Active</codeph> state on the Compute node.
+          Instances in other states will not live migrate.</li>
+      </ul>
+    </section>
+    <section id="liveMigrate"><title>Performing a Live Migration</title>
+      <p>Cloud administrators can perform a live migration on an instance using either the Horizon
+        dashboard, API, or CLI. The instance must be in an <codeph>Active</codeph> status prior and
+        during the live migration.</p>
+      <p><b>Using Horizon</b></p>
+      <p>The Horizon dashboard offers a GUI method for performing live migrations.</p>
+      <ol>
+        <li>Log into the Horizon dashboard with admin credentials.</li>
+        <li>Navigate to the <b>Admin -> System -> Instances</b> menu as seen in the screenshot
+          below.</li>
+        <li>Next to the instance you want to migrate, select the drop down menu and choose the
+            <b>Live Migrate Instance</b> option. <p><image
+              href="../../media/hos.docs/livemigration1.png"/></p></li>
+        <li>In the Live Migrate wizard you will see the Compute host the instance currently resides
+          on and then a drop down menu that allows you to choose the Compute host you want to
+          migrate the instance to. Select a destination host from that menu. You also have two
+          checkboxes for additional options, which are described below: <p><b>Disk Over Commit</b> -
+            If this is not checked then the value will be <codeph>False</codeph>. If you check this
+            box then it will allow you to override the check that occurs to ensure the destination
+            host has the available disk space to host the instance.</p>
+          <p><b>Block Migration</b> - If this is not checked then the value will be
+              <codeph>False</codeph>. If you check this box then it will migrate the local disks by
+            using block migration. Use this option if you are only using ephemeral storage on your
+            instances. If you are using block storage for your instance then ensure this box is not
+            checked.</p>
+          <p><image href="../../media/hos.docs/livemigration2.png"/></p></li>
+        <li>Select the <b>Live Migrate Instance</b> button to begin your live migration.</li>
+      </ol>
+      <p><b>Using the NovaClient CLI</b></p>
+      <p>For command-line access you can utilize the NovaClient to perform live migrations. The
+        lifecycle manager node in your cloud environment should have the NovaClient already
+        installed. If you will be accessing your environment through a different method you will
+        need to ensure that the NovaClient is installed. You can do this via python-pip and the
+        instructions can be found here: <xref
+          href="http://docs.openstack.org/user-guide/common/cli_install_openstack_command_line_clients.html"
+          format="html" scope="external">Install the OpenStack command-line clients</xref>.</p>
+      <p>You will need to utilize admin credentials to perform the commands in the steps. From the
+        lifecycle manager you can use this command below:
+        <codeblock>source ~/service.osrc</codeblock></p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Identify the instances on the compute node you wish to migrate: <codeblock>nova list --host &lt;hostname&gt; --all-tenants</codeblock>
+          <p>Example:</p>
+          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0001-mgmt --all-tenants
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+
+| ID                                   | Name | Tenant ID                        | Status | Task State | Power State | Networks              |
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+
+| 553ba508-2d75-4513-b69a-f6a2a08d04e3 | test | 193548a949c146dfa1f051088e141f0b | ACTIVE | -          | Running     | adminnetwork=10.0.0.5 |
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+</codeblock></li>
+        <li>Migrate or Stop the instances on the compute node. <p>If your instance is booted from a
+            block storage volume or has any number of block storage volumes attached, use the
+              <codeph>nova live-migration</codeph> command with this syntax:</p>
+          <codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
+          <p>If your instance has local (ephemeral) disk(s) only, you should use the
+              <codeph>--block-migrate</codeph> option:</p>
+          <codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
+          <note>The [&lt;target compute host&gt;] option is optional. If you do not specify a target
+            host then the nova scheduler will choose a node for you.</note>
+        </li>
+
+      </ol>
+    </section>
   </body>
 </topic>
