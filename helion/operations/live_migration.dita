@@ -89,11 +89,21 @@ Optional arguments:
       <p>Here are the steps to perform:</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
-        <li>Identify the instances on the compute node you wish to migrate:
-          <codeblock>nova list --host &lt;hostname&gt; --all-tenants</codeblock></li>
-        <li>Migrate or Stop the instances on the compute node. <p>If your instance is booted from a
-            block storage volume or has any number of block storage volumes attached, use the
-              <codeph>nova live-migration</codeph> command with this syntax:</p>
+        <li>Identify the instances on the compute node you wish to migrate: <codeblock>nova list --host &lt;hostname&gt; --all-tenants</codeblock>
+          <p>Example showing a host with a single Compute instance on it:</p>
+          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0001-mgmt --all-tenants
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+
+| ID                                   | Name | Tenant ID                        | Status | Task State | Power State | Networks              |
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+
+| 553ba508-2d75-4513-b69a-f6a2a08d04e3 | test | 193548a949c146dfa1f051088e141f0b | ACTIVE | -          | Running     | adminnetwork=10.0.0.5 |
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+</codeblock></li>
+        <li>When using live migration you can either specify a target host that the instance will be
+          migrated to or you can omit the target to allow the nova-scheduler to choose a node for
+          you. If you want to get a list of available hosts you can use this command:
+          <codeblock>nova host-list</codeblock></li>
+        <li>Migrate the instance(s) on the compute node using the notes below. <p>If your instance
+            is booted from a block storage volume or has any number of block storage volumes
+            attached, use the <codeph>nova live-migration</codeph> command with this syntax:</p>
           <codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
           <p>If your instance has local (ephemeral) disk(s) only, you should use the
               <codeph>--block-migrate</codeph> option:</p>
@@ -101,7 +111,6 @@ Optional arguments:
           <note>The [&lt;target compute host&gt;] option is optional. If you do not specify a target
             host then the nova scheduler will choose a node for you.</note>
         </li>
-
       </ol>
     </section>
   </body>
