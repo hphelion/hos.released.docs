@@ -11,6 +11,10 @@
       <p>To stop the Nova compute service, you must run the playbook associated with the
         service:</p>
       <p><b>Stopping the nova-compute Service</b></p>
+      <p>If you have access to the lifecycle manager, you can use the ansible playbook instructions
+        below. Using this method has the added benefit of modifying the monitoring (Monasca) service
+        to remove the alarms for the effected nodes. If you do not have access to the lifecycle
+        manager then you will need to skip down to the next section.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Stop the nova-compute service: <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -36,7 +40,19 @@ nova service-list
 <b>| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | down  | 2016-01-15T16:30:47.000000 | -               |</b>
 +----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
       </ol>
+      <p>If you do not have access to the lifecycle manager, use these steps. You will need to
+        modify the monitoring service manually if you wish to remove alarms related to the Compute
+        nodes.</p>
+      <ol>
+        <li>SSH to the Compute host you want to stop the nova-compute service on.</li>
+        <li>Use this command to stop the service:
+          <codeblock>systemctl stop nova-compute</codeblock></li>
+      </ol>
       <p><b>Starting the nova-compute Service</b></p>
+      <p>If you have access to the lifecycle manager, you can use the ansible playbook instructions
+        below. Using this method has the added benefit of modifying the monitoring (Monasca) service
+        to add the alarms for the effected nodes. If you do not have access to the lifecycle manager
+        then you will need to skip down to the next section.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Start the nova-compute service: <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -61,6 +77,14 @@ nova service-list
 | 28 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2016-01-15T16:30:52.000000 | -               |
 <b>| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | up    | 2016-01-15T16:30:47.000000 | -               |</b>
 +----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
+      </ol>
+      <p>If you do not have access to the lifecycle manager, use these steps. You will need to
+        modify the monitoring service manually if you wish to add alarms related to the Compute
+        nodes.</p>
+      <ol>
+        <li>SSH to the Compute host you want to start the nova-compute service on.</li>
+        <li>Use this command to start the service:
+          <codeblock>systemctl start nova-compute</codeblock></li>
       </ol>
     </section>
 
