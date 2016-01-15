@@ -10,14 +10,58 @@
         that has died or was in a bad state with the Nova start script.</p>
       <p>To stop the Nova compute service, you must run the playbook associated with the
         service:</p>
-      <p>These playbooks must be run from the lifecycle manager.</p>
-      <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-stop.yml</codeblock>
-      <p>Similarly, to start the Nova compute service:</p>
-      <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml</codeblock>
-      <p><note>It is possible to target only specific nodes using the ansible
-            <codeph>--limit</codeph> parameter.</note></p>
+      <p><b>Stopping the nova-compute Service</b></p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Stop the nova-compute service: <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-stop.yml --limit &lt;hostname></codeblock>
+          <p>If you need to determine what the hostname is for your Compute node you can use
+              <codeph>nova host-list</codeph> to get a full list:
+            <codeblock>source ~/service.osrc
+nova host-list</codeblock></p></li>
+        <li>You can then confirm it has stopped by using the <codeph>nova service-list</codeph>
+          command:
+          <codeblock>source ~/service.osrc
+nova service-list
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
+| Id | Binary           | Host                     | Zone     | Status  | State | Updated_at                 | Disabled Reason |
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
+| 1  | nova-conductor   | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
+| 7  | nova-scheduler   | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
+| 10 | nova-conductor   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2016-01-15T16:30:51.000000 | -               |
+| 19 | nova-conductor   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2016-01-15T16:30:53.000000 | -               |
+| 22 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:53.000000 | -               |
+| 25 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
+| 28 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2016-01-15T16:30:52.000000 | -               |
+<b>| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | down  | 2016-01-15T16:30:47.000000 | -               |</b>
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
+      </ol>
+      <p><b>Starting the nova-compute Service</b></p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Start the nova-compute service: <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock>
+          <p>If you need to determine what the hostname is for your Compute node you can use
+              <codeph>nova host-list</codeph> to get a full list:
+            <codeblock>source ~/service.osrc
+nova host-list</codeblock></p></li>
+        <li>You can then confirm it is back up by using the <codeph>nova service-list</codeph>
+          command:
+          <codeblock>source ~/service.osrc
+nova service-list
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
+| Id | Binary           | Host                     | Zone     | Status  | State | Updated_at                 | Disabled Reason |
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
+| 1  | nova-conductor   | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
+| 7  | nova-scheduler   | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
+| 10 | nova-conductor   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2016-01-15T16:30:51.000000 | -               |
+| 19 | nova-conductor   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2016-01-15T16:30:53.000000 | -               |
+| 22 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:53.000000 | -               |
+| 25 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
+| 28 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2016-01-15T16:30:52.000000 | -               |
+<b>| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | up    | 2016-01-15T16:30:47.000000 | -               |</b>
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
+      </ol>
     </section>
 
 
