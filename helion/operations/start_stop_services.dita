@@ -5,48 +5,47 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="NovaCompute">
-      <title>Nova compute</title>
-      <p>You can stop API requests going to a service using the Nova stop script, or start a service
-        that has died or was in a bad state with the Nova start script.</p>
-      <p>To stop the Nova compute service, you must run the playbook associated with the
-        service:</p>
-      <p><b>Stopping the nova-compute Service</b></p>
+      <title>Nova Compute Services</title>
+      <p>When troubleshooting issues with the Compute service you may have a need to stop or start
+        one or all of the Nova services.</p>
+      <p><ph conkeyref="HOS-conrefs/product-title"/> provides an ansible playbook that can stop or
+        start all Nova services on one or more nodes. This may be useful in some scenarios. However,
+        it may also be necessary sometimes to stop or start only one specific Nova service on one or
+        more nodes so we will show you that process as well.</p>
+      <ul>
+        <li><xref href="start_stop_services.dita#stopStartSvcs/compute_all">Stopping All Nova
+            Services</xref></li>
+      </ul>
+    </section>
+    <section id="compute_all">
+      <title>Stopping All Nova Services</title>
       <p>If you have access to the lifecycle manager, you can use the ansible playbook instructions
         below. Using this method has the added benefit of modifying the monitoring (Monasca) service
-        to remove the alarms for the effected nodes. If you do not have access to the lifecycle
-        manager then you will need to skip down to the next section.</p>
+        to remove the alarms associated with the Nova services.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
-        <li>Stop the nova-compute service: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-stop.yml --limit &lt;hostname></codeblock>
-          <p>If you need to determine what the hostname is for your Compute node you can use
-              <codeph>nova host-list</codeph> to get a full list:
-            <codeblock>source ~/service.osrc
-nova host-list</codeblock></p></li>
-        <li>You can then confirm it has stopped by using the <codeph>nova service-list</codeph>
-          command:
-          <codeblock>source ~/service.osrc
+        <li>Stop the Nova services: <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-stop.yml</codeblock>
+          <p>If you specify the <codeph> --limit &lt;hostname></codeph> option at the end of the
+            ansible-playbook command then you will only target the specific hosts in your
+            environment that you specify and thus only the Nova services that live on that host will
+            be stopped.</p></li>
+        <li>You can then confirm the services have stopped by using the <codeph>nova
+            service-list</codeph> command: <codeblock>source ~/service.osrc
 nova service-list
 +----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
 | Id | Binary           | Host                     | Zone     | Status  | State | Updated_at                 | Disabled Reason |
 +----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
-| 1  | nova-conductor   | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
-| 7  | nova-scheduler   | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
-| 10 | nova-conductor   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2016-01-15T16:30:51.000000 | -               |
-| 19 | nova-conductor   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2016-01-15T16:30:53.000000 | -               |
-| 22 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:53.000000 | -               |
-| 25 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
-| 28 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2016-01-15T16:30:52.000000 | -               |
-<b>| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | down  | 2016-01-15T16:30:47.000000 | -               |</b>
-+----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
-      </ol>
-      <p>If you do not have access to the lifecycle manager, use these steps. You will need to
-        modify the monitoring service manually if you wish to remove alarms related to the Compute
-        nodes.</p>
-      <ol>
-        <li>SSH to the Compute host you want to stop the nova-compute service on.</li>
-        <li>Use this command to stop the service:
-          <codeblock>systemctl stop nova-compute</codeblock></li>
+| 1  | nova-conductor   | helion-cp1-c1-m1-mgmt    | internal | enabled | down  | 2016-01-15T16:30:50.000000 | -               |
+| 7  | nova-scheduler   | helion-cp1-c1-m1-mgmt    | internal | enabled | down  | 2016-01-15T16:30:50.000000 | -               |
+| 10 | nova-conductor   | helion-cp1-c1-m3-mgmt    | internal | enabled | down  | 2016-01-15T16:30:51.000000 | -               |
+| 19 | nova-conductor   | helion-cp1-c1-m2-mgmt    | internal | enabled | down  | 2016-01-15T16:30:53.000000 | -               |
+| 22 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled | down  | 2016-01-15T16:30:53.000000 | -               |
+| 25 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled | down  | 2016-01-15T16:30:50.000000 | -               |
+| 28 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled | down  | 2016-01-15T16:30:52.000000 | -               |
+| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | down  | 2016-01-15T16:30:47.000000 | -               |
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock>
+          <note>It will usually take ~60 seconds for the service states to update.</note></li>
       </ol>
       <p><b>Starting the nova-compute Service</b></p>
       <p>If you have access to the lifecycle manager, you can use the ansible playbook instructions
