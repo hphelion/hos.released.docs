@@ -18,6 +18,8 @@
             Services</xref></li>
         <li><xref href="start_stop_services.dita#stopStartSvcs/start_compute_all">Starting All Nova
             Services</xref></li>
+        <li><xref href="start_stop_services.dita#stopStartSvcs/start_stop_compute_one">Starting or
+            Stopping a Specific Nova Service</xref></li>
       </ul>
     </section>
     <section id="stop_compute_all">
@@ -51,6 +53,7 @@ nova service-list
           <note>It will usually take ~60 seconds for the service states to update.</note></li>
       </ol>
     </section>
+
     <section id="start_compute_all">
       <title>Starting All Nova Services</title>
       <p>If you have access to the lifecycle manager, you can use the ansible playbook instructions
@@ -82,6 +85,41 @@ nova service-list
 +----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
       </ol>
     </section>
+
+    <section id="start_stop_compute_one"><title>Starting or Stopping a Specific Nova Service</title>
+      <p>If you do not have access to the lifecycle manager in your cloud environment or if you only
+        need to stop a single Nova service then this is the process you should follow.</p>
+      <ol>
+        <li>You can list out your Nova services showing the host they exist on and what their
+          current state is by using the following command with admin credentials: <codeblock>nova service-list</codeblock>
+          <p>Here is an example showing an environment with three controller nodes and a single
+            Compute node:
+            <codeblock>nova service-list
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
+| Id | Binary           | Host                     | Zone     | Status  | State | Updated_at                 | Disabled Reason |
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
+| 1  | nova-conductor   | helion-cp1-c1-m1-mgmt    | internal | enabled | down  | 2016-01-15T16:30:50.000000 | -               |
+| 7  | nova-scheduler   | helion-cp1-c1-m1-mgmt    | internal | enabled | down  | 2016-01-15T16:30:50.000000 | -               |
+| 10 | nova-conductor   | helion-cp1-c1-m3-mgmt    | internal | enabled | down  | 2016-01-15T16:30:51.000000 | -               |
+| 19 | nova-conductor   | helion-cp1-c1-m2-mgmt    | internal | enabled | down  | 2016-01-15T16:30:53.000000 | -               |
+| 22 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled | down  | 2016-01-15T16:30:53.000000 | -               |
+| 25 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled | down  | 2016-01-15T16:30:50.000000 | -               |
+| 28 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled | down  | 2016-01-15T16:30:52.000000 | -               |
+| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | down  | 2016-01-15T16:30:47.000000 | -               |
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></p></li>
+        <li>SSH to the host that the service you want to stop exists on.</li>
+        <li>Use this command to stop that service: <codeblock>systemctl stop &lt;service-name></codeblock>
+          <p>For example, for the <codeph>nova-compute</codeph> service you would SSH to the
+              <codeph>helion-cp1-comp0001-mgmt</codeph> host and use this command:
+            <codeblock>systemctl stop nova-compute</codeblock></p></li>
+        <li>Use this command to start that service: <codeblock>systemctl start &lt;service-name></codeblock>
+          <p>For example, for the <codeph>nova-compute</codeph> service you would SSH to the
+              <codeph>helion-cp1-comp0001-mgmt</codeph> host and use this command:
+            <codeblock>systemctl start nova-compute</codeblock></p></li>
+      </ol>
+    </section>
+
+
 
 
     <p><b>Starting and stopping Freezer</b></p>
