@@ -8,16 +8,19 @@
       <title>Nova Compute Services</title>
       <p>When troubleshooting issues with the Compute service you may have a need to stop or start
         one or all of the Nova services.</p>
-      <p><ph conkeyref="HOS-conrefs/product-title"/> provides an ansible playbook that can stop or
-        start all Nova services on one or more nodes. This may be useful in some scenarios. However,
-        it may also be necessary sometimes to stop or start only one specific Nova service on one or
-        more nodes so we will show you that process as well.</p>
+      <p>HPE Helion OpenStack provides an ansible playbook that can stop or start all Nova services
+        on one or more nodes that can be run from the lifecycle manager. This may be useful in some
+        scenarios. However, if you do not have access to the lifecycle manager or if it is necessary
+        to stop or start only one specific Nova service on one or more nodes we will show you that
+        process as well.</p>
       <ul>
-        <li><xref href="start_stop_services.dita#stopStartSvcs/compute_all">Stopping All Nova
+        <li><xref href="start_stop_services.dita#stopStartSvcs/stop_compute_all">Stopping All Nova
+            Services</xref></li>
+        <li><xref href="start_stop_services.dita#stopStartSvcs/start_compute_all">Starting All Nova
             Services</xref></li>
       </ul>
     </section>
-    <section id="compute_all">
+    <section id="stop_compute_all">
       <title>Stopping All Nova Services</title>
       <p>If you have access to the lifecycle manager, you can use the ansible playbook instructions
         below. Using this method has the added benefit of modifying the monitoring (Monasca) service
@@ -47,21 +50,22 @@ nova service-list
 +----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock>
           <note>It will usually take ~60 seconds for the service states to update.</note></li>
       </ol>
-      <p><b>Starting the nova-compute Service</b></p>
+    </section>
+    <section id="start_compute_all">
+      <title>Starting All Nova Services</title>
       <p>If you have access to the lifecycle manager, you can use the ansible playbook instructions
         below. Using this method has the added benefit of modifying the monitoring (Monasca) service
-        to add the alarms for the effected nodes. If you do not have access to the lifecycle manager
-        then you will need to skip down to the next section.</p>
+        to add the alarms for the effected nodes.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Start the nova-compute service: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock>
-          <p>If you need to determine what the hostname is for your Compute node you can use
-              <codeph>nova host-list</codeph> to get a full list:
-            <codeblock>source ~/service.osrc
-nova host-list</codeblock></p></li>
-        <li>You can then confirm it is back up by using the <codeph>nova service-list</codeph>
-          command:
+ansible-playbook -i hosts/verb_hosts nova-start.yml</codeblock>
+          <p>If you specify the <codeph> --limit &lt;hostname></codeph> option at the end of the
+            ansible-playbook command then you will only target the specific hosts in your
+            environment that you specify and thus only the Nova services that live on that host will
+            be started.</p></li>
+        <li>You can then confirm the services are back up by using the <codeph>nova
+            service-list</codeph> command:
           <codeblock>source ~/service.osrc
 nova service-list
 +----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
@@ -74,16 +78,8 @@ nova service-list
 | 22 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2016-01-15T16:30:53.000000 | -               |
 | 25 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2016-01-15T16:30:50.000000 | -               |
 | 28 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2016-01-15T16:30:52.000000 | -               |
-<b>| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | up    | 2016-01-15T16:30:47.000000 | -               |</b>
+| 31 | nova-compute     | helion-cp1-comp0001-mgmt | nova     | enabled | up    | 2016-01-15T16:30:47.000000 | -               |
 +----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
-      </ol>
-      <p>If you do not have access to the lifecycle manager, use these steps. You will need to
-        modify the monitoring service manually if you wish to add alarms related to the Compute
-        nodes.</p>
-      <ol>
-        <li>SSH to the Compute host you want to start the nova-compute service on.</li>
-        <li>Use this command to start the service:
-          <codeblock>systemctl start nova-compute</codeblock></li>
       </ol>
     </section>
 
