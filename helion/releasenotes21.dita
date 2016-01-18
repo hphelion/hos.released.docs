@@ -335,7 +335,39 @@ sudo service neutron-vpn-agent restart
             
             <p><keyword keyref="kw-hos-phrase-21"/> does not support InstanceResourceQuota in Nova.</p>
             
+
+            <!--  https://jira.hpcloud.net/browse/DOCS-2438 -->
+            <p id="DOCS-2438"><b>Deployer disaster recovery can fail without warning</b></p> 
             
+            <p> A silent failure can occur when following the instructions for 
+                <xref href="bura/cloud_control_plane_recovery.dita#topic_tb4_lqy_qt__deployer">
+                Deployer Disaster Recovery</xref> in the 
+                <xref href="bura/cloud_control_plane_recovery.dita">Recovering the Cloud Control Plane</xref> procedure.
+            
+            </p>
+            
+            <p>This can be resolved by removing the <codeph>/home/stack</codeph> directory before starting the procedure. 
+                Alternatively, you can configure the restore to use a separate directory by creating a config file:
+                
+<codeblock>
+[defaults]
+log_file = /var/log/freezer-agent/freezer-agent.log
+container = freezer_deployer_backup
+restore_abs_path = <b>/tmp/test_restore/</b>
+backup_name = freezer_deployer_backup
+action = restore
+restore_from_host = hlm101-cp1-core-m1-mgmt                
+</codeblock>
+
+              If you have named the config file <codeph>backup.ini</codeph>, then you can configure the backup agent to 
+                use it as follows:
+<codeblock>
+freezer-agent --config backup.ini        
+</codeblock>
+                
+            </p>
+            
+
         </section>
         
     </body>
