@@ -46,7 +46,16 @@
       <p>Cloud administrators can perform a live migration on an instance using either the Horizon
         dashboard, API, or CLI. The instance must be in an <codeph>Active</codeph> or
           <codeph>Paused</codeph> status prior and during the live migration.</p>
-      <p><b>Using Horizon</b></p>
+      <ul>
+        <li><xref href="live_migration.dita#liveInstMigration/single_horizon">Single Instance Live
+            Migration using Horizon</xref></li>
+        <li><xref href="live_migration.dita#liveInstMigration/single_cli">Single Instance Live
+            Migration using the NovaClient CLI</xref></li>
+        <li><xref href="live_migration.dita#liveInstMigration/multi">Multiple Instance Live
+            Migration using the NovaClient CLI</xref></li>
+      </ul>
+    </section>
+    <section id="single_horizon"><title>Single Instance Live Migration using Horizon</title>
       <p>The Horizon dashboard offers a GUI method for performing live migrations. Instances in a
           <codeph>Paused</codeph> state will not provide you the live migration option in Horizon so
         you will need to use the CLI instructions in the next section to perform these.</p>
@@ -72,7 +81,8 @@
           <p><image href="../../media/hos.docs/livemigration2.png"/></p></li>
         <li>Select the <b>Live Migrate Instance</b> button to begin your live migration.</li>
       </ol>
-      <p><b>Using the NovaClient CLI</b></p>
+    </section>
+    <section id="single_cli"><title>Single Instance Live Migration using the NovaClient CLI</title>
       <p>For command-line access you can utilize the NovaClient to perform live migrations. The
         lifecycle manager node in your cloud environment should have the NovaClient already
         installed. If you will be accessing your environment through a different method you will
@@ -124,6 +134,30 @@ Optional arguments:
           <note>The [&lt;target compute host&gt;] option is optional. If you do not specify a target
             host then the nova scheduler will choose a node for you.</note>
         </li>
+      </ol>
+    </section>
+    <section id="multi"><title>Multiple Instance Live Migration using the NovaCLient CLI</title>
+      <p>If you want to live migrate all of the instances off a single Compute host you can utilize
+        the <codeph>nova host-evacuate-live</codeph> command.</p>
+      <ol>
+        <li>Using admin credentials, determine the hostname of the Compute host you wish to live
+          migrate. <p>You can determing the hostname by getting a list of instances using this
+            command:</p>
+          <codeblock>nova list --all-tenants --fields=name,status,task_state,host,flavor</codeblock></li>
+        <li>You will want to ensure that all of the instances on the host are in either
+            <codeph>Active</codeph> or <codeph>Paused</codeph> state:
+          <codeblock>nova list --all-tenants --host &lt;hostname></codeblock></li>
+        <li>Issue the host-evacuate-live command, which will begin the live migration process. <p>If
+            your instance is booted from a block storage volume or has any number of block storage
+            volumes attached, use this syntax:</p>
+          <codeblock>nova host-evacuate-live &lt;hostname></codeblock>
+          <p>If your instance has local (ephemeral) disk(s) only, you should use this syntax:</p>
+          <codeblock>nova host-evacuate-live --block-migrate &lt;hostname></codeblock>
+          <note>You can either let the nova-scheduler choose a suitable target host or you can
+            specify one using the <codeph>--target-host &lt;hostname> </codeph> switch. See
+              <codeph>nova help host-evacuate-live</codeph> for details.</note></li>
+        <li>You can then monitor the migrations by using the command below:
+          <codeblock>nova list --all-tenants --fields=name,status,task_state,host,flavor</codeblock></li>
       </ol>
     </section>
   </body>
