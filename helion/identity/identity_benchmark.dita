@@ -10,14 +10,14 @@
       provide a reference for HPE Helion OpenStack Keystone users to know how the system performs in
       terms of responsiveness under a particular environment and workload. For HPE Helion OpenStack
       Keystone, there are several major operations where performance is critical: token creation,
-      token validation, as well as user lookup when a LDAP backend is applied. The rest of
-      operations may occur less frequently. Therefore, this report would focus on the analysis and
-      benchmark for these three items. </section>
-    <section id="testEnv"><title>Performance Test Environment</title> Server Models and
-      Specification Ideally performance test environment should be an exact replica of the
-      production system but it’s not always possible due to its associated cost, time and
-      challenges. For this performance test, HP KS-PERF, as described in Table 1, has been
-      established using 7-node DL360 Gen9 baremetal servers. </section>
+      token validation, and user lookup when a LDAP backend is applied. Because other operations may
+      be performed less frequently, we focus on the analysis and benchmark for these three items. </section>
+    <section id="testEnv"><title>Performance Test Environment</title>
+      <b>Server Models and Specification</b></section>
+    <section> Ideally, the performance test environment should be an exact replica of the production
+      system but it’s not always possible due to its associated cost, time and challenges. For this
+      performance test, HP KS-PERF, as described in Table 1, has been established using 7-node DL360
+      Gen9 baremetal servers. </section>
     <simpletable frame="all" relcolwidth="1.0* 1.0* 1.0* 1.0* 1.0* 1.0*" id="simpletable_cts_tcm_25">
       <sthead>
         <stentry>Server</stentry>
@@ -25,7 +25,7 @@
         <stentry>Model</stentry>
         <stentry>Specification</stentry>
         <stentry>Operating System</stentry>
-        <stentry>Softrware Versions</stentry>
+        <stentry>Software Versions</stentry>
       </sthead>
       <strow>
         <stentry>
@@ -73,14 +73,14 @@
       </strow>
     </simpletable>
     <section>Table 1 Server specifications for performance test </section>
-    <section id="Keystone-LDAP"><title>Keystone-LDAP</title> For the test cases with domain specific
-      LDAP backend, an OpenLDAP server employed, as described in Table 1, there are four LDAP
-      domains (i.e. openldap50, openldap5k, openldap50k and openldap500k) carrying different amount
-      of users (i.e. 50, 5k, 50k and 500k) respectively, as depicted in Figure 1 and Table 2. For
-      the test cases with domain specific LDAP backend, an OpenLDAP server employed, as described in
-      Table 1, there are four LDAP domains (i.e. openldap50, openldap5k, openldap50k and
-      openldap500k) carrying different amount of users (i.e. 50, 5k, 50k and 500k) respectively, as
-      depicted in Figure 1 and Table 2. <image
+    <section id="Keystone-LDAP"><title>Keystone-LDAP</title> <p>For the test cases with a
+      domain-specific LDAP back end, and an OpenLDAP server  employed, as described in Table 1,
+      there are four LDAP domains (i.e. openldap50, openldap5k, openldap50k and openldap500k) with
+      different numbers of users (i.e. 50, 5k, 50k and 500k) respectively, as depicted in Figure 1
+      and Table 2. For the test cases with a domain-specific LDAP back end, and an OpenLDAP server
+      employed, as described in Table 1, there are four LDAP domains (i.e. openldap50, openldap5k,
+      openldap50k and openldap500k) with different numbers of users (i.e. 50, 5k, 50k and 500k)
+      respectively, as depicted in Figure 1 and Table 2.</p> <image
         href="../../media/keystone/HOSKeystoneDomain-SpecificBackend.png" id="image_eht_kcm_25"/>
       <p>Figure 1 LDAP users and groups for Keystone domains</p>
       <simpletable frame="all" relcolwidth="1.0* 1.0* 1.0* 1.0* 1.0*" id="simpletable_ths_xdm_25">
@@ -166,14 +166,14 @@
 
     <section id="cache_mech"><title>Cache Mechanism</title> Keystone supports a caching layer that
       is above the configurable subsystems (e.g. token, identity, etc). HPE Helion OpenStack
-      Keystone uses the dogpile.cache library allowing for flexible cache backends. The majority of
-      the caching configuration options are set in the [cache] section. However, each section that
-      has the capability to be cached usually has a caching boolean value that will toggle caching
-      for that specific section. For the performance test cases with cached on, the subsystem and
-      the global toggle setting are enabled and dogpile.cache.memory is employed for this study as
-      configured below: Please be adviced that dogpile.cache.memory is an experimental cache
-      provider and is not ready ready for production level application. <ul>
-        <li>Edit etc/keystone.conf with the "[caching]" section shown below
+      Keystone uses the dogpile.cache library, allowing for flexible cache back ends. The majority
+      of the caching configuration options are set in the [cache] section. However, each section
+      that has the ability to be cached usually has a caching boolean value that will toggle caching
+      for that specific section. For the performance test cases with caching turned on, the
+      subsystem and the global toggle setting are enabled and dogpile.cache.memory is employed for
+      this study as configured below. Please be advised that dogpile.cache.memory is an experimental
+      cache provider and is not ready for production-level applications. <ol>
+        <li>To begn, edit <codeph>etc/keystone.conf</codeph> with the [cache] section shown below
           <codeblock>[cache]
 # enable caching across all of keystone
 enabled = true
@@ -181,7 +181,7 @@ enabled = true
 # use in-memory cache
 backend = dogpile.cache.memory</codeblock>
         </li>
-        <li>Verify subsystem caching enabled
+        <li>Verify that subsystem caching is enabled
           <codeblock>[catalog]
 caching = true
   
@@ -204,10 +204,10 @@ caching = true
 caching = true</codeblock>
         </li>
         <li>Restart Apache2 for the update to take effect.</li>
-      </ul> Additional Note: For concurrent test cases with label 1K2P17U, it represents test
-      conditions with 1 Keystone node, 2 processes configured in Apache2 and 17 concurrent users.
-      Similarly, 3K2P50U 3 Keystone nodes, 2 processes configured in Apache2 and 50 concurrent
-      users. where <ul>
+      </ol> Additional Note: Concurrent test cases with the label 1K2P17U represent test conditions
+      with one Keystone node, two processes configured in Apache2 and 17 concurrent users.
+      Similarly, 3K2P50U has three Keystone nodes, two processes configured in Apache2 and 50
+      concurrent users. <ul>
         <li>K represents number of Keystone nodes</li>
         <li>P represents number of processes configured in Apache2 sever</li>
         <li>U represents number of concurrent users</li>
@@ -215,82 +215,86 @@ caching = true</codeblock>
     </section>
     <section id="domain_spec_back_end"><title>HPE Helion OpenStack 2.0 with domain-specific LDAP
         back end</title>
-        <p><b>LDAP user lookup performance - HPE Helion OpenStack 2.0 Keystone user lookup performance
-      </b></p> Figure 2.a - 2.c represents the performance on non-concurrent LDAP User lookup by name
-      for HPE Helion OpenStack. The study for the Keystone-LDAP query efficiency skip authorization
-      process using an admin token. A baseline test using direct LDAP client (i.e. ldapserach) is
-      also performed for comparison. <ul>
-        <li>Generally, larger LDAP users for a domain results in higher query response time for a
+      <p><b>LDAP user lookup performance - HPE Helion OpenStack 2.0 Keystone user lookup performance
+        </b></p> Figures 2.a through 2.c represent the performance on non-concurrent LDAP user
+      lookup by name for HPE Helion OpenStack. The study for the Keystone-LDAP query efficiency
+      skips the authorization process by using an admin token. A baseline test using a direct LDAP
+      client (i.e. ldapserach) is also performed for comparison. <ul>
+        <li>Generally, having more LDAP users per domain results in higher query response time for a
           domain user lookup.</li>
-        <li>The response times grow roughly linearly with amount of domain users in LDAP, as shown
-          in Figure 2.b and Figure 2.c. The responsiveness slopes for HPE Helion OpenStack 2.0 is
-          much lower HPE Helion OpenStack 1.1.1.</li>
-        <li>HPE Helion OpenStack 2.0 behaves 10 up to several thousand times better than HPE Helion
-          OpenStack 1.1.1 for LDAP user lookup operations, especially for large LDAP users (e.g.
-          500k users) cases.</li>
+        <li>The response times grow roughly linearly with the number of domain users in LDAP, as
+          shown in Figures 2.b and Figure 2.c. The response time slope for HPE Helion OpenStack 2.0
+          is much flatter than for HPE Helion OpenStack 1.1.1.</li>
+        <li>HPE Helion OpenStack 2.0 behaves between 10 and several thousand times better than HPE
+          Helion OpenStack 1.1.1 for LDAP user lookup operations, especially for large LDAP users
+          (e.g. 500k users) cases.</li>
       </ul>
       <image placement="break" href="../../media/keystone/Non-ConcurrentLDAPUserLookup_bars.png"
         id="image_rs1_5fv_q5" align="" outputclass=""/>
       <p>Figure 2.a Non-Concurrent LDAP User lookup by name</p><image placement="break"
         href="../../media/keystone/Non-ConcurrentLdapUserLookup_lines.png" id="image_srj_zfv_q5"/>
       <p>Figure 2.b Non-Concurrent LDAP User lookup by name</p>
-    </section>
+      <image placement="break"
+        href="../../media/keystone/Non-ConcurrentLdapUserLookup_base_lines.png"
+        id="image_v5f_kjh_r5"/>
+      <p>Figure 2.c Non-concurrent LDAP user lookup by name </p></section>
 
 <section>
-<p><b>Concurrency Impact on HPE Helion OpenStack 2.0 Keystone</b></p> Figures 3.a and 3.b represent
-      HPE Helion OpenStack 2.0 LDAP user lookup with concurrent conditions. <ul>
-        <li>The response times grow roughly linearly with amount of domain users in LDAP even under
-          concurrent conditions, as shown in Figure 3.b, but responsiveness slopes vary for
+      <p><b>LDAP user lookup performance - concurrency impact on HPE Helion OpenStack 2.0
+          Keystone</b></p> Figures 3.a and 3.b represent HPE Helion OpenStack 2.0 LDAP user lookup
+      under concurrent conditions. <ul>
+        <li>The response times grow roughly linearly with the number of domain users in LDAP even
+          under concurrent conditions, as shown in Figure 3.b, but response time  slopes vary for
           different race conditions. </li>
-        <li>Compared with baseline non-concurrent LDAP user lookup for a specific amount of LDAP
-          users, the response time grows higher for cases with concurrent conditions by factor of
-          5-10. While increasing numbers of concurrent users from 17 to 50 and Keystone nodes from 1
-          to 3 with the same average load per Keystone node (e.g. 50/3 ~ 17), the response time
-          grows much higher by another factor of 2 to 3 for the case of half-million LDAP users.
-          This shows the race conditions have caused quite a bit impact on the efficiency for the
-          servers (e.g. Keystone, Apache2, Keystone, and LDAP) leading toward slow responsiveness.
+        <li>Compared with baseline non-concurrent LDAP user lookup for a specific number of LDAP
+          users, the response time increases for cases with concurrent conditions by a factor of 5
+          to 10. When increasing the number of concurrent users from 17 to 50 and Keystone nodes
+          from 1 to 3 with the same average load per Keystone node (e.g. 50/3 ~ 17), the response
+          time grows much higher by another factor of 2 to 3 for the case of .5 million LDAP users.
+          This shows that race conditions have caused quite a large impact on the efficiency of the
+          servers (e.g. Keystone, Apache2, Keystone, and LDAP) leading to poorer responsiveness.
         </li>
       </ul>
       <image placement="break" href="../../media/keystone/HOS2_LdapUserLookup_bars.png"
         id="image_mrq_xtb_r5"/>
-      <p>Figure 3.a LDAP User lookup by name for HPE Helion OpenStack 2.0 with concurrent
+      <p>Figure 3.a LDAP User lookup by name for HPE Helion OpenStack 2.0 under concurrent
         conditions</p>
       <image href="../../media/keystone/HOS2_LdapUserLookup_lines.png" id="image_ggk_15b_r5"/>
       <p>Figure 3.b LDAP User lookup by name for HPE Helion OpenStack 2.0 with concurrent
         conditions</p>
     </section>
     <section><title>Create project-scoped token</title>
-    <p><b>Keystone performance on project-scoped token creation</b></p> The following figures represent
-      performance on project scoped token creation for a single Keystone node without concurrent
-      conditions. <ul>
-        <li>The response times for project scoped token creation grow roughly linearly with amount
-          of domain users in LDAP, as shown in Figure 4.b, but responsiveness slopes vary for HPE
-          Helion OpenStack versions and cached conditions. </li>
-        <li>For non-cached cases of project scoped token creation , HPE Helion OpenStack 2.0
-          performs slightly better than the HPE Helion OpenStack1.1.1 within 5%. </li>
-        <li>With the cache mechanism activated for the single Keystone node, the system observes
-          obvious improvement on responsiveness for all cases of project scoped token creation,
+      <p><b>Keystone performance on project-scoped token creation</b></p> Figures 4.a and 4.b
+      represent performance on project-scoped token creation for a single Keystone node without
+      concurrent conditions. <ul>
+        <li>The response times for project-scoped token creation grow roughly linearly with the
+          number of domain users in LDAP, as shown in Figure 4.b, but response time slopes vary for
+          HPE Helion OpenStack versions and cached conditions. </li>
+        <li>For non-cached cases of project-scoped token creation , HPE Helion OpenStack 2.0
+          performs slightly better than HPE Helion OpenStack1.1.1 within 5%. </li>
+        <li>With the cache mechanism activated for the single Keystone node, the system shows
+          obvious improvement in responsiveness for all cases of project-scoped token creation,
           especially the cases for HPE Helion OpenStack 2.0 (see further detail in Figure 6.b).
         </li>
       </ul>
       <image href="../../media/keystone/CPST_Nonconcurrent_barrs.png" id="image_bzm_c3v_q5"
         placement="break"/>
-      <p>Figure 4.a Performance on project scoped token creation for a single Keystone node without
+      <p>Figure 4.a Performance on project-scoped token creation for a single Keystone node without
         concurrency</p>
       <image href="../../media/keystone/CPST_Nonconcurrent_lines.png" id="image_irn_f3v_q5"
         placement="break"/>
-      <p>Figure 4.b Performance on project scoped token creation for a single Keystone node without
+      <p>Figure 4.b Performance on project-scoped token creation for a single Keystone node without
         concurrency</p>
-      <p>The following figures represent performance on project-scoped token creation with
+      <p>Figures 5.a and 5.b below represent performance on project-scoped token creation under
         concurrent conditions.</p>
       <ul>
         <li>The response times for a single Keystone node with concurrency grow roughly linearly
-          with amount of domain users in LDAP, as shown in Figure 5.b, but responsiveness slopes
+          with the number of domain users in LDAP, as shown in Figure 5.b, but response time slopes
           vary for HPE Helion OpenStack versions and and cached conditions. </li>
-        <li>For non-cached cases of project scoped token creation , HPE Helion OpenStack 2.0
-          performs slightly better than the HPE Helion OpenStack1.1.1 within 5%. </li>
+        <li>For non-cached cases of project-scoped token creation, HPE Helion OpenStack 2.0 performs
+          slightly better than HPE Helion OpenStack1.1.1&#151;within 5%. </li>
         <li>With the cache mechanism activated for the single Keystone node, the system observes
-          obvious improvement on responsiveness for all cases of project scoped token creation. The
+          obvious improvement on responsiveness for all cases of project-scoped token creation. The
           improvement by cache for HPE Helion OpenStack 2.0 is even bigger than HPE Helion OpenStack
           1.1.1 (see further detail in Figure 6.b and percentage Figure 6.a and 6.b). </li>
       </ul>
@@ -305,12 +309,12 @@ caching = true</codeblock>
         creation for a single Keystone node with non-concurrent condition and 17 concurrent users
         condition.</p><ul>
         <li>With the cache mechanism activated for the single Keystone node, the system observes
-          obvious improvement on responsiveness for all cases of project scoped token creation. </li>
-        <li>The improvement for non-concurrent HPE Helion OpenStack 2.0 project scoped token
+          obvious improvement on responsiveness for all cases of project-scoped token creation. </li>
+        <li>The improvement for non-concurrent HPE Helion OpenStack 2.0 project-scoped token
           creation for a single Keystone node is about 45% and concurrent HPE Helion OpenStack 2.0
           about 40%. The improvement percentages stay stable for cases of different amount of LDAP
           users. </li>
-        <li>The improvement for non-concurrent HPE Helion OpenStack 1.1.1 project scoped token
+        <li>The improvement for non-concurrent HPE Helion OpenStack 1.1.1 project-scoped token
           creation for a single Keystone node is about 15%- 30% and concurrent HPE Helion OpenStack
           1.1.1 about 20%-28%. The improvement percentages get lower for cases of larger amount of
           LDAP users. </li>
@@ -325,12 +329,12 @@ caching = true</codeblock>
         (Concurrency cases based on 1K2P17U)</p>
       <p><b>Concurrency Impact on HPE Helion OpenStack 2.0 Keystone</b></p>
       <p>The following figures represent concurrency impact on HPE Helion OpenStack 2.0 performance
-        for project scoped token creation.</p>
+        for project-scoped token creation.</p>
       <ul>
-        <li>The response times grow roughly linearly with amount of domain users in LDAP for all
-          test cases here, as shown in Figure 7.b, but responsiveness slopes vary for different race
+        <li>The response times grow roughly linearly with the number of domain users in LDAP for all
+          test cases here, as shown in Figure 7.b, but response time slopes vary for different race
           and cached conditions. </li>
-        <li>Compared with the baseline non-cached non-concurrent project scoped token creation for a
+        <li>Compared with the baseline non-cached non-concurrent project-scoped token creation for a
           specific amount of LDAP users, the response time is getting much higher for cases with
           concurrent conditions by factor of 10. While increase numbers of concurrent users from 17
           to 50 and Keystone nodes from 1 to 3 with about the same average load (i.e. 50/3 ~ 17) per
@@ -340,8 +344,8 @@ caching = true</codeblock>
           efficiency of the servers (e.g. Apache2, Keystone, and LDAP) for the case of half-million
           LDAP users. </li>
         <li>Turning on the cache mechanism within Keystone nodes, the system observes obvious
-          improvement on responsiveness for all cases of project scoped token creation. </li>
-        <li>The improvement by cache for HPE Helion OpenStack 2.0 project scoped token creation with
+          improvement on responsiveness for all cases of project-scoped token creation. </li>
+        <li>The improvement by cache for HPE Helion OpenStack 2.0 project-scoped token creation with
           either 17 or 50 con-concurrent users is about 40%. The improvement percentages stay stable
           for cases of different amount of LDAP users. </li>
       </ul>
@@ -351,9 +355,8 @@ caching = true</codeblock>
         href="../../media/keystone/HOS2_CPST_KPU_lines.png" id="image_wk4_wqb_r5"/>
       <p>Figure 7.b Concurrency impact on Keystone under cached and non-cached conditions</p>
     </section>
-    <section><title>Summary</title> Below is a summary of th performance improvements for LDAP user
-      lookups and creating project-scoped tokens.
-      <p><b>LDAP User Lookup</b></p>
+    <section><title>Summary</title> Below is a summary of the performance improvements for LDAP user
+      lookups and creating project-scoped tokens. <p><b>LDAP User Lookup</b></p>
       <ul>
         <li>Generally, larger LDAP users for a domain results in higher query response time for a
           domain user lookup in a linear relationship with slopes varied, no matter concurrency or
@@ -370,31 +373,32 @@ caching = true</codeblock>
           servers (e.g. Keystone, Apache2, Keystone, and LDAP) leading toward slow responsiveness.
         </li>
       </ul>
-      <p><b>Create Project Scoped Token</b></p>
+      <p><b>Create project-scoped Token</b></p>
       <ul>
-        <li>The response times for project scoped token creation grow roughly linearly with amount
-          of domain users in LDAP, but responsiveness slopes vary for HPE Helion OpenStack versions
-          and cached conditions, , no matter concurrency or non-concurrency is involved. </li>
+        <li>The response times for project-scoped token creation grow roughly linearly with the
+          number of domain users in LDAP, but response time slopes vary for HPE Helion OpenStack
+          versions and cached conditions, regardless of whether concurrency or non-concurrency is
+          involved. </li>
         <li>HPE Helion OpenStack 2.0 performs slightly better than the HPE Helion OpenStack1.1.1
-          within 5% for project scoped token creation. </li>
+          within 5% for project-scoped token creation. </li>
         <li>With the cache mechanism activated for the single Keystone node without concurrency, the
-          system observes obvious improvement on responsiveness for project scoped token creation. <ul>
-            <li>The improvement for non-concurrent HPE Helion OpenStack 2.0 project scoped token
+          system observes obvious improvement on responsiveness for project-scoped token creation. <ul>
+            <li>The improvement for non-concurrent HPE Helion OpenStack 2.0 project-scoped token
               creation for a single Keystone node is about 45% and concurrent HPE Helion OpenStack
               2.0 about 40%. The improvement percentages stay stable for cases of different amount
               of LDAP users. </li>
-            <li>The improvement for non-concurrent HPE Helion OpenStack 1.1.1 project scoped token
+            <li>The improvement for non-concurrent HPE Helion OpenStack 1.1.1 project-scoped token
               creation for a single Keystone node is about 15%- 30% and concurrent HPE Helion
               OpenStack 1.1.1 about 20%-28%. The improvement percentages get lower for cases of
               larger amount of LDAP user </li>
           </ul></li>
         <li>With the cache mechanism activated for the single Keystone node with concurrency, the
-          system observes obvious improvement on responsiveness for project scoped token creation. <ul>
-            <li>The improvement by cache for HPE Helion OpenStack 2.0 project scoped token creation
+          system observes obvious improvement on responsiveness for project-scoped token creation. <ul>
+            <li>The improvement by cache for HPE Helion OpenStack 2.0 project-scoped token creation
               with either 17 or 50 concurrent users is about 40%. The improvement percentages stay
               stable for cases of different amount of LDAP users. </li>
           </ul></li>
-        <li>Compared with the baseline non-cached non-concurrent project scoped token creation for a
+        <li>Compared with the baseline non-cached non-concurrent project-scoped token creation for a
           specific amount of LDAP users, the response times get much higher for cases with
           concurrent conditions by factor of 10. While increase numbers of concurrent users from 17
           to 50 and Keystone nodes from 1 to 3 with about the same average load (i.e. 50/3 ~ 17) per
