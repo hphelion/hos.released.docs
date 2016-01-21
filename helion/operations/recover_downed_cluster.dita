@@ -25,16 +25,16 @@
     </section>
 
     <section id="prereqs"><title>Prerequisites</title>
-      <p>You must be able to power on all of the control nodes before continuing.</p>
+      <p>You must be able to power on all of the controller nodes before continuing.</p>
     </section>
 
     <section id="mysql"><title>Recovering the MySQL Database</title>
-      <p>You will need to power on all of the control planes before bootstrapping the MySQL cluster.
-        To bootstrap a downed MySQL cluster, you will need to discover the last node to go down and
-        run bootstrap on that node. Since the cluster didn't go down cleanly, you will need to SSH
-        into each control node and run the following commands to find the node with the highest
-        sequence number. When you find the node with the highest sequence number, you will need to
-        run the bootstrap on that node. </p>
+      <p>You will need to power on all of the controller nodes before bootstrapping the MySQL
+        cluster. To bootstrap a downed MySQL cluster, you will need to discover the last node to go
+        down and run bootstrap on that node. Since the cluster didn't go down cleanly, you will need
+        to SSH into each controller node and run the following commands to find the node with the
+        highest sequence number. When you find the node with the highest sequence number, you will
+        need to run the bootstrap on that node. </p>
       <ol>
         <li>SSH into each controller node and use the commands below to get the log sequence number: <codeblock>sudo /usr/bin/mysqld_safe --wsrep-recover
 sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1</codeblock>
@@ -74,8 +74,8 @@ sudo service mysql restart</codeblock>
       <p>These are the steps to check the health status of the database and should be run after all
         of your control plane nodes are up and running.</p>
       <ol>
-        <li>Log in to any of the control plane nodes and change to the root user by using
-            <codeph>sudo su</codeph>.</li>
+        <li>Log in to any of the controller nodes and change to the root user by using <codeph>sudo
+            su</codeph>.</li>
         <li>Check the status of the database using this command: <codeblock>su dbadmin -c '/opt/vertica/bin/admintools -t view_cluster -d mon'</codeblock>
           <p>You should see an output that looks like this below if it's up:
             <codeblock> DB  | Host | State
@@ -93,8 +93,8 @@ mon  | ALL  | UP</codeblock></p></li>
         the recovery steps.</p>
       <p>To shut an initializing node down, follow these steps:</p>
       <ol>
-        <li>Log in to any of the control plane nodes and change to the root user by using
-            <codeph>sudo su</codeph>.</li>
+        <li>Log in to any of the controller nodes and change to the root user by using <codeph>sudo
+            su</codeph>.</li>
         <li>Shut down the node using the command below. Note that the IP address you use here is
           going to be the IP address of the node that shows the database in an initializing state:
           <codeblock>su dbadmin -c '/opt/vertica/bin/admintools -t stop_node -s &lt;ip address of node to shutdown>'</codeblock></li>
@@ -105,8 +105,8 @@ mon  | ALL  | UP</codeblock></p></li>
         <li>Locate the Vertica admin password from the lifecycle manager node:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 grep dbadmin_user_password group_vars/*</codeblock></li>
-        <li>Log in to any of the control plane nodes and change to the root user by using
-            <codeph>sudo su</codeph>.</li>
+        <li>Log in to any of the controller nodes and change to the root user by using <codeph>sudo
+            su</codeph>.</li>
         <li>Restart the Vertica database using the command below. Specify your Vertica admin
           password in the command:
           <codeblock>su dbadmin -c '/opt/vertica/bin/admintools -t restart_db -d mon -e last -p &lt;vertica_admin_password>'</codeblock></li>
