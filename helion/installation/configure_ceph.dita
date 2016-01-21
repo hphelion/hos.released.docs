@@ -467,10 +467,16 @@ rbd_store_chunk_size = 8</codeblock></li>
               <codeblock>stores = {{ glance_stores }}
 default_store = {{ glance_default_store }}</codeblock></li>
           </ol>
-          <note type="important">If you have pre-existing images in your Glance repo you will need
-            to download those images locally prior to configuring Ceph as your Glance backend. After
-            you have finished the Ceph configuration then you will need to re-add those images
-            again.</note></li>
+        </li>
+        <li><b>IMPORTANT:</b> If you have pre-existing images in your Glance repo and want to use
+          exclusively Ceph as a backend, you will need to do the following steps prior to
+          configuring Ceph as your Glance backend: <ol>
+            <li>Snapshot or delete all Nova instances using those images.</li>
+            <li>Download the images locally that you want to save.</li>
+            <li>Delete all of the images from Glance.</li>
+          </ol>
+          <p>After you have finished the Ceph configuration you will need to re-add those
+            images.</p></li>
         <li>To enable attaching Ceph volumes to Nova provisioned instances, make the following
           changes to the <codeph>~/helion/my_cloud/config/nova/kvm-hypervisor.conf.j2</codeph> file: <ol>
             <li>Uncomment the Ceph backend lines and edit them as follows: <codeblock>[libvirt]
