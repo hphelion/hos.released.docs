@@ -126,7 +126,7 @@
         <li>Compute with KVM</li>
         <li>Nova Availability Zones</li>
         <li>Compute with ESX</li>
-        <li>Clock Storage with StoreVirtual VSA</li>
+        <li>Block Storage with StoreVirtual VSA</li>
         <li>Object Storage with Swift</li>
       </ul>
     </section>
@@ -157,11 +157,11 @@
         listens for requests on that VIP and port. When it receives a request, it selects one of the
         controller nodes configured for handling Nova requests, in this particular case, and then
         forwards the request to the IP of the selected controller node on the same port.</p>
-      <p>The nova-api service list, which is listening for requests on the IP of its host machine,
-        then receives the request and deals with it accordingly. The database service is also
-        accessed through the load balancer . RabbitMQ, on the other hand, is not currently accessed
-        through VIP/HA proxy as the clients are configured with the set of nodes in the RabbitMQ
-        cluster and failover between cluster nodes is automatically handled by the clients.</p>
+      <p>The nova-api service, which is listening for requests on the IP of its host machine, then
+        receives the request and deals with it accordingly. The database service is also accessed
+        through the load balancer. RabbitMQ, on the other hand, is not currently accessed through
+        VIP/HA proxy as the clients are configured with the set of nodes in the RabbitMQ cluster and
+        failover between cluster nodes is automatically handled by the clients.</p>
       <p>The sections below cover the following topics in detail:</p>
       <ul>
         <li><xref href="#HP2.0HA/api_request">API Request Message Flow</xref></li>
@@ -182,10 +182,10 @@
             list of available nodes (Controller0, Controller1, Controller2). The request is
             forwarded to the Controller0IP:8774</li>
           <li>nova-api on Controller0 receives the request and determines that a database change is
-            required. It connects to the database using VIP:</li>
+            required. It connects to the database using VIP:3306</li>
           <li>HA proxy (listening on VIP:3306) receives the database connection request and selects
-            Controller1 from the list of available nodes (Controller0, Controller1, Controller2).
-            The connection request is forwarded to Controller1IP:3306</li>
+            Controller0 from the list of available nodes (Controller0, Controller1, Controller2).
+            The connection request is forwarded to Controller0IP:3306</li>
         </ul>
       </sectiondiv>
       <sectiondiv>
@@ -194,7 +194,7 @@
         <p>Assume that the Controller0, which is currently in control of the VIP, is lost, as shown
           in the diagram below:</p>
         <p><image href="../../media/ha/ControlPlaneHA2.0_3.png" id="ControlPlane3"/></p>
-        <p>When this occurs, keepalived immediately moves the VIP on to the Controller1 and can now
+        <p>When this occurs, keepalived immediately moves the VIP on to Controller1 and can now
           receive API requests, which is load-balanced by HA proxy, as stated earlier.</p>
         <note>Although MySQL and RabbitMQ clusters have lost a node, they still continue to be
           operational:</note>
@@ -223,9 +223,9 @@
           that node from its pool for future database requests.</p>
       </sectiondiv>
       <sectiondiv id="singleton_services">
-        <p><b>Singletone Services</b></p>
+        <p><b>Singleton Services</b></p>
         <sectiondiv>
-          <p id="cinder_volume"><b>Cinder-Volume</b></p>
+          <p id="cinder_volume"><b>Cinder-Backup and Cinder-Volume</b></p>
           <p>Due to the single threading required in both cinder-volume and the drivers, the Cinder
             volume service is run as a singleton in the control plane. <image
               href="../../media/ha/ha-cinder-volume.png" id="CinderVolume"/></p>
