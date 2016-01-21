@@ -37,9 +37,14 @@
         images in your Glance repo you will want to download them locally prior to configuring Ceph
         as your backend. Once the Ceph configuration is complete you will then need to re-upload
         those to your Glance repo in order for those images to work.</p>
+      <p><b>For HPE Helion OpenStack 2.0 Only</b></p>
+      <p>While executing the <codeph>site.yml</codeph> playbook with the <codeph>--limit</codeph>
+        option, it is also expected to include the Ceph monitor nodes in the list of restricted
+        nodes if the cloud is deployed with a Ceph cluster.</p>
     </section>
 
     <section id="deployer"><title>Set Up the Lifecycle Manager as a Ceph Client</title>
+      <p><b>This section only applies to HPE Helion OpenStack 2.1</b></p>
       <p>If you have a separate lifecycle manager node or if you want to set up the lifecycle
         manager as a Ceph client, then the lifecycle manager node should have the Ceph client
         installed on it along with the necessary configuration and keyring files required to access
@@ -285,6 +290,19 @@ ansible-playbook -i hosts/verb_hosts ceph-client-prepare.yml</codeblock>
           execute the above playbook with the additon of the <codeph>--limit
             &lt;new-client-node&gt;</codeph> switch.</note>
       </p>
+      <p><b>For HPE Helion OpenStack 2.0 Only</b></p>
+      <p>After executing the <codeph>ceph-client-prepare.yml</codeph> playbook, copy the following
+        Ceph keyring files from the lifecycle manager node to the <codeph>/etc/ceph</codeph>
+        directory of all of the controller nodes:</p>
+      <codeblock>/etc/ceph/ceph.client.cinder-backup.keyring
+/etc/ceph/ceph.client.cinder.keyring
+/etc/ceph/ceph.client.glance.keyring
+/etc/ceph/client.cinder.key</codeblock>
+      <p>Also ensure that the files have <codeph>0644</codeph> permissions by executing the command
+        below for each of the files on each of the controller nodes:
+        <codeblock>chmod 0644 &lt;file path></codeblock></p>
+      <p>For example:</p>
+      <codeblock>chmod 0644 /etc/ceph/ceph.client.cinder-backup.keyring</codeblock>
       <p><b>Ceph Configuration</b></p>
       <p>Continue with the Ceph configuration with the steps below:</p>
       <ol>
