@@ -148,7 +148,7 @@
           by running these in a clustered mode across the three nodes of the control plane: RabbitMQ
           cluster with Mirrored Queues and Percona MySQL Galera cluster.</li>
       </ul>
-      <p><image href="../../media/ha/ControlPlaneHA2.0_1.png" id="ControlPlane1"/></p>
+      <p><image href="../../media/ha/HPE_HA_Flow.png" id="ControlPlane1"/></p>
       <p>The above diagram illustrates the HA architecture with the focus on VIP management and load
         balancing. It only shows a subset of active-active API instances and does not show examples
         of other services such as nova-scheduler, cinder-scheduler, etc.</p>
@@ -173,6 +173,10 @@
         <p id="api_request"><b>API Request Message Flow</b></p>
         <p>The diagram below shows the flow for an API request in an HA deployment. All API requests
           (internal and external) are sent through the VIP.</p>
+        
+        <!-- Interactive Graphic goes here.  With some text/html edits in the surrounding content. -->
+        <!-- Remove Graphic below and a link will be required for a static flow image. -->
+        
         <p><image href="../../media/ha/ControlPlaneHA2.0_2.png" id="ControlPlane2"/></p>
         <p>The flow of a sample API request is explained below:</p>
         <ul>
@@ -193,12 +197,12 @@
         <p>With the above HA set up, loss of a controller node is handled as follows:</p>
         <p>Assume that the Controller0, which is currently in control of the VIP, is lost, as shown
           in the diagram below:</p>
-        <p><image href="../../media/ha/ControlPlaneHA2.0_3.png" id="ControlPlane3"/></p>
+        <p><image href="../../media/ha/HPE_HA_NodeFailure1.png" id="ControlPlane3"/></p>
         <p>When this occurs, keepalived immediately moves the VIP on to Controller1 and can now
           receive API requests, which is load-balanced by HA proxy, as stated earlier.</p>
         <note>Although MySQL and RabbitMQ clusters have lost a node, they still continue to be
           operational:</note>
-        <p><image href="../../media/ha/ControlPlaneHA2.0_4.png" id="ControlPlane4"/></p>
+        <p><image href="../../media/ha/HPE_HA_NodeFailure2.png" id="ControlPlane4"/></p>
         <p>Finally, when Controller0 comes back online, keepalived and HA proxy will resume in
           standby/slave mode and be ready to take over, should there be a failure of Controller1.
           The Controller0 rejoins the MySQL and RabbitMQ clusters.</p>
@@ -218,7 +222,7 @@
           cannot commit any requests. In the example below, Controller0 is partitioned from the rest
           of the control plane. As a result, requests can only be satisfied on Controller1 or
           Controller2. Controller0 will continue to attempt to rejoin the cluster:</p>
-        <p><image href="../../media/ha/ControlPlaneHA2.0_5.png" id="ControlPlane5"/></p>
+        <p><image href="../../media/ha/HPE_HA_MySQLGaleraCluster.png" id="ControlPlane5"/></p>
         <p>When HA proxy detects the errors against the mysql instance on Controller0, it removes
           that node from its pool for future database requests.</p>
       </sectiondiv>
