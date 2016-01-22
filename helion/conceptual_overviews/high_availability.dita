@@ -126,7 +126,7 @@
         <li>Compute with KVM</li>
         <li>Nova Availability Zones</li>
         <li>Compute with ESX</li>
-        <li>Clock Storage with StoreVirtual VSA</li>
+        <li>Block Storage with StoreVirtual VSA</li>
         <li>Object Storage with Swift</li>
       </ul>
     </section>
@@ -148,7 +148,7 @@
           by running these in a clustered mode across the three nodes of the control plane: RabbitMQ
           cluster with Mirrored Queues and Percona MySQL Galera cluster.</li>
       </ul>
-      <p><image href="../../media/ha/ControlPlaneHA2.0_1.png" id="ControlPlane1"/></p>
+      <p><image href="../../media/ha/HPE_HA_Flow.png" id="ControlPlane1"/></p>
       <p>The above diagram illustrates the HA architecture with the focus on VIP management and load
         balancing. It only shows a subset of active-active API instances and does not show examples
         of other services such as nova-scheduler, cinder-scheduler, etc.</p>
@@ -157,11 +157,11 @@
         listens for requests on that VIP and port. When it receives a request, it selects one of the
         controller nodes configured for handling Nova requests, in this particular case, and then
         forwards the request to the IP of the selected controller node on the same port.</p>
-      <p>The nova-api service list, which is listening for requests on the IP of its host machine,
-        then receives the request and deals with it accordingly. The database service is also
-        accessed through the load balancer . RabbitMQ, on the other hand, is not currently accessed
-        through VIP/HA proxy as the clients are configured with the set of nodes in the RabbitMQ
-        cluster and failover between cluster nodes is automatically handled by the clients.</p>
+      <p>The nova-api service, which is listening for requests on the IP of its host machine, then
+        receives the request and deals with it accordingly. The database service is also accessed
+        through the load balancer. RabbitMQ, on the other hand, is not currently accessed through
+        VIP/HA proxy as the clients are configured with the set of nodes in the RabbitMQ cluster and
+        failover between cluster nodes is automatically handled by the clients.</p>
       <p>The sections below cover the following topics in detail:</p>
       <ul>
         <li><xref href="#HP2.0HA/api_request">API Request Message Flow</xref></li>
@@ -173,6 +173,45 @@
         <p id="api_request"><b>API Request Message Flow</b></p>
         <p>The diagram below shows the flow for an API request in an HA deployment. All API requests
           (internal and external) are sent through the VIP.</p>
+        
+        <sectiondiv outputclass="oldcontentContainer">
+          
+          <sectiondiv outputclass="wrapper1">
+            <sectiondiv id="itemOne" outputclass="HAcontent">
+            </sectiondiv>
+            <sectiondiv id="itemTwo" outputclass="HAcontent">
+            </sectiondiv>
+            <sectiondiv id="itemThree" outputclass="HAcontent">
+            </sectiondiv>
+            <sectiondiv id="itemFour" outputclass="HAcontent">
+            </sectiondiv>
+            <sectiondiv id="itemFive" outputclass="HAcontent">
+            </sectiondiv>
+          </sectiondiv>
+          
+        </sectiondiv>
+        <sectiondiv>
+          <sectiondiv outputclass="navLinks1">
+            <ul>
+              <li outputclass="itemLinks"></li>
+              <li outputclass="itemLinks"></li>
+              <li outputclass="itemLinks"></li>
+              <li outputclass="itemLinks"></li>
+              <li outputclass="itemLinks"></li>
+            </ul>
+          </sectiondiv>
+        </sectiondiv>
+        
+        <sectiondiv>
+          <sectiondiv>
+            <p id="desc"></p>
+          </sectiondiv>
+        </sectiondiv>
+        
+        
+        <!-- Interactive Graphic goes here.  With some text/html edits in the surrounding content. -->
+        <!-- Remove Graphic below and a link will be required for a static flow image. -->
+        
         <p><image href="../../media/ha/ControlPlaneHA2.0_2.png" id="ControlPlane2"/></p>
         <p>The flow of a sample API request is explained below:</p>
         <ul>
@@ -182,10 +221,10 @@
             list of available nodes (Controller0, Controller1, Controller2). The request is
             forwarded to the Controller0IP:8774</li>
           <li>nova-api on Controller0 receives the request and determines that a database change is
-            required. It connects to the database using VIP:</li>
+            required. It connects to the database using VIP:3306</li>
           <li>HA proxy (listening on VIP:3306) receives the database connection request and selects
-            Controller1 from the list of available nodes (Controller0, Controller1, Controller2).
-            The connection request is forwarded to Controller1IP:3306</li>
+            Controller0 from the list of available nodes (Controller0, Controller1, Controller2).
+            The connection request is forwarded to Controller0IP:3306</li>
         </ul>
       </sectiondiv>
       <sectiondiv>
@@ -193,12 +232,12 @@
         <p>With the above HA set up, loss of a controller node is handled as follows:</p>
         <p>Assume that the Controller0, which is currently in control of the VIP, is lost, as shown
           in the diagram below:</p>
-        <p><image href="../../media/ha/ControlPlaneHA2.0_3.png" id="ControlPlane3"/></p>
-        <p>When this occurs, keepalived immediately moves the VIP on to the Controller1 and can now
+        <p><image href="../../media/ha/HPE_HA_NodeFailure1.png" id="ControlPlane3"/></p>
+        <p>When this occurs, keepalived immediately moves the VIP on to Controller1 and can now
           receive API requests, which is load-balanced by HA proxy, as stated earlier.</p>
         <note>Although MySQL and RabbitMQ clusters have lost a node, they still continue to be
           operational:</note>
-        <p><image href="../../media/ha/ControlPlaneHA2.0_4.png" id="ControlPlane4"/></p>
+        <p><image href="../../media/ha/HPE_HA_NodeFailure2.png" id="ControlPlane4"/></p>
         <p>Finally, when Controller0 comes back online, keepalived and HA proxy will resume in
           standby/slave mode and be ready to take over, should there be a failure of Controller1.
           The Controller0 rejoins the MySQL and RabbitMQ clusters.</p>
@@ -218,14 +257,14 @@
           cannot commit any requests. In the example below, Controller0 is partitioned from the rest
           of the control plane. As a result, requests can only be satisfied on Controller1 or
           Controller2. Controller0 will continue to attempt to rejoin the cluster:</p>
-        <p><image href="../../media/ha/ControlPlaneHA2.0_5.png" id="ControlPlane5"/></p>
+        <p><image href="../../media/ha/HPE_HA_MySQLGaleraCluster.png" id="ControlPlane5"/></p>
         <p>When HA proxy detects the errors against the mysql instance on Controller0, it removes
           that node from its pool for future database requests.</p>
       </sectiondiv>
       <sectiondiv id="singleton_services">
-        <p><b>Singletone Services</b></p>
+        <p><b>Singleton Services</b></p>
         <sectiondiv>
-          <p id="cinder_volume"><b>Cinder-Volume</b></p>
+          <p id="cinder_volume"><b>Cinder-Backup and Cinder-Volume</b></p>
           <p>Due to the single threading required in both cinder-volume and the drivers, the Cinder
             volume service is run as a singleton in the control plane. <image
               href="../../media/ha/ha-cinder-volume.png" id="CinderVolume"/></p>

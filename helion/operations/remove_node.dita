@@ -15,11 +15,12 @@
         <li><xref href="remove_node.dita#remove_node/remove_az">Remove the Compute Host from its
             Availability Zone</xref></li>
         <li><xref href="remove_node.dita#remove_node/live_migration">Use Live Migration to Move Any
-            Instances on This Host to Other Hosts</xref></li>
+            Instances on this Host to Other Hosts</xref></li>
         <li><xref href="remove_node.dita#remove_node/shutdown_node">Shutdown or Stop the Nova
             Service on the Compute Host</xref></li>
         <li><xref href="remove_node.dita#remove_node/delete_node">Delete The Compute Host from
             Nova</xref></li>
+        <li><xref href="remove_node.dita#remove_node/deletefromneutron">Delete the Compute Host from Neutron</xref></li>
         <li><xref href="remove_node.dita#remove_node/remove_node">Remove the Compute Host from the
             servers.yml File and Run the Configuration Processor</xref></li>
         <li><xref href="remove_node.dita#remove_node/remove_cobbler">Remove the Compute Host from
@@ -115,8 +116,7 @@ Host helion-cp1-comp0002-mgmt has been successfully removed from aggregate 4
 +----+------------------+--------------------------+----------+----------+-------+----------------------------+-----------------------+</codeblock></li>
       </ol>
     </section>
-    <section id="live_migration"><title>Use Live Migration to Move Any Instances on This Host to
-        Other Hosts</title>
+    <section id="live_migration"><title>Use Live Migration to Move Any Instances on this Host to Other Hosts</title>
       <ol>
         <li>You will need to verify if the Compute node is currently hosting any instances on it.
           You can do this with the command below: <codeblock>nova list --host=&lt;nova hostname> --all_tenants=1</codeblock>
@@ -152,11 +152,32 @@ Host helion-cp1-comp0002-mgmt has been successfully removed from aggregate 4
         </li>
       </ol>
     </section>
-    <section id="shutdown_node"><title>Shutdown or Stop the Nova Service on the Compute Host</title>
+    <section><title>Disable Neutron Agents on Node to be Removed</title> You should also locate and
+      disable or remove neutron agents. To see the neutron agents running:
+      <codeblock>$ neutron agent-list | grep NODE_NAME
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+| id                                   | agent_type           | host                     | alive | admin_state_up | binary                    |
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+| 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4 | L3 agent             | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-l3-agent          |
+| dbe4fe11-8f08-4306-8244-cc68e98bb770 | Metadata agent       | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-metadata-agent    |
+| f0d262d1-7139-40c7-bdc2-f227c6dee5c8 | Open vSwitch agent   | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-openvswitch-agent |
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+
+$ neutron agent-update --admin-state-down 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4
+$ neutron agent-update --admin-state-down dbe4fe11-8f08-4306-8244-cc68e98bb770
+$ neutron agent-update --admin-state-down f0d262d1-7139-40c7-bdc2-f227c6dee5c8</codeblock>
+    </section>
+    <section id="shutdown_node"><title>Shutdown or Stop the Nova and Neutron Services on the Compute Host</title>
       <p>To do this step you have a few options. You can SSH to the Compute host and run the
         following commands:</p>
-      <codeblock>sudo systemctl stop nova-compute
-sudo shutdown now</codeblock>
+      <codeblock>sudo systemctl stop nova-compute</codeblock>
+      
+      <codeblock>sudo systemctl stop neutron-*</codeblock>
+      
+      Because the Neutron agent self-registers against Neutron server you may want to avoid these services coming back online:
+      <codeblock>sudo systemctl disable neutron-*</codeblock>
+      Now you can shut down the node:
+      <codeblock>sudo shutdown now</codeblock>
       <p>OR</p>
       <p>From the lifecycle manager you can use the <codeph>bm-power-down.yml</codeph> playbook to
         shut the node down:</p>
@@ -166,7 +187,7 @@ ansible-playbook -i hosts/localhost bm-power-down.yml -e nodelist=&#60;node name
         in Cobbler. You can run <codeph>sudo cobbler system list</codeph> to retrieve these
         names.</note>
     </section>
-    <section id="delete_node"><title>Delete The Compute Host from Nova</title>
+    <section id="delete_node"><title>Delete the Compute Host from Nova</title>
       <p>Retrieve the list of Nova services:</p>
       <codeblock>nova service-list</codeblock>
       <p>Here is an example highlighting the Compute host we're going to remove:</p>
@@ -191,6 +212,36 @@ ansible-playbook -i hosts/localhost bm-power-down.yml -e nodelist=&#60;node name
       <p>Use the command below to confirm that the Compute host has been completely removed from
         Nova:</p>
       <codeblock>nova hypervisor-list</codeblock>
+    </section>
+    <section id="deletefromneutron"><title>Delete the Compute Host from Neutron</title>
+      <p>Multiple Neutron agents are running on the compute node. You have to remove all of the
+        agents running on the node using the "neutron agent-delete" command. In the example below,
+        the l3-agent, openvswitch-agent and metadata-agent are running:</p>
+    
+    
+    <codeblock>$ neutron agent-list | grep NODE_NAME
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+| id                                   | agent_type           | host                     | alive | admin_state_up | binary                    |
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+| 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4 | L3 agent             | helion-cp1-comp0002-mgmt | :-)   | False          | neutron-l3-agent          |
+| dbe4fe11-8f08-4306-8244-cc68e98bb770 | Metadata agent       | helion-cp1-comp0002-mgmt | :-)   | False          | neutron-metadata-agent    |
+| f0d262d1-7139-40c7-bdc2-f227c6dee5c8 | Open vSwitch agent   | helion-cp1-comp0002-mgmt | :-)   | False          | neutron-openvswitch-agent |
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+
+ $ neutron agent-delete AGENT_ID 
+
+ $ neutron agent-delete 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4
+ $ neutron agent-delete dbe4fe11-8f08-4306-8244-cc68e98bb770
+ $ neutron agent-delete f0d262d1-7139-40c7-bdc2-f227c6dee5c8</codeblock>
+    
+    
+    
+    
+    
+    
+    
+    
+    
     </section>
     <section id="remove_node"><title>Remove the Compute Host from the servers.yml File and Run the
         Configuration Processor</title>

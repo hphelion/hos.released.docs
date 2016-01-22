@@ -4,11 +4,7 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring the Centralized Logging
     Service</title>
   <body>
-    <!--Needs Work; do all the file names, variables, parameters, etc. need to be surrounded by codeph tags?-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <note type="attention">Hyperlinks intermittently do not work in the Google Chrome browser. <xref
-        href="../../helion/administration/configure_logging.html" scope="external" format="html"
-        >Click here</xref> for a frameless version of this page where the links should work.</note>
     <section id="config">
       <p>In <keyword keyref="kw-hos-phrase"/>, you have the option to configure the Centralized
         Logging service for your specific needs. This topic covers the following:</p>
@@ -77,7 +73,8 @@
         </tgroup>
       </table>
     </section>
-    <section id="general_config"><title>General Configuration</title>
+    <section id="general_config">
+      <title>General Configuration</title>
       <p>The Centralized Logging service needs to have enough resources available to it to perform
         adequately for different scale environments. The base logging levels are tuned during
         installation according to the amount of RAM allocated to your control plane nodes to ensure
@@ -138,6 +135,58 @@
         a reconfigure of the Centralized Logging service if changes are made.</p>
       <note type="warning">The total process memory consumption for Elasticsearch will be the above
         allocated heap value plus any Java Virtual Machine (JVM) overhead.</note>
+      <p><b>Disk Size Requirements</b></p>
+      <p>In the entry-scale models, the disk partition sizes on your controller nodes for the
+        logging and elasticsearch data are set as a percentage of your total disk size. You can see
+        these in the <codeph>~/helion/my_cloud/definition/data/disks_controller.yml</codeph> file on
+        the lifecycle manager.</p>
+      <p>Here are snippets:</p>
+      <codeblock># Local Log files.
+- name: log
+  size: 13%
+  mount: /var/log
+  fstype: ext4
+  mkfs-opts: -O large_file
+
+# Data storage for centralized logging. This holds log entries from all
+# servers in the cloud and hence can require a lot of disk space.
+- name: elasticsearch
+  size: 30%
+  mount: /var/lib/elasticsearch
+  fstype: ext4</codeblock>
+      <p>Given these percentages, you will want to ensure your total disk size for your controller
+        nodes is enough that you meet the following partition size requirements depending on the
+        total scale of your environment:</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_xld_n31_t5">
+        <tgroup cols="4">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
+          <colspec colname="c4" colnum="4"/>
+          <thead>
+            <row>
+              <entry>Partition</entry>
+              <entry>Small Scale</entry>
+              <entry>Medium Scale</entry>
+              <entry>Large Scale</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>/var/log</entry>
+              <entry>200 GB</entry>
+              <entry>400 GB</entry>
+              <entry>500 GB</entry>
+            </row>
+            <row>
+              <entry>/var/lib/elasticsearch</entry>
+              <entry>1.5 TB</entry>
+              <entry>3 TB</entry>
+              <entry>6 TB</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
     <section id="kibana_config">
       <title>Kibana Configuration</title>

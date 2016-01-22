@@ -4,10 +4,6 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Example Configurations</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <note type="attention">Hyperlinks intermittently do not work in the Google Chrome browser. <xref
-        href="http://docs.hpcloud.com/helion/example_configurations.html" scope="external"
-        format="html">Click here</xref> for a frameless version of this page where the links should
-      work.</note>
     <p>The <keyword keyref="kw-hos-phrase"/> system ships with a collection of pre-qualified example
       configurations. These are designed to help you to get up and running quickly with a minimum
       number of configuration changes.</p>
@@ -34,7 +30,66 @@
                 >Entry-Scale KVM with Ceph Model</xref></li>
             <li><xref href="example_configurations.dita#example_configurations/midscale_kvm_vsa"
                 >Mid-Scale KVM with VSA Model</xref></li>
-          </ul></li>
+          </ul>
+        </li>
+
+        <li><xref href="example_configurations.dita#example_configurations/alternative">Alternative
+            Configurations</xref>
+          <ul>
+            <li><xref
+                href="example_configurations.dita#example_configurations/entryscale_ceph_multinetwork"
+                >Entry-Scale KVM with Ceph Model with Two Networks</xref>
+              <ul>
+                <li><xref href="example_configurations.dita#example_configurations/ceph_nicmappings"
+                    >Nic_mappings.yml</xref></li>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph_netinterfaces"
+                    >Net_interfaces.yml</xref></li>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph_networksgroups"
+                    >Network_groups.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/ceph_networks"
+                    >Netwprks.yml</xref></li>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph_servergroups"
+                    >Server_groups.yml</xref></li>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph_firewallrules"
+                    >Firewall_rules.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/ceph_readme">Edit
+                    the README.html and README.md Files</xref></li>
+              </ul>
+            </li>
+            <li><xref
+                href="example_configurations.dita#example_configurations/entryscale_kvm_ceph_threenetwork"
+                >Entry-Scale KVM with Ceph Model with Three Networks</xref>
+              <ul>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph3_nicmappings"
+                    >Nic_mappings.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/ceph3_servers"
+                    >Servers.yml</xref></li>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph3_netinterfaces"
+                    >Net_interfaces.yml</xref></li>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph3_networksgroups"
+                    >Network_groups.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/ceph3_networks"
+                    >Netwprks.yml</xref></li>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph3_servergroups"
+                    >Server_groups.yml</xref></li>
+                <li><xref
+                    href="example_configurations.dita#example_configurations/ceph3_firewallrules"
+                    >Firewall_rules.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/ceph3_readme"
+                    >Edit the README.html and README.md Files</xref></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+
         <li><xref
             href="example_configurations.dita#example_configurations/modify_entryscale_kvm_vsa"
             >Modifying the Entry-scale KVM with VSA Model for Your Environment</xref>
@@ -275,6 +330,579 @@
       <p>The distribution of services across controllers is only one possible configuration, and
         other combinations can also be expressed.</p>
     </section>
+
+    <section id="alternative"><title>Alternative Configurations</title>
+      <p>In <keyword keyref="kw-hos-phrase"/> there are alternative configurations that we recommend
+        for specific purposes and this section we will outline them.</p>
+    </section>
+
+    <section id="entryscale_ceph_multinetwork"><title>Entry-Scale KVM with Ceph Model with Two
+        Networks</title>
+      <p>HPE Helion OpenStack Ceph is a unified storage system for various storage use cases for an
+        OpenStack-based cloud. It is highly reliable, easy to manage, and horizontally scalable as
+        demand grows.</p>
+      <p>Ceph clients directly talk to OSD daemons for storage operations instead of client routing
+        the request to a specific gateway as is commonly found in other storage solutions. OSD
+        daemons perform data replication and participate in recovery activities. In general, a pool
+        is configured with a replica count of three, causing daemons to transact three times the
+        amount of client data over the cluster network. So, every 4 MB of write data is likely to
+        result in 12 MB of data movement across Ceph clusters. Considering this network traffic, it
+        is important to segregate Ceph data traffic, which can be primarily categorized into three
+        segments:</p>
+      <ul>
+        <li><b>Management traffic</b> - primarily includes all admin related operations such as pool
+          creation, crush map modification, user creation, etc.</li>
+        <li><b>Client (data) traffic</b> - primarily includes client requests sent to OSD
+          daemons.</li>
+        <li><b>Cluster (replication) traffic</b> - primarily includes replication and recovery data
+          traffic among OSD daemons.</li>
+      </ul>
+      <p>For a high performing cluster, the network configuration is important. Segregating the data
+        traffic using multiple networks allows for this. For medium-size production environments we
+        recommend to have a cluster with at least two networks: a client data network (front-side)
+        and a cluster (back-side) network. For larger production environments we recommend that you
+        segregate all three network traffic types by utilizing three networks. This particular
+        document shows you how to setup two networks but you can use the same principles to create
+        three networks.</p>
+      <p>Also, segregating networks provides additional security as well because your cluster
+        network does not need to be connected to the internet directly. This helps in preventing
+        spoof attacks and allows the OSD daemons to keep communicating without intervention so that
+        placement groups can be brought to active + clean state whenever required.</p>
+      <p>This model is a variant of the Entry-Scale KVM with Ceph model. It is designed with two
+        VLANs: a public (front-side) network and a cluster (back-side) network. This enables more
+        options in regards to scaling.</p>
+      <p>This model uses the following components:<ul id="ul_ckz_3tl_s5">
+          <li>Three controller nodes, one KVM compute node, and three Ceph OSD nodes.</li>
+          <li>The Ceph monitor component of the Ceph cluster is deployed on the controller nodes
+            along with other OpenStack service components. This limits your cloud to three monitor
+            nodes which should be suitable for most production environments.</li>
+          <li>Allows two VLANs (i.e. management VLAN and OSD VLAN) which segregates Ceph client
+            traffic from Ceph cluster traffic. The management network will be used to carry cloud
+            management data, such as RabbitMQ, HOPS, and database traffic, Ceph management data,
+            such as pool creation, as well as client data traffic, such as cinder-volume writing
+            blocks to Ceph storage pools. The Ceph cluster network will be dedicated for OSD daemons
+            and will be used to carry replication traffic.</li>
+          <li>A single compute node is initially provided with this example configuration. If
+            additional compute capacity is required then further compute nodes can be added to the
+            configuration by adding more nodes to the compute resource plane. The same applies to
+            OSD nodes as well. Three OSD nodes are initially provided with this example
+            configuration. If additional OSD capacity is required then further OSD nodes can be
+            added to the configuration by adding more nodes to the OSD resource plane.</li>
+        </ul></p>
+      <p>The table below lists out the key characteristics needed per server role for this
+        configuration.</p>
+      <table frame="all" rowsep="1" colsep="1" id="twonetwork">
+        <tgroup cols="4">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
+          <colspec colname="c4" colnum="4"/>
+          <thead>
+            <row>
+              <entry>Server role</entry>
+              <entry>Quantity</entry>
+              <entry>Compute Requirement</entry>
+              <entry>Network Requirement</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>Controller</entry>
+              <entry>3</entry>
+              <entry>2x 10 core 2.66 GHz<p>96 - 128 GB RAM</p></entry>
+              <entry>2x 10Gb Dual Port NIC</entry>
+            </row>
+            <row>
+              <entry>Compute (KVM hypervisor)</entry>
+              <entry>1 (minimum)</entry>
+              <entry>2x 12 core 2.66 GHz (ES-2690v3) Intel Xeon<p>256 GB RAM</p></entry>
+              <entry>1x 10Gb Dual Port NIC</entry>
+            </row>
+            <row>
+              <entry>OSD</entry>
+              <entry>3 (minimum)</entry>
+              <entry>RAM is dependent upon the number of disks. 1 GB per TB of disk capacity is
+                recommended.</entry>
+              <entry>1x 10Gb Dual Port NIC</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <p>This diagram below illustrates the physical networking used in this configuration.</p>
+      <p><image href="../media/hos.docs/entry_scale_kvm_ceph_two_network.png"/></p>
+      <p><xref href="../media/hos.docs/entry_scale_kvm_ceph_two_network_lg.png" scope="external"
+          format="html">Download a high-resolution version</xref></p>
+      <p>This configuration is based on the entry-scale-kvm-ceph cloud input model which is included
+        with the HPE Helion OpenStack distro. You will need to make the changes outlined below prior
+        to the deployment of your Ceph cluster with two networks. Note that if you already have a
+        Ceph cluster deployed with a single network these steps cannot be used to migrate to a
+        dual-network setup. The recommendation in these cases will be that you make a clean
+        installation which will result in the loss of your existing data unless you make
+        arrangements to have it backed up beforehand.</p>
+    </section>
+    <section id="ceph_nicmappings"><title>Nic_mappings.yml</title>
+      <p>Ensure that your baremetal server NIC interfaces are correctly specified in the
+          <codeph>~/helion/my_cloud/definition/data/nic_mappings.yml</codeph> file and that they
+        meet the server requirements.</p>
+      <p>Here is an example with notes in-line:</p>
+      <codeblock>nic-mappings:
+
+## NIC specification for controller nodes.  A bonded interface is 
+## used for the management network.
+  - name: DL360p_4PORT
+    physical-ports:
+      - logical-name: hed1
+        type: simple-port
+        bus-address: "0000:07:00.0"
+        
+      - logical-name: hed2
+        type: simple-port
+        bus-address: "0000:08:00.0"
+        
+      - logical-name: hed3
+        type: simple-port
+        bus-address: "0000:09:00.0"
+        
+      - logical-name: hed4
+        type: simple-port
+        bus-address: "0000:0a:00.0"
+
+## NIC specification for compute and OSD nodes should be
+## of this type.
+  - name: MY-2PORT-SERVER
+    physical-ports:
+      - logical-name: hed3
+        type: simple-port
+        bus-address: "0000:04:00.0"
+        
+      - logical-name: hed4
+        type: simple-port
+        bus-address: "0000:04:00.1"</codeblock>
+    </section>
+    <section id="ceph_netinterfaces"><title>Net_interfaces.yml</title>
+      <p>Define a new interface set for your OSD interfaces in the
+          <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph> file.</p>
+      <p>Ensure that the appropriate NIC is configured to both the Management and OSD network
+        groups, indicated below:</p>
+      <codeblock>- name: OSD-INTERFACES
+ network-interfaces:
+   - name: ETH3
+     device:
+        name: hed3
+     network-groups:
+        - MANAGEMENT
+   - name: ETH4
+     device:
+        name: bed4
+     network-groups:
+        - OSD</codeblock>
+    </section>
+    <section id="ceph_networksgroups"><title>Network_groups.yml</title>
+      <p>Define the OSD network group in the
+          <codeph>~/helion/my_cloud/definition/data/network_groups.yml</codeph> file:</p>
+      <codeblock>#
+# OSD
+#
+# This is the network group that will be used for
+# internal traffic of cluster among OSDs.
+#
+- name: OSD
+  hostname-suffix: osd
+
+  component-endpoints:
+    - ceph-osd-internal</codeblock>
+    </section>
+    <section id="ceph_networks"><title>Networks.yml</title>
+      <p>Define the OSD VLAN in the <codeph>~/helion/my_cloud/definition/data/networks.yml</codeph>
+        file:</p>
+      <codeblock>
+- name: OSD-NET
+  vlanid: 112
+  tagged-vlan: false
+  cidr: 10.0.1.0/24
+  gateway-ip: 10.0.1.1
+  network-group: OSD</codeblock>
+    </section>
+    <section id="ceph_servergroups"><title>Server_groups.yml</title>
+      <p>Add the OSD network to the server groups in the
+          <codeph>~/helion/my_cloud/definition/data/server_groups.yml</codeph> file, indicated by
+        the bold portion below:</p>
+      <codeblock>- name: CLOUD
+ server-groups:
+   - AZ1
+   - AZ2
+   - AZ3
+ networks:
+   - EXTERNAL-API-NET
+   - EXTERNAL-VM-NET
+   - GUEST-NET
+   - MANAGEMENT-NET
+   <b>- OSD-NET</b></codeblock>
+    </section>
+    <section id="ceph_firewallrules"><title>Firewall_rules.yml</title>
+      <p>Modify the firewall rules in the
+          <codeph>~/helion/my_cloud/definition/data/firewall_rules.yml</codeph> file to allow OSD
+        nodes to be pingable via the OSD network, indicated by the bold portion below:</p>
+      <codeblock>
+- name: PING
+  network-groups:
+  - MANAGEMENT
+  - GUEST
+  - EXTERNAL-API
+  <b>- OSD</b>
+  rules:
+  # open ICMP echo request (ping)
+  - type: allow
+    remote-ip-prefix:  0.0.0.0/0
+    # icmp type
+    port-range-min: 8
+    # icmp code
+    port-range-max: 0
+    protocol: icmp</codeblock>
+    </section>
+    <section id="ceph_readme"><title>Edit the README.html and README.md Files</title>
+      <p>You can edit the <codeph>~/helion/my_cloud/definition/README.html</codeph> and
+          <codeph>~/helion/my_cloud/definition/README.md</codeph> files to reflect the OSD network
+        group information if you wish. This change does not have any semantic implication and only
+        assists with the readability of your model.</p>
+    </section>
+
+    <section id="entryscale_kvm_ceph_threenetwork"><title>Entry-Scale KVM with Ceph Model with Three
+        Networks</title>
+      <p>For large, production, Ceph clusters we recommend that you segregate all three network
+        traffic types:</p>
+      <ul>
+        <li><b>Management traffic</b> - primarily includes all admin related operations such as pool
+          creation, crush map modification, user creation, etc.</li>
+        <li><b>Client (data) traffic</b> - primarily includes client requests sent to OSD
+          daemons.</li>
+        <li><b>Cluster (replication) traffic</b> - primarily includes replication and recovery data
+          traffic among OSD daemons.</li>
+      </ul>
+      <p>The table below lists out the key characteristics needed per server role for this
+        configuration.</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_jnw_yss_s5">
+        <tgroup cols="4">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
+          <colspec colname="c4" colnum="4"/>
+          <thead>
+            <row>
+              <entry>Server role</entry>
+              <entry>Quantity</entry>
+              <entry>Compute Requirement</entry>
+              <entry>Network Requirement</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>Controller</entry>
+              <entry>3</entry>
+              <entry>2x 10 core 2.66 GHz<p>96 - 128 GB RAM</p></entry>
+              <entry>2x 10Gb Dual Port NIC</entry>
+            </row>
+            <row>
+              <entry>Compute (KVM hypervisor)</entry>
+              <entry>1 (minimum)</entry>
+              <entry>2x 12 core 2.66 GHz (ES-2690v3) Intel Xeon<p>256 GB RAM</p></entry>
+              <entry>1x 10Gb Dual Port NIC</entry>
+            </row>
+            <row>
+              <entry>OSD</entry>
+              <entry>3 (minimum)</entry>
+              <entry>RAM is dependent upon the number of disks. 1 GB per TB of disk capacity is
+                recommended.</entry>
+              <entry>2x 10Gb Dual Port NIC</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <p>This diagram below illustrates the physical networking used in this configuration.</p>
+      <p><image href="../media/hos.docs/entry_scale_kvm_ceph_three_network.png"/></p>
+      <p><xref href="../media/hos.docs/entry_scale_kvm_ceph_three_network_lg.png" scope="external"
+          format="html">Download a high-resolution version</xref></p>
+      <p>This configuration is based on the entry-scale-kvm-ceph cloud input model which is included
+        with the HPE Helion OpenStack distro. You will need to make the changes outlined below prior
+        to the deployment of your Ceph cluster with three networks. Note that if you already have a
+        Ceph cluster deployed with a single network these steps cannot be used to migrate to a
+        three-network setup. The recommendation in these cases will be that you make a clean
+        installation which will result in the loss of your existing data unless you make
+        arrangements to have it backed up beforehand.</p>
+    </section>
+    <section id="ceph3_nicmappings"><title>Nic_mappings.yml</title>
+      <p>Ensure that your baremetal server NIC interfaces are correctly specified in the
+          <codeph>~/helion/my_cloud/definition/data/nic_mappings.yml</codeph> file and that they
+        meet the server requirements.</p>
+      <p>Here is an example with notes in-line:</p>
+      <codeblock>nic-mappings:
+
+## NIC specification for controller nodes.  A bonded interface is used for the management 
+## network while a separate interface is used to connect to the Ceph nodes.
+  - name: DL360p_4PORT
+    physical-ports:
+       - logical-name: hed1
+         type: simple-port
+         bus-address: "0000:07:00.0"
+        
+       - logical-name: hed2
+         type: simple-port
+         bus-address: "0000:08:00.0"
+         
+       - logical-name: hed3
+         type: simple-port
+         bus-address: "0000:09:00.0"
+       
+       - logical-name: hed4
+         type: simple-port
+         bus-address: "0000:0a:00.0"
+         
+## NIC specification for compute nodes. One interface is used for the management 
+## network while the second interface is used to connect to the Ceph nodes.
+  - name: MY-2PORT-SERVER
+    physical-ports:
+       - logical-name: hed3
+         type: simple-port
+         bus-address: "0000:04:00.0"
+
+       - logical-name: hed4
+         type: simple-port
+         bus-address: "0000:04:00.1"
+
+## NIC specification for OSD nodes. The first interface is used for management network
+## traffic. The second interface is used for client or public traffic. The third
+## interface is used for internal OSD traffic.
+  - name: MY-4PORT-SERVER
+    physical-ports:
+       - logical-name: hed1
+         type: simple-port
+         bus-address: "0000:06:00.0"
+
+       - logical-name: hed2
+         type: simple-port
+         bus-address: "0000:06:00.1"
+
+       - logical-name: hed3
+         type: simple-port
+         bus-address: "0000:06:00.2"
+
+       - logical-name: hed4
+         type: simple-port
+         bus-address: "0000:06:00.3"</codeblock>
+    </section>
+    <section id="ceph3_servers"><title>Servers.yml</title>
+      <p>Ensure that your servers in the
+          <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file are mapped to the
+        correct NIC interface.</p>
+      <p>An example with the bolded line for <codeph>nic-mapping</codeph> illustrating this:</p>
+      <codeblock># Controller Nodes
+  - id: controller1
+    ip-addr: 10.13.111.138
+    server-group: RACK1
+    role: CONTROLLER-ROLE
+    <b>nic-mapping: HP-DL360-4PORT</b>
+    mac-addr: "f0:92:1c:05:69:10"
+    ilo-ip: 10.12.8.214
+    ilo-password: password
+    ilo-user: admin
+    
+# Compute Nodes
+  - id: compute1
+    ip-addr: 10.13.111.139
+    server-group: RACK1
+    role: COMPUTE-ROLE
+    <b>nic-mapping: MY-2PORT-SERVER</b>
+    mac-addr: "83:92:1c:55:69:b0"
+    ilo-ip: 10.12.8.215
+    ilo-password: password
+    ilo-user: admin
+        
+# OSD Nodes
+  - id: osd1
+    ip-addr: 10.13.111.140
+    server-group: RACK1
+    role: OSD-ROLE
+    <b>nic-mapping: MY-4PORT-SERVER</b>
+    mac-addr: "d9:92:1c:25:69:e0"
+    ilo-ip: 10.12.8.216
+    ilo-password: password
+    ilo-user: admin</codeblock>
+    </section>
+    <section id="ceph3_netinterfaces"><title>Net_interfaces.yml</title>
+      <p>Define a new interface set for your OSD interfaces in the
+          <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph> file.</p>
+      <p>Here is an example with notes in-line:</p>
+      <codeblock>
+- name: CONTROLLER-INTERFACES
+  network-interfaces:
+## This bonded interface is used by the controller 
+## nodes for cloud management traffic.
+    - name: BOND0
+      device:
+         name: bond0
+      bond-data:
+         options:
+            mode: active-backup
+            miimon: 200
+            primary: hed1
+         provider: linux
+         devices:
+            - name: hed1
+            - name: hed2
+        network-groups:
+        - EXTERNAL-API
+        - EXTERNAL-VM
+        - GUEST
+        - MANAGEMENT
+## This interface is used to connect the controller
+## node to the Ceph nodes so that any Ceph client
+## like cinder-volume can route data directly to
+## Ceph over this interface.
+    - name: ETH2
+      device:
+        name: hed3
+      forced-network-groups:
+        - OSD-CLIENT
+        
+- name: COMPUTE-INTERFACES
+  network-interfaces:
+    - name: HETH3
+        device:
+           name: hed3
+        network-groups:
+           - EXTERNAL-VM
+            - GUEST
+            - MANAGEMENT
+## This interface is used to connect the compute node
+## to the Ceph cluster so that a workload VM can route
+## data traffic to the Ceph cluster over this interface.
+    - name: HETH4
+       device:
+          name: hed3
+       forced-network-groups:
+          - OSD-CLIENT
+        
+- name: OSD-INTERFACES
+  network-interfaces:
+## This defines the interface used for management 
+## traffic like logging, monitoring, etc.
+    - name: HETH1
+      device:
+          name: hed1
+      network-groups:
+        - MANAGEMENT
+## This defines the interface used for client
+## or data traffic.
+    - name: HETH2
+      device:
+          name: hed2
+      network-groups:
+        - OSD-CLIENT
+## This defines the interface used for internal
+## cluster communication among OSD nodes.
+    - name: HETH2
+      device:
+          name: hed3
+      network-groups:
+        - OSD-INTERNAL</codeblock>
+    </section>
+    <section id="ceph3_networkgroups"><title>Network_groups.yml</title>
+      <p>Define the OSD network group in the
+          <codeph>~/helion/my_cloud/definition/data/network_groups.yml</codeph> file:</p>
+      <codeblock>#
+# OSD client
+#
+# This is the network group that will be used for
+# internal traffic of cluster among OSDs.
+#
+- name: OSD-CLIENT
+  hostname-suffix: osdc
+  
+  component-endpoints
+    - ceph-monitor
+    - ceph-osd
+    
+#
+# OSD internal
+#
+# This is the network group that will be used for
+# internal traffic of cluster among OSDs.
+#
+- name: OSD-INTERNAL
+  hostname-suffix: osdi
+  
+  component-endpoints:
+    - ceph-osd-internal</codeblock>
+    </section>
+    <section id="ceph3_networks"><title>Networks.yml</title>
+      <p>Define the OSD VLAN in the <codeph>~/helion/my_cloud/definition/data/networks.yml</codeph>
+        file.</p>
+      <p>The example below defines two separate network VLANs:</p>
+      <codeblock>
+- name: OSD-CLIENT-NET
+  vlanid: 112
+  tagged-vlan: false
+  cidr: 192.168.187.0/24
+  gateway-ip: 192.168.187.1
+  network-group: OSD-CLIENT
+
+- name: OSD-INTERNAL-NET
+  vlanid: 116
+  tagged-vlan: false
+  cidr: 192.168.200.0/24
+  gateway-ip: 192.168.200.1
+  network-group: OSD-INTERNAL</codeblock>
+    </section>
+    <section id="ceph3_servergroups"><title>Server_groups.yml</title>
+      <p>Add the OSD network to the server groups in the
+          <codeph>~/helion/my_cloud/definition/data/server_groups.yml</codeph> file, indicated by
+        the bold portion below:</p>
+      <codeblock>
+- name: CLOUD
+  server-groups:
+   - AZ1
+   - AZ2
+   - AZ3
+  networks:
+   - EXTERNAL-API-NET
+   - EXTERNAL-VM-NET
+   - GUEST-NET
+   - MANAGEMENT-NET
+   <b>- OSD-CLIENT-NET</b>
+   <b>- OSD-INTERNAL-NET</b></codeblock>
+    </section>
+    <section id="ceph3_firewallrules"><title>Firewall_rules.yml</title>
+      <p>Modify the firewall rules in the
+          <codeph>~/helion/my_cloud/definition/data/firewall_rules.yml</codeph> file to allow OSD
+        nodes to be pingable via the OSD network, indicated by the bold portion below:</p>
+      <codeblock>
+- name: PING
+  network-groups:
+  - MANAGEMENT
+  - GUEST
+  - EXTERNAL-API
+  <b>- OSD-CLIENT
+  - OSD-INTERNAL</b>
+  rules:
+  # open ICMP echo request (ping)
+  - type: allow
+    remote-ip-prefix:  0.0.0.0/0
+    # icmp type
+    port-range-min: 8
+    # icmp code
+    port-range-max: 0
+    protocol: icmp</codeblock>
+    </section>
+    <section id="ceph3_readme"><title>Edit the README.html and README.md Files</title>
+      <p>You can edit the <codeph>~/helion/my_cloud/definition/README.html</codeph> and
+          <codeph>~/helion/my_cloud/definition/README.md</codeph> files to reflect the OSD network
+        group information if you wish. This change does not have any semantic implication and only
+        assists with the readability of your model.</p>
+    </section>
+
+
+
+
     <section id="modify_entryscale_kvm_vsa"><title>Modifying the Entry-Scale KVM with VSA Model for
         Your Environment</title>
       <p>This section covers the changes that need to be made to the input model to deploy and run
