@@ -9,9 +9,10 @@
       <title>Performing the Upgrade from HPE Helion OpenStack 2.0 to 2.1</title>
       <note type="warning">The process for upgrading HPE Helion OpenStack to version 2.1 requires a
         reboot which may prevent core <b>HPE Helion Development Platform</b> services from
-        restarting. If your environment relies on HPE Helion Development Platform, please refrain
-        from upgrading HPE Helion OpenStack until the complete HPE Helion Development Platform
-        upgrade process is made available.</note>
+        restarting. If your environment relies on HPE Helion Development Platform, please follow
+        instructions for the <xref
+          href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
+          scope="external">HPE Helion Development Platform upgrade process</xref>.</note>
       <p>When upgrading from <keyword keyref="kw-hos-phrase-20"/> to <keyword
           keyref="kw-hos-phrase-21"/> you will use the same configuration files in your
           <codeph>~/helion/my_cloud/definition</codeph> directory as you used when originally
@@ -31,7 +32,7 @@
     
     <section>
       <title>DNS Service Restart for Helion Development Platform after All Node Reboots</title>
-      <note>If you are running HPE Helion Development Platform and are upgrading HPE Helion OpenStack, you must restart your services after restarting all the nodes metioned below.</note>
+      <note>If you are running HPE Helion Development Platform and are upgrading HPE Helion OpenStack, you must restart your services after restarting all the nodes mentioned below.</note>
       <p>The following are the steps you will take to ensure that Helion Development Platform runs
         after the Helion OpenStack upgrade:</p>
       <ol>
@@ -49,7 +50,9 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
     </section>
     <section id="prereqs"><title>Prerequisites</title>
       <p>These steps assume you have an installed and working <keyword keyref="kw-hos-phrase-20"/>
-        cloud.</p>
+        cloud, and that you have followed the <xref
+          href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
+          scope="external">HPE Helion Development Platform upgrade process</xref> to gracefully shutdown Helion Development Platform Services and instances.</p>
     </section>
 
     <section id="mainSteps"><title>Upgrade Overview</title>
@@ -223,8 +226,12 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
       <sectiondiv outputclass="insideSection">
         <p>To reboot a compute node the following operations will need to be performed:</p>
         <ul>
+         
           <li>Disable provisioning of the node to take the node offline to prevent further instances
             being scheduled to the node during the reboot. </li>
+          <li>Gracefully shut down Helion Development Platform services and instances. See <xref
+            href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
+            scope="external">HPE Helion Development Platform upgrade process</xref> for details.</li>
           <li>Identify instances that exist on the compute node, and then either: <ul>
               <li>Live migrate the instances off the node before actioning the reboot. OR </li>
               <li>Stop the instances</li>
@@ -232,7 +239,10 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
           </li>
           <li>Reboot the node </li>
           <li>Restart the Nova services </li>
-          <li>Restart any instances stopped above</li>
+          <li>Restart any instances stopped above, except for Helion Development Platform instances. To 
+            gracefully restart Helion Development Platform instances, see the <xref
+              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
+              scope="external">HPE Helion Development Platform upgrade process</xref>.</li>
         </ul>
         <ol>
           <li>Disable provisioning:
