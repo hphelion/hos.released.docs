@@ -41,6 +41,11 @@ ceph osd rm &lt;osd-number> --cluster &lt;ceph_cluster></codeblock><note>Replace
         <li>To remove the OSD host from the Ceph CRUSH map, run the following
             command:<codeblock>ceph osd crush remove &lt;host-name></codeblock><note> Replace the
             string <codeph>&lt;host-name></codeph> in the above command.</note></li>
+        <li>Remove the OSD host from Cobbler:
+            <codeblock>sudo cobbler system remove --name=&lt;node></codeblock></li>
+        <li>Run the Cobbler deploy playbook:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
         <li>Remove the section for the OSD host from the
             <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file.</li>
         <li>Commit your
@@ -48,9 +53,11 @@ ceph osd rm &lt;osd-number> --cluster &lt;ceph_cluster></codeblock><note>Replace
 git add -A
 git commit -m "Remove OSD node &lt;host-name>"</codeblock></li>
         <li>Run the configuration
-          processor:<codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+            processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
         <li>Use the playbook below to create a deployment directory:
-            <codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock><note>Replace
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock><note>Replace
             the string <codeph>&lt;host-name></codeph> in the above commit message with the actual
             host name (e.g., <codeph>padawan-ceph-ccp-ceph0001-mgmt</codeph> as mentioned in the
             above example).</note></li>
