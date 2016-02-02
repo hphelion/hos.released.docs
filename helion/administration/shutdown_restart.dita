@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="cloud_shutdown">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Shut Down and Restart Cloud</title>
+  <body>
+    <p> In general, the steps you will follow to properly shut down and then restart the entire
+      cloud will be as follows. Note, you must first determine whether your lifecycle manager is
+      running on a dedicated node or on one of the controller nodes as it must be shut down last and
+      restarted first.</p>
+    <p>Shut down:</p>
+    <ol>
+      <li>Stop instances on nodes </li>
+      <li>Stop compute </li>
+      <li>Stop Swift nodes </li>
+      <li>Stop slaves controller </li>
+      <li>Stop master controller </li>
+      <li>Stop lifecycle manager node</li>
+    </ol>
+    <p> Restart:</p>
+    <ol>
+      <li>Start the lifecycle manager node</li>
+      <li>Start the controller Master </li>
+      <li>Start slaves controller </li>
+      <li>Recover cluster </li>
+      <li>Start Swift nodes </li>
+      <li>Start compute node</li>
+    </ol>
+
+    <note>You will have to manually stop RabbitMQ</note>
+    <section id="expandCollapse">
+      <sectiondiv outputclass="expandall">Expand All</sectiondiv>
+      <sectiondiv outputclass="collapseall">Collapse All</sectiondiv>
+    </section>
+    <section id="stopCompute"><title outputclass="headerH">Stopping Compute Nodes</title>
+      <sectiondiv outputclass="insideSection">
+        <p>To shut down a compute node the following operations will need to be performed:</p>
+        <ul>
+          <li>Disable provisioning of the node to take the node offline to prevent further instances
+            being scheduled. </li>
+          <li>Gracefully shut down Helion Development Platform services and instances. See <xref
+              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
+              Development Platform upgrade process</xref> for details.</li>
+          <li>Identify instances that exist on the compute node, and then stop the instances </li>
+        </ul>
+        <ol>
+          <li>Disable provisioning:
+            <codeblock>nova service-disable --reason "&lt;describe reason>" &lt;node name> nova-compute</codeblock></li>
+          <li> Stop the instances on the compute node. <p>Stop the instances on the node by running
+              the following command for each of the
+            instances:</p><codeblock>nova stop &lt;instance-uuid&gt;</codeblock></li>
+          <li>Stop all services on the compute node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;compute node></codeblock>
+          </li>
+          <li>The operating system cleanly shuts down services. If you want to be very thorough, run
+            your backup jobs just before shutting down. </li>
+        </ol>
+      </sectiondiv>
+    </section>
+
+    <section id="stopSwift"><title outputclass="headerH">Shutting Down Swift Nodes</title>
+      <sectiondiv outputclass="insideSection"><p>If your Swift services are on a controller node,
+          please follow the controller node instructions.</p>
+        <p id="firstp">For a dedicated Swift PAC cluster or Swift Object resource node: </p>For each
+        Swift host <ol>
+          <li>Stop all services on the Swift node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;swift node></codeblock>
+          </li>
+        </ol>
+      </sectiondiv></section>
+    <section id="stopVsa"><title outputclass="headerH">Shutting Down VSA Nodes</title><sectiondiv
+        outputclass="insideSection">
+        <p>If your cloud is deployed with VSA, then the sequence will be as follows:</p>
+        <ol>
+          <li>Identify all VSA nodes of a given cluster </li>
+          <li>Pick one of the VSA nodes of the cluster and shut it down manually</li>
+          <li>Check the VSA VM's status :
+            <codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit &lt;vsa_node name></codeblock></li>
+          <li>Run the following command from your first controller node which will open the HP
+            StoreVirtual Centralized Management Console (CMC) GUI
+            <codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar </codeblock></li>
+          <li>To view the cluster status , go to: management group -&gt; click on the respective
+            cluster -&gt; check for status</li>
+          <li>Repeat steps 2-4 for the other remaining nodes of the same VSA cluster. </li>
+          <li>Go to step 1 and repeat all steps for the other clusters.</li>
+        </ol>
+      </sectiondiv>
+    </section>
+
+    <section id="stopCeph"><title outputclass="headerH">Shutting Down Ceph</title>
+      <sectiondiv outputclass="insideSection"> There are two categories of ceph nodes: <ul>
+          <li>monitor nodes</li>
+          <li>OSD nodes</li>
+        </ul>
+        <ol>
+          <li>Stop
+            Ceph<codeblock>ansible-playbook -i hosts/verb_hosts ceph-stop.yml</codeblock></li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="stopControllers"><title outputclass="headerH">Shutting Down Controller
+        Nodes</title>
+      <sectiondiv outputclass="insideSection">
+        <p><b>Stop Services on the Controllers</b></p>
+        <note>Shut down the node running the lifecycle manager last.</note>First retrieve a list of
+        nodes in your cloud running control plane services. <codeblock>for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); do grep $i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts | grep ansible_ssh_host | awk '{print $1}'; done</codeblock>
+        <p>Then perform the following steps from your lifecycle manager for each of your controller
+          nodes:</p>
+        <ol>
+          <li>Stop all services on the first controller node that is not running the lifecycle
+            manager.
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock>
+          </li>
+          <li>When above start operation has completed successfully, you may proceed to the next
+            controller node. </li>
+        </ol>
+        <note>If your system includes VSA nodes, rebooting a controller node later will not re-start
+          CMC as it is Java application. You will need to restart it.</note>
+      </sectiondiv>
+    </section>
+
+
+    <section><title>Restarting</title> You must restart the node running the lifecycle manager
+      first. </section>
+
+    <section id="startControllers"><title outputclass="headerH">Starting Controller Nodes</title>
+      <sectiondiv outputclass="insideSection">
+        <p><b>Reboot the Controllers</b></p> For each of your controller nodes follow this procedure
+        below, making sure to start the lifecycle manager node first: <ol>
+          <li>Run the bm-power-up.yml playbook to restart the node. Specify just the node(s) you
+            want to start in the 'nodelist' parameter arguments, i.e.
+            nodelist=&lt;node1&gt;[,&lt;node2&gt;][,&lt;node3&gt;].<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;compute node></codeblock></li>
+          <li>Reboot the node, e.g. run the following command on the controller itself:
+            <codeblock>sudo reboot</codeblock>
+          </li>
+          <li>Wait for the controller node to become ssh-able and allow an additional minimum of
+            five minutes for the controller node to settle. Start all services on the controller
+            node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock>
+          </li>
+          <li>Verify that the status of all services on that is OK on the controller node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node></codeblock>
+          </li>
+          <li>When above start operation has completed successfully, you may proceed to the next
+            controller node. Ensure that you migrate your singleton services off the node
+            first.</li>
+        </ol>
+        <note>It is important that you not begin the reboot procedure for a new controller node
+          until the reboot of the previous controller node has been completed successfully (i.e. the
+          hlm-status playbook has completed without error). </note>
+        <note>If your system includes VSA nodes, rebooting a controller node will not re-start CMC
+          as it is Java application. You will need to restart it.</note>
+      </sectiondiv>
+    </section>
+
+    
+    
+    <section id="startVsa"><title outputclass="headerH">Rebooting VSA Nodes</title><sectiondiv
+        outputclass="insideSection">
+        <p>If your cloud is deployed with VSA, then the reboot sequence will be as follows:</p>
+        <ol>
+          <li>Identify all VSA nodes of a given cluster </li>
+          <li>Pick one of the VSA nodes of the cluster and reboot it manually</li>
+          <li>Check VSA VM's status :
+            <codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit &lt;vsa_node name></codeblock></li>
+          <li>Wait for VSA to come up, Check cluster status using CMC ( status should be
+            "normal")</li>
+          <li>Run the following command from your first controller node which will open the HP
+            StoreVirtual Centralized Management Console (CMC) GUI
+            <codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar </codeblock></li>
+          <li>To view the cluster status , go to: management group -&gt; click on the respective
+            cluster -&gt; check for status</li>
+          <li>Repeat steps 2-4 for the other remaining nodes of the same VSA cluster. </li>
+          <li>Go to step 1 and repeat all steps for the other clusters.</li>
+        </ol>
+      </sectiondiv>
+    </section>
+
+    <section id="startCeph"><title outputclass="headerH">Rebooting Ceph</title>
+      <sectiondiv outputclass="insideSection">
+        <p>There are two categories of ceph nodes:</p>
+        <ul id="ul_myc_km3_w5">
+          <li>monitor nodes</li>
+          <li>OSD nodes</li>
+        </ul>
+        <p>Ceph nodes should be rebooted in their position in the overall sequence described in the
+          reboot order section above.</p>
+        <p>You should reboot both categories of ceph nodes in the order: monitor nodes, then OSD
+          nodes. All ceph nodes should reboot one-by-one, in series. </p> If a monitor is deployed
+        on controller node, then the rebooting sequence of the controller caters to the monitor
+        nodes, so you need to additionally reboot only the OSD nodes. <p>If the monitor is deployed
+          as a standalone; i.e., as separate set of resource nodes, you should reboot the monitor
+          nodes before rebooting the OSD nodes.</p> For example, if there are three monitor nodes
+        and three OSD nodes say, MON1, MON2 and MON3, with OSD1, OSD2, OSD3, then you should reboot
+        MON1, then MON2 and then MON3 followed by OSD1, then OSD2 and so on In both cases, please
+        ensure that you are serializing the reboot of a given family (monitor or OSD or controller);
+        that is, don't reboot them all at the same time. This will ensure that each service is up
+        and running and there is no impact on the client side. To reboot Ceph nodes, follow the
+        sequence below to safely reboot the entire Ceph cluster: <ol id="ol_lhd_km3_w5">
+          <li>Reboot a Ceph monitor node in the cluster. </li>
+          <li>Once the monitor node comes up, wait for a minute and then execute the following
+            command:
+            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostname></codeblock>
+          </li>
+          <li>If the above playbook executes successfully, repeat from step 1 to reboot the next
+            Ceph monitor node in the cluster. </li>
+          <li>Once all the monitor nodes have been rebooted, execute
+            <codeblock>ceph quorum_status </codeblock>on a monitor node and ensure that all the
+            monitors have joined the quorum by observing that in the output, the "quorum_names"
+            section lists all the monitors in the Ceph cluster. </li>
+          <li>Log in to the OSD node to be rebooted and execute the following command to avoid the
+            cluster rebalancing itself: <codeblock>ceph osd set noout</codeblock>
+          </li>
+          <li>Now reboot the OSD node. </li>
+          <li>Once the OSD node is up, log in and execute the following command and observe that a
+            line similar to "osd.0 192.17.11.7:6801/3824 boot" appears for all the OSDs on the node:
+            <codeblock>ceph -w</codeblock> To quit, this command press Ctrl + C </li>
+          <li>Verify that all the OSDs on this node are 'up' by executing following command (and
+            observing that all the OSDs under the current host are reported as 'up')
+            <codeblock>ceph osd tree</codeblock> If any of the OSDs are reported as 'down', please
+            check the logs for the corresponding OSD (in the
+              <codeph>/var/log/ceph/&lt;cluster-name>-osd.&lt;osd_number>.log</codeph> file) for
+            resolving the issue. </li>
+          <li>Now execute the following command from the re-booted OSD node, to unset the cluster
+            from noout : <codeblock>ceph osd unset noout</codeblock>
+          </li>
+          <li>Execute the following playbook from the lifecycle manager node to check the status of
+            the OSDs that have just come up:
+            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname></codeblock>
+          </li>
+          <li>If the above playbook does not report any errors, repeat from step 5 for another Ceph
+            OSD node in the cluster. </li>
+          <li>Once the entire cluster is rebooted, execute this command
+            <codeblock>ceph health detail</codeblock> to ensure that you see HEALTH_OK. </li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="startSwift"><title outputclass="headerH">Rebooting Swift Nodes</title>
+      <sectiondiv outputclass="insideSection"><p>If your Swift services are on controller node,
+        please follow the controller node reboot instructions above.</p>
+        <p id="firstp2">For a dedicated Swift PAC cluster or Swift Object resource node: </p>For
+        each Swift host <ol>
+          <li>Reboot the Swift node by running the following command on the Swift node itself:
+            <codeblock>sudo reboot</codeblock>
+          </li>
+          <li>Wait for the node to become ssh-able and then start all services on the Swift node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </codeblock>
+          </li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="startCompute"><title outputclass="headerH">Rebooting Compute Nodes</title>
+      <sectiondiv outputclass="insideSection">
+        <p>To reboot a compute node the following operations will need to be performed:</p>
+        <ul>
+          <li>Reboot the node </li>
+          <li>Restart the Nova services </li>
+          <li>Restart any instances stopped above, except for Helion Development Platform instances.
+            To gracefully restart Helion Development Platform instances, see the <xref
+              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
+              Development Platform upgrade process</xref>.</li>
+        </ul>
+        <ol>
+          <li>SSH to your Compute nodes and reboot them: <codeblock>sudo reboot</codeblock>
+          </li>
+          <li>Run the hlm-start.yml playbook from the lifecycle manager. If needed, use the
+            bm-power-up.yml playbook to restart the node. Specify just the node(s) you want to start
+            in the 'nodelist' parameter arguments, i.e.
+            nodelist=&lt;node1&gt;[,&lt;node2&gt;][,&lt;node3&gt;].<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;compute node></codeblock>
+          </li>
+          <li>Execute the <b>hlm-start.yml </b>playbook. Specifying the node(s) you want to start in
+            the 'limit' parameter arguments. This parameter accepts wildcard arguments and also
+            '@&lt;filename>' to process all hosts listed in the file.
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></codeblock>
+          </li>
+          <li>Re-enable provisioning on the node:
+            <codeblock>nova service-enable &lt;node-name> nova-compute</codeblock></li>
+          <li> Restart any instances you
+            stopped.<codeblock>nova start &lt;instance-uuid></codeblock>
+          </li>
+        </ol>
+      </sectiondiv>
+    </section>
+    
+    <section> </section>
+
+
+
+
+
+
+
+    <section id="getStatus">
+      <title outputclass="headerH">Get List of Status Playbooks</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Running the following command will yield a list of status playbooks which you may run to
+          get the status of services:</p>
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ls *status*</codeblock> Here is the list:
+        <codeblock>stack@helion-control-plane-cluster1-m1-mgmt:~/scratch/ansible/next/hos/ansible$ ls *status*
+      bm-power-status.yml    eon-status.yml      heat-status.yml      logging-producer-status.yml  monasca-status.yml      rabbitmq-status.yml
+      ceilometer-status.yml  FND-AP2-status.yml  hlm-status.yml       logging-server-status.yml    neutron-status.yml      sherpa-status.yml
+      ceph-status.yml        FND-CLU-status.yml  horizon-status.yml   logging-status.yml           nova-status.yml         swift-status.yml
+      cinder-status.yml      freezer-status.yml  ironic-status.yml    memcached-status.yml         ops-console-status.yml  vsa-status.yml
+      cmc-status.yml         glance-status.yml   keystone-status.yml  monasca-agent-status.yml     percona-status.yml      zookeeper-status.yml</codeblock>
+      </sectiondiv>
+    </section>
+
+
+  </body>
+</topic>
