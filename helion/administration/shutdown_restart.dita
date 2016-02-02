@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="cloud_shutdown">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Shut Down and Restart Cloud</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Shutting Down and Restarting the Cloud</title>
   <body>
     <p> In general, the steps you will follow to properly shut down and then restart the entire
       cloud will be as follows. Note, you must first determine whether your lifecycle manager is
@@ -30,6 +30,34 @@
     <section id="expandCollapse">
       <sectiondiv outputclass="expandall">Expand All</sectiondiv>
       <sectiondiv outputclass="collapseall">Collapse All</sectiondiv>
+    </section>
+    
+    <section id="stopLogging"><title outputclass="headerH">Stop Logging</title>
+      <sectiondiv outputclass="insideSection">
+    <p>For Logging, you should perform a graceful shutdown of the Elasticsearch cluster. If that is
+          not shut down gracefully, it may result in data corruption of the Elasticsearch shards. </p>
+        <p>To gracefully shut down the Logging components:</p>
+        <ol>
+    <li>From the deployer node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts logging-stop.yml</codeblock>
+            That will gracefully shut down the Logging agents (Beaver) on all nodes and then the
+            Logging server components (Elasticsearch, Kibana, Logstash). </li>
+        </ol>
+      </sectiondiv>
+    </section>
+    
+    <section id="stopMonitoring"><title outputclass="headerH">Stop Monitoring</title>
+      <sectiondiv outputclass="insideSection">
+    Run the monasca-stop.yml, monasca-agent-stop.yml and zookeeper-stop.yml playbooks to stop Monasca before shutting down the controller nodes.
+    
+      </sectiondiv>
+    </section>
+    
+    <section id="stopFreezer"><title outputclass="headerH">Stop Freezer</title>
+      <sectiondiv outputclass="insideSection">
+    The Freezer API is the only daemon process that would need to be shut down. 
+      </sectiondiv>
     </section>
     <section id="stopCompute"><title outputclass="headerH">Stopping Compute Nodes</title>
       <sectiondiv outputclass="insideSection">
@@ -158,7 +186,18 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
       </sectiondiv>
     </section>
 
+    <section id="startFreezer"><title outputclass="headerH">Starting Freezer</title>
+      <sectiondiv outputclass="insideSection">
+        Restart Freezer
+      </sectiondiv>
+    </section>
     
+    <section id="startMonitoring"><title outputclass="headerH">Start Monitoring</title>
+      <sectiondiv outputclass="insideSection">
+        Run the monasca-start.yml, monasca-agent-start.yml and zookeeper-start.yml playbooks to start Monasca after restarting the controller nodes.
+        
+      </sectiondiv>
+    </section>
     
     <section id="startVsa"><title outputclass="headerH">Rebooting VSA Nodes</title><sectiondiv
         outputclass="insideSection">
@@ -290,10 +329,15 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></co
       </sectiondiv>
     </section>
     
-    <section> </section>
 
-
-
+    <section id="startLogging">
+      <title outputclass="headerH">Restart Logging</title>
+      <sectiondiv outputclass="insideSection"> When the nodes are back up again, restart logging
+        from the deployer:
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts logging-start.yml</codeblock>
+      </sectiondiv>
+    </section>
 
 
 
