@@ -120,13 +120,11 @@ ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></
           CMC as it is Java application. You will need to restart it.</note>
       </sectiondiv>
     </section>
-    <section><title>Restarting</title>
-    You must restart the node running the lifecycle manager first.
-    </section>
-    <section id="expandCollapse">
-      <sectiondiv outputclass="expandall">Expand All</sectiondiv>
-      <sectiondiv outputclass="collapseall">Collapse All</sectiondiv>
-    </section>
+
+
+    <section><title>Restarting</title> You must restart the node running the lifecycle manager
+      first. </section>
+    <section conref="#cloud_shutdown/expandCollapse"/>
     <section id="startControllers"><title outputclass="headerH">Starting Controller Nodes</title>
       <sectiondiv outputclass="insideSection">
         <p><b>Reboot the Controllers</b></p> Start lifecycle manager for each of your controller
@@ -156,41 +154,7 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
       </sectiondiv>
     </section>
 
-    <section id="startCompute"><title outputclass="headerH">Rebooting Compute Nodes</title>
-      <sectiondiv outputclass="insideSection">
-        <p>To reboot a compute node the following operations will need to be performed:</p>
-        <ul>
-          <li>Reboot the node </li>
-          <li>Restart the Nova services </li>
-          <li>Restart any instances stopped above, except for Helion Development Platform instances.
-            To gracefully restart Helion Development Platform instances, see the <xref
-              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
-              Development Platform upgrade process</xref>.</li>
-        </ul>
-        <ol>
-          <li>SSH to your Compute nodes and reboot them: <codeblock>sudo reboot</codeblock>
-          </li>
-          <li>Run the hlm-start.yml playbook from the lifecycle manager. If needed, use the
-            bm-power-up.yml playbook to restart the node. Specify just the node(s) you want to start
-            in the 'nodelist' parameter arguments, i.e.
-            nodelist=&lt;node1&gt;[,&lt;node2&gt;][,&lt;node3&gt;].<codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;compute node></codeblock>
-          </li>
-          <li>Execute the <b>hlm-start.yml </b>playbook. Specifying the node(s) you want to start in
-            the 'limit' parameter arguments. This parameter accepts wildcard arguments and also
-            '@&lt;filename>' to process all hosts listed in the file.
-            <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></codeblock>
-          </li>
-          <li>Re-enable provisioning on the node:
-            <codeblock>nova service-enable &lt;node-name> nova-compute</codeblock></li>
-          <li> Restart any instances you
-            stopped.<codeblock>nova start &lt;instance-uuid></codeblock>
-          </li>
-        </ol>
-      </sectiondiv>
-    </section>
-
+    
     <section id="startSwift"><title outputclass="headerH">Rebooting Swift Nodes</title>
       <sectiondiv outputclass="insideSection"><p>If your Swift services are on controller node,
           please follow the controller node reboot instructions above.</p>
@@ -287,7 +251,41 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
       </sectiondiv>
     </section>
 
-
+    <section id="startCompute"><title outputclass="headerH">Rebooting Compute Nodes</title>
+      <sectiondiv outputclass="insideSection">
+        <p>To reboot a compute node the following operations will need to be performed:</p>
+        <ul>
+          <li>Reboot the node </li>
+          <li>Restart the Nova services </li>
+          <li>Restart any instances stopped above, except for Helion Development Platform instances.
+            To gracefully restart Helion Development Platform instances, see the <xref
+              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
+              Development Platform upgrade process</xref>.</li>
+        </ul>
+        <ol>
+          <li>SSH to your Compute nodes and reboot them: <codeblock>sudo reboot</codeblock>
+          </li>
+          <li>Run the hlm-start.yml playbook from the lifecycle manager. If needed, use the
+            bm-power-up.yml playbook to restart the node. Specify just the node(s) you want to start
+            in the 'nodelist' parameter arguments, i.e.
+            nodelist=&lt;node1&gt;[,&lt;node2&gt;][,&lt;node3&gt;].<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;compute node></codeblock>
+          </li>
+          <li>Execute the <b>hlm-start.yml </b>playbook. Specifying the node(s) you want to start in
+            the 'limit' parameter arguments. This parameter accepts wildcard arguments and also
+            '@&lt;filename>' to process all hosts listed in the file.
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></codeblock>
+          </li>
+          <li>Re-enable provisioning on the node:
+            <codeblock>nova service-enable &lt;node-name> nova-compute</codeblock></li>
+          <li> Restart any instances you
+            stopped.<codeblock>nova start &lt;instance-uuid></codeblock>
+          </li>
+        </ol>
+      </sectiondiv>
+    </section>
+    
     <section> </section>
 
 
@@ -311,6 +309,7 @@ ls *status*</codeblock> Here is the list:
       cmc-status.yml         glance-status.yml   keystone-status.yml  monasca-agent-status.yml     percona-status.yml      zookeeper-status.yml</codeblock>
       </sectiondiv>
     </section>
+
 
   </body>
 </topic>
