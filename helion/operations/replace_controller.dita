@@ -57,18 +57,19 @@ git checkout site</codeblock> then change,
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
           Then run ready-deployment:
-          <codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
         <li>Once that is complete, copy the Cobbler images to the correct location:
-          <codeblock>mkdir /srv/www/cobbler/ks_mirror/hlinux-cattleprod 
-cp /opt/hlm_packager/hlm/hlinux/dists/cattleprod/main/installer-amd64/current/images/netboot/debian-installer/amd64/linux /srv/www/cobbler/ks_mirror/hlinux-cattleprod
-cp /opt/hlm_packager/hlm/hlinux/dists/cattleprod/main/installer-amd64/current/images/netboot/debian-installer/amd64/initrd.gz /srv/www/cobbler/ks_mirror/hlinux-cattleprod</codeblock></li>
+          <codeblock>sudo mkdir /srv/www/cobbler/ks_mirror/hlinux-cattleprod 
+sudo cp /opt/hlm_packager/hlm/hlinux/dists/cattleprod/main/installer-amd64/current/images/netboot/debian-installer/amd64/linux /srv/www/cobbler/ks_mirror/hlinux-cattleprod
+sudo cp /opt/hlm_packager/hlm/hlinux/dists/cattleprod/main/installer-amd64/current/images/netboot/debian-installer/amd64/initrd.gz /srv/www/cobbler/ks_mirror/hlinux-cattleprod</codeblock></li>
         <li>Deploy Cobbler:
             <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock><note>After
             this step you may see failures because MySQL has not finished syncing. If so, please
-            rerun this step (7).</note></li> 
-        <li>Delete the haproxy user: <codeblock>deluser haproxy</codeblock></li>
+            rerun this step (7).</note></li>
+        <li>Delete the haproxy user: <codeblock>sudo deluser haproxy</codeblock></li>
         <li>Install the software on your new lifecycle manager/controller node with these three
           playbooks:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -99,29 +100,33 @@ git checkout site</codeblock> then change,
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
           Then run ready-deployment:
-          <codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>Log onto the node that is running the lifecycle manager. Remove the broken control plane
           node from cobbler by running sudo cobbler system remove --name &lt;server-id>. Here's an
-          example:<codeblock> sudo cobbler system remove --name controller2</codeblock>
+          example:<codeblock>sudo cobbler system remove --name controller2</codeblock>
         </li>
         <li>Remove the ssh key of the old controller node from the known hosts file. Here's an
           example:
           <codeblock>ssh-keygen -f "/home/stack/.ssh/known_hosts" -R 10.123.12.3</codeblock></li>
         <li>Run the cobbler deploy playbook to add the replacement node
-          <codeblock>ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock>
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock>
         </li>
         <li> Re-image the new nodes by running <b>bm-reimage.yml</b>: ansible-playbook -i
           hosts/localhost bm-reimage.yml -e nodelist=&lt;node-name>. Note: Note: you must ensure
           that the old controller node is powered off before completing this step. This is because
           the new controller node will re-use the original IP address.
-          <codeblock>ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=controller2</codeblock></li>
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=controller2</codeblock></li>
         <li>Configure the necessary keys used for the database etc:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-rebuild-pretasks.yml</codeblock></li>
         <li>Log into the 2 original controller nodes as "dbadmin" and run the following command:
           <codeblock>ssh-keygen -f "/home/dbadmin/.ssh/known_hosts" -R {{ip_of_node_to_replace}}</codeblock></li>
         <li>Run osconfig on the replacement controller node. For example:
-          <codeblock>ansible-playbook -i hosts/verb_hosts osconfig-run.yml -e rebuild=True --limit=&lt;controller-hostname></codeblock>
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml -e rebuild=True --limit=&lt;controller-hostname></codeblock>
         </li>
         <li> If the controller being replaced is the first server running the swift-proxy service
           (see <xref href="../objectstorage/first_proxy_server.dita">Identifying the First Proxy
@@ -137,7 +142,8 @@ ansible-playbook -i hosts/verb_hosts monasca-rebuild-pretasks.yml</codeblock></l
             replaced is the first proxy node then you only need to use the <codeph>--limit</codeph>
             switch for that node, otherwise you need to specify the hostname of your first proxy and
             the hostname of the node being replaced.</p>
-          <codeblock>ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname>,&lt;first-proxy-hostname></codeblock>
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname>,&lt;first-proxy-hostname></codeblock>
           <p>See <xref href="../objectstorage/first_proxy_server.dita">Identifying the First Swift
               Proxy Server</xref> for more details on how to determine which node is your first
             Swift proxy node.</p>
