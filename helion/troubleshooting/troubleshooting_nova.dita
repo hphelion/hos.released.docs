@@ -26,13 +26,13 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_ho
       <p>There is an issue in upstream Nova (outlined in <xref
           href="https://bugs.launchpad.net/nova/+bug/1457527" scope="external" format="html"
           >https://bugs.launchpad.net/nova/+bug/1457527</xref> where if you have Nova instances that
-        are booted from a flavor with a swap volume configured you will experience issues with that
-        swap file underlays being deleted when Nova compute nodes are rebooted. The swap disk is not
-        being registered in the block device mappings table so the Nova compute manager cleans up
-        the qcow2 underlay file prematurely. This does not have any impact on a running instance,
+        are booted from a flavor with a swap volume configured you will experience an issue where
+        the swap file underlays get deleted when Nova compute nodes are rebooted. The swap disk is
+        not being registered in the block device mappings table so the Nova compute manager cleans
+        up the qcow2 underlay file prematurely. This does not have any impact on a running instance,
         however, if the Nova node it resides on is rebooted, when the compute manager restarts it
         fails to restart the instances using the swap files for which the underlay file is missing.
-        The instnace will not start and the status will be set to ERROR.</p>
+        The instance will not start and the status will be set to ERROR.</p>
       <p>The issue can be resolved by resetting the instance status to ACTIVE and hard rebooting the
         instance. An admin user can do this by using these steps below.</p>
       <p>If the admin has access, you can do this from the lifecycle manager by sourcing the admin
@@ -45,6 +45,8 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_ho
         <li>Hard reboot the instance(s):
           <codeblock>nova reboot --hard &lt;instance ID></codeblock></li>
       </ol>
+      <note type="important">This is a manual procedure that needs to be performed each time a
+        Compute node is rebooted.</note>
     </section>
   </body>
 </topic>
