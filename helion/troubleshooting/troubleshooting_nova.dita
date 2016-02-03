@@ -1,32 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
   <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-  <topic id="troubleshootingNova">
-    <title><ph conkeyref="HOS-conrefs/product-title"/>Troubleshooting Nova Service</title>
-    <body>
-      <p conkeyref="HOS-conrefs/applies-to"/>
-  
-      <p>
-        Nova offers scalable, on-demand, self-service access to compute resources.  You can use this guide to
-        help with known issues and troubleshooting of Nova services.
-      </p>
-    
-      
+<topic id="troubleshootingNova">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Troubleshooting Nova Service</title>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="about">
+      <p>Nova offers scalable, on-demand, self-service access to compute resources. You can use this
+        guide to help with known issues and troubleshooting of Nova services.</p>
+    </section>
     <section id="troubleshooting">
       <title>Troubleshooting</title>
-      <ul>
-        <li>Nova-consoleauth
-          <p>The nova-consoleauth service runs by default on the first controller node, that is, the host with 
-            <codeph>consoleauth_host_index=0</codeph>.  If nova-consoleauth fails on the first controller node, 
-            you can switch it to another controller node by running the ansible playbook nova-start.yml and 
-            passing it the index of the next controller node.
-          </p>
-          
-          
-          <p>The command to switch nova-consoleauth to another controller node (controller 2 for instance) is:</p>
-            <codeblock>ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock>
-  
-          </li>
-      </ul>
+      <!-- nova-consoleauth NEED JIRA -->
+      <p><b>Nova-consoleauth</b></p>
+      <p>The <codeph>nova-consoleauth</codeph> service runs by default on the first controller node,
+        that is, the host with <codeph>consoleauth_host_index=0</codeph>. If
+          <codeph>nova-consoleauth</codeph> fails on the first controller node, you can switch it to
+        another controller node by running the ansible playbook <codeph>nova-start.yml</codeph> and
+        passing it the index of the next controller node.</p>
+      <p>The command to switch nova-consoleauth to another controller node (controller 2 for
+        instance) is:</p>
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock>
+      <!-- DOCS-2563 -->
+      <p><b>Issue with Swap File Underlays being Deleted when Rebooting Compute Nodes</b></p>
+      <p>There is an issue in upstream Nova (outlined in <xref
+          href="https://bugs.launchpad.net/nova/+bug/1457527" scope="external" format="html"
+          >https://bugs.launchpad.net/nova/+bug/1457527</xref> where if you have Nova instances that
+        are booted from a flavor with a swap volume configured you will experience issues with that
+        swap file underlays being deleted when Nova compute nodes are rebooted. The swap disk is not
+        being registered in the block device mappings table so the Nova compute manager cleans up
+        the qcow2 underlay file prematurely. This does not have any impact on a running instance,
+        however, if the Nova node it resides on is rebooted, when the compute manager restarts it
+        fails to restart the instances using the swap files for which the underlay file is missing.
+        The instnace will not start and the status will be set to ERROR.</p>
+      <p>The issue can be resolved by resetting the instance status to ACTIVE and hard rebooting the
+        instance. An admin user can do this by using these steps below.</p>
+      <p>If the admin has access, you can do this from the lifecycle manager by sourcing the admin
+        creds with <codeph>source ~/service.osrc</codeph>.</p>
+      <ol>
+        <li>List the impacted instances:
+          <codeblock>nova list --all-tenants --field=host,status</codeblock></li>
+        <li>Reset the instance state:
+          <codeblock>nova reset-state --active &lt;instance ID></codeblock></li>
+        <li>Hard reboot the instance(s):
+          <codeblock>nova reboot --hard &lt;instance ID></codeblock></li>
+      </ol>
     </section>
   </body>
 </topic>
