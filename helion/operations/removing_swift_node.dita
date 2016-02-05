@@ -17,128 +17,119 @@
       </ul>
     </section>
 
-    <section id="steps">
-      <title>To Remove a Node's Drive from the Rings</title>
-      <p>To remove a node's drives from the rings, change the role of the server that is being
-        removed so that it uses that disk model that does not include Swift drives. Then a new ring
-        is built and deployed. The new rings will not contain the node's drives.</p>
-      <p>
-        <ol id="ol_lnw_cdg_pt">
-          <li>Edit the definition of the server (usually in the <codeph>data/servers.yml</codeph>
-            file). For example, if the entry for the server looks
-              like:<codeblock>- name: SWOBJ-DISKS
-- id: swobj4
-  ip-addr: 192.168.10.5
+    <section id="passthrough">
+      <title>Setting the Pass-through Attributes</title>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Ensure that the weight-step attribute is set. See <xref
+            href="../objectstorage/setting_up_weight_attributes_ring_changes.dita"/> for more
+          details.</li>
+        <li>Edit the <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file to add a
+          server pass through to indicate that the Swift node is to be removed. <p>Here is an
+            example:</p>
+          <codeblock>
+- id: swobj1
   role: SWOBJ-ROLE
-  server-group: RACK3  
-   ...</codeblock><p>Change
-              the role to a new value, for example,
-              SWOBJ-DRAINING-ROLE:<codeblock>- name: SWOBJ-DISKS
-- id: swobj4
-  ip-addr: 192.168.10.5
-  role: SWOBJ-DRAINING-ROLE
-  server-group: RACK3
-   ...</codeblock></p></li>
-          <li>Edit the <codeph>server-roles</codeph> definition (usually in the
-              <codeph>data/server_roles.yml</codeph> file) and add the SWOBJ-DRAINING-ROLE role.
-            Keep the interface model of the original SWOBJ-ROLE, but change the disk model to
-            SWOBJ-DRAINING-DISKS:<codeblock>- name: SWOBJ-ROLE
-  interface-model: INTERFACE_SET_SWOBJ
-  disk-model: SWOBJ-DISKS
- 
-- name: SWOBJ-DRAINING-ROLE
-  interface-model: INTERFACE_SET_SWOBJ
-  disk-model: SWOBJ-DRAINING-DISKS</codeblock></li>
-          <li>Add the new role to the <codeph>server-role</codeph> attribute of either the cluster
-            or resources item (depending on context). For example, for a Swift object server, the
-            original <codeph>server-role</codeph> attribute looks like: <codeblock>resources:
-  - name: swobj
-    ...
-    server-role: SWOBJ-ROLE
-    ...</codeblock>
-            <p>Change this to a list containing the original <codeph>SWOBJ-ROLE</codeph> and the new
-                <codeph>SWOBJ-DRAINING-ROLE</codeph> as follows:
-              <codeblock>resources:
-  - name: swobj
-    ...
-    server-role:
-    - SWOBJ-ROLE
-    - SWOBJ-DRAINING-ROLE
-    ...</codeblock></p></li>
-          <li>Create a SWOBJ-DRAINING-DISKS disk model by editing the file containing the
-            SWOBJ-DISKS disk model (usually the <codeph>data/swobj_disks.yml</codeph> file) and
-            adding an entry for SWOBJ-DRAINING-DISKS. Make a copy of the SWOBJ-DISKS disk model, but
-            change the consumer field from <b>swift</b> to <b>swift-draining</b>. For
-              example:<codeblock>disk-models:
-- name: SWOBJ-DISKS  
-  volume-groups:
-    - name: hlm-vg
-      ...
-      consumer:
-         name: os
-  device-groups:
-    - name: swiftobj
-      devices:
-        - name: /dev/sdb
-        - name: /dev/sdc
-        - name: /dev/sdd
-      consumer:
-        name: swift
-        attrs:
-          rings:
-            - object-0
- 
-- name: SWOBJ-DRAINING-DISKS  
-  volume-groups:
-    - name: hlm-vg
-      ...
-      consumer:
-         name: os
-  device-groups:
-    - name: swiftobj
-      devices:
-        - name: /dev/sdb
-        - name: /dev/sdc
-        - name: /dev/sdd
-      consumer:
-        name: swift-draining
-        attrs:
-          rings:
-            - object-0</codeblock><note>Before
-              you run any playbooks, remember that you need to export the encryption key in the
-              following environment variable: <codeph>export
-                HOS_USER_PASSWORD_ENCRYPT_KEY=&lt;encryption key></codeph>. For more information,
-              see <xref href="../installation/install_entryscale_swift.dita#install_swift"
-            />.</note></li>
-          <li>Commit the changes to
-            Git:<codeblock>cd ~/helion
-git commit -a -m "&lt;commit message>"</codeblock></li>
-          <li>Run the configuration
-            processor:<codeblock>cd ~/helion/hos/ansible
+  server-group: RACK1
+  mac-addr: "5c:b9:01:89:c6:e0"
+  ip-addr: 10.241.17.14
+  ilo-ip: 10.1.9.149
+  ilo-user: admin
+  ilo-password: password
+  nic-mapping: HP-DL360-4PORT
+  <b>pass-through:
+     servers:
+        - id: ccn-0001
+          data:
+             drain: yes</b></codeblock>
+          <p>By setting this pass-through attribute, you indicate that the system should reduce the
+            weight of the server's drives. The weight reduction is determined by the weight-step
+            attribute as described in the previous step. This process is known as "draining", where
+            you remove the Swift data from the node in preparation for removing the node.</p></li>
+        <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
+            repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-          <li>Create a deployment directory:
-            <codeblock>cd ~/helion/hos/ansible
+        <li>Use the playbook to create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-          <li>Validate the changes you've made to the configuration files using the playbook below
-            before proceeding further: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts _swift-validate-input-model.yml --limit SWF*</codeblock>
-            <p>If any errors occur, correct them in your configuration files and repeat steps 5-7
-              again until no more errors occur before going to the next step.</p>
-            <p>For more details on how to interpret and resolve errors, see <xref
-                href="../troubleshooting/objectstorage/interpreting_swift_validate_input_model.dita"
-                >Interpreting Swift Input Model Validation Errors</xref></p></li>
-
-          <li>Run the <codeph>swift-deploy.yml</codeph> playbook. Do not limit this process to just
-            the node (<b>helion-cp1-swobj4</b>) that you are
-            draining:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+        <li>Run the Swift deploy playbook to perform the first ring rebuild. This will remove some
+          of the partitions from all drives on the node you are removing:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
-          <li>Wait until replication has finished. For more information, see <xref
-              href="../objectstorage/safe_rebalance_deploy_ring.dita"/>.<p>At this stage, all data
-              has been moved from <b>helion-cp1-swobj4</b> and replicated on the remaining nodes.
-              Now, you can proceed to the next phase.</p></li>
-        </ol>
-      </p>
+        <li>Wait until the replication has completed. For further details, see <xref
+            href="../objectstorage/safe_rebalance_deploy_ring.dita"/></li>
+        <li>Verify whether all of the partitions have been removed from all drives on the Swift node
+          you are removing. You can do this by SSH'ing into the first account server node and using
+          these commands: <codeblock>cd /etc/swiftlm/builder_dir/region-&lt;region_name>
+sudo swift-ring-builder &lt;ring_name>.builder</codeblock>
+          <p>For example, if the node you are removing was part of the object-o ring the command
+            would be:</p>
+          <codeblock>sudo swift-ring-builder object-0.builder</codeblock>
+          <p>Check the output. You will need to know the IP address of the server being drained. In
+            the example below, the weight of drives on 192.168.245.3 has reached zero for the
+            object-0 ring:</p>
+          <codeblock>$ cd /etc/swiftlm/builder_dir/region-region1/
+$ sudo swift-ring-builder object-0.builder 
+account.builder, build version 6
+4096 partitions, 3.000000 replicas, 1 regions, 1 zones, 6 devices, 0.00 balance, 0.00 dispersion
+The minimum number of hours before a partition can be reassigned is 16
+The overload factor is 0.00% (0.000000)
+Devices:    id  region  zone      ip address  port  replication ip  replication port      name weight partitions balance meta
+             0       1     1   192.168.245.3  6002   192.168.245.3              6002     disk0  18.63          0   -0.00 padawan-ccp-c1-m1:disk0:/dev/sdc
+             1       1     1   192.168.245.3  6002   192.168.245.3              6002     disk1  18.63          0   -0.00 padawan-ccp-c1-m1:disk1:/dev/sdd
+             2       1     1   192.168.245.4  6002   192.168.245.4              6002     disk0  18.63          0   -0.00 padawan-ccp-c1-m2:disk0:/dev/sdc
+             3       1     1   192.168.245.4  6002   192.168.245.4              6002     disk1  18.63       2048   -0.00 padawan-ccp-c1-m2:disk1:/dev/sdd
+             4       1     1   192.168.245.5  6002   192.168.245.5              6002     disk0  18.63       2048   -0.00 padawan-ccp-c1-m3:disk0:/dev/sdc
+             5       1     1   192.168.245.5  6002   192.168.245.5              6002     disk1  18.63       2048   -0.00 padawan-ccp-c1-m3:disk1:/dev/sdd</codeblock></li>
+        <li>If the weight is zero all rings, you can move to the next step, otherwise continue the
+          ring rebalance cycle as described in <xref
+            href="../objectstorage/safe_rebalance_deploy_ring.dita"/> until the weight has reached
+          zero.</li>
+        <li>Once the weight of the drives has reached zero, you can remove the Swift nodes' drives
+          all rings. Edit the pass-through data you created in step #3 and set the
+            <codeph>remove</codeph> attribute as shown in this example:
+          <codeblock>
+- id: swobj1
+  role: SWOBJ-ROLE
+  server-group: RACK1
+  mac-addr: "5c:b9:01:89:c6:e0"
+  ip-addr: 10.241.17.14
+  ilo-ip: 10.1.9.149
+  ilo-user: admin
+  ilo-password: password
+  nic-mapping: HP-DL360-4PORT
+  pass-through:
+      servers:
+         - id: ccn-0001
+           data:
+             <b>remove: yes</b></codeblock></li>
+        <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
+            repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Use the playbook to create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Run the Swift deploy playbook to perform the first ring rebuild. This will remove some
+          of the partitions from all drives on the node you are removing:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
+        <li>You will need to rebalance the Swift rings through several cycles as described in <xref
+            href="../objectstorage/safe_rebalance_deploy_ring.dita"/></li>
+        <li>Through the replication process the Swift data will be moved from the removed node to
+          the remaining nodes. You can then proceed to the next phase.</li>
+      </ol>
     </section>
+
     <section>
       <title><b>To Disable Swift on a Node</b></title>
       <p>The node is still running Swift services. It is still part of the input model and is fully
