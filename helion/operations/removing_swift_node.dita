@@ -31,12 +31,26 @@
             <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file since your server
           IDs are already listed in that file. See <xref
             href="../input_model.dita#input_model/passthrough">Input Model - Passthrough</xref> for
-          more details on how pass-through works. <p>Here is an example:</p>
-          <codeblock>  <b>pass-through:
-     servers:
-        - id: ccn-0001
-          data:
-             drain: yes</b></codeblock>
+          more details on how pass-through works. <p>Here is the general format:</p>
+          <codeblock>
+pass-through:
+  servers:
+    - id: &lt;server-id&gt;
+      data:
+          &lt;subsystem&gt;:
+                &lt;subsystem-attributes&gt;</codeblock>
+          <p>Here is an example:</p>
+          <codeblock>
+---
+  product:
+    version: 2
+            
+  <b>pass-through:
+    servers:
+      - id: ccn-0001
+        data:
+          swift:
+            drain: yes</b></codeblock>
           <p>By setting this pass-through attribute, you indicate that the system should reduce the
             weight of the server's drives. The weight reduction is determined by the weight-step
             attribute as described in the previous step. This process is known as "draining", where
@@ -58,16 +72,16 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
 ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
         <li>Wait until the replication has completed. For further details, see <xref
             href="../objectstorage/safe_rebalance_deploy_ring.dita"/></li>
-        <li>Verify whether all of the partitions have been removed from all drives on the Swift node
-          you are removing. You can do this by SSH'ing into the first account server node and using
-          these commands: <codeblock>cd /etc/swiftlm/builder_dir/region-&lt;region_name>
+        <li>Determine whether all of the partitions have been removed from all drives on the Swift
+          node you are removing. You can do this by SSH'ing into the first account server node and
+          using these commands: <codeblock>cd /etc/swiftlm/builder_dir/region-&lt;region_name>
 sudo swift-ring-builder &lt;ring_name>.builder</codeblock>
           <p>For example, if the node you are removing was part of the object-o ring the command
             would be:</p>
           <codeblock>sudo swift-ring-builder object-0.builder</codeblock>
           <p>Check the output. You will need to know the IP address of the server being drained. In
-            the example below, the weight of drives on 192.168.245.3 has reached zero for the
-            object-0 ring:</p>
+            the example below, the number of partitions of the drives on 192.168.245.3 has reached
+            zero for the object-0 ring:</p>
           <codeblock>$ cd /etc/swiftlm/builder_dir/region-region1/
 $ sudo swift-ring-builder object-0.builder 
 account.builder, build version 6
@@ -75,34 +89,29 @@ account.builder, build version 6
 The minimum number of hours before a partition can be reassigned is 16
 The overload factor is 0.00% (0.000000)
 Devices:    id  region  zone      ip address  port  replication ip  replication port      name weight partitions balance meta
-             0       1     1   192.168.245.3  6002   192.168.245.3              6002     disk0  18.63          0   -0.00 padawan-ccp-c1-m1:disk0:/dev/sdc
-             1       1     1   192.168.245.3  6002   192.168.245.3              6002     disk1  18.63          0   -0.00 padawan-ccp-c1-m1:disk1:/dev/sdd
-             2       1     1   192.168.245.4  6002   192.168.245.4              6002     disk0  18.63          0   -0.00 padawan-ccp-c1-m2:disk0:/dev/sdc
+             0       1     1   192.168.245.3  6002   192.168.245.3              6002     disk0   0.00          0   -0.00 padawan-ccp-c1-m1:disk0:/dev/sdc
+             1       1     1   192.168.245.3  6002   192.168.245.3              6002     disk1   0.00          0   -0.00 padawan-ccp-c1-m1:disk1:/dev/sdd
+             2       1     1   192.168.245.4  6002   192.168.245.4              6002     disk0  18.63       2048   -0.00 padawan-ccp-c1-m2:disk0:/dev/sdc
              3       1     1   192.168.245.4  6002   192.168.245.4              6002     disk1  18.63       2048   -0.00 padawan-ccp-c1-m2:disk1:/dev/sdd
              4       1     1   192.168.245.5  6002   192.168.245.5              6002     disk0  18.63       2048   -0.00 padawan-ccp-c1-m3:disk0:/dev/sdc
              5       1     1   192.168.245.5  6002   192.168.245.5              6002     disk1  18.63       2048   -0.00 padawan-ccp-c1-m3:disk1:/dev/sdd</codeblock></li>
-        <li>If the weight is zero all rings, you can move to the next step, otherwise continue the
-          ring rebalance cycle as described in <xref
+        <li>If the number of partitions is zero for the server on all rings, you can move to the
+          next step, otherwise continue the ring rebalance cycle as described in <xref
             href="../objectstorage/safe_rebalance_deploy_ring.dita"/> until the weight has reached
           zero.</li>
-        <li>Once the weight of the drives has reached zero, you can remove the Swift nodes' drives
-          all rings. Edit the pass-through data you created in step #3 and set the
-            <codeph>remove</codeph> attribute as shown in this example:
-          <codeblock>
-- id: swobj1
-  role: SWOBJ-ROLE
-  server-group: RACK1
-  mac-addr: "5c:b9:01:89:c6:e0"
-  ip-addr: 10.241.17.14
-  ilo-ip: 10.1.9.149
-  ilo-user: admin
-  ilo-password: password
-  nic-mapping: HP-DL360-4PORT
+        <li>If the number of partitions is zero for the server on all rings, you can remove the
+          Swift nodes' drives all rings. Edit the pass-through data you created in step #3 and set
+          the <codeph>remove</codeph> attribute as shown in this example:
+          <codeblock>---
+  product:
+    version: 2
+            
   pass-through:
-      servers:
-         - id: ccn-0001
-           data:
-             <b>remove: yes</b></codeblock></li>
+    servers:
+      - id: ccn-0001
+        data:
+          swift:
+            <b>remove: yes</b></codeblock></li>
         <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
             repo</xref>, as follows:
           <codeblock>cd ~/helion/hos/ansible
@@ -114,14 +123,15 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
         <li>Use the playbook to create a deployment directory:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-        <li>Run the Swift deploy playbook to perform the first ring rebuild. This will remove some
-          of the partitions from all drives on the node you are removing:
+        <li>Run the Swift deploy playbook to rebuild the rings by removing the server:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
-        <li>You will need to rebalance the Swift rings through several cycles as described in <xref
-            href="../objectstorage/safe_rebalance_deploy_ring.dita"/></li>
-        <li>Through the replication process the Swift data will be moved from the removed node to
-          the remaining nodes. You can then proceed to the next phase.</li>
+        <li>You will need to rebalance the Swift rings through several cycles as described in the "Final Rebalance Phase" described in the <xref
+          href="../objectstorage/input_model_change_existing_rings.dita#change_swift_rings/final_rebalance">Applying Input Model Changes to Existing
+          Rings</xref> documentation.</li>
+        <li>At this stage, the server has been removed from the rings and the data that was
+          originally stored on the server has been replicated in a balanced way to the other servers
+          in the system. You can proceed to the next phase.</li>
       </ol>
     </section>
 
