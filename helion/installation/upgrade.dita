@@ -10,8 +10,9 @@
       <note type="warning">The process for upgrading HPE Helion OpenStack to version 2.1 requires a
         reboot which may prevent core <b>HPE Helion Development Platform</b> services from
         restarting. If your environment relies on HPE Helion Development Platform, please follow
-        instructions for the <xref href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
-          scope="external">HPE Helion Development Platform upgrade process</xref>.</note>
+        instructions for the <xref
+          href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
+          scope="peer">HPE Helion Development Platform upgrade process</xref>.</note>
       <p>When upgrading from <keyword keyref="kw-hos-phrase-20"/> to <keyword
           keyref="kw-hos-phrase-21"/> you will use the same configuration files in your
           <codeph>~/helion/my_cloud/definition</codeph> directory as you used when originally
@@ -24,16 +25,14 @@
         process. Otherwise they will not be applied after the upgrade.</p>
       <p>You may also install <keyword keyref="kw-hos-phrase-21"/> as a full install. Those
         instructions are found in the installation guide. See <xref
-          href="installation_overview.dita">Installation Overview</xref> for details. If you choose
+          href="installation_overview.dita">Installation Overview</xref> for details.  If you choose
         to do a fresh install it is important that you completely wipe your disk prior to doing the
         installation, otherwise errors may occur.</p>
     </section>
-
+    
     <section>
       <title>DNS Service Restart for Helion Development Platform after All Node Reboots</title>
-      <note>If you are running HPE Helion Development Platform and are upgrading HPE Helion
-        OpenStack, you must restart your services after restarting all the nodes mentioned
-        below.</note>
+      <note>If you are running HPE Helion Development Platform and are upgrading HPE Helion OpenStack, you must restart your services after restarting all the nodes metioned below.</note>
       <p>The following are the steps you will take to ensure that Helion Development Platform runs
         after the Helion OpenStack upgrade:</p>
       <ol>
@@ -51,9 +50,9 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
     </section>
     <section id="prereqs"><title>Prerequisites</title>
       <p>These steps assume you have an installed and working <keyword keyref="kw-hos-phrase-20"/>
-        cloud, and that you have followed the <xref href="/#devplatform/2.0/upgrade_HOS_21.html"
-          format="html" scope="external">HPE Helion Development Platform upgrade process</xref> to
-        gracefully shutdown Helion Development Platform Services and instances.</p>
+        cloud, and that you have followed the <xref
+          href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
+          scope="peer">HPE Helion Development Platform upgrade process</xref> to gracefully shutdown Helion Development Platform Services and instances.</p>
     </section>
 
     <section id="mainSteps"><title>Upgrade Overview</title>
@@ -107,8 +106,7 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li><b>ESX - additional step</b>: If you are using the Entry-scale with ESX model you will
-          need to uncomment the EON upgrade step from the YAML file below prior to continuing with the upgrade steps: 
-          <codeblock>~/scratch/ansible/next/hos/ansible/_hlm-service-upgrade.yml</codeblock>
+          need to uncomment the EON upgrade step from the YAML file below: <codeblock>cd  ~/scratch/ansible/next/hos/ansible/_hlm-service-upgrade.yml</codeblock>
           <p>The line to uncomment is:</p>
           <codeblock>eon-upgrade.yml</codeblock></li>
 
@@ -123,8 +121,7 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
           <p>A full list is included at the end of this document.</p></li>
         <li>Run the upgrade playbook (required for all models/deployments): <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock>
-          <note>You will see an Ansible code style warning: [WARNING]: It is unnecessary to use '{{'
-            in conditionals, leave variables in loop expressions bare. Please ignore.</note>
+          <note>You will see an Ansible code style warning: [WARNING]: It is unnecessary to use '{{' in conditionals, leave variables in loop expressions bare.  Please ignore.</note>
           <note>You may run the <codeph>hlm-status.yml</codeph> playbook any time you like for
             status information.</note></li>
         <li><b>ESX - additional step:</b> Once the upgrade is complete, skip to the <xref
@@ -229,12 +226,10 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
       <sectiondiv outputclass="insideSection">
         <p>To reboot a compute node the following operations will need to be performed:</p>
         <ul>
-
+         
           <li>Disable provisioning of the node to take the node offline to prevent further instances
             being scheduled to the node during the reboot. </li>
-          <li>Gracefully shut down Helion Development Platform services and instances. See <xref
-              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
-              Development Platform upgrade process</xref> for details.</li>
+          <li>Gracefully shut down Helion Development Platform services and instances</li>
           <li>Identify instances that exist on the compute node, and then either: <ul>
               <li>Live migrate the instances off the node before actioning the reboot. OR </li>
               <li>Stop the instances</li>
@@ -242,10 +237,10 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
           </li>
           <li>Reboot the node </li>
           <li>Restart the Nova services </li>
-          <li>Restart any instances stopped above, except for Helion Development Platform instances.
-            To gracefully restart Helion Development Platform instances, see the <xref
-              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
-              Development Platform upgrade process</xref>.</li>
+          <li>Restart any instances stopped above, except for Helion Development Platform instances. To 
+            gracefully restart Helion Development Platform instances, see the <xref
+              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
+              scope="external">HPE Helion Development Platform upgrade process</xref>.</li>
         </ul>
         <ol>
           <li>Disable provisioning:
@@ -260,8 +255,8 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
             <!--<p>Until
               HOS 3.0 that will be based on the Mitaka release, the only live-migration cases that
               will work are the following:</p> -->
-            <p>If your instance is booted from a volume and has any number of Cinder volume
-              attached, use the nova live-migration
+            <p>If your instance is booted from a volume and has
+              any number of Cinder volume attached, use the nova live-migration
             command:</p><codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
             If your instance has local (ephemeral) disk(s) only, you can use the --block-migrate
             option:<codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
@@ -329,7 +324,8 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
             "normal")</li>
           <li>Run the following command from your first controller node which will open the HP
             StoreVirtual Centralized Management Console (CMC) GUI
-            <codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar </codeblock></li>
+          
+          <codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar </codeblock></li>
           <li>To view the cluster status , go to: management group -&gt; click on the respective
             cluster -&gt; check for status</li>
           <li>Repeat steps 2-4 for the other remaining nodes of the same VSA cluster. </li>
@@ -400,30 +396,32 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
             cluster rebalancing itself: <codeblock>ceph osd set noout</codeblock>
           </li>
           <li>Stop all the OSD services on the current node by executing below command:
+          
             <codeblock>sudo systemctl stop  ceph-osd@*</codeblock>
-          </li>
-          <li>Now reboot the OSD node. </li>
-          <li>Once the OSD node is up, log in and execute the following command and observe that a
-            line similar to "osd.0 192.17.11.7:6801/3824 boot" appears for all the OSDs on the node:
-            <codeblock>ceph -w</codeblock> To quit, this command press Ctrl + C </li>
-          <li>Verify that all the OSDs on this node are 'up' by executing following command (and
-            observing that all the OSDs under the current host are reported as 'up')
-            <codeblock>ceph osd tree</codeblock> If any of the OSDs are reported as 'down', please
-            check the logs for the corresponding OSD (in the
-              <codeph>/var/log/ceph/&lt;cluster-name>-osd.&lt;osd_number>.log</codeph> file) for
-            resolving the issue. </li>
-          <li>Now execute the following command from the re-booted OSD node, to unset the cluster
-            from noout : <codeblock>ceph osd unset noout</codeblock>
-          </li>
-          <li>Execute the following playbook from the lifecycle manager node to check the status of
-            the OSDs that have just come up:
-            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname></codeblock>
-          </li>
-          <li>If the above playbook does not report any errors, repeat from step 5 for another Ceph
-            OSD node in the cluster. </li>
-          <li>Once the entire cluster is rebooted, execute this command
-            <codeblock>ceph health detail</codeblock> to ensure that you see HEALTH_OK. </li>
-        </ol>
+          
+         </li><li>Now reboot the OSD node.
+         </li><li>Once the OSD node is up, log in and execute the following command and observe that a line similar to "osd.0 192.17.11.7:6801/3824 boot" 
+           appears for all the OSDs on the node:
+          
+           <codeblock>ceph -w</codeblock>
+          
+          To quit, this command press Ctrl + C
+         </li><li>Verify that all the OSDs on this node are 'up' by executing following command (and observing that all the OSDs under the current host are reported as 'up')
+          
+           <codeblock>ceph osd tree</codeblock>
+          
+          If any of the OSDs are reported as 'down', please check the logs for the corresponding OSD (in the <codeph>/var/log/ceph/&lt;cluster-name>-osd.&lt;osd_number>.log</codeph> file) for resolving the issue.
+         </li><li>Now execute the following command from the re-booted OSD node, to unset the cluster from noout :
+            
+           <codeblock>ceph osd unset noout</codeblock>
+            
+         </li><li>Execute the following playbook from the lifecycle manager node to check the status of the OSDs that have just come up: 
+            
+           <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname></codeblock>
+              
+         </li><li>If the above playbook does not report any errors, repeat from step 5 for another Ceph OSD node in the cluster.
+         </li><li>Once the entire cluster is rebooted, execute this command
+            <codeblock>ceph health detail</codeblock> to ensure that you see HEALTH_OK. </li></ol>
       </sectiondiv>
     </section>
 
