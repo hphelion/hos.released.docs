@@ -10,6 +10,7 @@
       restarted first.</p>
     <p>Shut down:</p>
     <ol>
+      <li>Stop logging, monitoring, and Freezer backup</li>
       <li>Stop instances on nodes </li>
       <li>Stop compute </li>
       <li>Stop Swift nodes </li>
@@ -25,21 +26,22 @@
       <li>Recover cluster </li>
       <li>Start Swift nodes </li>
       <li>Start compute node</li>
+      <li>Start logging, monitoring, and Freezer backup</li>
     </ol>
 
-    <note>You will have to manually stop RabbitMQ</note>
+    <note>You will have to manually stop and then restart RabbitMQ</note>
     <section id="expandCollapse">
       <sectiondiv outputclass="expandall">Expand All</sectiondiv>
       <sectiondiv outputclass="collapseall">Collapse All</sectiondiv>
     </section>
-    
+
     <section id="stopLogging"><title outputclass="headerH">Stop Logging</title>
       <sectiondiv outputclass="insideSection">
-    <p>For Logging, you should perform a graceful shutdown of the Elasticsearch cluster. If that is
-          not shut down gracefully, it may result in data corruption of the Elasticsearch shards. </p>
+        <p>For Logging, you should perform a graceful shutdown of the Elasticsearch cluster. If that
+          is not shut down gracefully, it may result in data corruption of the Elasticsearch shards. </p>
         <p>To gracefully shut down the Logging components:</p>
         <ol>
-    <li>From the deployer node:
+          <li>From the deployer node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts logging-stop.yml</codeblock>
             That will gracefully shut down the Logging agents (Beaver) on all nodes and then the
@@ -47,7 +49,7 @@ ansible-playbook -i hosts/verb_hosts logging-stop.yml</codeblock>
         </ol>
       </sectiondiv>
     </section>
-    
+
     <section id="stopMonitoring"><title outputclass="headerH">Stop Monitoring</title>
       <sectiondiv outputclass="insideSection"> Run the monasca-stop.yml, monasca-agent-stop.yml and
         zookeeper-stop.yml playbooks to stop Monasca before shutting down the controller nodes.
@@ -56,11 +58,10 @@ ansible-playbook -i hosts/verb_hosts monasca-agent-stop.yml
 ansible-playbook -i hosts/verb_hosts zookeeper-stop.yml</codeblock>
       </sectiondiv>
     </section>
-    
+
     <section id="stopFreezer"><title outputclass="headerH">Stop Freezer</title>
-      <sectiondiv outputclass="insideSection">
-    The Freezer API is the only daemon process that would need to be shut down. 
-      </sectiondiv>
+      <sectiondiv outputclass="insideSection"> The Freezer API is the only daemon process that would
+        need to be shut down. </sectiondiv>
     </section>
     <section id="stopCompute"><title outputclass="headerH">Stop Compute Nodes</title>
       <sectiondiv outputclass="insideSection">
@@ -79,7 +80,7 @@ ansible-playbook -i hosts/verb_hosts zookeeper-stop.yml</codeblock>
           <li> Stop the instances on the compute node. <p>Stop the instances on the node by running
               the following command for each of the
             instances:</p><codeblock>nova stop &lt;instance-uuid&gt;</codeblock></li>
-          <li>Stop all services on the compute node:  note to self fndcmp limit  shut down svcs,
+          <li>Stop all services on the compute node: note to self fndcmp limit shut down svcs,
             then<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;compute node></codeblock>
           </li>
@@ -151,7 +152,7 @@ ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></
     </section>
 
 
-    <section><title>Restarting</title> You must restart the node running the lifecycle manager
+    <section><title>Starting up</title> You must restart the node running the lifecycle manager
       first. </section>
 
     <section id="startControllers"><title outputclass="headerH">Start Controller Nodes</title>
@@ -186,9 +187,9 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node><
       </sectiondiv>
     </section>
 
-   
-    
-    <section id="startVsa"><title outputclass="headerH">Reboot VSA Nodes</title><sectiondiv
+
+
+    <section id="startVsa"><title outputclass="headerH">Start VSA Nodes</title><sectiondiv
         outputclass="insideSection">
         <p>If your cloud is deployed with VSA, then the reboot sequence will be as follows:</p>
         <ol>
@@ -209,7 +210,7 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node><
       </sectiondiv>
     </section>
 
-    <section id="startCeph"><title outputclass="headerH">Reboot Ceph</title>
+    <section id="startCeph"><title outputclass="headerH">Start Ceph</title>
       <sectiondiv outputclass="insideSection">
         <p>There are two categories of ceph nodes:</p>
         <ul id="ul_myc_km3_w5">
@@ -268,7 +269,7 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node><
         </ol>
       </sectiondiv>
     </section>
-    <section id="startSwift"><title outputclass="headerH">Reboot Swift Nodes</title>
+    <section id="startSwift"><title outputclass="headerH">Start Swift Nodes</title>
       <sectiondiv outputclass="insideSection"><p>If your Swift services are on controller node,
           please follow the controller node reboot instructions above.</p>
         <p id="firstp2">For a dedicated Swift PAC cluster or Swift Object resource node: </p>For
@@ -283,7 +284,7 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
         </ol>
       </sectiondiv>
     </section>
-    <section id="startCompute"><title outputclass="headerH">Reboot Compute Nodes</title>
+    <section id="startCompute"><title outputclass="headerH">Start Compute Nodes</title>
       <sectiondiv outputclass="insideSection">
         <p>To reboot a compute node the following operations will need to be performed:</p>
         <ul>
@@ -317,21 +318,14 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></co
         </ol>
       </sectiondiv>
     </section>
-    
 
-    <section id="startLogging">
-      <title outputclass="headerH">Start Logging</title>
-      <sectiondiv outputclass="insideSection"> When the nodes are back up again, restart logging
-        from the lifecycle manager:
-        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts logging-start.yml</codeblock>
-      </sectiondiv>
-    </section>
+
+
 
     <section id="startFreezer"><title outputclass="headerH">Start Freezer</title>
       <sectiondiv outputclass="insideSection"> Restart Freezer </sectiondiv>
     </section>
-    
+
     <section id="startMonitoring"><title outputclass="headerH">Start Monitoring</title>
       <sectiondiv outputclass="insideSection"> Run the monasca-start.yml, monasca-agent-start.yml
         and zookeeper-start.yml playbooks to start Monasca after restarting the controller nodes.
@@ -342,6 +336,14 @@ ansible-playbook -i hosts/verb_hosts zookeeper-start.yml</codeblock>
       </sectiondiv>
     </section>
 
+    <section id="startLogging">
+      <title outputclass="headerH">Start Logging</title>
+      <sectiondiv outputclass="insideSection"> When the nodes are back up again, restart logging
+        from the lifecycle manager:
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts logging-start.yml</codeblock>
+      </sectiondiv>
+    </section>
 
     <section id="getStatus">
       <title outputclass="headerH">Get List of Status Playbooks</title>
