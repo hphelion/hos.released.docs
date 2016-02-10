@@ -4,10 +4,9 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Customizing Swift Service Configuration Files </title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <p><keyword keyref="kw-hos-phrase"/> enables you to modify various Swift service configuration files. The
-      following Swift service configuration files are located on a lifecycle manager
-      in the location /<codeph>home/stack/helion/my_cloud/config/swift/</codeph>:<ul
-        id="ul_i2n_clp_rt">
+    <p><keyword keyref="kw-hos-phrase"/> enables you to modify various Swift service configuration
+      files. The following Swift service configuration files are located on the lifecycle manager in
+      the <codeph>~/helion/my_cloud/config/swift/</codeph> directory:<ul id="ul_i2n_clp_rt">
         <li><codeph>account-server.conf.j2</codeph></li>
         <li><codeph>container-reconciler.conf.j2</codeph></li>
         <li><codeph>container-server.conf.j2</codeph></li>
@@ -27,17 +26,17 @@
         example, suppose the <b>container_ratelimit_x = r </b>. It means that for containers of size
           <b>x</b>, limit requests per second to <b>r</b>.</p><p>To enable container rate
         limiting:</p><ol id="ol_a23_tlp_rt">
-        <li>Login to the Deployer.</li>
+        <li>Log in to the lifecycle manager.</li>
         <li>Edit the <b>DEFAULT</b> section of
-            <codeph>/home/stack/helion/my_cloud/config/swift/proxy-server.conf.j2</codeph>:<codeblock>container_ratelimit_0 = 100
+            <codeph>~/helion/my_cloud/config/swift/proxy-server.conf.j2</codeph>:<codeblock>container_ratelimit_0 = 100
 container_ratelimit_1000000 = 100
 container_ratelimit_5000000 = 50</codeblock>This
           will set the <b>PUT</b> and <b>DELETE</b> object rate limit to 100 requests per second for
           containers with up to 1,000,000 objects. Also, the <b>PUT</b> and <b>DELETE</b> rate for
           containers with between 1,000,000 and 5,000,000 objects will vary linearly from between
           100 and 50 requests per second as the container object count increases.</li>
-        <li>Commit your
-          changes:<codeblock>cd ~/helion/hos/ansible
+        <li>Commit your changes to
+          git:<codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "&lt;commit message>"</codeblock></li>
         <li>Run the configuration
@@ -52,17 +51,18 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
       </ol></section>
     <section id="modifying-swift-account-server-logging-level"><b>Customizing Swift Account Server
         Logging Level</b><p>By default the Swift logging level is set to <b>INFO</b>. <note>As a best practice, do not set
-          log level for a long period.</note></p><p>Perform the following
+          the log level to DEBUG for a long period of time. Use it for troubleshooting issues and
+          then change it back to INFO.</note></p><p>Perform the following
         steps to set the logging level of the <codeph>account-server</codeph> to <b>DEBUG</b>:<ol
           id="ol_ff4_mnp_rt">
-          <li>Login to the Deployer.</li>
-          <li>Edit the <b>DEFAULT</b> section of <codeph>
-              /home/stack/helion/my_cloud/config/swift/account-server.conf.j2</codeph>:<codeblock>[DEFAULT]
+          <li>Log in to the lifecycle manager.</li>
+          <li>Edit the <b>DEFAULT</b> section of
+              <codeph>~/helion/my_cloud/config/swift/account-server.conf.j2</codeph>:<codeblock>[DEFAULT]
 .
 .
 log_level = DEBUG</codeblock></li>
-          <li>Commit your
-            changes:<codeblock>cd ~/helion/hos/ansible
+          <li>Commit your changes to
+            git:<codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "&lt;commit message>"</codeblock></li>
           <li>Run the configuration
