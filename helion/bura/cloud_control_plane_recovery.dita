@@ -275,9 +275,8 @@ ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
         <li><b>Restore from a Swift backup</b>
           <ol>
             <li>On the lifecycle manager, install the freezer-agent, as
-              follows:<codeblock>
-cd ~/helion/hos/ansible/
-ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock></li>
+                follows:<codeblock>cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost _deployer_restore_helper.yml '{ "old_deployer_hostname": "&lt;here put the hostname of the server that was your lifecycle manager>" }'</codeblock></li>
             <li>You must retrieve a few files from any compute or controller node and put them in
               the directory /opt/stack/service/freezer-agent/etc/ of the lifecycle
               manager:<codeblock>
@@ -286,14 +285,11 @@ and
 /opt/stack/service/freezer-agent/etc/systemd_env_vars.cfg</codeblock></li>
             <li>You must retrieve the /etc/hosts file from any compute or controller node and
               replace the lifecycle manager's one with the retrieved
-              one:<codeblock>
-# Be sure to edit the 127.0.0.1 line so it points to hlinux like
- 
-127.0.0.1       localhost
-::1             localhost ip6-localhost ip6-loopback
-ff02::1         ip6-allnodes
-ff02::2         ip6-allrouters
-127.0.0.1       hlinux</codeblock></li>
+              one.
+            </li> 
+            <li>Change the hostname of the server so it points to the hostname of the server that
+                was your lifecycle manager
+                <codeblock>sudo hostname &lt;the hostname of the server that was your lifecycle manager></codeblock></li>
             <li>On the lifecycle manager:
                 <codeblock>
 # Become root
@@ -327,11 +323,11 @@ freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;
  
 # Start the dayzero UI
 systemctl start dayzero</codeblock></li>
-            <li>When the lifecycle manager is restored, re-run the deployment to ensure the
+           <!-- <li>When the lifecycle manager is restored, re-run the deployment to ensure the
               lifecycle manager is in the correct
               state:<codeblock>
 cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
+ansible-playbook -i hosts/verb_hosts site.yml - -limit localhost</codeblock></li>-->
           </ol></li>
         <li><b>Restore from an SSH backup</b>
           <ol>
@@ -339,10 +335,13 @@ ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
               information as previously:
               <codeblock>~/helion/my_cloud/config/freezer/ssh_credentials.yml</codeblock></li>
             <li>On the lifecycle manager:
-              <codeblock>
-cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/
-cd ~/helion/hos/ansible/
-ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock></li>
+                <codeblock>cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost _deployer_restore_helper.yml '{ "old_deployer_hostname": "&lt;here put the hostname of the server that was your deployer>" }'</codeblock></li>
+            <li>Change the hostname of the server so it points to the hostname of the server that was your deployer
+              <codeblock>sudo hostname &lt;here put the hostname of the server that was your deployer></codeblock></li>
+            
+            
+            
             <li>Perform the restore, as
               follows:<codeblock>
 sudo su
@@ -356,12 +355,12 @@ systemctl stop dayzero
  
 # Start the Dayzero UI
 systemctl start dayzero</codeblock></li>
-            <li>When the lifecycle manager is restored, re-run the deployment to ensure the
+            <!--<li>When the lifecycle manager is restored, re-run the deployment to ensure the
               lifecycle manager is in the correct state:
               <codeblock>
 cd ~/scratch/ansible/next/hos/ansible
  
-ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
+ansible-playbook -i hosts/verb_hosts site.yml - -limit localhost</codeblock></li>-->
           </ol></li>
       </ul></sectiondiv></section>
     <section outputclass="pageTarget1" id="full_target"><title outputclass="headerH">Full Disaster

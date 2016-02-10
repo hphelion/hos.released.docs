@@ -21,7 +21,7 @@
           Infrastructure</xref></li>
       <li><xref href="#HP2.0HA/high_availablity_controllers">High Availablity of Controllers</xref>
         <ul>
-          <li><xref href="#HP2.0HA/api_request">API Request Message Flow</xref></li>
+          <li><xref href="#HP2.0HA/api_request">API Request Message Flow</xref></li> 
           <li><xref href="#HP2.0HA/node_failure">Handling Node Failure</xref></li>
           <li><xref href="#HP2.0HA/network_partitions">Handling Network Partitions</xref></li>
           <li><xref href="#HP2.0HA/galera_cluster">MySQL Galera Cluster</xref></li>
@@ -29,7 +29,7 @@
             <ul>
               <li><xref href="#HP2.0HA/cinder_volume">Cinder-Volume</xref></li>
               <li><xref href="#HP2.0HA/sherpa">Sherpa</xref></li>
-              <li><xref href="#HP2.0HA/nova_consoleauth">Nova consoleauth</xref></li>
+              <li><xref href="#HP2.0HA/nova_consoleauth">Nova-consoleauth</xref></li>
             </ul>
           </li>
           <li><xref href="#HP2.0HA/failed_controller_nodes">Rebuilding or Replacing failed
@@ -79,7 +79,7 @@
         <p>Cloud users are able to provision and manage the compute, storage, and network
           infrastructure resources at any given point in time and the Horizon Dashboard and the
           OpenStack APIs must be reachable and be able to fulfill user requests.</p>
-        <p><image href="../../media/ha/ha-resilient-cloud-infrastructure.png"
+        <p><image href="../../media/ha30/ha-resilient-cloud-infrastructure.png"
             id="CloudInfrastructure"/></p>
         <p>Once the Compute, Storage, and Network resources are deployed, users expect these
           resources to be reliable in the following ways:</p>
@@ -148,7 +148,7 @@
           by running these in a clustered mode across the three nodes of the control plane: RabbitMQ
           cluster with Mirrored Queues and Percona MySQL Galera cluster.</li>
       </ul>
-      <p><image href="../../media/ha/HPE_HA_Flow.png" id="ControlPlane1"/></p>
+      <p><image href="../../media/ha30/HPE_HA_Flow.png" id="ControlPlane1"/></p>
       <p>The above diagram illustrates the HA architecture with the focus on VIP management and load
         balancing. It only shows a subset of active-active API instances and does not show examples
         of other services such as nova-scheduler, cinder-scheduler, etc.</p>
@@ -200,11 +200,17 @@
           </sectiondiv>
         </sectiondiv>
       </sectiondiv>
+      <sectiondiv outputclass="HAsliderText">The HPE Helion OpenStack installer deploys highly available configurations of OpenStack cloud services, resilient against single points of failure. 
+        Step through the included flow for an API request in an HA deployment. All API requests (internal and external) are sent through the VIP.%keepalived has currently configured the VIP on the Controller0 node; client sends Nova request to VIP:8774%
+        HA proxy (listening on VIP:8774) receives the request and selects Controller0 from the list of available nodes (Controller0, Controller1, Controller2). The request is forwarded to the Controller0IP:8774%nova-api on Controller0 receives the request and determines that a database change is required. It connects to the database using VIP:3306%
+        HA proxy (listening on VIP:3306) receives the database connection request and selects Controller0 from the list of available nodes (Controller0, Controller1, Controller2). 
+        The connection request is forwarded to Controller0IP:3306</sectiondiv> 
       
+      <sectiondiv outputclass="HAimgs">../../media/ha30/HPE_HA_Flow.png%../../media/ha30/HPE_HA_Flow-1.png%../../media/ha30/HPE_HA_Flow-2.png%../../media/ha30/HPE_HA_Flow-3.png%../../media/ha30/HPE_HA_Flow-4.png</sectiondiv>
       <!--  //////////////////////  HA slider   ////////////////////////////////////////////////   -->
       <sectiondiv>
         <p>You can view the entire HA API Request Message Flow with the following <xref
-            href="../../media/ha/HPE_HA_RequestFlow.png" format="png" scope="local">High
+            href="../../media/ha30/HPE_HA_RequestFlow.png" format="png" scope="local">High
             Availability Request Flow Diagram</xref></p>
       </sectiondiv>
       <sectiondiv>
@@ -212,12 +218,12 @@
         <p>With the above HA set up, loss of a controller node is handled as follows:</p>
         <p>Assume that the Controller0, which is currently in control of the VIP, is lost, as shown
           in the diagram below:</p>
-        <p><image href="../../media/ha/HPE_HA_NodeFailure1.png" id="ControlPlane3"/></p>
+        <p><image href="../../media/ha30/HPE_HA_NodeFailure1.png" id="ControlPlane3"/></p>
         <p>When this occurs, keepalived immediately moves the VIP on to Controller1 and can now
           receive API requests, which is load-balanced by HA proxy, as stated earlier.</p>
         <note>Although MySQL and RabbitMQ clusters have lost a node, they still continue to be
           operational:</note>
-        <p><image href="../../media/ha/HPE_HA_NodeFailure2.png" id="ControlPlane4"/></p>
+        <p><image href="../../media/ha30/HPE_HA_NodeFailure2.png" id="ControlPlane4"/></p>
         <p>Finally, when Controller0 comes back online, keepalived and HA proxy will resume in
           standby/slave mode and be ready to take over, should there be a failure of Controller1.
           The Controller0 rejoins the MySQL and RabbitMQ clusters.</p>
@@ -237,7 +243,7 @@
           cannot commit any requests. In the example below, Controller0 is partitioned from the rest
           of the control plane. As a result, requests can only be satisfied on Controller1 or
           Controller2. Controller0 will continue to attempt to rejoin the cluster:</p>
-        <p><image href="../../media/ha/HPE_HA_MySQLGaleraCluster.png" id="ControlPlane5"/></p>
+        <p><image href="../../media/ha30/HPE_HA_MySQLGaleraCluster.png" id="ControlPlane5"/></p>
         <p>When HA proxy detects the errors against the mysql instance on Controller0, it removes
           that node from its pool for future database requests.</p>
       </sectiondiv>
@@ -247,7 +253,7 @@
           <p id="cinder_volume"><b>Cinder-Backup and Cinder-Volume</b></p>
           <p>Due to the single threading required in both cinder-volume and the drivers, the Cinder
             volume service is run as a singleton in the control plane. <image
-              href="../../media/ha/ha-cinder-volume.png" id="CinderVolume"/></p>
+              href="../../media/ha30/ha-cinder-volume.png" id="CinderVolume"/></p>
           <p>Cinder-volume is deployed on all three controller nodes, but kept active on only one
             node at a time. By default, cinder-volume is kept active on the controller. If the
             controller fails, you must enable and start the cinder-volume service on one of the
@@ -280,10 +286,10 @@
       <sectiondiv>
         <p id="failed_controller_nodes"><b>Rebuilding or Replacing failed Controller Nodes</b></p>
         <p>As described above, the three node controller cluster provides a robust, highly available
-          control plane of OpenStack services. Either Controller1 or Controller2 servers can be shut
-          down for a short duration for maintenance activities without impacting cloud service
-          availability. (Controller0 cannot be shut down without affecting cloud service
-          availability.)</p>
+          control plane of OpenStack services. Controllers not running any of the singleton services 
+          can be shut down for a short duration for maintenance activities without impacting cloud 
+          service availability.  The Controller running any of the singleton services cannot be shut 
+          down without affecting cloud service availability.</p>
         <note>The HA design is only robust against single points of failure and may not protect you
           against multiple levels of failure. As soon as first-level failure occurs, you must try to
           fix the symptom/root cause and recover from the failure, as soon as possible.</note>
@@ -299,7 +305,7 @@
 
     <section id="availability_zones">
       <title>Availability Zones</title>
-      <p><image href="../../media/ha/DeploymentZonesHA2.0_1.png" id="DeploymentZones"/></p>
+      <p><image href="../../media/ha30/HA_AvailabilityZones_3.png" id="DeploymentZones"/></p>
       <p>While planning your OpenStack deployment, you should decide on how to zone various types of
         nodes - such as compute, block storage, and object storage. For example, you may decide to
         place all servers in the same rack in the same zone. For larger deployments, you may plan
@@ -357,7 +363,7 @@
         information on how to deploy VSA nodes on desired target servers, refer to the <xref
           href="../installation/configure_vsa.dita#config_vsa">Configuring for VSA Block Storage
           Backend</xref> document.</p>
-      <p><image href="../../media/ha/ha-block-storage.png" id="BlockStorage"/></p>
+      <p><image href="../../media/ha30/ha-block-storage.png" id="BlockStorage"/></p>
     </section>
 
     <section id="cinder_availability_zones">
@@ -397,7 +403,7 @@
         them to the drive using one of the other remaining replicas. While this is happening, Swift
         can continue to store and retrieve data.</p>
       <!--  Orignal Image Included with the 1.1, 1.1.1 and initial 2.0 versions.
-      <p><image href="../../media/ha/ha-swift.png" id="HA_Swift"/></p>
+      <p><image href="../../media/ha30/ha-swift.png" id="HA_Swift"/></p>
       -->
     </section>
 
