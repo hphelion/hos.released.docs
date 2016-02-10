@@ -114,6 +114,13 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit hlm004-ccp-comp0004-m
       </ol>
       <p>If the node has undergone repairs that impact disk contents, then use these steps:</p>
       <ol>
+        <li>The node will need to be edited in cobbler to ensure it can be reimaged. <ol>
+            <li>Locate the name of the node in cobbler:
+              <codeblock>sudo cobbler system list</codeblock></li>
+            <li>Edit the <codeph>--netboot-enabled</codeph> status of the node, which will enable it
+              to be reimaged in the next step:
+              <codeblock>sudo cobbler system edit --name &lt;node name> --netboot-enabled=1</codeblock></li>
+          </ol></li>
         <li>Reimage the compute node with this playbook:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=cpn-0004</codeblock></li>
