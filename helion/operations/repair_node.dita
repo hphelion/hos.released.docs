@@ -29,106 +29,117 @@
         See <xref href="live_migration.dita">Live Migration of Instances</xref> for details on the
         limitations and use of live migration.</p>
     </section>
-    <section id="maintenance"><title>Basic Maintenance on Compute Nodes</title>
-      <p>We will list the steps for the stop/start instances method below.</p>
-      <p>To repair a node, you will have to take it offline, repair it, and restart it. To do so,
-        follow the steps outlined below.</p><p>To perform these steps you will need to utilize admin
-        creds. On the lifecycle manager you can source the <codeph>~/service.osrc</codeph> file to
-        achieve this. If doing this from another location then ensure you meet this requirement.</p>
-      <ol>
-        <li>You will use the hostname of the compute node you are repairing in these steps. To
-          retrieve this you can use this command: <codeblock>nova host-list | grep compute</codeblock>
-          <p>Here is an example, showing two compute nodes:</p>
-          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova host-list | grep compute
+    <section id="expandCollapse">
+      <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
+      <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
+    </section>
+    <section id="maintenance"><title outputclass="headerH">Basic Maintenance on Compute
+        Nodes</title>
+      <sectiondiv outputclass="insideSection">
+        <p>We will list the steps for the stop/start instances method below.</p>
+        <p>To repair a node, you will have to take it offline, repair it, and restart it. To do so,
+          follow the steps outlined below.</p><p>To perform these steps you will need to utilize
+          admin creds. On the lifecycle manager you can source the <codeph>~/service.osrc</codeph>
+          file to achieve this. If doing this from another location then ensure you meet this
+          requirement.</p>
+        <ol>
+          <li>You will use the hostname of the compute node you are repairing in these steps. To
+            retrieve this you can use this command: <codeblock>nova host-list | grep compute</codeblock>
+            <p>Here is an example, showing two compute nodes:</p>
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova host-list | grep compute
 | helion-cp1-comp0001-mgmt | compute     | AZ1      |
 | helion-cp1-comp0002-mgmt | compute     | AZ2      |</codeblock></li>
-        <li>Disable provisioning on the compute node, which will prevent additional instances from
-          being spawned on it: <codeblock>nova service-disable --reason "&lt;describe reason>" &lt;node name> nova-compute</codeblock>
-          <p>Here is an example, disabling <codeph>helion-cp1-comp0002-mgmt</codeph> and showing the
-            resulting output:</p>
-          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-disable --reason "maintenance" helion-cp1-comp0002-mgmt nova-compute
+          <li>Disable provisioning on the compute node, which will prevent additional instances from
+            being spawned on it: <codeblock>nova service-disable --reason "&lt;describe reason>" &lt;node name> nova-compute</codeblock>
+            <p>Here is an example, disabling <codeph>helion-cp1-comp0002-mgmt</codeph> and showing
+              the resulting output:</p>
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-disable --reason "maintenance" helion-cp1-comp0002-mgmt nova-compute
 +--------------------------+--------------+----------+-----------------+
 | Host                     | Binary       | Status   | Disabled Reason |
 +--------------------------+--------------+----------+-----------------+
 | helion-cp1-comp0002-mgmt | nova-compute | disabled | maintenance     |
 +--------------------------+--------------+----------+-----------------+</codeblock>
-          <note type="important">Make sure you re-enable provisioning once the maintenance is
-            complete if you want to continue to be able to spawn instances on the node.</note></li>
-        <li>List all of the instances on the node so you can issue stop commands to them: <codeblock>nova list --host &lt;hostname> --all-tenants</codeblock>
-          <p>Here is an example showing the node with one instance on it:</p>
-          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-disable --reason "maintenance" helion-cp1-comp0002-mgmt nova-compute
+            <note type="important">Make sure you re-enable provisioning once the maintenance is
+              complete if you want to continue to be able to spawn instances on the
+            node.</note></li>
+          <li>List all of the instances on the node so you can issue stop commands to them: <codeblock>nova list --host &lt;hostname> --all-tenants</codeblock>
+            <p>Here is an example showing the node with one instance on it:</p>
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-disable --reason "maintenance" helion-cp1-comp0002-mgmt nova-compute
 +--------------------------+--------------+----------+-----------------+
 | Host                     | Binary       | Status   | Disabled Reason |
 +--------------------------+--------------+----------+-----------------+
 | helion-cp1-comp0002-mgmt | nova-compute | disabled | maintenance     |
 +--------------------------+--------------+----------+-----------------+</codeblock></li>
-        <li>Issue the nova stop command against the instances: <codeblock>nova stop &lt;instance uuid></codeblock>
-          <p>Example:</p>
-          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova stop ef31c453-f046-4355-9bd3-11e774b1772f
+          <li>Issue the nova stop command against the instances: <codeblock>nova stop &lt;instance uuid></codeblock>
+            <p>Example:</p>
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova stop ef31c453-f046-4355-9bd3-11e774b1772f
 Request to stop server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.</codeblock></li>
-        <li>Confirm that the instances are stopped. If it was successful you should see the
-          instances in a <codeph>SHUTOFF</codeph> state like you see below:
-          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
+          <li>Confirm that the instances are stopped. If it was successful you should see the
+            instances in a <codeph>SHUTOFF</codeph> state like you see below:
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+
 | ID                                   | Name      | Tenant ID                        | Status  | Task State | Power State | Networks              |
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+
 | ef31c453-f046-4355-9bd3-11e774b1772f | instance1 | 4365472e025c407c8d751fc578b7e368 | SHUTOFF | -          | Shutdown    | demo_network=10.0.0.5 |
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+</codeblock></li>
-        <li>Do your required maintenance. If the required maintenance did not take down the disks
-          completely then you should be able to restart the instances again after the repair: <codeblock>nova start &lt;instance uuid></codeblock>
-          <p>Example:</p>
-          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova start ef31c453-f046-4355-9bd3-11e774b1772f
+          <li>Do your required maintenance. If the required maintenance did not take down the disks
+            completely then you should be able to restart the instances again after the repair: <codeblock>nova start &lt;instance uuid></codeblock>
+            <p>Example:</p>
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova start ef31c453-f046-4355-9bd3-11e774b1772f
 Request to start server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.</codeblock></li>
-        <li>Confirm that the instances started back up. If it was successful you should see the
-          insetances in a <codeph>ACTIVE</codeph> state like you see below:
-          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
+          <li>Confirm that the instances started back up. If it was successful you should see the
+            insetances in a <codeph>ACTIVE</codeph> state like you see below:
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
 +--------------------------------------+-----------+----------------------------------+--------+------------+-------------+-----------------------+
 | ID                                   | Name      | Tenant ID                        | Status | Task State | Power State | Networks              |
 +--------------------------------------+-----------+----------------------------------+--------+------------+-------------+-----------------------+
 | ef31c453-f046-4355-9bd3-11e774b1772f | instance1 | 4365472e025c407c8d751fc578b7e368 | ACTIVE | -          | Running     | demo_network=10.0.0.5 |
 +--------------------------------------+-----------+----------------------------------+--------+------------+-------------+-----------------------+</codeblock></li>
-        <li>If the <codeph>nova start</codeph> fails, you can try doing a hard reboot: <codeblock>nova reboot --hard &lt;instance uuid></codeblock>
-          <p>If that doesn't resolve the issue you may want to contact support.</p></li>
-        <li>Re-enable provisioning when the node is fixed <codeblock>nova service-enable &lt;node name></codeblock>
-          <p>Example, showing the output:</p>
-          <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-enable helion-cp1-comp0002-mgmt nova-compute
+          <li>If the <codeph>nova start</codeph> fails, you can try doing a hard reboot: <codeblock>nova reboot --hard &lt;instance uuid></codeblock>
+            <p>If that doesn't resolve the issue you may want to contact support.</p></li>
+          <li>Re-enable provisioning when the node is fixed <codeblock>nova service-enable &lt;node name></codeblock>
+            <p>Example, showing the output:</p>
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-enable helion-cp1-comp0002-mgmt nova-compute
 +--------------------------+--------------+---------+
 | Host                     | Binary       | Status  |
 +--------------------------+--------------+---------+
 | helion-cp1-comp0002-mgmt | nova-compute | enabled |
 +--------------------------+--------------+---------+</codeblock></li>
-      </ol>
+        </ol>
+      </sectiondiv>
     </section>
-    <section id="other"><title>Additional Steps</title>
-      <p>If, during maintenance, you had to reboot the compute node but there was no impact to the
-        disk contents then these steps will be necessary:</p>
-      <ol>
-        <li>Power the node back up with this playbook:
-          <codeblock>cd ~/helion/hos/ansible
+    <section id="other"><title outputclass="headerH">Additional Steps</title>
+      <sectiondiv outputclass="insideSection">
+        <p>If, during maintenance, you had to reboot the compute node but there was no impact to the
+          disk contents then these steps will be necessary:</p>
+        <ol>
+          <li>Power the node back up with this playbook:
+            <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=cpn-0004</codeblock></li>
-        <li>Execute the <codeph>hlm-start.yml</codeph> playbook. Specify the node(s) you want to
-          start in the <codeph>--limit</codeph> parameter arguments. This parameter accepts wildcard
-          arguments and also '@&lt;filename>' to process all hosts listed in a file:
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Execute the <codeph>hlm-start.yml</codeph> playbook. Specify the node(s) you want to
+            start in the <codeph>--limit</codeph> parameter arguments. This parameter accepts
+            wildcard arguments and also '@&lt;filename>' to process all hosts listed in a file:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit hlm004-ccp-comp0004-mgmt</codeblock></li>
-      </ol>
-      <p>If the node has undergone repairs that impact disk contents, then use these steps:</p>
-      <ol>
-        <li>The node will need to be edited in cobbler to ensure it can be reimaged. <ol>
-            <li>Locate the name of the node in cobbler:
-              <codeblock>sudo cobbler system list</codeblock></li>
-            <li>Edit the <codeph>--netboot-enabled</codeph> status of the node, which will enable it
-              to be reimaged in the next step:
-              <codeblock>sudo cobbler system edit --name &lt;node name> --netboot-enabled=1</codeblock></li>
-          </ol></li>
-        <li>Reimage the compute node with this playbook:
-          <codeblock>cd ~/helion/hos/ansible
+        </ol>
+        <p>If the node has undergone repairs that impact disk contents, then use these steps:</p>
+        <ol>
+          <li>The node will need to be edited in cobbler to ensure it can be reimaged. <ol>
+              <li>Locate the name of the node in cobbler:
+                <codeblock>sudo cobbler system list</codeblock></li>
+              <li>Edit the <codeph>--netboot-enabled</codeph> status of the node, which will enable
+                it to be reimaged in the next step:
+                <codeblock>sudo cobbler system edit --name &lt;node name> --netboot-enabled=1</codeblock></li>
+            </ol></li>
+          <li>Reimage the compute node with this playbook:
+            <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=cpn-0004</codeblock></li>
-        <li>Then execute the playbook below, using the <codeph>--limit</codeph> parameter to
-          indicate the compute node:
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Then execute the playbook below, using the <codeph>--limit</codeph> parameter to
+            indicate the compute node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml --limit hlm004-ccp-comp0004-mgmt</codeblock></li>
-      </ol>
+        </ol>
+      </sectiondiv>
     </section>
   </body>
 </topic>
