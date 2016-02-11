@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="stop_restart">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Bringing Back a Cluster</title>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <p>
+      
+      <ol>
+        <li> If you are shutting down the cluster, in scratch/ansible/next/hos/ansible run hlm-stop
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml</codeblock>
+        </li>
+        <li>If necessary, power up yuor
+          nodes<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts bm-power-up.yml </codeblock></li>
+        <li>Next, run hlm-start
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml </codeblock>
+        </li>
+        <li> If RabbitMQ fails, execute the steps in the following document to safely restart it:
+            <xref href="recover_rabbit.dita#recoverrabbit"/>
+        </li>
+        <li>Next, you can check the status of HPE Helion OpenStack services:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
+        </li>
+        <li> If any services did not start properly, see <xref
+            href="start_stop_services.dita#stopStartSvcs"/>, </li>
+        <li>If any nodes fail, see the node maintenance documents: <xref
+            href="node_maintenance.dita#topic_s3h_vs3_nt"/></li>
+        
+        <li>If necessary, run hlm-start again
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml</codeblock>
+        </li>
+        <li>You may then check the status of all
+          services:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
+        </li>
+        
+        <li>Repeat any steps as necessary.</li>
+      </ol>
+      
+      
+      
+      
+      
+    </p>
+  </body>
+</topic>
