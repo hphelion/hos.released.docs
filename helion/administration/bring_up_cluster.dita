@@ -4,14 +4,19 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Bringing Back a Cluster</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
+    <p>When you need to bring back your cloud and restart services, whether because you
+      intentionally powered down or because you lost power, follow the steps here to safely restart
+      your cloud. If you also lost data, config, or everything, visit the backup and restore pages
+      first at <xref href="../bura/bura_overview.dita#bura_overview">Backing up and Restoring Your
+        Data</xref>.</p>
     <p>
       
       <ol>
-        <li> If you are shutting down the cluster, in scratch/ansible/next/hos/ansible run hlm-stop
+        <li> If you are shutting down the cluster, in scratch/ansible/next/hos/ansible run hlm-stop.
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml</codeblock>
         </li>
-        <li>If necessary, power up yuor
+        <li>If you are already down and without power, then run bm-power-up to power up your
           nodes<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts bm-power-up.yml </codeblock></li>
         <li>Next, run hlm-start
@@ -19,16 +24,17 @@ ansible-playbook -i hosts/verb_hosts bm-power-up.yml </codeblock></li>
 ansible-playbook -i hosts/verb_hosts hlm-start.yml </codeblock>
         </li>
         <li> If RabbitMQ fails, execute the steps in the following document to safely restart it:
-            <xref href="recover_rabbit.dita#recoverrabbit"/>
-        </li>
+            <xref href="../operations/recover_rabbit.dita#recoverrabbit">Recover RabbitMQ after
+            Outage or Node Restart</xref></li>
         <li>Next, you can check the status of HPE Helion OpenStack services:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
         </li>
         <li> If any services did not start properly, see <xref
-            href="start_stop_services.dita#stopStartSvcs"/>, </li>
+            href="../operations/start_stop_services.dita#stopStartSvcs">Starting and Stopping
+            Services</xref></li>
         <li>If any nodes fail, see the node maintenance documents: <xref
-            href="node_maintenance.dita#topic_s3h_vs3_nt"/></li>
+            href="../operations/node_maintenance.dita#topic_s3h_vs3_nt">Node Maintenance</xref></li>
         
         <li>If necessary, run hlm-start again
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
