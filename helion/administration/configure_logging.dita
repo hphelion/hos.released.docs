@@ -542,11 +542,7 @@ ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></entry>
                     details, you can change the logging level to INFO level. It is recommended to
                     avoid using the DEBUG level as that will put high stress on the controller nodes
                     and could overload the system.</p>
-                  <p>To change the level for all of the services run:</p>
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml -e "monasca_log_level=INFO"
-ansible-playbook -i hosts/verb_hosts monasca-agent-reconfigure.yml -e "monasca_log_level=INFO"</codeblock>
-                  <p>If you want to change the logging level per service, each of the following
+                  <p>To change the level for individual Monasca components, each of the following
                     files have the variable that you can set to the desired level:</p>
                   <codeblock>~/helion/hos/ansible/roles/monasca-persister/defaults/main.yml
 ~/helion/hos/ansible/roles/zookeeper/defaults/main.yml
@@ -621,7 +617,25 @@ ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock>
                     during deployment or after deployment:</p>
                   <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml -e "ops_console_loglevel=DEBUG"</codeblock>
-                </entry>
+                  
+                  
+                  <p>Ops Console exposes the logging configuration templates on the lifecycle manager in
+                    the following file:</p>
+                  <codeblock>~/helion/hos/ansible/roles/ops-common/defaults/main.yml</codeblock>
+                  <p>Change the <codeph>INFO</codeph> value to the desired logging level.</p>
+                  <p>Example showing how you can change the <codeph>ops-console</codeph> logging level
+                    to DEBUG:</p>
+                  <codeblock>ops_console_loglevel: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"</codeblock>
+                  <p>After the needed changes are done (for example logging level changes to local
+                    or centralized logging), run the following commands, targeting relevant nodes to
+                    deploy the configuration change:</p>
+                  <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "change Ops Console log levels"
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ops-console-reconfigure.yml</codeblock></entry>
               </row>
               <row>
                 <entry><p>Sherpa</p></entry>
@@ -665,7 +679,7 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock>
                   <p>Change the <codeph>INFO</codeph> value to the desired logging level.</p>
                   <p>Example showing how you can change the <codeph>vsa-installer</codeph> logging
                     level to DEBUG:</p>
-                  <codeblock>vsa_installer_log_level: "{{ helion_loglevel | default('DEBUG') }}"</codeblock>
+                  <codeblock>vsa_installer_log_level: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"</codeblock>
                   <p>After the needed changes are done (for example logging level changes to local
                     or centralized logging), run the following commands, targeting relevant nodes to
                     deploy the configuration change:</p>
