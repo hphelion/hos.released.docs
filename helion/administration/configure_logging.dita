@@ -420,25 +420,52 @@ ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></p><
                   <p>ceph-osd</p></entry>
                 <entry><p>INFO</p></entry>
                 <entry>
-                  <p>You can change the Ceph logging levels using the Ansible playbook below,
-                    specifically the switches, for all components during deployment or after
-                    deployment:</p>
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible/
-ansible-playbook -i hosts/verb_hosts site.yml -e "ceph_mon_log_level=DEBUG, ceph_osd_log_level=DEBUG"</codeblock>
+                  <p>Ceph exposes the logging configuration templates on the lifecycle manager in
+                    the following file:</p>
+                  <codeblock>~/helion/hos/ansible/roles/_CEP-CMN/defaults/main.yml</codeblock>
+                  <p>Change the <codeph>INFO</codeph> value to the desired logging level.</p>
+                  <p>Example showing how you can change the <codeph>ceph-mon</codeph> logging level
+                    to DEBUG:</p>
+                  <codeblock>ceph_mon_log_level: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"
+ceph_osd_log_level: "{{ helion_loglevel | default('INFO') }}"
+ceph_rgw_log_level: "{{ helion_loglevel | default('INFO') }}"</codeblock>
+                  <p>After the needed changes are done (for example logging level changes to local
+                    or centralized logging), run the following commands, targeting relevant nodes to
+                    deploy the configuration change:</p>
+                  <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "change Ceph log levels"
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock>
                 </entry>
               </row>
               <row>
                 <entry><p>Cinder</p></entry>
-                <entry/>
-                <entry><p>INFO</p></entry>
-                <entry><p>To set the local logging level for Cinder services, run the following
-                    command:</p>
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible/
-ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml -e cinder_loglevel=DEBUG</codeblock>
-                  <p>To set the centralized logging level for Cinder services, run the following
-                    command:</p>
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible/
-ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml -e cinder_logstash_loglevel=DEBUG</codeblock></entry>
+                <entry>cinder (local)<p>cinder-logstash (centralized logging)</p></entry>
+                <entry>DEBUG<p>INFO</p></entry>
+                <entry>
+                  <p>Cinder exposes the logging configuration templates on the lifecycle manager in
+                    the following file:</p>
+                  <codeblock>~/helion/hos/ansible/roles/_CND-CMN/defaults/main.yml</codeblock>
+                  <p>To change the local logging level for Cinder services, change the value of the
+                    line below:</p>
+                  <codeblock>cinder_default_loglevel: DEBUG</codeblock>
+                  <p>To set the centralized logging level for Cinder services, change the value of
+                    the line below:</p>
+                  <codeblock>cinder_logstash_default_loglevel: INFO</codeblock>
+                  <p>After the needed changes are done (for example logging level changes to local
+                    or centralized logging), run the following commands, targeting relevant nodes to
+                    deploy the configuration change:</p>
+                  <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "change Cinder log levels"
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock>
+                </entry>
               </row>
               <row>
                 <entry><p>EON</p></entry>
@@ -632,10 +659,23 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock>
                 <entry><p>vsa-installer</p></entry>
                 <entry><p>INFO</p></entry>
                 <entry>
-                  <p>The VSA logging levels are configurable for the <codeph>vsa-installer</codeph>
-                    module. Use the following variables (default is INFO, case-sensitive):</p>
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts site.yml -e "vsa_installer_log_level=DEBUG"</codeblock>
+                  <p>VSA exposes the logging configuration templates on the lifecycle manager in the
+                    following file:</p>
+                  <codeblock>~/helion/hos/ansible/roles/VSA-DEP/defaults/main.yml</codeblock>
+                  <p>Change the <codeph>INFO</codeph> value to the desired logging level.</p>
+                  <p>Example showing how you can change the <codeph>vsa-installer</codeph> logging
+                    level to DEBUG:</p>
+                  <codeblock>vsa_installer_log_level: "{{ helion_loglevel | default('DEBUG') }}"</codeblock>
+                  <p>After the needed changes are done (for example logging level changes to local
+                    or centralized logging), run the following commands, targeting relevant nodes to
+                    deploy the configuration change:</p>
+                  <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "change Ceph log levels"
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts vsa-reconfigure.yml</codeblock>
                 </entry>
               </row>
             </tbody>
