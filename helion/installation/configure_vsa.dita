@@ -54,6 +54,17 @@
             AO</xref> section below.</note>
       </p>
     </section>
+    <section id="multibackend">
+      <p><b>Concerning using multiple backends:</b> If you are using multiple backend options,
+        ensure that you specify each of the backends you are using when configuring your
+          <codeph>cinder.conf.j2</codeph> file using a comma delimited list. An example would be
+          <codeph>enabled_backends=vsa-1,3par_iSCSI,ceph1</codeph> and is included in the steps
+        below. You will also want to create multiple volume types so you can specify which backend
+        you want to utilize when creating volumes. These instructions are included below as well. In
+        addition to our documentation, you can also read the OpenStack documentation at <xref
+          href="http://docs.openstack.org/admin-guide-cloud/blockstorage_multi_backend.html"
+          scope="external" format="html">Configure multiple storage backends</xref> as well.</p>
+    </section>
     <section id="createcluster">
       <title>Create Your VSA Cluster using the CMC Utility</title>
       <p>Creating your VSA cluster consists of the following steps:</p>
@@ -266,16 +277,21 @@ tcp6       0      0 :::5903                 :::*                    LISTEN      
         <li>Log in to the lifecycle manager.</li>
         <li>Make the following changes to the
             <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph> file: <ol>
-            <li>Add your VSA backend to the <codeph>enabled_backends</codeph> section:
-              <codeblock># Configure the enabled backends
-enabled_backends=vsa-1</codeblock></li>
+            <li>Add your VSA backend to the <codeph>enabled_backends</codeph> section: <codeblock># Configure the enabled backends
+enabled_backends=vsa-1</codeblock>
+              <note type="important">If you are using multiple backend types, you can use a comma
+                delimited list here. For example, if you are going to use both VSA and Ceph
+                backends, you would specify something like this:
+                  <codeph>enabled_backends=vsa-1,ceph1</codeph>.</note></li>
             <li>[OPTIONAL] If you want your volumes to use a default volume type, then enter the
               name of the volume type in the <codeph>[DEFAULT]</codeph> section with the syntax
-              below. You will want to remember this value when you create your volume type in the
-              next section. <p><note type="important">If you do not specify a default type then your
-                  volumes will default to a non-redundant RAID configuration. It is recommended that
-                  you create a volume type and specify it here that meets your environments
-                  needs.</note></p>
+              below. <b>You will want to remember this value when you create your volume type in the
+                next section.</b>
+              <p>
+                <note type="important">If you do not specify a default type then your volumes will
+                  default to a non-redundant RAID configuration. It is recommended that you create a
+                  volume type and specify it here that meets your environments needs.</note>
+              </p>
               <codeblock>[DEFAULT]
 # Set the default volume type
 default_volume_type = &lt;your new volume type></codeblock></li>
@@ -465,7 +481,9 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
               /></p>
           </li>
           <li>Enter a unique name for the volume type and then click the <b>Create Volume Type</b>
-            button to complete the action. <p><image
+            button to complete the action. <b>If you specified a volume type for your default volume
+              type in the <xref href="configure_vsa.dita#config_vsa/config_backend">Configure VSA
+                Backend</xref> steps then ensure you use that name in this step.</b><p><image
                 href="../../media/blockstorage/create_voltype3.png"/></p></li>
         </ol></p>
       <p>The newly created volume type will be displayed in the <b>Volume Types</b> list confirming

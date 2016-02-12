@@ -6,7 +6,7 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <p>This page describes how to configure your Ceph backend for the Helion Entry-scale with KVM
-      Cloud model. It consists of the following steps:</p>
+      cloud model. It consists of the following steps:</p>
     <ul>
       <li><xref href="configure_ceph.dita#config_ceph/deployer">Set Up the Lifecycle Manager as a
           Ceph Client</xref></li>
@@ -38,6 +38,11 @@
         images in your Glance repo you will want to download them locally prior to configuring Ceph
         as your backend. Once the Ceph configuration is complete you will then need to re-upload
         those to your Glance repo in order for those images to work.</p>
+    </section>
+    
+    <section conref="configure_vsa.dita#config_vsa/multibackend" id="multibackend"/>
+    
+    <section id="20note">
       <!-- 2.0 only -->
       <p><b>For <keyword keyref="kw-hos-phrase-20"/> Only</b></p>
       <p>While executing the <codeph>site.yml</codeph> playbook with the <codeph>--limit</codeph>
@@ -45,6 +50,8 @@
         nodes if the cloud is deployed with a Ceph cluster.</p>
     </section>
 
+    
+    
     <section id="deployer"><title>Set Up the Lifecycle Manager as a Ceph Client</title>
       <p><b>This section only applies to <keyword keyref="kw-hos-phrase-21"/></b></p>
       <p>If you have a separate lifecycle manager node or if you want to set up the lifecycle
@@ -313,13 +320,23 @@ ansible-playbook -i hosts/verb_hosts ceph-client-prepare.yml</codeblock>
             <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph> file: <ol>
             <li>Add your Ceph backend to the <codeph>enabled_backends</codeph> section:
               <codeblock># Configure the enabled backends
-enabled_backends=ceph1</codeblock></li>
-            <!--<li>[OPTIONAL] If you want a use a default volume type, then enter it in the
-                  <codeph>[DEFAULT]</codeph> section with the syntax below. You will want to
-                remember this value when you create your volume type in the next section.
+enabled_backends=ceph1</codeblock>
+              <note type="important">If you are using multiple backend types, you can use a comma
+                delimited list here. For example, if you are going to use both VSA and Ceph
+                backends, you would specify something like this:
+                <codeph>enabled_backends=vsa-1,ceph1</codeph>.</note></li>
+              <li>[OPTIONAL] If you want your volumes to use a default volume type, then enter the
+                name of the volume type in the <codeph>[DEFAULT]</codeph> section with the syntax
+                below. <b>You will want to remember this value when you create your volume type in the
+                  next section.</b>
+                <p>
+                  <note type="important">If you do not specify a default type then your volumes will
+                    default to a non-redundant RAID configuration. It is recommended that you create a
+                    volume type and specify it here that meets your environments needs.</note>
+                </p>
                 <codeblock>[DEFAULT]
 # Set the default volume type
-default_volume_type = &lt;your new volume type></codeblock></li> -->
+default_volume_type = &lt;your new volume type></codeblock></li>
             <li>Uncomment the <codeph>ceph</codeph> section and fill the values as per your cluster
               information. If you have more than one cluster, you will need to add another similar
               section with its respective values. In the following example only one cluster is
