@@ -294,6 +294,7 @@ ec_object_segment_size: 1048576</codeblock>
         </note>
       </p>
       <sectiondiv id="partition-power"><b>Partition Power Matrix</b>
+        <p>
         <table frame="all" rowsep="1" colsep="1" id="table_fz3_2hg_dt">
           <tgroup cols="3">
             <colspec colname="c1" colnum="1"/>
@@ -360,12 +361,15 @@ ec_object_segment_size: 1048576</codeblock>
             </tbody>
           </tgroup>
         </table>
+        </p>
       </sectiondiv>
       <sectiondiv id="calculating_number"><b>Calculating Numbers of Partitions</b>
         <p>The Object Storage system hashes a given name into a specific partition. For each
           partition, for a replica count of 3, there are three partition directories. The partition
-          directories are then evenly scattered over all drives. You can calculate the number of
-          partition directories as
+          directories are then evenly scattered over all drives. If you are using an erasure coded
+          ring, you can calculate the replica count by adding the data fragments and the parity
+          fragments. Using the erasure coded values in the section above this, you would have a
+          replica count of 14 (10 + 4). You can calculate the number of partition directories as
           follows:<codeblock>number-partition-directories-per-drive = ( (2 ** partition-power) * replica-count ) / number-of-drives</codeblock></p>
         <p>An ideal number of partition directories per drive is 100. However, the system can
           operate normally with a wide range of number of partition directories per drive. The table
