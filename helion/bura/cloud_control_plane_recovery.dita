@@ -5,8 +5,8 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
 
-    <section>There are a number of ways you can lose your cloud control plane, wheter you competely
-      lose power, or lost just a portion of the controllers. Below are seven supported recovery
+    <section>There are a number of ways you can lose your cloud control plane, whether you've
+      competely lost power, or lost just one or two controllers. Below are seven supported recovery
       scenarios you may encounter, the solutions to which are explained in the following
       sections:<p/></section>
 
@@ -121,11 +121,11 @@ ok: [helion-cp1-c1-m3-mgmt] => {
     </section>
 
 
-    <section id="pointswift"><title outputclass="headerH">Point in Time Swift Rings Recovery</title>
+    <section id="pointswift"><title outputclass="headerH">Point-in-Time Swift Rings Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>Everything is still running (lifecycle manager, control plane nodes, and compute nodes)
-          but you want to restore the Swift rings to an old state.</p><note>Freezer backs up and
-          restores for Swift rings only, not Swift data.</note>
+          but you want to restore your Swift rings to a previous state.</p><note>Freezer backs up
+          and restores Swift rings only, not Swift data.</note>
         <b>Restore from a Swift backup</b>
         <ol>
           <li>On the first Swift Proxy (SWF-PRX[0]) node run the following steps. <p>Become root</p>
@@ -136,7 +136,8 @@ ok: [helion-cp1-c1-m3-mgmt] => {
             jobs: <codeblock>freezer-scheduler -c &lt;hostname&gt; job-list</codeblock> Get the id
             corresponding to the job "HLM Default: Swift restore from Swift". Launch the restore
             <codeblock>freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;</codeblock>
-            Wait for some time; you can follow the /var/log/freezer-agent/freezer-agent.log.</li>
+            This will take some time. While you wait you can follow the progress in the
+            /var/log/freezer-agent/freezer-agent.log.</li>
           <li>On the lifecycle manager run swift-stop.yml like
             so:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-stop.yml</codeblock></li>
@@ -146,11 +147,12 @@ ansible-playbook -i hosts/verb_hosts swift-stop.yml</codeblock></li>
             swift-reconfigure.yml:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
         </ol>
-        <p><b>Restore from an SSH backup</b></p><p>Follow the same procedure as for Swift but select the
-          job "HLM Default: Swift restore from SSH."</p>
+        <p><b>Restore from an SSH backup</b></p><p>Follow the same procedure as for Swift in the
+          section immediately preceding this one, but select the job "HLM Default: Swift restore
+          from SSH."</p>
       </sectiondiv>
     </section>
-    <section id="pointlifecycle"><title outputclass="headerH">Point in Time Lifecycle Manager
+    <section id="pointlifecycle"><title outputclass="headerH">Point-in-time Lifecycle Manager
         Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>Everything is still running (lifecycle manager, control plane nodes, and compute nodes)
@@ -162,10 +164,10 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
             <codeblock>source /opt/stack/service/freezer-agent/etc/backup.osrc</codeblock> List the
             jobs:
             <codeblock>freezer-scheduler -c &lt;lifecycle manager hostname&gt; job-list</codeblock>
-            Get the id corresponding to the job "HLM Default: Deployer restore from swift".  Stop
-            the Dayzero UI: <codeblock>systemctl stop dayzero</codeblock> Launch the restore job:
+            Get the id corresponding to the job "HLM Default: Deployer restore from swift". Stop the
+            Dayzero UI: <codeblock>systemctl stop dayzero</codeblock> Launch the restore job:
             <codeblock>freezer-scheduler -c &lt;lifecycle manager hostname&gt; job-start -j &lt;job-id&gt;</codeblock>
-            Wait for some time;  you can follow the /var/log/freezer-agent/freezer-agent.log. Then
+            Wait for some time; you can follow the /var/log/freezer-agent/freezer-agent.log. Then
             start the Dayzero UI: <codeblock>systemctl start dayzero</codeblock>
             <b>Restore from an SSH backup</b> Follow the same procedure as for Swift but select the
             job "HLM Default: Deployer restore from SSH".</li>
@@ -181,7 +183,7 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
         Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>Everything is still running (lifecycle manager, control plane node, and compute nodes)
-          but you lost one or two CCNs.</p>
+          but you lost one or two control plane nodes.</p>
         <b>Restore from other nodes</b><ol id="ol_ag2_y13_1v">
           <li>On the lifecycle manager, install the nodes that were destroyed:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -205,9 +207,9 @@ ansible-playbook -i hosts/verb_hosts site.yml --limit padawan-ccp-c1-m2-mgmt</co
               nodes:
               <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml --limit padawan-ccp-c1-m1-mgmt,padawan-ccp-c1-m2-mgmt,padawan-ccp-c1-m3-mgmt -e '{ "freezer_backup_jobs_upload": false }'</codeblock>You
-              can now perform the procedure for "<xref href="#topic_tb4_lqy_qt/pointdb"
-                format="dita">Point in time database recovery</xref>:" Once everything is restored,
-              re-enable the backups. </li>
+              can now perform the procedure for <xref href="#topic_tb4_lqy_qt/pointdb" format="dita"
+                >Point-in-time database recovery</xref> at the top of this document. Once everything
+              is restored, re-enable the backups. </li>
             <li>From the lifecycle manager:
               <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
@@ -352,9 +354,9 @@ EOF</codeblock>
             permissions: 600). Execute the restore
             job:<codeblock>freezer-agent --config ./restore_config.ini</codeblock> <p>You now have the
             Swift rings in /tmp/hlm_builder_dir_restore/</p></li>
-          <li>If the SWF-PRX[0] is already deployed: <p>Copy the content of the restored directory
+          <li>If the SWF-PRX[0] is already deployed, copy the contents of the restored directory
             (/tmp/hlm_builder_dir_restore/) to /etc/swiftlm/builder_dir/ on the SWF-PRX[0] Then from
-            the deployer run:</p>
+            the deployer run:
               <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock><p>If
               the SWF-PRX[0] is<b> not </b>deployed, from the deployer
@@ -363,9 +365,9 @@ ansible-playbook -i hosts/verb_hosts guard-deployment.yml
 ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;SWF-PRX[0]-hostname&gt;</codeblock>
               Copy the content of the restored directory (/tmp/hlm_builder_dir_restore/) to
               /etc/swiftlm/builder_dir/ on the SWF-PRX[0] You will have to create the directories :
-              /etc/swiftlm/builder_dir/ From the deployer run
-              <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-deploy.yml</codeblock></p></li>
+              /etc/swiftlm/builder_dir/ </p></li><li>From the deployer run hlm-deploy.yml:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml</codeblock></li>
         </ol></sectiondiv></section>
 
   </body>
