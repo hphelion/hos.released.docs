@@ -4,23 +4,24 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Understanding Swift Ring Specifications</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <p><b>Overview of Ring Management</b></p>
-    <p>In Swift, the ring is responsible for mapping data on particular disks. There is a separate
-      ring for account databases, container databases, and each object storage policy, but each ring
-      works similarly. The <codeph>swift-ring-builder</codeph> utility is used to build and manage
-      rings. This utility uses a builder file to contain ring information and additional data
-      required to build future rings. In <keyword keyref="kw-hos-phrase"/>, you can use the cloud
-      model to specify how the rings are configured and used. This model is used to automatically
-      invoke the swift-ring-builder utility as part of the deploy process. (Normally, you will not
-      run the swift-ring-builder utility directly.)</p>
-    <p>The rings are specified in the input model using the <b>ring-specifications</b> key. There is
-      an entry for each distinct Swift system - hence the Keystone region name is specified in the
-        <b>region-name</b> key of the example cloud model.</p>
-    <p><b>Ring Specifications in the Input Model</b></p>
-    <p>In the cloud model, a ring-specification is mentioned in the
-        <codeph>data/swift/rings.yml</codeph> file. For example:</p>
-    <p>
-      <codeblock>ring-specifications:
+    <section id="about"><title>Overview of Ring Management</title>
+      <p>In Swift, the ring is responsible for mapping data on particular disks. There is a separate
+        ring for account databases, container databases, and each object storage policy, but each
+        ring works similarly. The <codeph>swift-ring-builder</codeph> utility is used to build and
+        manage rings. This utility uses a builder file to contain ring information and additional
+        data required to build future rings. In <keyword keyref="kw-hos-phrase"/>, you can use the
+        cloud model to specify how the rings are configured and used. This model is used to
+        automatically invoke the swift-ring-builder utility as part of the deploy process.
+        (Normally, you will not run the swift-ring-builder utility directly.)</p>
+      <p>The rings are specified in the input model using the <b>ring-specifications</b> key. There
+        is an entry for each distinct Swift system - hence the Keystone region name is specified in
+        the <b>region-name</b> key of the example cloud model.</p>
+    </section>
+    <section id="input_model"><title>Ring Specifications in the Input Model</title>
+      <p>In the cloud model, a ring-specification is mentioned in the
+          <codeph>data/swift/rings.yml</codeph> file. For example:</p>
+      <p>
+        <codeblock>ring-specifications:
     - region-name: region1
       rings:
         - name: account
@@ -42,103 +43,90 @@
           partition-power: 12
           replication-policy:
             replica-count: 3</codeblock>
-    </p>
-    <p>The above sample file shows that the <b>region1</b> has three rings as follows: </p>
-    <p>
-      <ul id="ul_hl3_q55_dt">
-        <li><b>Account ring</b>: You must always specify a ring called <b>account</b>. The account
-          ring is used by Swift to store metadata about the projects in your system. In Swift, a
-          Keystone project maps to a Swift account. The <codeph>display-name</codeph> is
-          informational and not used. </li>
-        <li><b>Container ring</b>:You must always specify a ring called <b>container</b>. The
-            <codeph>display-name</codeph> is informational and not used.</li>
-        <li><b>Object ring</b>: This ring is also known as a storage policy. You must always specify
-          a ring called <b>object-0</b>. It is possible to have multiple object rings, which is
-          known as <i>storage policies</i>. The <codeph>display-name</codeph> is the name of the
-          storage policy and can be used by users of the Swift system when they create containers.
-          It allows them to specify the storage policy that the container uses. In the example, the
-          storage policy is called <b>General</b>.</li>
-        <li>
-          <p><b>Min-part-time, partition-power, replication-policy</b> and <b>replica-count</b> are
-            described in the following section. </p>
-        </li>
-      </ul>
-    </p>
-    <section><b>Ring Parameters</b></section>
-    <section>The ring parameters are defined as follows:<simpletable id="simpletable_qyp_lnj_2t">
-        <strow>
-          <stentry><codeph>replica-count</codeph></stentry>
-          <stentry><p>Defines the number of copies of object created.</p>Use this to control the
-            degree of resiliency or availability. The <codeph>replica-count</codeph> is normally set
-            to <b>3</b> (i.e., Swift will keep three copies of accounts, containers, or objects). As
-            a best practice, you should not decrease the value to lower than 3. And, if you want a
-            higher resiliency, you can increase the value.</stentry>
-        </strow>
-        <strow>
-          <stentry><codeph>min-part-time</codeph></stentry>
-          <stentry><p>Changes the value used to decide a given partition can be moved.</p>This is
-            the number of hours that the <codeph>swift-ring-builder</codeph> tool will enforce
-            between ring rebuilds. On a small system, this can be as low as <b>1</b> (one hour). The
-            value can be different for each ring. <p>In the example above, the
-                <codeph>swift-ring-builder</codeph> will enforce a minimum of 16 hours between ring
-              rebuilds. However, this time is system-dependent so you will be unable to determine
-              the appropriate value for <codeph>min-part-time</codeph> until you have more
-              experience with your system.</p></stentry>
-        </strow>
-        <strow>
-          <stentry><codeph>partition-power</codeph></stentry>
-          <stentry>The optimal value for this parameter is related to the number of disk drives that
-            you allocate to Swift storage. As a best practice, you should use the same drives for
-            both the account and container rings. In this case, the <codeph>partition-power</codeph>
-            value should be the same. For more information, see <xref
-              href="#ring-specification/selecting-partition-power" format="dita">Selecting a
-              Partition Power</xref>.</stentry>
-        </strow>
-        <strow>
-          <stentry><codeph>replication-policy</codeph></stentry>
-          <stentry>Specifies that a ring uses replicated storage. The duplicate copies of the object
-            are created and stored on different disk drives. All replicas are identical. If one is
-            lost or corrupted, the system automatically copies one of the remaining replicas to
-            restore the missing replica.</stentry>
-        </strow>
-        <strow>
-          <stentry><codeph>default</codeph></stentry>
-          <stentry>The default value in the above sample file of ring-specification is set to
-              <b>yes</b>, which means that the storage policy is enabled to store objects. For more
-            information, see <xref href="storage_policies.dita"/>.</stentry>
-        </strow>
-      </simpletable></section>
-    <!--  
-    <section id="make-changes-ring"><b>Making Changes to the Ring Specifications</b><p>The ring
-        specification provided in the example model contains adequate configuration details to
-        deploy Swift. However, there may be reasons for changing the model as follows: </p><ul
-        id="ul_ef1_y55_dt">
-        <li>Your system has more servers and disks than in the mid sized cloud example. Therefore,
-          you may require to pick a different value for <codeph>partition-power</codeph>. The
-          appropriate value is related to the number of disk drives you allocate for the account and
-          container storage. We recommend that you use the same drives for both the account and
-          container rings. Hence, the <codeph>partition-power</codeph> value should be the same. For
-          more information about selecting an appropriate value, refer to <xref
-            href="#topic_efw_k55_dt/selection-partition" format="dita">Selecting a Partition
-            Power</xref>.</li>
-        <li>You require high resiliency or availability and want a higher replica count. The
-            <codeph>replica-count</codeph> is normally 3 (i.e., Swift will keep three copies of
-          accounts and containers). It is <b>recommended</b> not to change the value to lower than
-          3.</li>
-        <li>You require a different name for the Storage Policy. If so, edit the
-            <codeph>display-name</codeph> of the object-0 ring. This must be a single word
-          (character such as underscore or dash are allowed). This is visible to your end
-          users.</li>
-        <li>Your system has more servers and disks than in the mid sized cloud example and the time
-          to replicate data during a ring rebuild is longer than 16 hours. However, this time is
-          system-dependent so you will be unable to figure out the appropriate value for
-            <codeph>min-part-time</codeph> until you have more experience with your
-            system.<p>Therefore, during the initial deployment of Swift, we suggest not to make
-            changes in <b>min-part-time</b>. </p></li>
-      </ul></section>-->
+      </p>
+      <p>The above sample file shows that the <b>region1</b> has three rings as follows: </p>
+      <p>
+        <ul id="ul_hl3_q55_dt">
+          <li><b>Account ring</b>: You must always specify a ring called <b>account</b>. The account
+            ring is used by Swift to store metadata about the projects in your system. In Swift, a
+            Keystone project maps to a Swift account. The <codeph>display-name</codeph> is
+            informational and not used. </li>
+          <li><b>Container ring</b>:You must always specify a ring called <b>container</b>. The
+              <codeph>display-name</codeph> is informational and not used.</li>
+          <li><b>Object ring</b>: This ring is also known as a storage policy. You must always
+            specify a ring called <b>object-0</b>. It is possible to have multiple object rings,
+            which is known as <i>storage policies</i>. The <codeph>display-name</codeph> is the name
+            of the storage policy and can be used by users of the Swift system when they create
+            containers. It allows them to specify the storage policy that the container uses. In the
+            example, the storage policy is called <b>General</b>.</li>
+          <li>
+            <p><b>Min-part-time, partition-power, replication-policy</b> and <b>replica-count</b>
+              are described in the following section. </p>
+          </li>
+        </ul>
+      </p>
+    </section>
+    <section id="ring_parameters"><title>Replication Ring Parameters</title>
+      <p>The ring parameters for traditional replication rings are defined as follows:</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_mln_2fh_1v">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <thead>
+            <row>
+              <entry>Parameter</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><codeph>replica-count</codeph></entry>
+              <entry><p>Defines the number of copies of object created.</p>Use this to control the
+                degree of resiliency or availability. The <codeph>replica-count</codeph> is normally
+                set to <b>3</b> (i.e., Swift will keep three copies of accounts, containers, or
+                objects). As a best practice, you should not decrease the value to lower than 3.
+                And, if you want a higher resiliency, you can increase the value.</entry>
+            </row>
+            <row>
+              <entry><codeph>min-part-time</codeph></entry>
+              <entry><p>Changes the value used to decide a given partition can be moved.</p>This is
+                the number of hours that the <codeph>swift-ring-builder</codeph> tool will enforce
+                between ring rebuilds. On a small system, this can be as low as <b>1</b> (one hour).
+                The value can be different for each ring. <p>In the example above, the
+                    <codeph>swift-ring-builder</codeph> will enforce a minimum of 16 hours between
+                  ring rebuilds. However, this time is system-dependent so you will be unable to
+                  determine the appropriate value for <codeph>min-part-time</codeph> until you have
+                  more experience with your system.</p></entry>
+            </row>
+            <row>
+              <entry><codeph>partition-power</codeph></entry>
+              <entry>The optimal value for this parameter is related to the number of disk drives
+                that you allocate to Swift storage. As a best practice, you should use the same
+                drives for both the account and container rings. In this case, the
+                  <codeph>partition-power</codeph> value should be the same. For more information,
+                see <xref href="#ring-specification/selecting-partition-power" format="dita"
+                  >Selecting a Partition Power</xref>.</entry>
+            </row>
+            <row>
+              <entry><codeph>replication-policy</codeph></entry>
+              <entry>Specifies that a ring uses replicated storage. The duplicate copies of the
+                object are created and stored on different disk drives. All replicas are identical.
+                If one is lost or corrupted, the system automatically copies one of the remaining
+                replicas to restore the missing replica.</entry>
+            </row>
+            <row>
+              <entry><codeph>default</codeph></entry>
+              <entry>The default value in the above sample file of ring-specification is set to
+                  <b>yes</b>, which means that the storage policy is enabled to store objects. For
+                more information, see <xref href="storage_policies.dita"/>.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
 
-<!-- DOCS-2670 -->
-    <section id="erasure_coded"><title>Erasure Coded Ring</title>
+    <!-- DOCS-2670 -->
+    <section id="erasure_coded"><title>Erasure Coded Rings</title>
       <p>In <keyword keyref="kw-hos-phrase"/>, Swift supports erasure coded object rings as well as
         traditional replication rings. Erasure coded rings can be useful for large objects, like
         backup, video, biotech, i.e. data that is typically written once but read occasionally.</p>
@@ -160,55 +148,54 @@ erasure-coding-policy:
 ec_num_data_fragments: 10
 ec_num_parity_fragments: 4
 ec_object_segment_size: 1048576</codeblock>
-      <p>The additional parameters are defined as follows:<table frame="all" rowsep="1" colsep="1"
-          id="table_r5x_nch_1v">
-          <tgroup cols="2">
-            <colspec colname="c1" colnum="1"/>
-            <colspec colname="c2" colnum="2"/>
-            <thead>
-              <row>
-                <entry>Parameter</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>ec-type</entry>
-                <entry>This is the particular erasure policy scheme that is being used. The
-                  supported ec_types in <keyword keyref="kw-hos-phrase"/> are: <ul>
-                    <li><codeph>liberasurecode_rs_vand</codeph> => Vandermonde Reed-Solomon
-                      encoding, software-only backend implemented by liberasurecode</li>
-                    <li><codeph>jerasure_rs_vand</codeph> => Vandermonde Reed-Solomon encoding,
-                      based on Jerasure</li>
-                    <li><codeph>jerasure_rs_cauchy</codeph> => Cauchy Reed-Solomon encoding
-                      (Jerasure variant), based on Jerasure</li>
-                    <li><codeph>flat_xor_hd_3, flat_xor_hd_4</codeph> => Flat-XOR based HD
-                      combination codes, liberasurecode</li>
-                  </ul></entry>
-              </row>
-              <row>
-                <entry>erasure-coding-policy</entry>
-                <entry>This line indicates that the object ring will be of type "erasure
-                  coding"</entry>
-              </row>
-              <row>
-                <entry>ec_num_data_fragments</entry>
-                <entry>This indicated the number of data fragments for an object in the
-                  ring.</entry>
-              </row>
-              <row>
-                <entry>ec_num_parity_fragments</entry>
-                <entry>This indicated the number of parity fragments for an object in the
-                  ring.</entry>
-              </row>
-              <row>
-                <entry>ec_object_segment_size</entry>
-                <entry>The amount of data that will be buffered up before feeding a segment into the
-                  encoder/decoder. The default value is 1048576.</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table></p>
+      <p>The additional parameters are defined as follows:</p>
+      <table frame="all" rowsep="1" colsep="1" id="erasure_coded_table">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <thead>
+            <row>
+              <entry>Parameter</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>ec-type</entry>
+              <entry>This is the particular erasure policy scheme that is being used. The supported
+                ec_types in <keyword keyref="kw-hos-phrase"/> are: <ul>
+                  <li><codeph>liberasurecode_rs_vand</codeph> => Vandermonde Reed-Solomon encoding,
+                    software-only backend implemented by liberasurecode</li>
+                  <li><codeph>jerasure_rs_vand</codeph> => Vandermonde Reed-Solomon encoding, based
+                    on Jerasure</li>
+                  <li><codeph>jerasure_rs_cauchy</codeph> => Cauchy Reed-Solomon encoding (Jerasure
+                    variant), based on Jerasure</li>
+                  <li><codeph>flat_xor_hd_3, flat_xor_hd_4</codeph> => Flat-XOR based HD combination
+                    codes, liberasurecode</li>
+                </ul></entry>
+            </row>
+            <row>
+              <entry>erasure-coding-policy</entry>
+              <entry>This line indicates that the object ring will be of type "erasure
+                coding"</entry>
+            </row>
+            <row>
+              <entry>ec_num_data_fragments</entry>
+              <entry>This indicated the number of data fragments for an object in the ring.</entry>
+            </row>
+            <row>
+              <entry>ec_num_parity_fragments</entry>
+              <entry>This indicated the number of parity fragments for an object in the
+                ring.</entry>
+            </row>
+            <row>
+              <entry>ec_object_segment_size</entry>
+              <entry>The amount of data that will be buffered up before feeding a segment into the
+                encoder/decoder. The default value is 1048576.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
       <p>When using an erasure coded ring, the number of devices in the ring must be greater than or
         equal to the total number of fragments of an object. For example, if you define an erasure
         coded ring with 10 data fragments and 4 parity fragments, there must be at least 14 (10+4)
