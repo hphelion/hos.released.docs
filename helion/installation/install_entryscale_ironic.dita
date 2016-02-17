@@ -95,7 +95,9 @@ nova flavor-key 12 set capabilities:boot_mode="bios"
          
 <codeblock> 
 nova flavor-show 12
-
+</codeblock>
+                
+<codeblock>
 +----------------------------+-----------------------------------------------------------------------------------------------+
 | Property                   | Value                                                                                         |
 +----------------------------+-----------------------------------------------------------------------------------------------+
@@ -120,7 +122,8 @@ nova flavor-show 12
                 
 <codeblock>
 glance image-create --name='ubuntu-qcow2' --disk-format=qcow2 --container-format=bare   --file ~/ubuntu.qcow2
-
+</codeblock>
+<codeblock>
 +------------------+--------------------------------------+
 | Property         | Value                                |
 +------------------+--------------------------------------+
@@ -152,8 +155,9 @@ glance image-create --name='ubuntu-qcow2' --disk-format=qcow2 --container-format
 ironic node-create -d agent_ilo -i ilo_address=10.12.8.110 -i ilo_username=DOCAdmin -i ilo_password=lab35ting \
 -p cpus=2 -p memory_mb=12000 -p local_gb=1832 -p cpu_arch=x86_64 \
 -i ilo_deploy_iso=11783a99-18e9-4d5c-81aa-b2e4e3c9964d
-
-
+</codeblock>
+                
+<codeblock>
 +--------------+------------------------------------------------------------------+
 | Property     | Value                                                            |
 +--------------+------------------------------------------------------------------+
@@ -168,8 +172,74 @@ ironic node-create -d agent_ilo -i ilo_address=10.12.8.110 -i ilo_username=DOCAd
 |              | u'cpus': 2}                                                      |
 | name         | None                                                             |
 +--------------+------------------------------------------------------------------+    
-</codeblock>                
+</codeblock>  
+                
+                <p>Update the Node</p>
+                
+<codeblock>
+ironic node-update 15c7fc4a-d11c-4eca-90c4-438102168990 add properties/capabilities="boot_mode:bios,boot_option:local"
+</codeblock>
+<codeblock>
++------------------------+-------------------------------------------------------------------+
+| Property               | Value                                                             |
++------------------------+-------------------------------------------------------------------+
+| target_power_state     | None                                                              |
+| extra                  | {}                                                                |
+| last_error             | None                                                              |
+| updated_at             | 2016-02-17T10:56:07+00:00                                         |
+| maintenance_reason     | None                                                              |
+| provision_state        | available                                                         |
+| clean_step             | {}                                                                |
+| uuid                   | 15c7fc4a-d11c-4eca-90c4-438102168990                              |
+| console_enabled        | False                                                             |
+| target_provision_state | None                                                              |
+| provision_updated_at   | None                                                              |
+| maintenance            | False                                                             |
+| inspection_started_at  | None                                                              |
+| inspection_finished_at | None                                                              |
+| power_state            | power on                                                          |
+| driver                 | agent_ilo                                                         |
+| reservation            | None                                                              |
+| properties             | {u'memory_mb': 12000, u'cpu_arch': u'x86_64', u'local_gb': 1832,  |
+|                        | u'cpus': 2, u'capabilities': u'boot_mode:bios,boot_option:local'} |
+| instance_uuid          | None                                                              |
+| name                   | None                                                              |
+| driver_info            | {u'ilo_address': u'10.12.8.110', u'ilo_password': u'******',      |
+|                        | u'ilo_deploy_iso': u'11783a99-18e9-4d5c-81aa-b2e4e3c9964d',       |
+|                        | u'ilo_username': u'DOCAdmin'}                                     |
+| created_at             | 2016-02-17T10:55:06+00:00                                         |
+| driver_internal_info   | {}                                                                |
+| chassis_uuid           |                                                                   |
+| instance_info          | {}                                                                |
++------------------------+-------------------------------------------------------------------+
+
+</codeblock>
+                
             </section>
+            
+            <section>
+                <title>Create the port</title>
+
+<codeblock>
+ironic port-create -a ec:b1:d7:77:21:38 -n 15c7fc4a-d11c-4eca-90c4-438102168990
+</codeblock>
+                
+<codeblock>
++-----------+--------------------------------------+
+| Property  | Value                                |
++-----------+--------------------------------------+
+| node_uuid | 15c7fc4a-d11c-4eca-90c4-438102168990 |
+| extra     | {}                                   |
+| uuid      | f5c85023-e870-4074-8188-e1c27854f68c |
+| address   | ec:b1:d7:77:21:38                    |
++-----------+--------------------------------------+    
+</codeblock>
+
+            </section>
+            
+           <section>
+               <title></title>
+           </section>
             
         </body>
     </topic>
