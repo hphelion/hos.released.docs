@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="install_swift">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Installation for HPE Helion Entry-scale Cloud with Ironic Flat Network (BMaaS)</title>
+    <body>
+        <p conkeyref="HOS-conrefs/applies-to"/>    
+        <section id="about">
+            <p>This page describes the installation step requirements for the HPE Helion Entry-scale Cloud with
+                Ironic Flat Network (BMaaS).</p>
+        </section>
+        <section conref="install_entryscale_kvm.dita#install_kvm/important_notes"/>
+        <section conref="install_entryscale_kvm.dita#install_kvm/prereqs"/>
+        <section conref="install_entryscale_kvm.dita#install_kvm/setup_deployer"/>
+        <section id="configuration">
+            <title>Configure Your Environment</title>
+            <p>This part of the install is going to depend on the specific cloud configuration you are
+                going to use.</p>
+            <ol>
+                <li>Setup your configuration files, as follows: 
+                    <ol>
+                        <li>See the sample sets of configuration files in the
+                        <codeph>~/helion/examples/</codeph> directory. Each set will have an accompanying
+                        README.md file that explains the contents of each of the configuration files.</li>
+                        <li>Copy the example configuration files into the required setup directory and edit them
+                        to contain the details of your environment:
+                        <codeblock>cp -r ~/helion/examples/entry-scale-ironic-flat-network/* ~/helion/my_cloud/definition/</codeblock>
+                        </li>
+                    </ol>
+                </li>
+                <li>[OPTIONAL] - You can use the <codeph>hosencrypt.py</codeph> script to encrypt your iLo
+                    passwords. This script uses OpenSSL. <ol>
+                        <li>Change to the Ansible directory: <codeblock>cd ~/helion/hos/ansible</codeblock></li>
+                        <li>Put the encryption key into the following environment variable:
+                            <codeblock>export HOS_USER_PASSWORD_ENCRYPT_KEY=&#60;encryption key></codeblock></li>
+                        <li>Run the python script below and follow the instructions. Enter a password that you
+                            want to encrypt. <codeblock>./hosencrypt.py</codeblock></li>
+                        <li>Take the string generated and place it in the <codeph>"ilo_password"</codeph> field
+                            in your <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file,
+                            remembering to enclose it in quotes.</li>
+                        <li>Repeat the above for each server. <note>Before you run any playbooks, remember that
+                            you need to export the encryption key in the following environment variable:
+                            <codeph>export HOS_USER_PASSWORD_ENCRYPT_KEY=&#60;encryption
+                                key></codeph></note></li>
+                    </ol></li>
+                <li>Commit your configuration to the <xref href="using_git.dita">local git repo</xref>, as
+                    follows:
+                    <codeblock>cd ~/helion/hos/ansible
+                        git add -A
+                        git commit -m "My config or other commit message"</codeblock></li>
+            </ol>
+            <p><note type="important">This step needs to be repeated any time you make changes to your
+                configuration files before you move onto the following steps. See <xref
+                    href="using_git.dita">Using Git for Configuration Management</xref> for more
+                information.</note></p>
+        </section>
+ 
+        <section conref="install_entryscale_kvm.dita#install_kvm/provision"/>
+        
+        <section conref="install_entryscale_kvm.dita#install_kvm/config_processor"/>
+
+        <section conref="install_entryscale_kvm.dita#install_kvm/deploy"/>
+        
+        <section>
+            <title>Ironic configuration</title>
+            <p>Run the <codeph>ironic-cloud-configure.yml</codeph> playbook below: 
+<codeblock>
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ironic-cloud-configure.yml
+</codeblock></p>
+        </section>
+        
+        
+        
+        
+    </body>
+    <topic id="ironic-post-install">
+        <title>Post Installation Tasks</title>
+   
+        <body>
+            <section>
+                <title>Generate Key Pair</title>
+<codeblock>
+nova keypair-add ironic_kp > ironic_kp.pem    
+</codeblock>               
+            </section>
+            
+            <section>
+                <title>Create Flavor</title>
+<codeblock>
+nova flavor-create bmtest-flavor 12 12000  1832 2
+nova flavor-key 12 set cpu_arch=x86_64
+nova flavor-key 12 set capabilities:boot_option="local"
+nova flavor-key 12 set capabilities:boot_mode="bios"    
+</codeblock>
+         
+<codeblock> 
+nova flavor-show 12
+
++----------------------------+-----------------------------------------------------------------------------------------------+
+| Property                   | Value                                                                                         |
++----------------------------+-----------------------------------------------------------------------------------------------+
+| OS-FLV-DISABLED:disabled   | False                                                                                         |
+| OS-FLV-EXT-DATA:ephemeral  | 0                                                                                             |
+| disk                       | 1832                                                                                          |
+| extra_specs                | {"capabilities:boot_option": "local", "cpu_arch": "x86_64", "capabilities:boot_mode": "bios"} |
+| id                         | 12                                                                                            |
+| name                       | bmtest-flavor                                                                                 |
+| os-flavor-access:is_public | True                                                                                          |
+| ram                        | 12000                                                                                         |
+| rxtx_factor                | 1.0                                                                                           |
+| swap                       |                                                                                               |
+| vcpus                      | 2                                                                                             |
++----------------------------+-----------------------------------------------------------------------------------------------+
+
+</codeblock>         
+            </section> 
+            
+            <section>
+                <title>Create Glance Image</title>
+                
+<codeblock>
+glance image-create --name='ubuntu-qcow2' --disk-format=qcow2 --container-format=bare   --file ~/ubuntu.qcow2
+
++------------------+--------------------------------------+
+| Property         | Value                                |
++------------------+--------------------------------------+
+| checksum         | 45a4a06997e64f7120795c68beeb0e3c     |
+| container_format | bare                                 |
+| created_at       | 2016-02-17T10:42:14Z                 |
+| disk_format      | qcow2                                |
+| id               | 11783a99-18e9-4d5c-81aa-b2e4e3c9964d |
+| min_disk         | 0                                    |
+| min_ram          | 0                                    |
+| name             | ubuntu-qcow2                         |
+| owner            | 821b7bb8148f439191d108764301af64     |
+| protected        | False                                |
+| size             | 372047872                            |
+| status           | active                               |
+| tags             | []                                   |
+| updated_at       | 2016-02-17T10:42:23Z                 |
+| virtual_size     | None                                 |
+| visibility       | private                              |
++------------------+--------------------------------------+    
+
+</codeblock>                
+            </section>
+            
+            <section>
+                <title>Create Ironic Node</title>
+                
+<codeblock>
+ironic node-create -d agent_ilo -i ilo_address=10.12.8.110 -i ilo_username=DOCAdmin -i ilo_password=lab35ting \
+-p cpus=2 -p memory_mb=12000 -p local_gb=1832 -p cpu_arch=x86_64 \
+-i ilo_deploy_iso=11783a99-18e9-4d5c-81aa-b2e4e3c9964d
+
+
++--------------+------------------------------------------------------------------+
+| Property     | Value                                                            |
++--------------+------------------------------------------------------------------+
+| uuid         | 15c7fc4a-d11c-4eca-90c4-438102168990                             |
+| driver_info  | {u'ilo_address': u'10.12.8.110', u'ilo_password': u'******',     |
+|              | u'ilo_deploy_iso': u'11783a99-18e9-4d5c-81aa-b2e4e3c9964d',      |
+|              | u'ilo_username': u'DOCAdmin'}                                    |
+| extra        | {}                                                               |
+| driver       | agent_ilo                                                        |
+| chassis_uuid |                                                                  |
+| properties   | {u'memory_mb': 12000, u'cpu_arch': u'x86_64', u'local_gb': 1832, |
+|              | u'cpus': 2}                                                      |
+| name         | None                                                             |
++--------------+------------------------------------------------------------------+    
+</codeblock>                
+            </section>
+            
+        </body>
+    </topic>
+</topic>
+
+ 
+                
+                
+                  
