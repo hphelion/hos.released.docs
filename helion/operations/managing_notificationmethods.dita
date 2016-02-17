@@ -15,7 +15,7 @@
     </section>
     <section id="proxy"><title>Enabling a Proxy for Webhook or Pager Duty Notifications</title>
       <p>If your environment requires a proxy in order for communications to function then these
-        steps will show you how you can enable one.  These steps will only be needed if you are
+        steps will show you how you can enable one. These steps will only be needed if you are
         utilizing the webhook or pager duty notification methods.</p>
       <p>These steps will require access to the lifecycle manager in your cloud deployment so you
         may need to contact your Administrator. You can make these changes during the initial
@@ -38,8 +38,19 @@ Environment={{ notification_environment }}</codeblock>
           </li>
           <li>If you are making these changes prior to your initial installation then you are done
             and can continue on with the installation. However, if you are modifying an existing
-            environment, you will need to run the Monasca reconfigure playbook to enable these
-            changes:
+            environment, you will need to continue on with the remaining steps below.</li>
+          <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
+              repo</xref>, as follows:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Generate an updated deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Run the Monasca reconfigure playbook to enable these changes:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml --tags notification</codeblock></li>
         </ol>
