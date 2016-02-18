@@ -82,14 +82,23 @@ password: &lt;password&gt;</codeblock></li>
         rules match the real-time data packets.</note>
       <ol>
         <li>Create new firewall rules using <codeph>firewall-rule-create</codeph> command and
-          providing the protocol, action (allow, deny) and name for the new rule. This example
-          allows icmp and ssh while denying access to http. See the <codeph>neutron</codeph>
-          command-line reference under <xref href="fwaas.dita#HP2.0FWaaS/MoreInfo">more
-            information</xref> on additional options such as source IP, destination IP, source port
-          and destination
-          port.
-          <note>You can create a firewall rule with an identical name and each instance will have 
-          a unique id associated with the created rule, however for clarity purposes this is not recommended.</note>
+          providing the protocol, action (allow, deny, reject) and name for the new rule.
+            <p>Firewall actions provide rules in which data traffic can be handled. An <b>allow</b>
+            rule will allow traffic to pass through the firewall, <b>deny</b> will stop and prevent
+            data traffic from passing through the firewall and <b>reject</b> will reject the data
+            traffic and return a <i>destination-unreachable</i> response. Using <b>reject</b> will
+            speed up failure detection time dramatically for legitimate users, since they will not
+            be required to wait for retransmission timeouts or submit retries. Some customers should
+            stick with <b>deny</b> where prevention of port scanners and similar methods may be
+            attempted by hostile attackers. Using <b>deny</b> will drop all of the packets, making
+            it more difficult for malicious intent. The firewall action, <b>deny</b> is the default behavior. </p>
+          <p>The example below demonstrates how to allow icmp and ssh while denying access to http.
+            See the <codeph>neutron</codeph> command-line reference under <xref
+              href="fwaas.dita#HP2.0FWaaS/MoreInfo">more information</xref> on additional options
+            such as source IP, destination IP, source port and destination port. </p>
+          <note>You can create a firewall rule with an identical name and each instance will have a
+            unique id associated with the created rule, however for clarity purposes this is not
+            recommended.</note>
           <codeblock>neutron firewall-rule-create --protocol icmp --action allow --name allow-icmp
 neutron firewall-rule-create --protocol tcp --destination-port 80 --action deny --name deny-http
 neutron firewall-rule-create --protocol tcp --destination-port 22 --action allow --name allow-ssh</codeblock></li>
