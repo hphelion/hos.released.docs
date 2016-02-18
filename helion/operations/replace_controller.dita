@@ -67,7 +67,7 @@ cp /opt/hlm_packager/hlm/hlinux/dists/cattleprod/main/installer-amd64/current/im
             <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock><note>After
             this step you may see failures because MySQL has not finished syncing. If so, please
-            rerun this step (7).</note></li> 
+            rerun this step (7).</note></li>
         <li>Delete the haproxy user: <codeblock>deluser haproxy</codeblock></li>
         <li>Install the software on your new lifecycle manager/controller node with these three
           playbooks:
@@ -123,24 +123,24 @@ ansible-playbook -i hosts/verb_hosts monasca-rebuild-pretasks.yml</codeblock></l
         <li>Run osconfig on the replacement controller node. For example:
           <codeblock>ansible-playbook -i hosts/verb_hosts osconfig-run.yml -e rebuild=True --limit=&lt;controller-hostname></codeblock>
         </li>
-        <li> If the controller being replaced is the first server running the swift-proxy service
-          (see <xref href="../objectstorage/first_proxy_server.dita">Identifying the First Proxy
-            Server</xref>) you need to restore the Swift Ring Builder files to the
-          /etc/swiftlm/builder_dir directory. See <xref
-            href="../objectstorage/recovering_builder_file.dita#topic_gbz_13t_mt">Recovering Builder
+        <li>If the controller being replaced is the first server running the swift-proxy service
+          (see <xref href="../troubleshooting/objectstorage/identify_ring_builder.dita">Identifying
+            the Swift Ring Building Server</xref>) you need to restore the Swift ring builder files
+          to the <codeph>/etc/swiftlm/builder_dir</codeph> directory. See <xref
+            href="../troubleshooting/objectstorage/recovering_builder_file.dita">Recovering Builder
             Files</xref> for details.</li>
         <!-- DOCS-2306
         <li>Run swift-deploy across all controllers using:
           <codeblock>ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
           -->
-        <li> Run the hlm-deploy playbook on the replacement controller. <p>If the node being
-            replaced is the first proxy node then you only need to use the <codeph>--limit</codeph>
-            switch for that node, otherwise you need to specify the hostname of your first proxy and
-            the hostname of the node being replaced.</p>
+        <li>Run the hlm-deploy playbook on the replacement controller. <p>If the node being replaced
+            is the Swift ring builder server then you only need to use the <codeph>--limit</codeph>
+            switch for that node, otherwise you need to specify the hostname of your Swift ringer
+            builder server and the hostname of the node being replaced.</p>
           <codeblock>ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname>,&lt;first-proxy-hostname></codeblock>
-          <p>See <xref href="../objectstorage/first_proxy_server.dita">Identifying the First Swift
-              Proxy Server</xref> for more details on how to determine which node is your first
-            Swift proxy node.</p>
+          <p>See <xref href="../troubleshooting/objectstorage/identify_ring_builder.dita"
+              >Identifying the Swift Ring Builder Server</xref> for more details on how to determine
+            which node is your first Swift proxy node.</p>
         </li>
       </ol>
       <!--
