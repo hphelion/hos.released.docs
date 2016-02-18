@@ -15,7 +15,7 @@
     </section>
     <section id="proxy"><title>Enabling a Proxy for Webhook or Pager Duty Notifications</title>
       <p>If your environment requires a proxy in order for communications to function then these
-        steps will show you how you can enable one.  These steps will only be needed if you are
+        steps will show you how you can enable one. These steps will only be needed if you are
         utilizing the webhook or pager duty notification methods.</p>
       <p>These steps will require access to the lifecycle manager in your cloud deployment so you
         may need to contact your Administrator. You can make these changes during the initial
@@ -26,21 +26,15 @@
           <li>Log in to the lifecycle manager.</li>
           <li>Edit
               <codeph>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeph>
-            file and at the bottom of the file add this line with your proxy address values: <codeblock>notification_environment: '"http_proxy=http://&lt;proxy_address>:&lt;port>" "https_proxy=&lt;http://proxy_address>:&lt;port>"'</codeblock>
+            file and edit the line below with your proxy address values: <codeblock>notification_environment: '"http_proxy=http://&lt;proxy_address>:&lt;port>" "https_proxy=&lt;http://proxy_address>:&lt;port>"'</codeblock>
             <note>There are single quotation marks around the entire value of this entry and then
               double quotation marks around the individual proxy entries. This formatting must exist
               when you enter these values into your configuration file.</note></li>
-          <li>Edit
-              <codeph>~/helion/hos/ansible/roles/monasca-notification/templates/monasca-notification.service.j2</codeph>
-            file and underneath the <codeph>[Service]</codeph> section add the line below:
-            <codeblock>[Service]
-Environment={{ notification_environment }}</codeblock>
-          </li>
           <li>If you are making these changes prior to your initial installation then you are done
             and can continue on with the installation. However, if you are modifying an existing
             environment, you will need to continue on with the remaining steps below.</li>
           <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
-            repo</xref>, as follows:
+              repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
