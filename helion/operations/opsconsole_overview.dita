@@ -15,6 +15,20 @@
         and instances lists, and a drilldown to Kibana for a deep look into logs. The Business Logic
         Layer is a middleware component that serves as a single point of contact for the UI to
         communicate with OpenStack services such as Monasca, Nova, and others.</p>
+      <p>The operations console processes use a message queue while processing requests from the web browser. 
+        There are two options for the technology used for this message queue: Apache Kafka (the default) and RabbitMQ. 
+        The advatage of using either of these options is as follows:</p>
+      <ul>
+        <li>The advantages of using Apache Kafka include its architecture that is optimized for high performance 
+         and reliability, and the fact that it is isolated from the RabbitMQ messaging system that is being monitored 
+         by Monasca and displayed in the Operations Console. This allows the Operations Console to work even when 
+         RabbitMQ has issues, which can be useful to help resolve the RabbitMQ issues.</li>
+        <li>The main advantage of RabbitMQ is that it is requires credentials in order to connect and to send and receive 
+          messages. Regardless of the message queue system, the Operations Console encrypts all messages using AES-CBC.
+          Since Kafka does not require credentials to interact with it, it is recommended to avoid re-configuring Kafka 
+          to listen on publicly accessible ports or to disable encryption. The encryption key and RabbitMQ credentials 
+          are generated randomly and stored in the Operations Console configuration file.</li>
+      </ul>
     </section>
     <section><title>Connecting to the Operations Console</title></section>
     <section id="connecting">
