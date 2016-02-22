@@ -9,7 +9,7 @@
         ring for account databases, container databases, and each object storage policy, but each
         ring works similarly. The <codeph>swift-ring-builder</codeph> utility is used to build and
         manage rings. This utility uses a builder file to contain ring information and additional
-        data required to build future rings. In <keyword keyref="kw-hos-phrase"/>, you can use the
+        data required to build future rings. In <keyword keyref="kw-hos-phrase"/>, you will use the
         cloud model to specify how the rings are configured and used. This model is used to
         automatically invoke the swift-ring-builder utility as part of the deploy process.
         (Normally, you will not run the swift-ring-builder utility directly.)</p>
@@ -23,23 +23,33 @@
       <p>
         <codeblock>ring-specifications:
     - region-name: region1
+      swift-zones:
+        - id: 1
+          server-groups:
+            - AZ1
+        - id: 2
+          server-groups:
+            - AZ2
+        - id: 3
+          server-groups:
+            - AZ3
       rings:
         - name: account
           display-name: Account Ring
-          min-part-time: 16
+          min-part-hours: 16
           partition-power: 12
           replication-policy:
             replica-count: 3
         - name: container
           display-name: Container Ring
-          min-part-time: 16
+          min-part-hours: 16
           partition-power: 12
           replication-policy:
             replica-count: 3
         - name: object-0
           display-name: General
           default: yes
-          min-part-time: 16
+          min-part-hours: 16
           partition-power: 12
           replication-policy:
             replica-count: 3</codeblock>
@@ -60,7 +70,7 @@
             containers. It allows them to specify the storage policy that the container uses. In the
             example, the storage policy is called <b>General</b>.</li>
           <li>
-            <p><b>Min-part-time, partition-power, replication-policy</b> and <b>replica-count</b>
+            <p><b>Min-part-hours, partition-power, replication-policy</b> and <b>replica-count</b>
               are described in the following section. </p>
           </li>
         </ul>
@@ -88,14 +98,14 @@
                 And, if you want a higher resiliency, you can increase the value.</entry>
             </row>
             <row>
-              <entry><codeph>min-part-time</codeph></entry>
+              <entry><codeph>min-part-hours</codeph></entry>
               <entry><p>Changes the value used to decide a given partition can be moved.</p>This is
                 the number of hours that the <codeph>swift-ring-builder</codeph> tool will enforce
                 between ring rebuilds. On a small system, this can be as low as <b>1</b> (one hour).
                 The value can be different for each ring. <p>In the example above, the
                     <codeph>swift-ring-builder</codeph> will enforce a minimum of 16 hours between
                   ring rebuilds. However, this time is system-dependent so you will be unable to
-                  determine the appropriate value for <codeph>min-part-time</codeph> until you have
+                  determine the appropriate value for <codeph>min-part-hours</codeph> until you have
                   more experience with your system.</p></entry>
             </row>
             <row>
@@ -141,7 +151,7 @@
       <codeblock>- name: object-1
   display-name: EC_ring
   default: no
-  min-part-time: 16
+  min-part-hours: 16
   partition-power: 12
   erasure-coding-policy:
     ec-type: jerasure_rs_vand
