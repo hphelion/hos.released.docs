@@ -8,7 +8,8 @@
  <section>
       <note type="danger">These are notes and not yet a doc!!</note> Sub steps -<xref
         href="../installation/install_entryscale_kvm.dita#install_kvm/setup_deployer"
-        >http://docs.hpcloud.com/helion/installation/install_entryscale_kvm.html#install_kvm__setup_deployer</xref></section>
+        >http://docs.hpcloud.com/helion/installation/install_entry
+        scale_kvm.html#install_kvm__setup_deployer</xref></section>
     <section> Deployer disaster recovery -<xref
         href="cloud_control_plane_recovery.dita#topic_tb4_lqy_qt"
         >http://docs.hpcloud.com/helion/bura/cloud_control_plane_recovery.html#topic_tb4_lqy_qt__deployer</xref>
@@ -20,18 +21,22 @@
         <li>Ensuring that you use the same version of HPE Helion OpenStack that you previously had
           loaded on your lifecycle manager, you will need to download and install the lifecycle
           management software using the instructions from the installation guide: </li>
-        <li> Then you will want to restore your data using theDeployer Disaster
-          Recoveryinstructions. These details are included at the End of the document </li>
-        <li> Update your cloud model (servers.yml) with the newmac-addr,ilo-ip,ilo-password,
-          orilo-userfields where these have changed. Do not change theid,ip-addr,role,
-          orserver-groupsettings. (Please follow the procedure for updating your cloud model in the
+        <li> Then you will want to restore your data using the Deployer Disaster Recovery
+          instructions. These details are included at the end of the document </li>
+        <li> Update your cloud model (servers.yml) with the new mac-addr, ilo-ip, ilo-password, or
+          ilo-user fields where these have changed. Do not change the id, ip-addr, role, or
+          server-group settings. (Please follow the procedure for updating your cloud model in the
           git repo) </li>
-        <li> Get theservers.ymlfile stored in git:cd ~/helion/my_cloud/definition/datagit checkout
-          sitethen change, as necessary, themac-addr,ilo-ip,ilo-password, andilo-userfields of this
-          existing controller node. Save and commit the changegit commit -a -m "repaired node X" </li>
+        <li> Get the servers.yml file, which is stored in git:
+          <codeblock>cd ~/helion/my_cloud/definition/data
+git checkout site</codeblock> then change,
+          as necessary, the mac-addr, ilo-ip, ilo-password, and ilo-user fields of this existing
+          controller node. Save and commit the change
+          <codeblock>git commit -a -m "repaired node X"</codeblock>
+        </li>
         <li> Run the configuration processor as follows:
           <codeblock>cd ~/helion/hos/ansible 
-     ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
           Then run ready-deployment:
           <codeblock>cd ~/helion/hos/ansible
        ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
@@ -44,42 +49,43 @@
         <li> Deploy Cobbler:
           <codeblock>cd ~/helion/hos/ansible
        ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock>
-          Note:After this step you may see failures because MySQL has not finished syncing. If so,
+          Note: After this step you may see failures because MySQL has not finished syncing. If so,
           please rerun this step (7). </li>
         <li> Delete the haproxy user: <codeblock>sudo deluser haproxy</codeblock>
         </li>
-        <li> Manually copy the /etc/group file from a backup of the old deployer. </li>
-        <li> NOTE: Currently Freezer does not backup /etc/group file, so it won't get restored when
-          freezer deployer backup is restored. Till that is fixed, we need to follow this workaround
-          Remove the /home/dbadmin/.ssh/id_rsa file to rebuild the SSH keys required to install
-          vertica <codeblock>sudo rm /home/dbadmin/.ssh/id_rsa</codeblock>
+        <li> Manually copy the /etc/group file from a backup of the old deployer. Note, currently
+          Freezer does not back up /etc/group file, so it won't get restored when freezer deployer
+          backup is restored. Until that is fixed, we need to follow this workaround <p/>Remove the
+          /home/dbadmin/.ssh/id_rsa file to rebuild the SSH keys required to install vertica
+          <codeblock>sudo rm /home/dbadmin/.ssh/id_rsa</codeblock>
         </li>
         <li> Configure the necessary keys used for the database etc:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
        ansible-playbook -i hosts/verb_hosts monasca-rebuild-pretasks.yml</codeblock>
-          Run osconfig on the replacement controller node. For example: </li>
-        <li>
+        </li>
+        <li> Run osconfig on the replacement controller node. For example:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
    ansible-playbook -i hosts/verb_hosts osconfig-run.yml -e rebuild=True --limit=&lt;controller-hostname></codeblock>
           If the controller being replaced is the first server running the swift-proxy service
           (seeIdentifying the First Proxy Server) you need to restore the Swift Ring Builder files
           to the /etc/swiftlm/builder_dir directory. SeeRecovering Builder Filesfor details. </li>
-        <li> Run the hlm-deploy playbook on the replacement controller.If the node being replaced is
-          the first proxy node then you only need to use the--limitswitch for that node, otherwise
-          you need to specify the hostname of your first proxy and the hostname of the node being
-          replaced.cd ~/scratch/ansible/next/hos/ansible </li>
-        <li>
-          <codeblock>ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname>,&lt;first-proxy-hostname></codeblock>
+        <li> Run the hlm-deploy playbook on the replacement controller. If the node being replaced
+          is the first proxy node then you only need to use the--limit switch for that node,
+          otherwise you need to specify the hostname of your first proxy and the hostname of the
+          node being
+          replaced.<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname>,&lt;first-proxy-hostname></codeblock>
           If the node being replaced does not host any swift services then you only need to use the
           --limit switch for that node
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
        ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname></codeblock>
         </li>
       </ol>
-      <p>Deployer Disater Recovery Options On the lifecycle manager, install the freezer-agent, as
-        follows:</p>
-      <codeblock>cd ~/helion/hos/ansible/ansible-playbook -i hosts/localhost _deployer_restore_helper.yml -e '{ "old_deployer_hostname": "&lt;here put the hostname of the server that was your deployer>" }'</codeblock>
+      <p>Deployer Disater Recovery Options</p>
       <ol id="ol_mts_nfz_bv">
+        <li>On the lifecycle manager, install the freezer-agent, as follows:
+          <codeblock>cd ~/helion/hos/ansible/ansible-playbook -i hosts/localhost _deployer_restore_helper.yml -e '{ "old_deployer_hostname": "&lt;here put the hostname of the server that was your deployer>" }'</codeblock>
+        </li>
         <li> You must retrieve a few files from any compute or controller node and put them in the
           directory /opt/stack/service/freezer-agent/etc/ of the lifecycle manager:
           /opt/stack/service/freezer-agent/etc/backup.osrcand/opt/stack/service/freezer-agent/etc/systemd_env_vars.cfg
@@ -88,11 +94,12 @@
       nodes) but you lost the lifecycle manager. Shared Deployer/Controller Replacement Procedure
       Thursday, February 04, 2016 10:32 PM HOS 3.0 Page 1 Question: When deployer is down, we can't
       access either compute or controller nodes unless the public keys are stored somewhere But this
-      is not documented. #Become root <ol id="ol_rws_nfz_bv">
-        <li> sudo su # Run the following command to change the host name </li>
-        <li> hostname &lt;here put the hostname of the server that was your deployer> #Edit the
-          /etc/hosts and replace the default hLinux install name (hlm) with the old deployer name
-          which modified in above step iii. </li>
+      is not documented. <ol id="ol_rws_nfz_bv">
+        <li> #Become root <codeblock>sudo su</codeblock>
+        </li>
+        <li>Run the following command to change the host name  
+          <codeblock>hostname &lt;here put the hostname of the server that was your deployer></codeblock> Edit the /etc/hosts and replace the default hLinux
+          install name (hlm) with the old deployer name which modified in above step iii. </li>
         <li> Change the hostname of the server so it points to the hostname of the server that was
           your deployer and update /etc/hosts file according On the lifecycle manager: Become root
           <codeblock>sudo su</codeblock> Source credentials
@@ -127,18 +134,16 @@
           <codeblock>cd ~/helion/hos/ansible/
               ansible-playbook -i hosts/localhost _deployer_restore_helper.yml -e '{ "old_deployer_hostname": "&lt;here put the hostname of the server that was your deployer>"}'</codeblock>
         </li>
-        <li> #Become root </li>
-        <li>
-          <codeblock>sudo su</codeblock> # Run the following command to change the host name </li>
-        <li>
-          <codeblock>hostname &lt;here put the hostname of the server that was your deployer></codeblock>
-          #Edit the /etc/hosts and replace the default hLinux install name (hlm) with the old
-          deployer name which modified in above step iii. </li>
-        <li> Change the hostname of the server so it points to the hostname of the server that was
-          your deployer and update /etc/hosts file according Perform the restore, as follows:
+        <li> Become root  <codeblock>sudo su</codeblock></li>
+        <li>Run the following command to change the host name
+          <codeblock>hostname &lt;here put the hostname of the server that was your deployer></codeblock></li>
+        <li>Edit the /etc/hosts and replace the default hLinux install name (hlm) with the old
+          deployer name which modified in above step iii. Change the hostname of the server so it
+          points to the hostname of the server that was your deployer and update /etc/hosts file
+          according Perform the restore, as follows:
           <codeblock>sudo su
-              cd /root/deployer_restore_helper/</codeblock> Stop the
-          Dayzero UI <codeblock>systemctl stop dayzero</codeblock> execute the restore.
+cd /root/deployer_restore_helper/</codeblock> Stop the Dayzero UI
+          <codeblock>systemctl stop dayzero</codeblock> execute the restore.
           <codeblock>/deployer_restore_script.sh</codeblock> Start the Dayzero UI
           <codeblock>systemctl start dayzero</codeblock>
         </li>
