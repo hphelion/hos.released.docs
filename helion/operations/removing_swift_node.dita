@@ -19,6 +19,10 @@
       </ol>
     </section>
 
+    <section id="expandCollapse">     <sectiondiv outputclass="expandall">Expand All
+        Sections</sectiondiv>     <sectiondiv outputclass="collapseall">Collapse All
+        Sections</sectiondiv>   </section>
+
     <section id="passthrough">
       <title outputclass="headerH">Setting the Pass-through Attributes</title>
       <sectiondiv outputclass="insideSection">
@@ -103,8 +107,8 @@ Devices:    id  region  zone      ip address  port  replication ip  replication 
             next step, otherwise continue the ring rebalance cycle by repeating steps 7-9 until the
             weight has reached zero.</li>
           <li>If the number of partitions is zero for the server on all rings, you can remove the
-            Swift nodes' drives all rings. Edit the pass-through data you created in step #3 and set
-            the <codeph>remove</codeph> attribute as shown in this example:
+            Swift nodes' drives from all rings. Edit the pass-through data you created in step #3
+            and set the <codeph>remove</codeph> attribute as shown in this example:
             <codeblock>---
   product:
     version: 2
@@ -123,7 +127,7 @@ git commit -m "My config or other commit message"</codeblock></li>
           <li>Run the configuration processor:
             <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-          <li>Use the playbook to create a deployment directory:
+          <li>Update your deployment directory:
             <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <li>Run the Swift deploy playbook to rebuild the rings by removing the server:
@@ -149,9 +153,9 @@ ansible-playbook -i hosts/verb_hosts swift-stop.yml --limit <b>&lt;hostname></b>
                 services on
                 <b>helion-cp1-swobj0004</b>:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-stop.yml --limit <b>helion-cp1-swobj0004</b></codeblock></p><note>When
-                using the <codeph>--limit</codeph> argument, <!--with ansible-playbooks-->you must
-                specify the full hostname (for example: <b>helion-cp1-swobj0004</b>) or use the wild
-                card * (for example: <b>*swobj4*</b>).</note></li>
+                using the <codeph>--limit</codeph> argument, you must specify the full hostname (for
+                example: <b>helion-cp1-swobj0004</b>) or use the wild card * (for example:
+                  <b>*swobj4*</b>).</note></li>
             <li>Remove the configuration
                 files.<codeblock>ssh helion-cp1-swobj4-mgmt sudo rm -R /etc/swift</codeblock><note>Do
                 not run any other playbooks until you have finished the process described in <b>To
@@ -174,9 +178,11 @@ ansible-playbook -i hosts/verb_hosts swift-stop.yml --limit <b>helion-cp1-swobj0
             <li>If this was a SWPAC node, reduce the member-count attribute by 1 in the
                 <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file. For SWOBJ
               nodes, no such action is needed.</li>
-            <li>Commit the changes to
-              Git:<codeblock>cd ~helion
-git commit -a -m "&lt;commit message>"</codeblock></li>
+            <li>Commit your configuration to the <xref href="../installation/using_git.dita">local
+                git repo</xref>, as follows:
+              <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
             <li>Run the configuration processor:<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
               <p>You may want to use the <codeph>remove_deleted_servers</codeph> and
@@ -185,7 +191,7 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
                   href="../input_model.dita#input_model/persisteddata">Persisted Data</xref> for
                 more details.</p>
               <codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml -e remove_deleted_servers="y" -e free_unused_addresses="y"</codeblock></li>
-            <li>Create a deployment
+            <li>Update your deployment
               directory:<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
             <li>Validate the changes you've made to the configuration files using the playbook below
@@ -214,7 +220,7 @@ ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock>
                 href="../administration/objectstorage/safe_rebalance_deploy_ring.dita"/>.</li>
             <li>You may need to continue to rebalance the rings. For instructions, see <b>Final
                 Rebalance Phase </b> at <xref
-                href="../administration/objectstorage/input_model_change_existing_rings.dita#topic_vyp_cft_4t"
+                href="../administration/objectstorage/input_model_change_existing_rings.dita"
               />.</li>
           </ol></p>
       </sectiondiv>
