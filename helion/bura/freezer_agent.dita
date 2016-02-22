@@ -26,19 +26,24 @@
                         </ul></li>
                 </ol></p>
         </section>
-        <section><title>Basic Configuration</title>
-            <p>There are several mandatory arguments to execute a backup: <ul>
-                    <li>Action (backup by default)</li>
-                    <li>Mode (fs by default)</li>
-                    <li>Path-to-backup</li>
-                    <li>Backup-name</li>
-                    <li>Container (Swift container or local path)</li>
-                    <li>Storage (Swift by default)</li>
-            </ul></p> For <keyword keyref="kw-hos-phrase"/>, you can create a backup using only mandatory
-            values, as in the following example: 
+        <section><title>Basic Configuration for Backups</title>
+            <p>There are several mandatory parameters you need to specify in order to execute a
+                backup. Note storage is optional: <ul>
+                    <li>action (backup by default)</li>
+                    <li>mode (fs by default)</li>
+                    <li>path-to-backup</li>
+                    <li>backup-name</li>
+                    <li>container (Swift container or local path)</li>
+                    <li>storage is not mandatory. It is Swift by default</li>
+                </ul></p> For <keyword keyref="kw-hos-phrase"/>, you can create a backup using only
+            mandatory values, as in the following example:
             <codeblock>- freezerc --action backup --mode fs --storage swift --path-to-backup /home/user/tmp --container tmp_backups --backup-name backup1</codeblock>
-            The translation to a configuration file for this backup execution would be as follows:
-            <codeblock>
+            To create a configuration file for this same backup, the file would look like the one
+            below. Note that in the config file, the parameter names such as backup-name will use
+            underscores instead of dashes. Thus backup-name as used in the CLI will be backup_name
+            when used in the config file. Note also that where you use -- in the CLI, such as
+            --mode, you do not use the -- in the config
+            file.<codeblock>
   {
     "job_actions": [
         {
@@ -60,10 +65,9 @@
   }
 </codeblock>
             In this configuration file (JSON), the freezer command is wrapped in the
-            "freezer_action" key. <note>All "-" are translated to "_" and the first "--" are
-                omitted.</note> For <keyword keyref="kw-hos-phrase"/>, we can define the schedule rules that
-            this job will follow (only available through the configuration file) and a brief
-            description of the job. </section>
+            "freezer_action" key. For <keyword keyref="kw-hos-phrase"/>, we can define the schedule
+            rules that this job will follow (only available through the configuration file) and a
+            brief description of the job. </section>
         <section><title>Restoring your Data</title><p> For <keyword keyref="kw-hos-phrase"/>, 
             you must do the following in order to restore data after a
                 backup: <ol>
@@ -78,24 +82,29 @@
                         the application or service and start it again after the restore.</li>
                 </ol></p></section>
         <section>
-            <title>Basic Configuration</title>
+            <title>Basic Configuration for Restoring</title>
             <p>To restore from a backup, note that in some cases you must stop the service (for
                 instance, MySQL) before the restore.</p>
-            <p>There are several mandatory options to execute a restore: <ul>
+            <p>There are several parameters that are required and there are some optional parameters
+                used to execute a restore: <ul>
                     <li>action (backup by default)</li>
                     <li>mode (fs by default)</li>
                     <li>restore-abs-path</li>
                     <li>backup-name</li>
                     <li>container (Swift container or local path)</li>
-                    <li>storage (Swift by default)</li>
                     <li>restore-from-host</li>
                     <li>restore-from-date (optional)</li>
+                    <li>storage  is not mandatory. It is Swift by default</li>
                 </ul></p>
             <p>You can create a restore using mandatory values, as in the following example:
                 <codeblock>  - freezerc --action restore --mode fs --storage swift --restore-abs-path /home/user/tmp --container tmp_backups --backup-name backup1 --restore-from-host ubuntu</codeblock></p>
-            <p>The translation to a configuration file for this restore execution would be as
-                follows:
-                <codeblock>
+            <p> To create a configuration file for this same restore, the file would look like the
+                one below. Note that in the config file, the parameter names such as backup-name
+                will use underscores instead of dashes. Thus backup-name as used in the CLI will be
+                backup_name when used in the config file. Note also that where you use -- in the
+                CLI, such as --mode, you do not use the -- in the config file. This is the same
+                format as used above for backup
+                configuration.<codeblock>
   {
     "job_actions": [
         {
