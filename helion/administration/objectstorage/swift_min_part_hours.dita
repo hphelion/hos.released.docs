@@ -1,42 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="topic_ybt_mhb_kt">
+<topic id="min_part_hours">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Changing min-part-hours in Swift</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <p>The following procedure enables you to change the <codeph>min-part-hours</codeph>
-      attribute.</p>
-    <p>
-      <simpletable>
-        <strow>
-          <stentry><b>Description</b>
-          </stentry>
-          <stentry>In the cloud model ring-specifications, the <codeph>min-part-hours</codeph>
-            attribute specifies how many hours you must wait between ring rebuilds. If you change
-            this attribute, this is not reflected in the ring files and it only applies at the time
-            the rings are created. </stentry>
-        </strow>
-        <strow>
-          <stentry><b>Resolution</b></stentry>
-          <stentry>You can change the values as follows:<ol id="ol_qzp_zhb_kt">
-              <li>Log into the first server running the swift-proxy service.</li>
-              <li>Go to the <codeph>/etc/swiftlm/builder_dir/region-&lt;region-name></codeph>
-                directory, where &lt;region-name> is the <codeph>region-name</codeph> field in your
-                cloud model (for example, region1 in most example files). </li>
-              <li>Search for files with a <codeph>.builder</codeph> extension. </li>
-              <li> Run the <codeph>swift-ring-builder</codeph> command against each builder file.
-                For example, to change the value to 16 hours for the account builder file, use the
-                following:
-                <codeblock>sudo swift-ring-builder account.builder set_min_part_hours 16</codeblock></li>
-              <li> You should also update the <codeph>ring-specifications</codeph> (usually in the
-                  <codeph>data/swift/rings.yml</codeph> file) to contain the same value for the
-                min-part-hours.
-                <!--This has no effect in the current release but will have an effect in a future release.--></li>
-            </ol></stentry>
-        </strow>
-      </simpletable>
-    </p>
-    <p>For more details about the <codeph>min-part-power</codeph> attribute, see <xref
-        href="ring_specifications.dita#ring-specification"/>.</p>
+    <section id="about">
+      <p>The <codeph>min-part-hours</codeph> parameter specifies the number of hours you must wait
+        before Swift will allow a given partition to be moved. In other words, it constrains how
+        often you perform ring rebalance operations. Before changing this value, you should get some
+        experience with how long it takes your system to perform replication after you make ring
+        changes (for example, when you add servers).</p>
+      <p>See <xref href="safe_rebalance_deploy_ring.dita"/> for more information about determining
+        when replication has completed.</p>
+    </section>
+    <section id="howto"><title>Changing the min-part-hours Value</title>
+      <p>To change the <codeph>min-part-hours</codeph> value, following these steps:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Edit your <codeph>~/helion/my_cloud/definition/data/swift/rings.yml</codeph> file and
+          change the value(s) of <codeph>min-part-hours</codeph> for the rings you desire. The value
+          is expressed in hours and a value of zero is not allowed.</li>
+        <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local
+            git repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Apply the changes by running this playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
+      </ol>
+    </section>
   </body>
 </topic>
