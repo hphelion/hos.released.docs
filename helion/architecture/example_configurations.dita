@@ -18,9 +18,7 @@
           <ul>
             <li><xref keyref="entryscale_kvm_vsa">Entry-Scale KVM with VSA Model</xref></li>
             
-            <li><xref
-                href="example_configurations.dita#example_configurations/entryscale_kvm_dedicated"
-                >Entry-scale KVM with VSA model with Dedicated Cluster for Metering, Monitoring, and
+            <li><xref keyref="entryscale_kvm_dedicated">Entry-scale KVM with VSA model with Dedicated Cluster for Metering, Monitoring, and
                 Logging</xref></li>
             <li><xref href="example_configurations.dita#example_configurations/entryscale_esx"
                 >Entry-Scale ESX Model</xref></li>
@@ -183,87 +181,7 @@
     </section>
     
     
-    <section id="entryscale_kvm_vsa"><title>Entry-Scale KVM with VSA Model</title>
-      <p>This model provides a KVM-based cloud with VSA for volume storage, and has been tested to a
-        scale of 100 compute nodes.</p>
-      <p>The example is focused on the minimum server count to support a highly-available (HA)
-        compute cloud deployment. The first (manually installed) server, often referred to as the
-        deployer or lifecycle manager, is also used as one of the controller nodes. This model
-        consists of a minimum server count of seven, with three controllers, three VSA storage
-        servers, and one compute server. Swift storage in this example is contained on the
-        controllers.</p>
-      <p>Note that the VSA storage requires a minimum of three servers for a HA configuration,
-        although the deployment will work with as little as one VSA node.</p>
-      <p>This model can also be deployed without the VSA servers and configured to use an external
-        storage device, such as a 3PAR array, which would reduce the minimum server count to
-        four.</p>
-      <p><image href="../../media/examples/entry_scale_kvm_vsa.png"/></p>
-      <p><xref href="../../media/examples/entry_scale_kvm_vsa_lg.png" scope="external" format="html"
-          >Download a high-resolution version</xref></p>
-      <p>The example requires the following networks:</p>
-      <ul>
-        <li><b>External API</b> - This is the network that users will use to make requests to the
-          cloud.</li>
-        <li><b>External VM</b> - This is the network that will be used to provide access to virtual
-          machines (via floating IP addresses).</li>
-        <li><b>Guest/VxLAN</b> - This is the network that will carry traffic between virtual
-          machines on private networks within the cloud.</li>
-        <li><b>Management</b> - This is the network that will be used for all internal traffic
-          between the cloud services, including node provisioning. This network must be on an
-          untagged VLAN.</li>
-      </ul>
-      <p>All of these networks are configured to be presented via a pair of bonded NICs. The example
-        also enables provider VLANs to be configured in Neutron on this interface.</p>
-      <p>In the diagram, "External Routing" refers to whatever routing you want to provide to allow
-        users to access the External API and External VM networks. Note that the EXTERNAL_API
-        network must be reachable from the EXTERNAL_VM network if you want virtual machines to be
-        able to make API calls to the cloud. "Internal Routing" refers to whatever routing you want
-        to provide to allow administrators to access the Management network.</p>
-      <p>If you are using <keyword keyref="kw-hos"/> to install the operating system, then an
-        IPMI/iLO network connected to the IPMI/iLO ports of all servers and routable from the
-        lifecycle manager server is also required for BIOS and power management of the nodes during
-        the operating system installation process.</p>
-      <p>The example uses the following disk configurations:</p>
-      <ul>
-        <li><b>Controllers</b> - One operating system disk and two disks for Swift storage.</li>
-        <li><b>VSA</b> - One operating system disk and two disks for VSA storage.</li>
-        <li><b>Compute</b> - One operating system disk and one disk for virtual machine ephemeral
-          storage.</li>
-      </ul>
-      <p>For details about how to modify this example to match your environment, see <xref
-          href="example_configurations.dita#example_configurations/modify_entryscale_kvm_vsa"
-          >Modifying the Entry-scale KVM with VSA model for your Environment</xref>.</p>
-    </section>
 
-    <section id="entryscale_kvm_dedicated"><title>Entry-scale KVM with VSA model with Dedicated
-        Cluster for Metering, Monitoring, and Logging</title>
-      <p>This model is a variant of the previous Entry-Scale KVM with VSA model. It is designed to
-        support greater levels of metering, monitoring, and logging.</p>
-      <ul>
-        <li>Metering - All meters required to support charge-back/show-back for core Infrastructure
-          as a Service (IaaS) elements.</li>
-        <li>Logging - Run all services at INFO level with the ability to change the settings to
-          DEBUG in order to triage specific error conditions. Minimum retention for logs is 30 days
-          to satisfy audit and compliance requirements.</li>
-        <li>Monitoring - Full performance metrics and health checks for all services.</li>
-      </ul>
-      <p>In order to provide increased processing power for these services, the following
-        configuration changes are made to the control plane in this model:</p>
-      <ul>
-        <li>All services associated with metering, monitorign, and logging run on a dedicated
-          three-node cluster. Three nodes are required for high availability with quorum.</li>
-        <li>A dedicated three node cluster is used for RabbitMQ message queue and database services.
-          This cluster is also used to provide additional processing for the message queue and
-          database load associated with the additional metering, monitoring, and logging load. Three
-          nodes are required for high availability with quorum.</li>
-        <li>The main API cluster is reduced to two nodes. These services are stateless and do not
-          require a quorum node for high availability.</li>
-      </ul>
-      <p>This diagram below illustrates the physical networking used in this configuration.</p>
-      <p><image href="../../media/hos.docs/entry_scale_kvm_vsa_ext.png"/></p>
-      <p><xref href="../../media/hos.docs/entry_scale_kvm_vsa_ext_lg.png" scope="external"
-          format="html">Download a high-resolution version</xref></p>
-    </section>
 
     <section id="entryscale_esx"><title>Entry-Scale ESX Model</title>
       <p>This example shows how to integrate <keyword keyref="kw-hos"/> with ESX. The controller
