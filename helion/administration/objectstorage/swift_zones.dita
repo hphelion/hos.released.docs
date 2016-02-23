@@ -79,16 +79,65 @@
       </table>
     </section>
     <section id="server_groups"><title>Using Server Groups to Specify Swift Zones</title>
-      <p>Swift zones are specified in the ring specifications using the Server Group concept. To
+      <p>Swift zones are specified in the ring specifications using the server group concept. To
         define a Swift zone, you specify:</p>
       <ul>
         <li>An id - this is the Swift zone number</li>
-        <li>A list of associated Server Groups</li>
+        <li>A list of associated server groups</li>
       </ul>
-      <p>Server Groups are defined in your input model. The example input models typically define a
-        number of Server Groups. You can use these pre-defined Server Groups or create your own.</p>
-      <p>For example, the following three models use the example Server Groups CLOUD, AZ1, AZ2 and
-        AZ3. Each of these examples archives the same effect – creating a single Swift Zone.</p>
+      <p>Server groups are defined in your input model. The example input models typically define a
+        number of server groups. You can use these pre-defined server groups or create your own.</p>
+      <p>For example, the following three models use the example server groups
+          <codeph>CLOUD</codeph>, <codeph>AZ1</codeph>, <codeph>AZ2</codeph> and
+          <codeph>AZ3</codeph>. Each of these examples achieves the same effect – creating a single
+        Swift zone.</p>
+      <p>
+        <simpletable frame="all" relcolwidth="1.0* 1.0* 1.0*" id="simpletable_edm_bcc_cv">
+          <strow>
+            <stentry>
+              <codeblock>ring-specifications:
+                - region: region1
+                swift-zones:
+                - id: 1
+                server-groups:
+                - CLOUD
+                rings:
+                …
+              </codeblock>
+            </stentry>
+            <stentry>
+              <codeblock>ring-specifications:
+                - region: region1
+                swift-zones:
+                - id: 1
+                server-groups:
+                - AZ1
+                - AZ2
+                - AZ3
+                rings:
+                …
+              </codeblock>
+            </stentry>
+            <stentry>
+              <codeblock>server-groups:
+                - name: ZONE_ONE
+                server-groups:
+                - AZ1
+                - AZ2
+                - AZ3
+                ring-specifications:
+                - region: region1
+                swift-zones:
+                - id: 1
+                server-groups:
+                - ZONE_ONE
+                rings:
+                …
+              </codeblock>
+            </stentry>
+          </strow>
+        </simpletable>
+      </p>
     </section>
   </body>
 </topic>
