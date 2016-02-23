@@ -22,13 +22,14 @@
           cluster.</note>
       </sectiondiv>
     </section>
-    <section id="howto"><title outputclass="headerH">To Remove a VSA Node from a Cloud</title>
+    <section id="howto"><title outputclass="headerH">Removing a VSA Node</title>
       <sectiondiv outputclass="insideSection">
         <p>Perform the following steps to remove the same cluster which has been removed from CMC in
           your cloud.</p>
         <ol>
+          <li>Log in to the lifecycle manager.</li>
           <li>Edit the definition of the server (usually in the
-              <systemoutput>data/servers.yml</systemoutput> file), for example: <codeblock>- id: vsa1
+              <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file), for example: <codeblock>- id: vsa1
       ip-addr: 192.168.61.15
       role: VSA-ROLE
       server-group: RACK1
@@ -100,16 +101,17 @@
       ilo-password: gone2far
       ilo-user: Administrator
       mac-addr: 5C:B9:01:78:2D:00</codeblock></p></li>
-          <li>Commit your
-            configuration:<pre>cd ~/helion/hos/ansible
+          <li>Commit your configuration to the <xref href="../../../installation/using_git.dita"
+              >local git repo</xref>, as follows:
+            <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m &lt;"commit message"></pre></li>
-          <li>Then, commit the change, and rerun the config processor:
-            <codeblock>git commit -a -m "Removed node &lt;name>"
-cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
-          </li>
+git commit -m "My config or other commit message"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Use the playbook to create a deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <li>There is no need to run the site.yml playbook. However you should remove the node from
             cobbler, as shown
             here:<codeblock>sudo cobbler system remove --name=&lt;node>
