@@ -7,7 +7,7 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="toc"><title>Table of Contents</title>
       <ul>
-        <li><xref href="#input_model/introduction">Introduction</xref></li>
+        <li><xref keyref="input_model_introduction">Introduction</xref></li>
         <li><xref href="#input_model/concepts"><keyword keyref="kw-hos-phrase"/> Concepts</xref>
           <ul>
             <li><xref href="#input_model/cloud">Cloud</xref></li>
@@ -96,7 +96,7 @@
             <li><xref href="#input_model/configneutronprovidervlans">Configuring Neutron Provider
                 VLANs</xref></li>
           </ul></li>
-        <li><xref href="#input_model/cpinfofiles">Configuration Processor Information Files</xref>
+        <li><xref keyref="cpinfofiles">Configuration Processor Information Files</xref>
           <ul>
             <li><xref href="#input_model/address_info_yml">Address_info.yml</xref></li>
             <li><xref href="#input_model/firewall_info_yml">Firewall_info.yml</xref></li>
@@ -105,38 +105,13 @@
             <li><xref href="#input_model/server_info_yml">Server_info.yml</xref></li>
             <li><xref href="#input_model/service_info_yml">Service_info.yml</xref></li>
             <li><xref href="#input_model/explain_txt">Explain.txt</xref></li>
-            <li><xref href="#input_model/clouddiagram_txt">CloudDiagram.txt</xref></li>
+            <li><xref keyref="clouddiagram_txt">CloudDiagram.txt</xref></li>
           </ul></li>
       </ul>
     </section>
-    <section id="introduction"><title>Introduction</title>
-      <p>This document describes how the <keyword keyref="kw-hos"/> input model can be used to define and
-        configure the cloud.</p>
-      <p><keyword keyref="kw-hos"/> ships with a set of example input models that can be used as starting
-        points for defining a custom cloud.</p>
-      <p>The input model allows you, the cloud administrator, to describe the cloud configuration in
-        terms of:</p>
-      <ul>
-        <li>Which OpenStack services run on which server nodes</li>
-        <li>How individual servers are configured in terms of disk and network adapters</li>
-        <li>The overall network configuration of the cloud</li>
-        <li>Network traffic separation</li>
-        <li>CIDR and VLAN assignments</li>
-      </ul>
-      <p>The input model is consumed by the configuration processor which parses and validates the
-        input model and outputs the effective configuration that will be deployed to each server
-        that makes up your cloud.</p>
-      <p>The document is structured as follows:</p>
-      <ul>
-        <li><uicontrol>Concepts</uicontrol> - This explains the ideas behind the declarative model
-          approach used in <keyword keyref="kw-hos-phrase"/> and the core concepts used in describing that
-          model</li>
-        <li><uicontrol>Input Model</uicontrol> - This section provides a description of each of the
-          configuration entities in the input model</li>
-        <li><uicontrol>Core Examples</uicontrol> - In this section we provide samples and
-          definitions of some of the more important configuration entities</li>
-      </ul>
-    </section>
+    
+
+
     <section id="concepts"><title><keyword keyref="kw-hos-phrase"/> Concepts</title>
       <p>An <keyword keyref="kw-hos-phrase"/> cloud is defined by a declarative model that is described in a
         series of configuration objects. These configuration objects are represented in YAML files
@@ -568,6 +543,9 @@
         server. The model allows additional user-defined rules on a per
           <uicontrol>network-group</uicontrol> basis.</p>
     </section>
+
+
+
     <section id="configurationobjects"><title><keyword keyref="kw-hos-phrase"/> Configuration Objects</title>
     </section>
     <section id="co_cloud"><title>Cloud</title>
@@ -2939,69 +2917,9 @@ attach in the interface model used by the servers.
       <codeblock>neutron net-create --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 101 mynet101</codeblock>
       <codeblock>neutron net-create --provider:network_type vlan --provider:physical_network physnet2 --provider:segmentation_id 234 mynet234</codeblock>
     </section>
-    <section id="cpinfofiles">
-      <title>configuration processor Information Files</title>
-      <p>In addition to producing all of the data needed to deploy and configure the cloud, the
-        configuration processor also creates a number of information files that provide details of
-        the resulting configuration.</p>
-      <p>These files can be found in <codeph>~/helion/my_cloud/info</codeph> after the first
-        configuration processor run. This directory is also rebuilt each time the Configuration
-        Processor is run.</p>
-      <p>Most of the files are in YAML format, allowing them to be used in further automation tasks
-        if required.</p>
-      <table frame="all" rowsep="1" colsep="1" id="table">
-        <tgroup cols="2">
-          <colspec colnum="1" colname="col1"/>
-          <colspec colnum="2" colname="col2"/>
-          <thead>
-            <row>
-              <entry>File</entry>
-              <entry>Provides details of</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>address_info.yml </entry>
-              <entry>IP address assignments on each network</entry>
-            </row>
-            <row>
-              <entry>net_info.yml </entry>
-              <entry>IP addresses assigned to services. For example, this provides the data needed
-                to complete the configuration of VSA clusters.</entry>
-            </row>
-            <row>
-              <entry>server_info.yml</entry>
-              <entry>How servers have been allocated, including their network configuration. Allows
-                details of a server to be found from its ID</entry>
-            </row>
-            <row>
-              <entry>firewall_info.yml </entry>
-              <entry>All ports that are open on each network by the firewall configuration. Can be
-                used if you want to configure an additional firewall in front of the API network,
-                for example.</entry>
-            </row>
-            <row>
-              <entry>route_info.yml </entry>
-              <entry>Routes that need to be configured between networks. </entry>
-            </row>
-            <row>
-              <entry>service_info.yml</entry>
-              <entry>Details of where components of each service are deployed</entry>
-            </row>
-            <row>
-              <entry>CloudDiagram.txt</entry>
-              <entry>A pictorial representation of the cloud</entry>
-            </row>
-            <row>
-              <entry>explain.txt </entry>
-              <entry>An explanation of the decisions the configuration processor has made when
-                allocating servers and networks</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-      <p>The following examples are taken from the <codeph>entry-scale-kvm-vsa</codeph> example:</p>
-    </section>
+
+
+
     <section id="address_info_yml"><title>Address_info.yml</title>
       <p>This file provides details of all the IP addresses allocated by the Configuration
         Processor:</p>
@@ -3310,179 +3228,6 @@ MANAGEMENT-NET-RACK1:
           10.0.1.5: ip-cluster horizon roles: ['public'] vip-port: 443 host-port: 80
           10.0.1.5: ip-cluster cinder-api roles: ['public'] vip-port: 8776 host-port: 8776</codeblock>
     </section>
-    <section id="clouddiagram_txt"><title>Cloud_diagram.txt</title>
-      <p>This file provides a pictorial representation of the cloud.</p>
-      <p>Example:</p>
-      <codeblock>
-        +-ControlPlane: region1 (control-plane-1)----------------------------------------------------------------------------------------------------------------------+
-        |                                                                                                                                                              |
-        | +-Cluster cluster1 ()--------------------------------------------------------------------------------------------------------------------------------------+ |
-        | |                                                                                                                                                          | |
-        | | +-helion-cp1-c1-m1 (192.168.10.3)--------------+    +-helion-cp1-c1-m2 (192.168.10.4)--------------+    +-helion-cp1-c1-m3 (192.168.10.5)--------------+ | |
-        | | |                                              |    |                                              |    |                                              | | |
-        | | | ceilometer                                   |    | ceilometer                                   |    | ceilometer                                   | | |
-        | | |   ceilometer-agent-central                   |    |   ceilometer-agent-central                   |    |   ceilometer-agent-central                   | | |
-        | | |   ceilometer-agent-notification              |    |   ceilometer-agent-notification              |    |   ceilometer-agent-notification              | | |
-        | | |   ceilometer-api                             |    |   ceilometer-api                             |    |   ceilometer-api                             | | |
-        | | |   ceilometer-client                          |    |   ceilometer-client                          |    |   ceilometer-client                          | | |
-        | | |   ceilometer-collector                       |    |   ceilometer-collector                       |    |   ceilometer-collector                       | | |
-        | | |   ceilometer-common                          |    |   ceilometer-common                          |    |   ceilometer-common                          | | |
-        | | |   ceilometer-expirer                         |    |   ceilometer-expirer                         |    |   ceilometer-expirer                         | | |
-        | | | cinder                                       |    | cinder                                       |    | cinder                                       | | |
-        | | |   cinder-api                                 |    |   cinder-api                                 |    |   cinder-api                                 | | |
-        | | |   cinder-backup                              |    |   cinder-backup                              |    |   cinder-backup                              | | |
-        | | |   cinder-client                              |    |   cinder-client                              |    |   cinder-client                              | | |
-        | | |   cinder-scheduler                           |    |   cinder-scheduler                           |    |   cinder-scheduler                           | | |
-        | | |   cinder-volume                              |    |   cinder-volume                              |    |   cinder-volume                              | | |
-        | | | foundation                                   |    | foundation                                   |    | foundation                                   | | |
-        | | |   apache2                                    |    |   apache2                                    |    |   apache2                                    | | |
-        | | |   ip-cluster                                 |    |   ip-cluster                                 |    |   ip-cluster                                 | | |
-        | | |   kafka                                      |    |   kafka                                      |    |   kafka                                      | | |
-        | | |   memcached                                  |    |   memcached                                  |    |   memcached                                  | | |
-        | | |   mysql                                      |    |   mysql                                      |    |   mysql                                      | | |
-        | | |   ntp-server                                 |    |   ntp-server                                 |    |   ntp-server                                 | | |
-        | | |   openstack-client                           |    |   openstack-client                           |    |   openstack-client                           | | |
-        | | |   rabbitmq                                   |    |   rabbitmq                                   |    |   rabbitmq                                   | | |
-        | | |   sherpa-api                                 |    |   sherpa-api                                 |    |   sherpa-api                                 | | |
-        | | |   storm                                      |    |   storm                                      |    |   storm                                      | | |
-        | | |   stunnel                                    |    |   stunnel                                    |    |   stunnel                                    | | |
-        | | |   swift-common                               |    |   swift-common                               |    |   swift-common                               | | |
-        | | |   swift-rsync                                |    |   swift-rsync                                |    |   swift-rsync                                | | |
-        | | |   vertica                                    |    |   vertica                                    |    |   vertica                                    | | |
-        | | |   zookeeper                                  |    |   zookeeper                                  |    |   zookeeper                                  | | |
-        | | | freezer                                      |    | freezer                                      |    | freezer                                      | | |
-        | | |   freezer-agent                              |    |   freezer-agent                              |    |   freezer-agent                              | | |
-        | | |   freezer-api                                |    |   freezer-api                                |    |   freezer-api                                | | |
-        | | | glance                                       |    | glance                                       |    | glance                                       | | |
-        | | |   glance-api                                 |    |   glance-api                                 |    |   glance-api                                 | | |
-        | | |   glance-client                              |    |   glance-client                              |    |   glance-client                              | | |
-        | | |   glance-registry                            |    |   glance-registry                            |    |   glance-registry                            | | |
-        | | | heat                                         |    | heat                                         |    | heat                                         | | |
-        | | |   heat-api                                   |    |   heat-api                                   |    |   heat-api                                   | | |
-        | | |   heat-api-cfn                               |    |   heat-api-cfn                               |    |   heat-api-cfn                               | | |
-        | | |   heat-api-cloudwatch                        |    |   heat-api-cloudwatch                        |    |   heat-api-cloudwatch                        | | |
-        | | |   heat-client                                |    |   heat-client                                |    |   heat-client                                | | |
-        | | |   heat-engine                                |    |   heat-engine                                |    |   heat-engine                                | | |
-        | | | horizon                                      |    | horizon                                      |    | horizon                                      | | |
-        | | |   horizon                                    |    |   horizon                                    |    |   horizon                                    | | |
-        | | | keystone                                     |    | keystone                                     |    | keystone                                     | | |
-        | | |   keystone-api                               |    |   keystone-api                               |    |   keystone-api                               | | |
-        | | |   keystone-client                            |    |   keystone-client                            |    |   keystone-client                            | | |
-        | | | logging                                      |    | logging                                      |    | logging                                      | | |
-        | | |   logging-producer                           |    |   logging-producer                           |    |   logging-producer                           | | |
-        | | |   logging-server                             |    |   logging-server                             |    |   logging-server                             | | |
-        | | | monasca                                      |    | monasca                                      |    | monasca                                      | | |
-        | | |   monasca-agent                              |    |   monasca-agent                              |    |   monasca-agent                              | | |
-        | | |   monasca-api                                |    |   monasca-api                                |    |   monasca-api                                | | |
-        | | |   monasca-client                             |    |   monasca-client                             |    |   monasca-client                             | | |
-        | | |   monasca-notifier                           |    |   monasca-notifier                           |    |   monasca-notifier                           | | |
-        | | |   monasca-persister                          |    |   monasca-persister                          |    |   monasca-persister                          | | |
-        | | |   monasca-threshold                          |    |   monasca-threshold                          |    |   monasca-threshold                          | | |
-        | | | neutron                                      |    | neutron                                      |    | neutron                                      | | |
-        | | |   neutron-client                             |    |   neutron-client                             |    |   neutron-client                             | | |
-        | | |   neutron-dhcp-agent                         |    |   neutron-dhcp-agent                         |    |   neutron-dhcp-agent                         | | |
-        | | |   neutron-metadata-agent                     |    |   neutron-metadata-agent                     |    |   neutron-metadata-agent                     | | |
-        | | |   neutron-ml2-plugin                         |    |   neutron-ml2-plugin                         |    |   neutron-ml2-plugin                         | | |
-        | | |   neutron-openvswitch-agent                  |    |   neutron-openvswitch-agent                  |    |   neutron-openvswitch-agent                  | | |
-        | | |   neutron-server                             |    |   neutron-server                             |    |   neutron-server                             | | |
-        | | |   neutron-vpn-agent                          |    |   neutron-vpn-agent                          |    |   neutron-vpn-agent                          | | |
-        | | | nova                                         |    | nova                                         |    | nova                                         | | |
-        | | |   nova-api                                   |    |   nova-api                                   |    |   nova-api                                   | | |
-        | | |   nova-client                                |    |   nova-client                                |    |   nova-client                                | | |
-        | | |   nova-conductor                             |    |   nova-conductor                             |    |   nova-conductor                             | | |
-        | | |   nova-console-auth                          |    |   nova-console-auth                          |    |   nova-console-auth                          | | |
-        | | |   nova-metadata                              |    |   nova-metadata                              |    |   nova-metadata                              | | |
-        | | |   nova-novncproxy                            |    |   nova-novncproxy                            |    |   nova-novncproxy                            | | |
-        | | |   nova-scheduler                             |    |   nova-scheduler                             |    |   nova-scheduler                             | | |
-        | | | operations                                   |    | operations                                   |    | operations                                   | | |
-        | | |   lifecycle-manager                          |    |   lifecycle-manager                          |    |   lifecycle-manager                          | | |
-        | | |   lifecycle-manager-target                   |    |   lifecycle-manager-target                   |    |   lifecycle-manager-target                   | | |
-        | | |   ops-console-monitor                        |    |   ops-console-monitor                        |    |   ops-console-monitor                        | | |
-        | | |   ops-console-web                            |    |   ops-console-web                            |    |   ops-console-web                            | | |
-        | | | swift                                        |    | swift                                        |    | swift                                        | | |
-        | | |   swift-account                              |    |   swift-account                              |    |   swift-account                              | | |
-        | | |   swift-client                               |    |   swift-client                               |    |   swift-client                               | | |
-        | | |   swift-container                            |    |   swift-container                            |    |   swift-container                            | | |
-        | | |   swift-object                               |    |   swift-object                               |    |   swift-object                               | | |
-        | | |   swift-proxy                                |    |   swift-proxy                                |    |   swift-proxy                                | | |
-        | | |   swift-ring-builder                         |    |   swift-ring-builder                         |    |   swift-ring-builder                         | | |
-        | | | vsa-storage                                  |    | vsa-storage                                  |    | vsa-storage                                  | | |
-        | | |   cmc-service                                |    |   cmc-service                                |    |   cmc-service                                | | |
-        | | |                                              |    |                                              |    |                                              | | |
-        | | | -------------------------------------------- |    | -------------------------------------------- |    | -------------------------------------------- | | |
-        | | |                                              |    |                                              |    |                                              | | |
-        | | | bond0 (hed3, hed4)                           |    | bond0 (hed3, hed4)                           |    | bond0 (hed3, hed4)                           | | |
-        | | |   EXTERNAL-API-NET (10.0.1.2)                |    |   EXTERNAL-API-NET (10.0.1.3)                |    |   EXTERNAL-API-NET (10.0.1.4)                | | |
-        | | |   EXTERNAL-VM-NET                            |    |   EXTERNAL-VM-NET                            |    |   EXTERNAL-VM-NET                            | | |
-        | | |   GUEST-NET (10.1.1.2)                       |    |   GUEST-NET (10.1.1.3)                       |    |   GUEST-NET (10.1.1.4)                       | | |
-        | | |   MANAGEMENT-NET (192.168.10.3)              |    |   MANAGEMENT-NET (192.168.10.4)              |    |   MANAGEMENT-NET (192.168.10.5)              | | |
-        | | |                                              |    |                                              |    |                                              | | |
-        | | +----------------------------------------------+    +----------------------------------------------+    +----------------------------------------------+ | |
-        | |                                                                                                                                                          | |
-        | +----------------------------------------------------------------------------------------------------------------------------------------------------------+ |
-        |                                                                                                                                                              |
-        | +-compute------------------------------------------+                                                                                                         |
-        | |                                                  |                                                                                                         |
-        | | +-COMPUTE-ROLE (AZ1) (1 servers)---------------+ |                                                                                                         |
-        | | |                                              | |                                                                                                         |
-        | | | foundation                                   | |                                                                                                         |
-        | | |   ntp-client                                 | |                                                                                                         |
-        | | |   stunnel                                    | |                                                                                                         |
-        | | | freezer                                      | |                                                                                                         |
-        | | |   freezer-agent                              | |                                                                                                         |
-        | | | logging                                      | |                                                                                                         |
-        | | |   logging-producer                           | |                                                                                                         |
-        | | | monasca                                      | |                                                                                                         |
-        | | |   monasca-agent                              | |                                                                                                         |
-        | | | neutron                                      | |                                                                                                         |
-        | | |   neutron-l3-agent                           | |                                                                                                         |
-        | | |   neutron-lbaasv2-agent                      | |                                                                                                         |
-        | | |   neutron-metadata-agent                     | |                                                                                                         |
-        | | |   neutron-openvswitch-agent                  | |                                                                                                         |
-        | | | nova                                         | |                                                                                                         |
-        | | |   nova-compute                               | |                                                                                                         |
-        | | |   nova-compute-kvm                           | |                                                                                                         |
-        | | | operations                                   | |                                                                                                         |
-        | | |   lifecycle-manager-target                   | |                                                                                                         |
-        | | |                                              | |                                                                                                         |
-        | | | -------------------------------------------- | |                                                                                                         |
-        | | |                                              | |                                                                                                         |
-        | | | bond0 (hed3, hed4)                           | |                                                                                                         |
-        | | |   EXTERNAL-VM-NET                            | |                                                                                                         |
-        | | |   GUEST-NET (10.1.1.0/24)                    | |                                                                                                         |
-        | | |   MANAGEMENT-NET (192.168.10.0/24)           | |                                                                                                         |
-        | | |                                              | |                                                                                                         |
-        | | +----------------------------------------------+ |                                                                                                         |
-        | +--------------------------------------------------+                                                                                                         |
-        |                                                                                                                                                              |
-        | +-vsa------------------------------------------------------------------------------------------------------------------------------------------------------+ |
-        | |                                                                                                                                                          | |
-        | | +-VSA-ROLE (AZ1) (1 servers)-------------------+    +-VSA-ROLE (AZ2) (1 servers)-------------------+    +-VSA-ROLE (AZ3) (1 servers)-------------------+ | |
-        | | |                                              |    |                                              |    |                                              | | |
-        | | | foundation                                   |    | foundation                                   |    | foundation                                   | | |
-        | | |   ntp-client                                 |    |   ntp-client                                 |    |   ntp-client                                 | | |
-        | | |   stunnel                                    |    |   stunnel                                    |    |   stunnel                                    | | |
-        | | | freezer                                      |    | freezer                                      |    | freezer                                      | | |
-        | | |   freezer-agent                              |    |   freezer-agent                              |    |   freezer-agent                              | | |
-        | | | logging                                      |    | logging                                      |    | logging                                      | | |
-        | | |   logging-producer                           |    |   logging-producer                           |    |   logging-producer                           | | |
-        | | | monasca                                      |    | monasca                                      |    | monasca                                      | | |
-        | | |   monasca-agent                              |    |   monasca-agent                              |    |   monasca-agent                              | | |
-        | | | operations                                   |    | operations                                   |    | operations                                   | | |
-        | | |   lifecycle-manager-target                   |    |   lifecycle-manager-target                   |    |   lifecycle-manager-target                   | | |
-        | | | vsa-storage                                  |    | vsa-storage                                  |    | vsa-storage                                  | | |
-        | | |   vsa                                        |    |   vsa                                        |    |   vsa                                        | | |
-        | | |                                              |    |                                              |    |                                              | | |
-        | | | -------------------------------------------- |    | -------------------------------------------- |    | -------------------------------------------- | | |
-        | | |                                              |    |                                              |    |                                              | | |
-        | | | bond0 (hed3, hed4)                           |    | bond0 (hed3, hed4)                           |    | bond0 (hed3, hed4)                           | | |
-        | | |   MANAGEMENT-NET (192.168.10.0/24)           |    |   MANAGEMENT-NET (192.168.10.0/24)           |    |   MANAGEMENT-NET (192.168.10.0/24)           | | |
-        | | |                                              |    |                                              |    |                                              | | |
-        | | +----------------------------------------------+    +----------------------------------------------+    +----------------------------------------------+ | |
-        | +----------------------------------------------------------------------------------------------------------------------------------------------------------+ |
-        |                                                                                                                                                              |
-        +--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-      </codeblock>
-    </section>
+    
   </conbody>
 </concept>
