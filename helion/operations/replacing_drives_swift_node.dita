@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="topic_am4_mjv_pt">
+<topic id="replacing_disks">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Replacing Drives in a Swift Node</title>
+  <abstract><shortdesc outputclass="hdphidden">Maintenance steps for replacing drives in a Swift
+      node.</shortdesc>There are two different classes of drives in a Swift node that needs to be
+    replaced; the operating system disk drive (generally <b>/dev/sda</b>) and storage disk drives.
+    There are different procedures for the replacement of each class of drive to bring the node back
+    to normal.</abstract>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <p>There are two different classes of drives in a Swift node that needs to be replaced; the
-      operating system disk drive (generally <b>/dev/sda</b>) and storage disk drives. There are
-      different procedures for the replacement of each class of drive to bring the node back to
-      normal.</p>
     <section>
-      <title><b>To Replace the Operating System Disk Drive</b></title>
-      <p>After the operating system disk drive is replaced, the node must be reimaged.<ol
-          id="ol_ewb_vjv_pt">
+      <title outputclass="headerH">To Replace the Operating System Disk Drive</title>
+      <sectiondiv outputclass="insideSection">
+        <p>After the operating system disk drive is replaced, the node must be reimaged.</p>
+        <ol>
           <li>Log onto the lifecycle manager.</li>
           <li>Using Ansible, reimage the
               node:<codeblock>cd ~/helion/hos/ansible
@@ -38,20 +40,23 @@ ansible-playbook -i hosts/verb_hosts osconfig-run.yml -limit helion-cp1-swobj000
               <codeph>--ask-vault-pass</codeph>
               argument.<codeblock>ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --ask-vault-pass --limit &lt;hostname></codeblock><p>For
               example:<codeblock>ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --ask-vault-pass --limit helion-cp1-swobj0002*</codeblock></p></li>
-        </ol></p>
+        </ol>
+      </sectiondiv>
     </section>
     <section>
-      <title><b>To Replace a Storage Disk Drive</b></title>
-      <p>After a storage drive is replaced, there is no need to reimage the server. Instead, run the
-          <codeph>swift-reconfigure.yml</codeph> playbook.<ol id="ol_kqj_hkv_pt">
-          <li>Log onto the lifecycle manager.</li>
-          <li>Run the following
-              commands:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+      <title outputclass="headerH">To Replace a Storage Disk Drive</title>
+      <sectiondiv outputclass="insideSection">
+        <p>After a storage drive is replaced, there is no need to reimage the server. Instead, run
+          the <codeph>swift-reconfigure.yml</codeph> playbook.<ol id="ol_kqj_hkv_pt">
+            <li>Log onto the lifecycle manager.</li>
+            <li>Run the following
+                commands:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml --limit &lt;hostname></codeblock><p>In
-              following example, the server used is
-              <b>swobj2</b>:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+                following example, the server used is
+                <b>swobj2</b>:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml --limit helion-cp1-swobj0002-mgmt </codeblock></p></li>
-        </ol></p>
+          </ol></p>
+      </sectiondiv>
     </section>
   </body>
 </topic>
