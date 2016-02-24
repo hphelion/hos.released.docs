@@ -27,7 +27,47 @@
           </ul>
         </li>
 
-       <li><xref keyref="alternative_configurations">Alternative Configurations</xref>
+       
+
+        <li><xref
+            keyref="modify_entryscale_kvm_vsa"
+            >Modifying the Entry-scale KVM with VSA Model for Your Environment</xref>
+       <ul>
+            <li><xref keyref="localizing_inputmodel">Localizing the Input Model</xref>
+              <!--<ul>
+                <li><xref href="example_configurations.dita#example_configurations/networks"
+                    >Networks.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/nicmappings"
+                    >Nic_mappings.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/netinterfaces"
+                    >Net_interfaces.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/networkgroups"
+                    >Network_groups.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/servers"
+                    >Servers.yml</xref></li>
+              </ul>-->
+            </li>
+            <li><xref keyref="customizing_inputmodel">Customizing the Input Model</xref>
+              <!--<ul>
+                <li><xref href="example_configurations.dita#example_configurations/disks_controller"
+                    >Disks_controller.yml</xref>
+                  <ul>
+                    <li><xref href="example_configurations.dita#example_configurations/filesystems"
+                        >File Systems Storage</xref></li>
+                    <li><xref href="example_configurations.dita#example_configurations/swiftstorage"
+                        >Swift Storage</xref></li>
+                  </ul>
+                </li>
+                <li><xref href="example_configurations.dita#example_configurations/disks_vsa"
+                    >Disks_vsa.yml</xref></li>
+                <li><xref href="example_configurations.dita#example_configurations/disks_compute"
+                    >Disks_compute.yml</xref></li>
+              </ul>-->
+            </li>
+
+          </ul>
+        </li>
+        <li><xref keyref="alternative_configurations">Alternative Configurations</xref>
           <ul>
             <li><xref keyref="entryscale_ceph_multinetwork">Entry-Scale KVM with Ceph Model with Two Networks</xref>
               <!--<ul>
@@ -76,46 +116,7 @@
                     >Edit the README.html and README.md Files</xref></li>
               </ul>-->
             </li>
-          </ul>
-        </li>
-
-        <li><xref
-            keyref="modify_entryscale_kvm_vsa"
-            >Modifying the Entry-scale KVM with VSA Model for Your Environment</xref>
-       <ul>
-            <li><xref keyref="localizing_inputmodel">Localizing the Input Model</xref>
-              <!--<ul>
-                <li><xref href="example_configurations.dita#example_configurations/networks"
-                    >Networks.yml</xref></li>
-                <li><xref href="example_configurations.dita#example_configurations/nicmappings"
-                    >Nic_mappings.yml</xref></li>
-                <li><xref href="example_configurations.dita#example_configurations/netinterfaces"
-                    >Net_interfaces.yml</xref></li>
-                <li><xref href="example_configurations.dita#example_configurations/networkgroups"
-                    >Network_groups.yml</xref></li>
-                <li><xref href="example_configurations.dita#example_configurations/servers"
-                    >Servers.yml</xref></li>
-              </ul>-->
-            </li>
-            <li><xref keyref="customizing_inputmodel">Customizing the Input Model</xref>
-              <!--<ul>
-                <li><xref href="example_configurations.dita#example_configurations/disks_controller"
-                    >Disks_controller.yml</xref>
-                  <ul>
-                    <li><xref href="example_configurations.dita#example_configurations/filesystems"
-                        >File Systems Storage</xref></li>
-                    <li><xref href="example_configurations.dita#example_configurations/swiftstorage"
-                        >Swift Storage</xref></li>
-                  </ul>
-                </li>
-                <li><xref href="example_configurations.dita#example_configurations/disks_vsa"
-                    >Disks_vsa.yml</xref></li>
-                <li><xref href="example_configurations.dita#example_configurations/disks_compute"
-                    >Disks_compute.yml</xref></li>
-              </ul>-->
-            </li>
-            <li><xref keyref="standalone_deployer">Using a
-                Standalone Lifecycle-Manager Node</xref>
+            <li><xref keyref="standalone_deployer">Using a Standalone Lifecycle-Manager Node</xref>
               <!--<ul>
                 <li><xref
                     href="example_configurations.dita#example_configurations/control_plane_yml"
@@ -132,16 +133,12 @@
                     >Servers.yml</xref></li>
               </ul>-->
             </li>
-            <li><xref href="example_configurations.dita#example_configurations/without_dvr"
-                >Configuring <keyword keyref="kw-hos"/> without DVR</xref></li>
-            <li><xref href="example_configurations.dita#example_configurations/without_l3agent"
-                >Configuring <keyword keyref="kw-hos"/> with Provider VLANs and Physical Routers
-                Only</xref></li>
-            <li><xref href="example_configurations.dita#example_configurations/twosystems"
-                >Considerations When Installing Two Systems on One Subnet</xref></li>
+            <li><xref keyref="without_dvr">Configuring <keyword keyref="kw-hos"/> without DVR</xref></li>
+            <li><xref keyref="without_l3agent">Configuring <keyword keyref="kw-hos"/> with Provider VLANs and Physical Routers
+              Only</xref></li>
+            <li><xref keyref="twosystems">Considerations When Installing Two Systems on One Subnet</xref></li>            
           </ul>
         </li>
-
       </ul>
     </section>
     <section id="example_configs"><title><keyword keyref="kw-hos"/> Example Configurations</title>
@@ -228,110 +225,9 @@
 
     
 
-    <section id="without_dvr"><title>Configuring <keyword keyref="kw-hos"/> without DVR</title>
-      <p>By default in the KVM model, the Neutron service utilizes distributed routing (DVR). This
-        is the recommended setup because it allows for high availability. However, if you would like
-        to disable this feature, here are the steps to achieve this.</p>
-      <p>On your lifecycle manager, make the following changes:</p>
-      <ol>
-        <li>In the <codeph>~/helion/my_cloud/config/neutron/neutron.conf.j2</codeph> file, change
-          the line below from: <codeblock>router_distributed = {{ router_distributed }}</codeblock>
-          <p>to:</p>
-          <codeblock>router_distributed = False</codeblock></li>
-        <li>In the <codeph>~/helion/my_cloud/config/neutron/ml2_conf.ini.j2</codeph> file, change
-          the line below from: <codeblock>enable_distributed_routing = True</codeblock>
-          <p>to:</p>
-          <codeblock>enable_distributed_routing = False</codeblock></li>
-        <li>In the <codeph>~/helion/my_cloud/config/neutron/l3_agent.ini.j2</codeph> file, change
-          the line below from: <codeblock>agent_mode = {{ neutron_l3_agent_mode }}</codeblock>
-          <p>to:</p>
-          <codeblock>agent_mode = legacy</codeblock></li>
-        <li>In the <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file, remove
-          the following values from the Compute resource <codeph>service-components</codeph> list:
-          <codeblock>
-   - neutron-l3-agent
-   - neutron-metadata-agent</codeblock></li>
-      </ol>
-    </section>
 
-    <section id="without_l3agent"><title>Configuring <keyword keyref="kw-hos"/> with Provider VLANs
-        and Physical Routers Only</title>
-      <p>Another option for configuring Neutron is to use provider VLANs and physical routers only,
-        here are the steps to achieve this.</p>
-      <p>On your lifecycle manager, make the following changes:</p>
-      <ol>
-        <li>In the <codeph>~/helion/my_cloud/config/neutron/neutron.conf.j2</codeph> file, change
-          the line below from: <codeblock>router_distributed = {{ router_distributed }}</codeblock>
-          <p>to:</p>
-          <codeblock>router_distributed = False</codeblock></li>
-        <li>In the <codeph>~/helion/my_cloud/config/neutron/ml2_conf.ini.j2</codeph> file, change
-          the line below from: <codeblock>enable_distributed_routing = True</codeblock>
-          <p>to:</p>
-          <codeblock>enable_distributed_routing = False</codeblock></li>
-        <li>In the <codeph>~/helion/my_cloud/config/neutron/dhcp_agent.ini.j2</codeph> file, change
-          the line below from: <codeblock>enable_isolated_metadata = {{ neutron_enable_isolated_metadata }}</codeblock>
-          <p>to:</p>
-          <codeblock>enable_isolated_metadata = True</codeblock></li>
-        <li>In the <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file, remove
-          the following values from the Compute resource <codeph>service-components</codeph> list:
-          <codeblock>
-  - neutron-l3-agent
-  - neutron-metadata-agent</codeblock></li>
-      </ol>
-    </section>
- 
-    <section id="twosystems"><title>Considerations When Installing Two Systems on One Subnet</title>
-      <p>If you wish to install two separate <ph conkeyref="HOS-conrefs/product-title"/> systems
-        using a single subnet, you will need to consider the following notes.</p>
-      <p>The <codeph>ip_cluster</codeph> service includes the <codeph>keepalived</codeph> daemon
-        which maintains virtual IPs (VIPs) on cluster nodes. In order to maintain VIPs, it
-        communicates between cluster nodes over the VRRP protocol.</p>
-      <p>A VRRP virtual routerid identifies a particular VRRP cluster and must be unique for a
-        subnet. If you have two VRRP clusters with the same virtual routerid, causing a clash of
-        VRRP traffic, the VIPs are unlikely to be up or pingable and you are likely to get the
-        following signature in your <codeph>/etc/keepalived/keepalived.log</codeph>:</p>
-      <codeblock>Dec 16 15:43:43 helion-cp1-c1-m1-mgmt Keepalived_vrrp[2218]: ip address associated with VRID not present in received packet : 10.2.1.11
-Dec 16 15:43:43 helion-cp1-c1-m1-mgmt Keepalived_vrrp[2218]: one or more VIP associated with VRID mismatch actual MASTER advert
-Dec 16 15:43:43 helion-cp1-c1-m1-mgmt Keepalived_vrrp[2218]: bogus VRRP packet received on br-bond0 !!!
-Dec 16 15:43:43 helion-cp1-c1-m1-mgmt Keepalived_vrrp[2218]: VRRP_Instance(VI_2) ignoring received advertisment...</codeblock>
-      <p>To resolve this issue, our recommendation is to install your separate <ph
-          conkeyref="HOS-conrefs/product-title"/> systems with VRRP traffic on different
-        subnets.</p>
-      <p>If this is not possible, you may also assign a unique routerid to your separate <ph
-          conkeyref="HOS-conrefs/product-title"/> system by changing the
-          <codeph>keepalived_vrrp_offset</codeph> service configurable. The routerid is currently
-        derived using the <codeph>keepalived_vrrp_index</codeph> which comes from a configuration
-        processor variable and the <codeph>keepalived_vrrp_offset</codeph>.</p>
-      <p>For example, </p>
-      <ol>
-        <li>Log in to your lifecycle manager.</li>
-        <li>Edit your <codeph>~/helion/my_cloud/config/keepalived/defaults.yml</codeph> file and
-          change the value of the following line: <codeblock>keepalived_vrrp_offset: 0</codeblock>
-          <p>Change the off value to a number that uniquely identifies a separate vrrp cluster. For
-            example:</p>
-          <p><codeph>keepalived_vrrp_offset: 0</codeph> for the 1st vrrp cluster on this subnet.</p>
-          <p><codeph>keepalived_vrrp_offset: 1</codeph> for the 2nd vrrp cluster on this subnet.</p>
-          <p><codeph>keepalived_vrrp_offset: 2</codeph> for the 3rd vrrp cluster on this
-          subnet.</p></li>
-        <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
-            repo</xref>, as follows:
-          <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "changing Admin password"</codeblock></li>
-        <li>Run the configuration processor with this command:
-          <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-        <li>Use the playbook below to create a deployment directory:
-          <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-        <li>If you are making this change after your initial install, run the following reconfigure
-          playbook to make this change in your environment:
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible/
-ansible-playbook -i hosts/verb_hosts FND-CLU-reconfigure.yml
-        </codeblock></li>
-      </ol>
-    </section>
- 
+
+
   
   </body>
 </topic>
