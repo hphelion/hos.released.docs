@@ -3,66 +3,71 @@
 <topic id="remove_datadisk_osd">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Removing a Data Disk from the Object Storage
     Daemon (OSD) Nodes</title>
+  <abstract><shortdesc outputclass="hdphidden">Steps for removing data disks from your OSD
+      nodes.</shortdesc>If you want to remove a data disks from your existing OSD nodes, these steps
+    will show you how to.</abstract>
   <body>
-    <p conkeyref="HOS-conrefs/applies-to"/>    
-    <section id="about">
-      <p>If you want to remove a data disks from your existing OSD nodes, these steps will show you
-        how to.</p>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="expandCollapse">
+      <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
+      <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
     </section>
-    <section id="steps"><title>Removing a Data Disk from an Object Storage Daemon (OSD) Node</title>
-      <ol>
-        <li>Log in to the OSD node you want to remove the data disk from.</li>
-        <li>Figure out the OSD number for the corresponding disk using this command:
-          <codeblock>sudo ceph-disk list | grep &lt;disk-to-be-removed&gt; | grep osd</codeblock></li>
-        <li>Using the output from the command in the previoius step, locate the OSD number. <p>In
-            the example below, the OSD number is <codeph>4</codeph>:</p>
-          <codeblock>/dev/sdn1 ceph data, active, cluster ceph, osd.4, journal /dev/sdj1</codeblock>
-          <note>The value for &lt;osd_number> in the next steps should be replaced with the OSD
-            number you locate above.</note></li>
-        <li>Use the following commands to take the OSD node out of the Ceph cluster and observe the
-          cluster rebalance itself: <codeblock>ceph osd out &lt;osd_number&gt;
+    <section id="steps"><title outputclass="headerH">Removing a Data Disk from an Object Storage
+        Daemon (OSD) Node</title>
+      <sectiondiv outputclass="insideSection">
+        <ol>
+          <li>Log in to the OSD node you want to remove the data disk from.</li>
+          <li>Figure out the OSD number for the corresponding disk using this command:
+            <codeblock>sudo ceph-disk list | grep &lt;disk-to-be-removed&gt; | grep osd</codeblock></li>
+          <li>Using the output from the command in the previoius step, locate the OSD number. <p>In
+              the example below, the OSD number is <codeph>4</codeph>:</p>
+            <codeblock>/dev/sdn1 ceph data, active, cluster ceph, osd.4, journal /dev/sdj1</codeblock>
+            <note>The value for &lt;osd_number> in the next steps should be replaced with the OSD
+              number you locate above.</note></li>
+          <li>Use the following commands to take the OSD node out of the Ceph cluster and observe
+            the cluster rebalance itself: <codeblock>ceph osd out &lt;osd_number&gt;
 ceph -w</codeblock>
-          <p>The placement group states will change from <codeph>active+clean</codeph> to
-              <codeph>active</codeph>, some <codeph>degraded</codeph> objects, and then finally back
-            to <codeph>active+clean</codeph> once the migration completes. You can press CTRL+C to
-            exit.</p></li>
-        <li>Use the following commands to stop the OSD service, remove it from the CRUSH map, delete
-          its authentication key, and remove the OSD node:
-          <codeblock>sudo systemctl stop ceph-osd@&lt;osd_number&gt;
+            <p>The placement group states will change from <codeph>active+clean</codeph> to
+                <codeph>active</codeph>, some <codeph>degraded</codeph> objects, and then finally
+              back to <codeph>active+clean</codeph> once the migration completes. You can press
+              CTRL+C to exit.</p></li>
+          <li>Use the following commands to stop the OSD service, remove it from the CRUSH map,
+            delete its authentication key, and remove the OSD node:
+            <codeblock>sudo systemctl stop ceph-osd@&lt;osd_number&gt;
 ceph osd crush remove osd.&lt;osd_number&gt;
 ceph auth del osd.&lt;osd_number&gt;
 ceph osd rm &lt;osd_number&gt;</codeblock></li>
-        <li>This step will remove the OSD's directories and should be performed with caution: <codeblock>sudo rm -rf /var/lib/ceph/osd/&lt;ceph_cluster&gt;-&lt;osd_number&gt;</codeblock>
-          <p>where:</p>
-          <table frame="all" rowsep="1" colsep="1" id="table_sgn_m5r_35">
-            <tgroup cols="2">
-              <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-              <colspec colname="c2" colnum="2" colwidth="1.0*"/>
-              <thead>
-                <row>
-                  <entry/>
-                  <entry/>
-                </row>
-              </thead>
-              <tbody>
-                <row>
-                  <entry>&lt;ceph_cluster&gt;</entry>
-                  <entry>This should be replaced with the name of your Ceph cluster.</entry>
-                </row>
-                <row>
-                  <entry>&lt;osd_number&gt;</entry>
-                  <entry>This should be replaced with the number identified in step #3
-                    earlier.</entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </table></li>
-        <li>Repeat steps 1-6 for each OSD node in the Ceph cluster one at a time.</li>
-        <li>Log in to the lifecycle manager.</li>
-        <li>Edit the <codeph>~/helion/my_cloud/definition/data/disks_osd.yml</codeph> file and
-          remove the details for the corresponding data disk that you removed earlier.
-            <p>Example:</p>
-          <codeblock>- name: ceph-osd-data-and-journal
+          <li>This step will remove the OSD's directories and should be performed with caution: <codeblock>sudo rm -rf /var/lib/ceph/osd/&lt;ceph_cluster&gt;-&lt;osd_number&gt;</codeblock>
+            <p>where:</p>
+            <table frame="all" rowsep="1" colsep="1" id="table_sgn_m5r_35">
+              <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1.0*"/>
+                <colspec colname="c2" colnum="2" colwidth="1.0*"/>
+                <thead>
+                  <row>
+                    <entry/>
+                    <entry/>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>&lt;ceph_cluster&gt;</entry>
+                    <entry>This should be replaced with the name of your Ceph cluster.</entry>
+                  </row>
+                  <row>
+                    <entry>&lt;osd_number&gt;</entry>
+                    <entry>This should be replaced with the number identified in step #3
+                      earlier.</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table></li>
+          <li>Repeat steps 1-6 for each OSD node in the Ceph cluster one at a time.</li>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Edit the <codeph>~/helion/my_cloud/definition/data/disks_osd.yml</codeph> file and
+            remove the details for the corresponding data disk that you removed earlier.
+              <p>Example:</p>
+            <codeblock>- name: ceph-osd-data-and-journal
   devices:
      - name: /dev/sdn
   consumer:
@@ -70,22 +75,24 @@ ceph osd rm &lt;osd_number&gt;</codeblock></li>
      attrs:
      usage: data
      journal_disk: /dev/sdj</codeblock>
-          <note>The <codeph>journal_disk</codeph> in the above example is optional and may be
-            missing from your configuration files.</note></li>
-        <li>Commit the configuration changes to git:
-          <codeblock>cd ~/helion/hos/ansible
-            git add -A
-            git commit -m "Adding new OSD data disk"</codeblock></li>
-        <li>Run the configuration processor:
-          <codeblock>cd ~/helion/hos/ansible
+            <note>The <codeph>journal_disk</codeph> in the above example is optional and may be
+              missing from your configuration files.</note></li>
+          <li>Commit your configuration to the <xref href="../../../installation/using_git.dita"
+              >local git repo</xref>, as follows:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-        <li>Create the deployment directory:
-          <codeblock>cd ~/helion/hos/ansible
+          <li>Update your deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-        <li>Redeploy Ceph with this playbook:
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Redeploy Ceph with this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts ceph-status.yml</codeblock></li>
-      </ol>
+        </ol>
+      </sectiondiv>
     </section>
   </body>
 </topic>
