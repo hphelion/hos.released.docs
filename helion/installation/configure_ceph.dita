@@ -42,7 +42,6 @@
     <section id="deployer"><title outputclass="headerH">Set Up the Lifecycle Manager as a Ceph
         Client</title>
       <sectiondiv outputclass="insideSection">
-        <p><b>This section only applies to <keyword keyref="kw-hos-phrase-21"/></b></p>
         <p>If you have a separate lifecycle manager node or if you want to set up the lifecycle
           manager as a Ceph client, then the lifecycle manager node should have the Ceph client
           installed on it along with the necessary configuration and keyring files required to
@@ -261,10 +260,11 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
                 </table>
               </li>
             </ul></li>
-          <li>Commit your
-            configuration<codeblock>cd ~/helion/hos/ansible
+          <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
+              repo</xref>, as follows:
+            <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "&lt;commit message>"</codeblock></li>
+git commit -m "My config or other commit message"</codeblock></li>
         </ol>
         <p>After your configuration files are setup, continue with the <xref
             href="install_entryscale_kvm.dita#install_kvm/provision">Entry-scale KVM Cloud
@@ -294,19 +294,6 @@ ansible-playbook -i hosts/verb_hosts ceph-client-prepare.yml</codeblock>
             execute the above playbook with the additon of the <codeph>--limit
               &lt;new-client-node&gt;</codeph> switch.</note>
         </p>
-        <p><b>For HPE Helion OpenStack 2.0 Only</b></p>
-        <p>After executing the <codeph>ceph-client-prepare.yml</codeph> playbook, copy the following
-          Ceph keyring files from the lifecycle manager node to the <codeph>/etc/ceph</codeph>
-          directory of all of the controller nodes:</p>
-        <codeblock>/etc/ceph/ceph.client.cinder-backup.keyring
-/etc/ceph/ceph.client.cinder.keyring
-/etc/ceph/ceph.client.glance.keyring
-/etc/ceph/client.cinder.key</codeblock>
-        <p>Also ensure that the files have <codeph>0644</codeph> permissions by executing the
-          command below for each of the files on each of the controller nodes:
-          <codeblock>chmod 0644 &lt;file path></codeblock></p>
-        <p>For example:</p>
-        <codeblock>chmod 0644 /etc/ceph/ceph.client.cinder-backup.keyring</codeblock>
         <p><b>Ceph Configuration</b></p>
         <p>Continue with the Ceph configuration with the steps below:</p>
         <ol>
@@ -321,8 +308,8 @@ enabled_backends=ceph1</codeblock>
                     <codeph>enabled_backends=vsa-1,ceph1</codeph>.</note></li>
               <li>[OPTIONAL] If you want your volumes to use a default volume type, then enter the
                 name of the volume type in the <codeph>[DEFAULT]</codeph> section with the syntax
-                below. <b>You will want to remember this value when you create your volume type in
-                  the next section.</b>
+                below. <b>You will want to remember this value when you create your volume type
+                  later.</b>
                 <p>
                   <note type="important">If you do not specify a default type then your volumes will
                     default to a non-redundant RAID configuration. It is recommended that you create
