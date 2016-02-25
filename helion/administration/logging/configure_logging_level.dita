@@ -303,7 +303,7 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
                     <li>Complete the changes by running this playbook:
                       <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts vsa-reconfigure.yml</codeblock>
+ansible-playbook -i hosts/verb_hosts sherpa-reconfigure.yml</codeblock>
                     </li>
                   </ol>
                 </entry>
@@ -332,23 +332,30 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock>
                 <entry><p>vsa-installer</p></entry>
                 <entry><p>INFO</p></entry>
                 <entry>
-                  <p>VSA exposes the logging configuration templates on the lifecycle manager in the
-                    following file:</p>
-                  <codeblock>~/helion/hos/ansible/roles/VSA-DEP/defaults/main.yml</codeblock>
-                  <p>Change the <codeph>INFO</codeph> value to the desired logging level.</p>
-                  <p>Example showing how you can change the <codeph>vsa-installer</codeph> logging
-                    level to DEBUG:</p>
-                  <codeblock>vsa_installer_log_level: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"</codeblock>
-                  <p>After the needed changes are done (for example logging level changes to local
-                    or centralized logging), run the following commands, targeting relevant nodes to
-                    deploy the configuration change:</p>
-                  <codeblock>cd ~/helion/hos/ansible
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Edit the file below:
+                      <codeblock>~/helion/hos/ansible/roles/VSA-DEP/defaults/main.yml</codeblock></li>
+                    <li>To change the logging level, change from INFO to DEBUG on the following
+                      line:
+                      <codeblock>vsa_installer_log_level: "{{ helion_loglevel | default('INFO') }}"</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Ceph log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts vsa-reconfigure.yml</codeblock>
+                    </li>
+                  </ol>
                 </entry>
               </row>
             </tbody>
