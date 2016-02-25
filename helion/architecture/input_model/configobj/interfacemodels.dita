@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="configobj_interfacemodels">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Configuration Object - Interface Models</title>
+    <body>
+        <p conkeyref="HOS-conrefs/applies-to"/>
+        
+
+
+    <p>The interface-models configuration object describes how network interfaces are bonded and
+        the mapping of network groups onto interfaces. Interface devices are identified by name and
+        mapped to a particular physical port by the <uicontrol>nic-mapping</uicontrol> (see <xref
+            href="#input_model/nicmapping">NIC Mapping</xref>).</p>
+    <codeblock>---
+        product:
+        version: 2
+        
+        interface-models:
+        - name: INTERFACE_SET_CONTROLLER
+        network-interfaces:
+        - name: BONDED_INTERFACE
+        device:
+        name: bond0
+        bond-data:
+        provider: linux
+        devices:
+        - name: hed3
+        - name: hed4
+        options:
+        mode: active-backup
+        miimon: 200
+        primary: hed3
+        network-groups:
+        - EXTERNAL_API
+        - EXTERNAL_VM
+        - GUEST
+        
+        - name: UNBONDED_INTERFACE
+        device:
+        name: hed0
+        network-groups:
+        - MGMT</codeblock>
+    <p>
+        <table frame="all" rowsep="1" colsep="1" id="tb_interface_model">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1"/>
+                <colspec colname="c2" colnum="2"/>
+                <thead>
+                    <row>
+                        <entry>Key</entry>
+                        <entry>Value Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>name</entry>
+                        <entry>An administrator-defined name for the interface model.</entry>
+                    </row>
+                    <row>
+                        <entry>network-interfaces</entry>
+                        <entry>A list of network interface definitions.</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </p>
+    <p>The network-interfaces configuration object has the following attributes:</p>
+    <p>
+        <table frame="all" rowsep="1" colsep="1" id="network_interface">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1"/>
+                <colspec colname="c2" colnum="2"/>
+                <thead>
+                    <row>
+                        <entry>Key</entry>
+                        <entry>Value Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>name</entry>
+                        <entry>An administrator-defined name for the interface</entry>
+                    </row>
+                    <row>
+                        <entry>device</entry>
+                        <entry>
+                            <p>A dictionary containing the network device name as seen on the associated
+                                server.</p>
+                            <p>When configuring a bond, this is used as the bond device name and the names of
+                                the devices to be bonded are specified in the bond-data section.</p>
+                            <p>If the interface is not bonded this must be the name of the device specified by
+                                the <uicontrol>nic-mapping</uicontrol> (see <xref href="#input_model/nicmapping"
+                                    >NIC Mapping</xref>).</p>
+                        </entry>
+                    </row>
+                    <row>
+                        <entry>bond-data (optional)</entry>
+                        <entry>Used to define a bond. See <xref keyref="configobj_bonddata" type="table"
+                            >Bond Data</xref> for details.</entry>
+                    </row>
+                    <row>
+                        <entry>network-groups (optional if forced-network-groups is defined)</entry>
+                        <entry>A list of one or more <uicontrol>network-groups</uicontrol> (see <xref
+                            href="#input_model/co_networkgroups">Network Groups</xref>) containing
+                            <uicontrol>networks</uicontrol> (see <xref href="#input_model/co_networks"
+                                >Networks</xref>) that can be accessed via this interface. Networks in these
+                            groups will only be configured if there is at least one
+                            <uicontrol>service-component</uicontrol> on the server which matches the list of
+                            component-endpoints defined in the <uicontrol>network-group</uicontrol>.</entry>
+                    </row>
+                    <row>
+                        <entry>forced-network-groups (optional if network-groups is defined)</entry>
+                        <entry>A list of one or more <uicontrol>network-groups</uicontrol> (see <xref
+                            href="#input_model/co_networkgroups">Network Groups</xref>) containing
+                            <uicontrol>networks</uicontrol> (see <xref href="#input_model/co_networks"
+                                >Networks</xref>) that can be accessed via this interface. Networks in these
+                            groups are always configured on the server.</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </p>
+    </body>
+</topic>
+
