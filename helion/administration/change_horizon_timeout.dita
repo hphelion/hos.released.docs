@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="horizonTimeout">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Changing the Horizon Timeout Value</title>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="Timeout">
+      <title>Horizon Timeout</title>
+      <p>The default session timeout for Horizon is 1800 seconds or 30 minutes.  This is the 
+      recommended default and best practice for those concerned with security.</p>
+      <p>As an administrator, you can change the session timeout by changing the value of
+      the SESSION_TIMEOUT to anything less than or equal to 14400, which is equal to four hours.  Values 
+      greater than 14400 should not be used due to Keystone constraints.</p>
+      <note type="warning">Increasing the value of SESSION_TIMEOUT increases the risk of abuse.</note>
+      
+    </section>
+    
+    <section id="Steps">
+      <title>Steps</title>
+        <p>Follow these steps to change and commit the Horizon timeout value.</p>
+        <ol>
+          <li>Edit the Horizon config file with the editor of your choice (nano, vim, vi, etc):
+            <codeblock>cd ~/helion/my_cloud/config/horizon/
+vim local_settings.py</codeblock></li>
+          <li>By default, the SESSION_TIMEOUT entry doesn't exist in the Horizon
+            configuration file <codeph>local_settings.py</codeph>. If this is the case, add an entry 
+            above the SESSION_ENGINE line/entry like so:
+            <codeblock>SESSION_TIMEOUT = 14400</codeblock>
+            If there is an existing entry for SESSION_TIMEOUT, change its value 
+            to suit your needs. 
+            <note type="important">Do not exceed the stated upper bound of 14400.</note>
+          </li>
+          <li>Commit your configuration to the local git repo, as follows:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "Update Horizon SESSION_TIMEOUT"</codeblock>
+          </li>
+          <li>Prepare to reconfigure the cloud with the change:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+          </li>
+          <li>Reconfigure Horizon:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb-hosts horizon-reconfigure.yml</codeblock>
+          </li>
+        </ol>
+   
+    </section>
+
+  </body>
+</topic>
