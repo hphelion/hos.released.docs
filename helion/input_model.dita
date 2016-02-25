@@ -41,11 +41,11 @@
                   Configuration</xref></li>
               </ul></li>
           </ul></li>
-        <li><xref href="#input_model/configurationobjects"><keyword keyref="kw-hos-phrase"/> Configuration
+        <li><xref keyref="configurationobjects"><keyword keyref="kw-hos-phrase"/> Configuration
             Objects</xref>
           <ul>
-            <li><xref href="#input_model/co_cloud">Cloud</xref></li>
-            <li><xref href="#input_model/co_controlplane">Control Plane</xref>
+            <li><xref keyref="configobj_cloud">Cloud</xref></li>
+            <li><xref keyref="configobj_controlplane">Control Plane</xref>
               <ul>
                 <li><xref href="#input_model/co_clusters">Clusters</xref></li>
                 <li><xref href="#input_model/co_resources">Resources</xref></li>
@@ -436,7 +436,7 @@
         configuration. The configuration processor provides information about the routes it is
         expecting to be configured.</p>
       <p>For a detailed description of how the configuration processor validates routes, refer to
-          <xref href="input_model.dita#input_model/networkroutevalidation">Network Route
+          <xref keyref="networkroutevalidation">Network Route
           Validation</xref>.</p>
     </section>
     <section id="loadbalancers"><title>Load Balancers</title>
@@ -546,164 +546,12 @@
 
 
 
-    <section id="configurationobjects"><title><keyword keyref="kw-hos-phrase"/> Configuration Objects</title>
-    </section>
-    <section id="co_cloud"><title>Cloud</title>
-      <p>The top-level cloud configuration file, <uicontrol>cloudConfig.yml</uicontrol>, defines
-        some global values for the <keyword keyref="kw-hos"/> Cloud, as described in the table below.</p>
-      <table frame="all" rowsep="1" colsep="1" id="cloud_config">
-        <tgroup cols="2">
-          <colspec colname="c1" colnum="1"/>
-          <colspec colname="c2" colnum="2"/>
-          <thead>
-            <row>
-              <entry>Key</entry>
-              <entry>Value Description</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>name</entry>
-              <entry>An administrator-defined name for the cloud</entry>
-            </row>
-            <row>
-              <entry>hostname-data (optional)</entry>
-              <entry>Provides control over some parts of the generated names (see <xref
-                  keyref="namegeneration">Name Generation</xref>) <p>Consists of two
-                  values: <ul>
-                    <li>host-prefix - default is to use the cloud name (above)</li>
-                    <li>member-prefix - default is "-m"</li>
-                  </ul></p></entry>
-            </row>
-            <row>
-              <entry>ntp-servers (optional)</entry>
-              <entry>A list of external NTP servers your cloud has access to. If specified by name
-                then the names need to be resolvable via the external DNS nameservers you specify in
-                the next section. All servers running the "ntp-server" component will be configured
-                to use these external NTP servers.</entry>
-            </row>
-            <row>
-              <entry>dns-settings (optional)</entry>
-              <entry>DNS configuration data that will be applied to all servers. See example
-                configuration for a full list of values.</entry>
-            </row>
-            <row>
-              <entry>smtp-settings (optional)</entry>
-              <entry>SMTP client configuration data that will be applied to all servers. See example
-                configurations for a full list of values.</entry>
-            </row>
-            <row>
-              <entry>firewall-settings (optional)</entry>
-              <entry>Used to enable/disable the firewall feature and to enable/disable logging of
-                dropped packets.</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-    </section>
-    <section id="co_controlplane"><title>Control Plane</title>
-      <p>The snippet below shows the start of the control plane definition file.</p>
-      <codeblock>---
-  product:
-     version: 2
-        
-  control-planes:
-     - name: control-plane-1
-       control-plane-prefix: cp1
-       region-name: region1
-       failure-zones:
-         - AZ1
-         - AZ2
-         - AZ3
-       common-service-components:
-         - logging-producer
-         - monasca-agent
-         - freezer-agent
-         - stunnel
-         - lifecycle-manager-target
-       clusters:
-         - name: cluster1
-           cluster-prefix: c1
-           server-role: CONTROLLER-ROLE
-           member-count: 3
-           allocation-policy: strict
-           service-components:
-             - lifecycle-manager
-             - ntp-server
-             - swift-ring-builder
-             - mysql
-             - ip-cluster
-             ...
-        
-       resources:
-         - name: compute
-           resource-prefix: comp
-           server-role: COMPUTE-ROLE
-           allocation-policy: any
-           min-count: 0
-           service-components:
-              - ntp-client
-              - nova-compute
-              - nova-compute-kvm
-              - neutron-l3-agent
-              ...</codeblock>
-      <p>
-        <table frame="all" rowsep="1" colsep="1" id="control_plane">
-          <tgroup cols="2">
-            <colspec colname="c1" colnum="1"/>
-            <colspec colname="c2" colnum="2"/>
-            <thead>
-              <row>
-                <entry>Key</entry>
-                <entry>Value Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>name</entry>
-                <entry>This name identifies the control plane. This value is used to persist server
-                  allocations (see <xref keyref="persisteddata">Persisted Data</xref>)
-                  and cannot be changed once servers have been allocated.</entry>
-              </row>
-              <row>
-                <entry>control-plane-prefix (optional)</entry>
-                <entry>The control-plane-prefix is used as part of the hostname (see <xref
-                    keyref="namegeneration">Name Generation</xref>). If not specified,
-                  the control plane name is used.</entry>
-              </row>
-              <row>
-                <entry>region-name</entry>
-                <entry>This name identifies the Keystone region within which services in the control
-                  plane will be registered.</entry>
-              </row>
-              <row>
-                <entry>common-service-components (optional)</entry>
-                <entry>This lists a set of service components that run on all servers in the control
-                  plane (clusters and resource pools)</entry>
-              </row>
-              <row>
-                <entry>failure-zones (optional)</entry>
-                <entry>A list of <uicontrol>server-group</uicontrol> names that servers for this
-                  control plane will be allocated from. If no failure-zones are specified, only
-                  servers not associated with a <uicontrol>server-group</uicontrol> will be used.
-                  (see <xref href="#input_model/servergroups_failurezones">Server Groups and Failure
-                    Zones</xref> for a description of server-groups as failure zones.)</entry>
-              </row>
-              <row>
-                <entry>clusters</entry>
-                <entry>A list of clusters for this control plane (see <xref
-                    href="#input_model/co_clusters">Clusters</xref>).</entry>
-              </row>
-              <row>
-                <entry>resources</entry>
-                <entry>A list of resource groups for this control plane (see <xref
-                    href="#input_model/co_resources">Resources</xref>).</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-      </p>
-    </section>
+
+    
+
+
+    
+    
     <section id="co_clusters"><title>Clusters</title>
       <p>
         <table frame="all" rowsep="1" colsep="1" id="clusters">
@@ -1060,7 +908,7 @@
                 <entry>An administrator-defined name for the server group. The name is used to link
                   server-groups together and to identify server-groups to be used as failure zones
                   in a <uicontrol>control-plane</uicontrol>. (see <xref
-                    href="#input_model/co_controlplane">Control Plane</xref>)</entry>
+                    keyref="configobj_controlplane">Control Plane</xref>)</entry>
               </row>
               <row>
                 <entry>server-groups (optional)</entry>

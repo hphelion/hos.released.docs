@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="configobj_controlplane">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Control Plane</title>
+    <body>
+        <p conkeyref="HOS-conrefs/applies-to"/>
+        
+
+    <p>The snippet below shows the start of the control plane definition file.</p>
+    <codeblock>---
+        product:
+        version: 2
+        
+        control-planes:
+        - name: control-plane-1
+        control-plane-prefix: cp1
+        region-name: region1
+        failure-zones:
+        - AZ1
+        - AZ2
+        - AZ3
+        common-service-components:
+        - logging-producer
+        - monasca-agent
+        - freezer-agent
+        - stunnel
+        - lifecycle-manager-target
+        clusters:
+        - name: cluster1
+        cluster-prefix: c1
+        server-role: CONTROLLER-ROLE
+        member-count: 3
+        allocation-policy: strict
+        service-components:
+        - lifecycle-manager
+        - ntp-server
+        - swift-ring-builder
+        - mysql
+        - ip-cluster
+        ...
+        
+        resources:
+        - name: compute
+        resource-prefix: comp
+        server-role: COMPUTE-ROLE
+        allocation-policy: any
+        min-count: 0
+        service-components:
+        - ntp-client
+        - nova-compute
+        - nova-compute-kvm
+        - neutron-l3-agent
+        ...</codeblock>
+    <p>
+        <table frame="all" rowsep="1" colsep="1" id="control_plane">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1"/>
+                <colspec colname="c2" colnum="2"/>
+                <thead>
+                    <row>
+                        <entry>Key</entry>
+                        <entry>Value Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>name</entry>
+                        <entry>This name identifies the control plane. This value is used to persist server
+                            allocations (see <xref keyref="persisteddata">Persisted Data</xref>)
+                            and cannot be changed once servers have been allocated.</entry>
+                    </row>
+                    <row>
+                        <entry>control-plane-prefix (optional)</entry>
+                        <entry>The control-plane-prefix is used as part of the hostname (see <xref
+                            keyref="namegeneration">Name Generation</xref>). If not specified,
+                            the control plane name is used.</entry>
+                    </row>
+                    <row>
+                        <entry>region-name</entry>
+                        <entry>This name identifies the Keystone region within which services in the control
+                            plane will be registered.</entry>
+                    </row>
+                    <row>
+                        <entry>common-service-components (optional)</entry>
+                        <entry>This lists a set of service components that run on all servers in the control
+                            plane (clusters and resource pools)</entry>
+                    </row>
+                    <row>
+                        <entry>failure-zones (optional)</entry>
+                        <entry>A list of <uicontrol>server-group</uicontrol> names that servers for this
+                            control plane will be allocated from. If no failure-zones are specified, only
+                            servers not associated with a <uicontrol>server-group</uicontrol> will be used.
+                            (see <xref href="#input_model/servergroups_failurezones">Server Groups and Failure
+                                Zones</xref> for a description of server-groups as failure zones.)</entry>
+                    </row>
+                    <row>
+                        <entry>clusters</entry>
+                        <entry>A list of clusters for this control plane (see <xref
+                            href="#input_model/co_clusters">Clusters</xref>).</entry>
+                    </row>
+                    <row>
+                        <entry>resources</entry>
+                        <entry>A list of resource groups for this control plane (see <xref
+                            href="#input_model/co_resources">Resources</xref>).</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </p>
+
+
+    </body>
+</topic>
+
+
+
