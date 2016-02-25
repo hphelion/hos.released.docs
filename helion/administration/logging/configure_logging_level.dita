@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="configure_logging_level">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring the Logging Level for Services</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring the Logging Level for
+    Services</title>
   <body>
-     <section id="service_config">
+    <section id="service_config">
       <p>To configure the logging level for a specific service follow these steps:</p>
       <p>
         <table frame="all" rowsep="1" colsep="1" id="loglevel_config">
@@ -112,7 +113,7 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock>
                 <entry><p>EON</p></entry>
                 <entry/>
                 <entry/>
-                <entry><p>See <xref href="../esx/logging.dita">EON Logging</xref> for more
+                <entry><p>See <xref href="../../esx/logging.dita">EON Logging</xref> for more
                     details.</p></entry>
               </row>
               <row>
@@ -170,7 +171,7 @@ ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></entry>
                 <entry><p>key-api</p></entry>
                 <entry><p>INFO</p></entry>
                 <entry><p>To configure logging levels, see <xref
-                      href="../identity/identity_reconfigure.dita">Identity Service
+                      href="../../identity/identity_reconfigure.dita">Identity Service
                       Reconfigure</xref></p></entry>
               </row>
               <row>
@@ -258,14 +259,12 @@ ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock>
                     during deployment or after deployment:</p>
                   <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml -e "ops_console_loglevel=DEBUG"</codeblock>
-                  
-                  
-                  <p>Ops Console exposes the logging configuration templates on the lifecycle manager in
-                    the following file:</p>
+                  <p>Ops Console exposes the logging configuration templates on the lifecycle
+                    manager in the following file:</p>
                   <codeblock>~/helion/hos/ansible/roles/ops-common/defaults/main.yml</codeblock>
                   <p>Change the <codeph>INFO</codeph> value to the desired logging level.</p>
-                  <p>Example showing how you can change the <codeph>ops-console</codeph> logging level
-                    to DEBUG:</p>
+                  <p>Example showing how you can change the <codeph>ops-console</codeph> logging
+                    level to DEBUG:</p>
                   <codeblock>ops_console_loglevel: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"</codeblock>
                   <p>After the needed changes are done (for example logging level changes to local
                     or centralized logging), run the following commands, targeting relevant nodes to
@@ -283,11 +282,30 @@ ansible-playbook -i hosts/verb_hosts ops-console-reconfigure.yml</codeblock></en
                 <entry/>
                 <entry><p>INFO</p></entry>
                 <entry>
-                  <p>The logging level is set in the file below:</p>
-                  <codeblock>/etc/sherpa/sherpa.conf</codeblock>
-                  <p>To change the logging level, change from INFO to DEBUG in the following line in
-                      <codeph>sherpa.conf</codeph>:</p>
-                  <codeblock>'sherpa': {'level': 'INFO', 'handlers': ['file', 'json']}</codeblock>
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Edit the file below:
+                      <codeblock>~/helion/my_cloud/config/sherpa/sherpa.conf.j2</codeblock></li>
+                    <li>To change the logging level, change from INFO to DEBUG on the following
+                      line:
+                      <codeblock>'sherpa': {'level': 'INFO', 'handlers': ['file', 'json']},</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts vsa-reconfigure.yml</codeblock>
+                    </li>
+                  </ol>
                 </entry>
               </row>
               <row>
