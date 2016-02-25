@@ -209,44 +209,76 @@ ansible-playbook -i hosts/verb_hosts monasca-agent-reconfigure.yml</codeblock>
                 <entry><p>neutron-server</p><p>dhcp-agent</p><p>l3-agent</p><p>lbaas-agent</p><p>metadata-agent</p><p>openvswitch-agent</p><p>vpn-agent</p></entry>
                 <entry><p>INFO</p></entry>
                 <entry>
-                  <p>Neutron-server component logging can be changed by modifying the following
-                    file:</p>
-                  <codeblock>~/helion/my_cloud/config/neutron/logging.conf.j2</codeblock>
-                  <p>All other Neutron service component log levels are configurable in the
-                    following files:</p>
-                  <codeblock>~/helion/my_cloud/config/neutron/vpn-agent-logging.conf.j2
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Neutron-server component logging can be changed by modifying the following
+                      file:
+                      <codeblock>~/helion/my_cloud/config/neutron/logging.conf.j2</codeblock>
+                      <p>All other Neutron service component log levels are configurable in the
+                        following files:</p>
+                      <codeblock>~/helion/my_cloud/config/neutron/vpn-agent-logging.conf.j2
 ~/helion/my_cloud/config/neutron/dhcp-agent-logging.conf.j2
 ~/helion/my_cloud/config/neutron/lbaas-agent-logging.conf.j2
 ~/helion/my_cloud/config/neutron/metadata-agent-logging.conf.j2
 ~/helion/my_cloud/config/neutron/openvswitch-agent-logging.conf.j2
-~/helion/my_cloud/config/neutron/l3-agent-logging.conf.j2</codeblock>
-                  <p>If you make edits to these files, you will need to run the following commands
-                    to commit the changes:</p>
-                  <codeblock>cd ~/helion/hos/ansible
+~/helion/my_cloud/config/neutron/l3-agent-logging.conf.j2</codeblock></li>
+                    <li>To change the logging level, change from INFO to DEBUG on the following
+                      line:
+                      <codeblock>level: INFO</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                      href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Neutron log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock></entry>
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock>
+                    </li>
+                  </ol>
+                </entry>
               </row>
               <row>
                 <entry><p>Nova</p></entry>
                 <entry><p>All</p></entry>
                 <entry><p>INFO</p></entry>
                 <entry>
-                  <p>Nova service log levels are configurable in the following files:</p>
-                  <codeblock>~/helion/my_cloud/config/nova/novncproxy-logging.conf.j2
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Nova service component logging can be changed by modifying the following
+                      files:
+                      <codeblock>~/helion/my_cloud/config/nova/novncproxy-logging.conf.j2
 ~/helion/my_cloud/config/nova/api-logging.conf.j2
 ~/helion/my_cloud/config/nova/compute-logging.conf.j2
 ~/helion/my_cloud/config/nova/conductor-logging.conf.j2
 ~/helion/my_cloud/config/nova/consoleauth-logging.conf.j2
-~/helion/my_cloud/config/nova/scheduler-logging.conf.j2</codeblock>
-                  <p>If you make edits to one or more of these files, then run the
-                      <codeph>nova-reconfigure.yml</codeph> playbook after committing the
-                    changes:</p>
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
+~/helion/my_cloud/config/nova/scheduler-logging.conf.j2</codeblock></li>
+                    <li>To change the logging level, change from INFO to DEBUG on the following
+                      line:
+                      <codeblock>level: INFO</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                      href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock>
+                    </li>
+                  </ol>
                 </entry>
               </row>
               <row>
