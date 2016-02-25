@@ -30,26 +30,39 @@
                   <p>ceilometer-agent-central</p>
                   <p>ceilometer-expirer</p></entry>
                 <entry><p>INFO</p></entry>
-                <entry><p>You can change the <codeph>ceilometer_loglevel</codeph> in the file below
-                    for all components during deployment or after deployment:</p>
-                  <codeblock>~/helion/hos/ansible/roles/_CEI-CMN/defaults/main.yml</codeblock>
-                  <p>You can also change the log level for individual Ceilometer components by
-                    changing one or more of the files below:</p>
-                  <codeblock>~/helion/hos/ansible/roles/CEI-API/templates/api-logging.conf.j2
+                <entry>
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Ceilometer service component logging can be changed by modifying the
+                      following file: <codeblock>~/helion/hos/ansible/roles/_CEI-CMN/defaults/main.yml</codeblock>
+                      <p>You can also change the log level for individual Ceilometer components by
+                        changing one or more of the files below:</p>
+                      <codeblock>~/helion/hos/ansible/roles/CEI-API/templates/api-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-COL/templates/collector-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-NAG/templates/agent-notification-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-CAG/templates/agent-central-logging.conf.j2
-~/helion/hos/ansible/roles/CEI-EXP/templates/expirer-logging.conf.j2</codeblock>
-                  <p>For post-deployment log level changes, run the following commands to commit
-                    your changes to the above files to git and reconfigure the Ceilometer service
-                    with the new log levels:
-                    <codeblock>cd ~/helion/hos/ansible
+~/helion/hos/ansible/roles/CEI-EXP/templates/expirer-logging.conf.j2</codeblock></li>
+                    <li>To change the logging level, change from CRITICAL to DEBUG on the following
+                      line:
+                      <codeblock>ceilometer_loglevel:  INFO
+ceilometer_logstash_loglevel:  INFO</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Ceilometer log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></p></entry>
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
+                  </ol>
+                </entry>
               </row>
               <row>
                 <entry><p>ceilometer-alarm-evaluator-json</p></entry>
@@ -62,25 +75,32 @@ ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></p><
                   <p>ceph-osd</p></entry>
                 <entry>CRITICAL</entry>
                 <entry>
-                  <p>Ceph exposes the logging configuration templates on the lifecycle manager in
-                    the following file:</p>
-                  <codeblock>~/helion/hos/ansible/roles/_CEP-CMN/defaults/main.yml</codeblock>
-                  <p>Change the <codeph>CRITICAL</codeph> value to the desired logging level.</p>
-                  <p>Example showing how you can change the <codeph>ceph-mon</codeph> logging level
-                    to DEBUG:</p>
-                  <codeblock>ceph_mon_log_level: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Ceph service component logging can be changed by modifying the following
+                      file:
+                      <codeblock>~/helion/hos/ansible/roles/_CEP-CMN/defaults/main.yml</codeblock></li>
+                    <li>To change the logging level, change from CRITICAL to DEBUG on the following
+                      line:
+                      <codeblock>ceph_mon_log_level: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"
 ceph_osd_log_level: "{{ helion_loglevel | default('CRITICAL') }}"
-ceph_rgw_log_level: "{{ helion_loglevel | default('CRITICAL') }}"</codeblock>
-                  <p>After the needed changes are done (for example logging level changes to local
-                    or centralized logging), run the following commands, targeting relevant nodes to
-                    deploy the configuration change:</p>
-                  <codeblock>cd ~/helion/hos/ansible
+ceph_rgw_log_level: "{{ helion_loglevel | default('CRITICAL') }}"</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Ceph log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock>
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
+                  </ol>
                 </entry>
               </row>
               <row>
@@ -88,25 +108,29 @@ ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock>
                 <entry>cinder (local)<p>cinder-logstash (centralized logging)</p></entry>
                 <entry>DEBUG<p>INFO</p></entry>
                 <entry>
-                  <p>Cinder exposes the logging configuration templates on the lifecycle manager in
-                    the following file:</p>
-                  <codeblock>~/helion/hos/ansible/roles/_CND-CMN/defaults/main.yml</codeblock>
-                  <p>To change the local logging level for Cinder services, change the value of the
-                    line below:</p>
-                  <codeblock>cinder_default_loglevel: DEBUG</codeblock>
-                  <p>To set the centralized logging level for Cinder services, change the value of
-                    the line below:</p>
-                  <codeblock>cinder_logstash_default_loglevel: INFO</codeblock>
-                  <p>After the needed changes are done (for example logging level changes to local
-                    or centralized logging), run the following commands, targeting relevant nodes to
-                    deploy the configuration change:</p>
-                  <codeblock>cd ~/helion/hos/ansible
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Cinder service component logging can be changed by modifying the following
+                      file:
+                      <codeblock>~/helion/hos/ansible/roles/_CND-CMN/defaults/main.yml</codeblock></li>
+                    <li>To change the logging level, change from INFO to DEBUG on the following
+                      line: <codeblock>cinder_default_loglevel: DEBUG</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Cinder log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock>
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+                  </ol>
                 </entry>
               </row>
               <row>
@@ -129,42 +153,65 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock>
                 <entry><p>glance-api</p><p>glance-registry</p></entry>
                 <entry><p>INFO</p></entry>
                 <entry>
-                  <p>Glance exposes the logging configuration templates on the lifecycle manager in
-                    the following files:</p>
-                  <codeblock>~/helion/my_cloud/config/glance/glance-api-logging.conf.j2
-~/helion/my_cloud/config/glance/glance-registry-logging.conf.j2</codeblock>
-                  <p>After the needed changes are done (for example logging level changes to local
-                    or centralized logging), run the following commands, targeting relevant nodes to
-                    deploy the configuration change:</p>
-                  <codeblock>cd ~/helion/hos/ansible
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Glance service component logging can be changed by modifying the following
+                      files:
+                      <codeblock>~/helion/my_cloud/config/glance/glance-api-logging.conf.j2
+~/helion/my_cloud/config/glance/glance-registry-logging.conf.j2</codeblock></li>
+                    <li>To change the logging level, change from INFO to DEBUG on the following
+                      line: <codeblock>level: INFO</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Glance log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock>
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
+                  </ol>
                 </entry>
               </row>
               <row>
                 <entry><p>Heat</p></entry>
                 <entry><p>api-cfn</p><p>api-cloudwatch</p><p>api-logging</p><p>engine</p></entry>
                 <entry><p>INFO</p></entry>
-                <entry><p>Heat exposes the logging configuration templates on the lifecycle manager
-                    in the following files:</p>
-                  <codeblock>~/helion/my_cloud/config/heat/api-cfn-logging.conf.j2
+                <entry>
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Heat service component logging can be changed by modifying the following
+                      files: <codeblock>~/helion/my_cloud/config/heat/api-cfn-logging.conf.j2
 ~/helion/my_cloud/config/heat/api-cloudwatch-logging.conf.j2 
 ~/helion/my_cloud/config/heat/api-logging.conf.j2
 ~/helion/my_cloud/config/heat/engine-logging.conf.j2</codeblock>
-                  <p>Users can edit these files and set the desired log level for both local as well
-                    as centralized logging. After making the changes, run the following commands
-                    from the lifecycle manager to apply the changes:</p>
-                  <codeblock>cd ~/helion/hos/ansible
+                      <p>Users can edit these files and set the desired log level for both local as
+                        well as centralized logging.</p></li>
+                    <li>To change the logging level, change from WARNING to DEBUG on the following
+                      line: <codeblock>level: WARNING</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Heat log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></entry>
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
+                  </ol>
+                </entry>
               </row>
               <row>
                 <entry><p>Keystone</p></entry>
