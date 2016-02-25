@@ -175,7 +175,7 @@ ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></entry>
                       Reconfigure</xref></p></entry>
               </row>
               <row>
-                <entry><p>Monasca</p></entry>
+                <entry><p>Monitoring (Monasca)</p></entry>
                 <entry><p>monasca-persister</p><p>zookeeper</p><p>storm</p><p>monasca-notification</p><p>monasca-api</p><p>kafka</p><p>monasca-agent</p></entry>
                 <entry><p>WARN</p></entry>
                 <entry>
@@ -186,22 +186,37 @@ ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></entry>
                     and could overload the system.</p>
                   <p>To change the level for individual Monasca components, each of the following
                     files have the variable that you can set to the desired level:</p>
-                  <codeblock>~/helion/hos/ansible/roles/monasca-persister/defaults/main.yml
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Monitoring service component logging can be changed by modifying the
+                      following files:
+                      <codeblock>~/helion/hos/ansible/roles/monasca-persister/defaults/main.yml
 ~/helion/hos/ansible/roles/zookeeper/defaults/main.yml
 ~/helion/hos/ansible/roles/storm/defaults/main.yml
 ~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml
 ~/helion/hos/ansible/roles/monasca-api/defaults/main.yml
 ~/helion/hos/ansible/roles/kafka/defaults/main.yml
-~/helion/hos/ansible/roles/monasca-agent/defaults/main.yml (For this file, you will need to add the variable)</codeblock>
-                  <p>Then run:</p>
-                  <codeblock>cd ~/helion/hos/ansible
+~/helion/hos/ansible/roles/monasca-agent/defaults/main.yml (For this file, you will need to add the variable)</codeblock></li>
+                    <li>To change the logging level, change from INFO to DEBUG on the following
+                      line: <codeblock>monasca_log_level: WARN</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Monasca log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml
-ansible-playbook -i hosts/verb_hosts monasca-agent-reconfigure.yml</codeblock>
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml</codeblock></li>
+                    <li>Update the monasca-agent with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-reconfigure.yml</codeblock></li>
+                  </ol>
                 </entry>
               </row>
               <row>
@@ -213,8 +228,7 @@ ansible-playbook -i hosts/verb_hosts monasca-agent-reconfigure.yml</codeblock>
                   <ol>
                     <li>Log in to the lifecycle manager.</li>
                     <li>Neutron-server component logging can be changed by modifying the following
-                      file:
-                      <codeblock>~/helion/my_cloud/config/neutron/logging.conf.j2</codeblock>
+                      file: <codeblock>~/helion/my_cloud/config/neutron/logging.conf.j2</codeblock>
                       <p>All other Neutron service component log levels are configurable in the
                         following files:</p>
                       <codeblock>~/helion/my_cloud/config/neutron/vpn-agent-logging.conf.j2
@@ -224,10 +238,9 @@ ansible-playbook -i hosts/verb_hosts monasca-agent-reconfigure.yml</codeblock>
 ~/helion/my_cloud/config/neutron/openvswitch-agent-logging.conf.j2
 ~/helion/my_cloud/config/neutron/l3-agent-logging.conf.j2</codeblock></li>
                     <li>To change the logging level, change from INFO to DEBUG on the following
-                      line:
-                      <codeblock>level: INFO</codeblock></li>
+                      line: <codeblock>level: INFO</codeblock></li>
                     <li>Commit your configuration to the <xref
-                      href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
                       <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
@@ -261,10 +274,9 @@ ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock>
 ~/helion/my_cloud/config/nova/consoleauth-logging.conf.j2
 ~/helion/my_cloud/config/nova/scheduler-logging.conf.j2</codeblock></li>
                     <li>To change the logging level, change from INFO to DEBUG on the following
-                      line:
-                      <codeblock>level: INFO</codeblock></li>
+                      line: <codeblock>level: INFO</codeblock></li>
                     <li>Commit your configuration to the <xref
-                      href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
                       <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
@@ -287,27 +299,32 @@ ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock>
                   <p>ops-mon</p></entry>
                 <entry><p>INFO</p></entry>
                 <entry>
-                  <p>You can change the Operations Console logging levels using the playbook below
-                    during deployment or after deployment:</p>
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts site.yml -e "ops_console_loglevel=DEBUG"</codeblock>
-                  <p>Ops Console exposes the logging configuration templates on the lifecycle
-                    manager in the following file:</p>
-                  <codeblock>~/helion/hos/ansible/roles/ops-common/defaults/main.yml</codeblock>
-                  <p>Change the <codeph>INFO</codeph> value to the desired logging level.</p>
-                  <p>Example showing how you can change the <codeph>ops-console</codeph> logging
-                    level to DEBUG:</p>
-                  <codeblock>ops_console_loglevel: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"</codeblock>
-                  <p>After the needed changes are done (for example logging level changes to local
-                    or centralized logging), run the following commands, targeting relevant nodes to
-                    deploy the configuration change:</p>
-                  <codeblock>cd ~/helion/hos/ansible
+                  <p>To change the logging level, follow these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Ops Console service component logging can be changed by modifying the
+                      following file:
+                      <codeblock>~/helion/hos/ansible/roles/ops-common/defaults/main.yml</codeblock></li>
+                    <li>To change the logging level, change from INFO to DEBUG on the following
+                      line:
+                      <codeblock>ops_console_loglevel: "{{ helion_loglevel | default('INFO') }}"</codeblock></li>
+                    <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                      <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "change Ops Console log levels"
-ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ops-console-reconfigure.yml</codeblock></entry>
+git commit -m "My config or other commit message"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Complete the changes by running this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ops-console-reconfigure.yml</codeblock>
+                    </li>
+                  </ol>
+                </entry>
               </row>
               <row>
                 <entry><p>Sherpa</p></entry>
@@ -350,10 +367,11 @@ ansible-playbook -i hosts/verb_hosts sherpa-reconfigure.yml</codeblock>
                     <li>Swift service component logging can be changed by modifying the following
                       file:
                       <codeblock>~/helion/my_cloud/config/swift/account-server.conf.j2</codeblock></li>
-                    <li>To change the logging level, add the following line to the <codeph>[DEFAULT]</codeph> section:
+                    <li>To change the logging level, add the following line to the
+                        <codeph>[DEFAULT]</codeph> section:
                       <codeblock>log_level = DEBUG</codeblock></li>
                     <li>Commit your configuration to the <xref
-                      href="../../installation/using_git.dita">local git repo</xref>, as follows:
+                        href="../../installation/using_git.dita">local git repo</xref>, as follows:
                       <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
