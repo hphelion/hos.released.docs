@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_pct_4wb_dv">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Deploying Ceph Rados Gateway Services on
+    Dedicated Cluster Nodes</title>
+  <body>
+    <section><title>Prerequisites</title>
+      <p>These steps assume you are using the Entry-Scale KVM with Ceph model as the base for your
+        cloud environment.</p>
+    </section>
+    <section><title>Installing the Ceph Rados Gateway Service on Dedicated Cluster Nodes</title>
+      <p>Perform the following steps to install the Ceph Rados gateway (radsogw) on dedicated
+        nodes.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Edit your control plane definition file at, located at
+            <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> and add a section
+          for your <codeph>radosgw</codeph> nodes: <p>Here is an example below. The
+              <codeph>member-count</codeph> value needs to be set to the number of
+              <codeph>radosgw</codeph> servers to be provisioned in the cloud, which should be 2 or
+            more to ensure high availability of the radosgw service.</p>
+          <codeblock>
+resources:
+  - id: "2"
+    name: rgw
+    cluster-prefix: rgw
+    server-role: RGW-ROLE
+    member-count: 2
+    allocation-policy: strict
+    service-components:
+      - ntp-client
+      - ceph-radosgw
+      - apache2</codeblock></li>
+        <li>Create a file named <codeph>disks_rgw.yml</codeph> in your
+            <codeph>~/helion/my_cloud/definition/data/</codeph> directory to define the disk model
+          for your <codeph>radosgw</codeph> nodes. Here is the format for that: <codeblock>
+---
+  product:
+    version: 2
+    
+  disk-models:
+  - name: RGW-DISKS
+    # /dev/sda_root is used as a volume group for /, /var/log and /var/crash
+    # sda_root is a templated value to align with whatever partition is really used
+    # This value is checked in os config and replaced by the partition actually used
+    # on sda e.g. sda1 or sda5
+    
+    volume-groups:
+      - name: hlm-vg
+        physical-volumes:
+          - /dev/sda_root
+  
+        logical-volumes:
+        # The policy is not to consume 100% of the space of each volume group.
+        # 5% should be left free for snapshots and to allow for some flexibility.
+          - name: root
+            size: 30%
+            fstype: ext4
+            mount: /
+          - name: log
+            size: 45%
+            mount: /var/log
+            fstype: ext4
+            mkfs-opts: -O large_file
+          - name: crash
+            size: 20%
+            mount: /var/crash
+            fstype: ext4
+            mkfs-opts: -O large_file
+        consumer:
+           name: os</codeblock>
+          <note type="important">The indentation is important in these files so you can reference
+            the indentation in the other disk model files in the directory for
+          reference.</note></li>
+        <li>Edit your network interfaces definition file at, located at
+            <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph> and add a section
+          for the network interfaces for your <codeph>radosgw</codeph> nodes: <p>Here is an example
+            below.</p>
+          <codeblock>
+- name: RGW-INTERFACES
+  network-interfaces:
+    - name: BOND0
+      device:
+         name: bond0
+      bond-data:
+         options:
+             mode: active-backup
+             miimon: 200
+             primary: eth1
+         provider: linux
+         devices:
+           - name: eth1
+           - name: eth2
+      network-groups:
+        - MANAGEMENT
+    - name: eth0
+      device:
+          name: eth0
+      network-groups:
+        - CONF
+    - name: ETH4
+      device:
+        name: eth4
+      network-groups:
+        - OSD-CLIENT</codeblock>
+          <note type="important">The indentation is important in these files so you can reference
+            the indentation in the other network interface models for reference.</note></li>
+        <li>Edit your server roles definition file at, located at
+            <codeph>~/helion/my_cloud/definition/data/server_roles.yml</codeph> and add a section
+          for the server role your <codeph>radosgw</codeph> nodes will use: <p>Here is an example
+            below.</p>
+          <codeblock>
+- name: RGW-ROLE
+  interface-model: RGW-INTERFACES
+  disk-model: RGW-DISKS</codeblock></li>
+        <li>Edit your network groups definition file at, located at
+            <codeph>~/helion/my_cloud/definition/data/network_groups.yml</codeph> and add the
+            <codeph>ceph-radosgw</codeph> service to the <codeph>OSD-CLIENT</codeph> network group:
+            <p>Here is an example below.</p>
+          <codeblock>
+- name: OSD-CLIENT
+    hostname-suffix: osdc
+    # hostname: true
+            
+    component-endpoints:
+      - ceph-monitor
+      - ceph-osd
+      - ceph-radosgw</codeblock></li>
+        <li>Edit your servers definition file at, located at
+            <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> and add the information
+          for the radosgw nodes you are adding to your environment: <p>Here is an example below. You
+            should substitute these values for the values relevant to your specific nodes you are
+            adding.</p>
+          <codeblock>
+- id: rgw1
+  ip-addr: 192.168.10.11
+  role: RGW-ROLE
+  server-group: RACK1
+  nic-mapping: MY-2PORT-SERVER
+  mac-addr: "5C:B9:01:78:DD:D8"
+  ilo-ip: 192.168.9.11
+  ilo-password: password
+  ilo-user: admin</codeblock></li>
+        <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local
+            git repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Use the Cobbler deploy playbook to add your new nodes to Cobbler:
+          <codeblock>cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
+        <li>Reimage your new nodes, over PXE, with this playbook:
+          <codeblock>cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost bm-reimage.yml</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Complete your deployment:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock></li>
+      </ol>
+    </section>
+  </body>
+</topic>
