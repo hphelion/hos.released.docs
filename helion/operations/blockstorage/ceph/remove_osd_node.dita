@@ -60,26 +60,30 @@ ceph osd rm &lt;osd-number> --cluster &lt;ceph_cluster></codeblock><note>Replace
                         <li>Run the Cobbler deploy playbook:
                             <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
-                        <li>Remove the section for the OSD host from the
-                                <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph>
-                            file.</li>
-                        <li>Commit your
-                            configuration:<codeblock>cd ~/helion/hos/ansible
+
+                        <li>Remove the OSD node from your server definitions file, path is usually:
+                            <codeblock>~/helion/my_cloud/definition/data/servers.yml</codeblock></li>
+                        <li>Commit your configuration to the <xref
+                                href="../../../installation/using_git.dita">local git repo</xref>,
+                            as follows:
+                            <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "Remove OSD node &lt;host-name>"</codeblock></li>
-                        <li>Run the configuration
-                            processor:<codeblock>cd ~/helion/hos/ansible
+git commit -m "My config or other commit message"</codeblock></li>
+                        <li>Run the configuration processor:
+                            <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                        <li>Use the playbook below to create a deployment directory:
-                                <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock><note>Replace
-                                the string <codeph>&lt;host-name></codeph> in the above commit
-                                message with the actual host name (e.g.,
-                                    <codeph>padawan-ceph-ccp-ceph0001-mgmt</codeph> as mentioned in
-                                the above example).</note></li>
+                        <li>Update your deployment directory:
+                            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                        <li>Remove the OSD host from Cobbler: <codeblock>sudo cobbler system remove --name=&lt;node></codeblock>
+                            <note>If you need to determine the OSD hostname in Cobbler you can use
+                                    <codeph>sudo cobbler system list</codeph></note></li>
+                        <li>Run the Cobbler deploy playbook:
+                            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
                         <li>Log in to the OSD node and un-mount the data and journal disks. Also,
                             remove the mount instructions for the same disks from the
-                                <i>/etc/fstab</i> file. <p> </p></li>
+                                <i>/etc/fstab</i> file.</li>
                     </ol></p>
             </sectiondiv>
         </section>
