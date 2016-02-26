@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="concept_loadbalancers">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Load Balancers</title>
+    <body>
+        <p conkeyref="HOS-conrefs/applies-to"/>
+        
+    <p><uicontrol>Load-balancers</uicontrol> provide a specific type of routing and are also
+        defined in <uicontrol>network-groups</uicontrol> as a relationship between the virtual IP
+        address (VIP) on a network in one <uicontrol>network group</uicontrol> and a set of service
+        endpoints (which may be on <uicontrol>networks</uicontrol> in the same or a different
+        <uicontrol>network-group</uicontrol>).</p>
+    <p>Each <uicontrol>load-balancer</uicontrol> is defined as part of the
+        <uicontrol>network-group</uicontrol> where the virtual IP will be presented - it follows
+        that a <uicontrol>network-group</uicontrol> containing a
+        <uicontrol>load-balancer</uicontrol> can only have one <uicontrol>network</uicontrol>
+        associated to it.</p>
+    <p>The <uicontrol>load-balancer</uicontrol> definition includes a list of
+        <uicontrol>service-components</uicontrol> and endpoint roles it will provide A virtual IP
+        for. This model allows service-specific <uicontrol>load-balancers</uicontrol> to be defined
+        on different <uicontrol>network-groups</uicontrol>. A "default" value is used to express
+        "all service-components" which require a virtual IP address and are not explicitly
+        configured in another <uicontrol>load-balancer</uicontrol> configuration. The details of how
+        the <uicontrol>load-balancer</uicontrol> should be configured for each service, such as
+        which ports to use, how to check for service liveness, etc, are provided in the
+        <keyword keyref="kw-hos"/> supplied service definition files.</p>
+    <p>The list of endpoint roles for a <uicontrol>load-balancer</uicontrol> make it possible to
+        configure separate <uicontrol>load-balancers</uicontrol> for public and internal access to
+        services, and the configuration processor uses this information to both ensure the correct
+        registrations in Keystone and to make sure the internal traffic is routed to the correct
+        endpoint. <keyword keyref="kw-hos"/> services are configured to only connect to other services via
+        internal virtual IP addresses and endpoints, allowing the name and security certificate of
+        public endpoints to be controlled by the customer and set to values that may not be
+        resolvable/accessible from the servers making up the cloud.</p>
+    <p>Note that each <uicontrol>load-balancer</uicontrol> defined in the input model will be
+        allocated a separate virtual IP address even when the load-balancers are part of the same
+        <uicontrol>network-group</uicontrol>. Because of the need to be able to separate both
+        public and internal access, <keyword keyref="kw-hos"/> will not allow a single
+        <uicontrol>load-balancer</uicontrol> to provide both public and internal access.
+        <uicontrol>Load-balancers</uicontrol> in this context are logical entities (sets of rules
+        to transfer traffic from a virtual IP address to one or more endpoints). Multiple
+        <uicontrol>load-balancers</uicontrol> may be implemented by the same service within the
+        cloud (e.g. a HA Proxy cluster).</p>
+    <p>The following diagram shows a possible configuration in which the hostname associated with
+        the public URL has been configured to resolve to a firewall controlling external access to
+        the cloud. Within the cloud, <keyword keyref="kw-hos"/> services are configured to use the
+        internal URL to access a separate virtual IP address.</p>
+    <p><image href="../../../../media/inputmodel/hphelionopenstack_loadbalancers.png"/></p>
+    <p><xref href="../../../../media/inputmodel/hphelionopenstack_loadbalancers_lg.png" scope="external"
+        format="html">Download a high-res version</xref></p>
+    
+    </body>
+    </topic>
