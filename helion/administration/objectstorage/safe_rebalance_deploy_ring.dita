@@ -45,6 +45,28 @@ Most recent completion was 2015-10-02 15:31:43 (10 seconds ago) by 192.168.245.3
             since the last time it built rings. You must postpone changes until this time has
             elapsed. Alternatively you can change the value of <codeph>min-part-hours</codeph>. (For
             instructions, see <xref href="swift_min_part_hours.dita"/>).</p></li>
+        <li>Is the Swift dispersion report clean? <p>Run the
+              <codeph>swift-dispersion-report.yml</codeph> playbook (as described in <xref
+              href="../../operations/objectstorage/swift_dispersion_report.dita"/>) and examine the
+            results. If the replication process has not yet replicated partitions that were moved to
+            new drives in the last ring rebalance, the dispersion report will indicate that some
+            containers or objects are missing a copy.</p>
+          <p>For example:</p>
+          <codeblock>There were 462 partitions missing one copy.</codeblock>
+          <p>Assuming all servers and disk drives are operational, the reason for the missing
+            partitions is that the replication process has not yet managed to copy a replica into
+            the partitions.</p>
+          <p>You should wait an hour and rerun the dispersion report process and examine the report.
+            The number of partitions missing one copy should have reduced. Continue to wait until
+            this reaches zero before making any further ring rebalances.</p>
+          <note>It is normal to see partitions missing one copy if disk drives or servers are down.
+            If all servers and disk drives are mounted, and you did not recently perform a ring
+            rebalance, you should investigate whether there are problems with the replication
+            process. You can use the Operations Console to investigate replication issues.</note>
+          <note type="important">If there are any partitions missing two copies, you must reboot or
+            repair any failed servers and disk drives as soon as possible. Do not shutdown any Swift
+            nodes in this situation. Assuming a replica count of 3, if you are missing two copies
+            you are in danger of losing the only remaining copy.</note></li>
       </ul>
     </p>
   </body>
