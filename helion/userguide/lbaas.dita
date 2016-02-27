@@ -81,8 +81,9 @@ nova show vm2</codeblock></li>
       <sectiondiv id="TLSCertificate">
         <p><b>For TLS Load Balancers - Create Certificate Chain and Key</b></p>
           <ol>
-            <li>From the lifecycle manager node, run the following sequence of commands
-              <codeblock>openssl genrsa -des3 -out ca.key 1024
+            <li>From a computer with access to the barbican and labs API, run the following sequence
+            of commands
+            <codeblock>openssl genrsa -des3 -out ca.key 1024
 openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  
 openssl x509  -in  ca.crt -out ca.pem 
 openssl genrsa -des3 -out ca-int_encrypted.key 1024
@@ -93,7 +94,7 @@ openssl genrsa -des3 -out server_encrypted.key 1024
 openssl rsa -in server_encrypted.key -out server.key 
 openssl req -new -key server.key -out server.csr -subj "/CN=server@acme.com"
 openssl x509 -req -days 3650 -in server.csr -CA ca-int.crt -CAkey ca-int.key -set_serial 01 -out server.crt</codeblock>
-            </li>
+          </li>
             <li>For SNI, create another chain with a different CN
               <codeblock>openssl genrsa -des3 -out ca2.key 1024
 openssl req -new -x509 -days 3650 -key ca2.key -out ca2.crt  
@@ -112,7 +113,11 @@ openssl x509 -req -days 3650 -in server2.csr -CA ca-int2.crt -CAkey ca-int2.key 
       <sectiondiv id="TLSBarbican">
         <p><b>For TLS Load Balancers - Barbican Secrets and Containers</b></p>
         <ol>
-          <li>Source the <codeph>barbican.osrc</codeph> file from the lifecycle manager node
+          <li>Source the <codeph>barbican.osrc</codeph> file from the lifecycle manager node. If you
+            need to perform this operation on a different computer make sure that the OpenStack user
+            account uploading the certs has the keymanager-admin role and is in the admin tenant
+            (see <xref href="../identity/identity_admin.dita#topic_qmz_fg3_bt"/> for a list of roles 
+            and tenants). LBaaS will only be able to access certificates stored in the admin tenant.
             <codeblock>barbican secret store --payload-content-type='text/plain' --name='certificate' --payload="$(cat server.crt)"
 barbican secret store --payload-content-type='text/plain' --name='private_key' --payload="$(cat server.key)"
 barbican container create --name='tls_container' --type='certificate' --secret="certificate=$(barbican secret list | awk '/ certificate / {print $2}')" --secret="private_key=$(barbican secret list | awk '/ private_key / {print $2}')"
@@ -147,24 +152,27 @@ barbican container create --name='tls_container2' --type='certificate' --secret=
                   <codeph>lbaas-listener-create</codeph> command and giving the listener the name of
                 the load balancer, the protocol, the protocol port, the name for the listener and
                 the default TLS container.
-                <codeblock>neutron lbaas-listener-create --loadbalancer lb --protocol-port 443 --protocol TERMINATED_HTTPS --name listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}')</codeblock>
+                <codeblock>neutron lbaas-listener-create --loadbalancer lb --protocol-port 443 --protocol TERMINATED_HTTPS --name tis_listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}')</codeblock>
               </li>
               <li>Create a new listener for the load balancer with TLS and SNI using the
                 <codeph>lbaas-listener-create</codeph> command and giving the listener the name of
                 the load balancer, the protocol, the protocol port, the name for the listener, the default 
                 TLS container and the SNI container.
-                <codeblock>neutron lbaas-listener-create --loadbalancer lb1 --protocol-port 444 --protocol TERMINATED_HTTPS --name listener1 --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}') --sni-container-refs $(barbican container list | awk '/ tls_container2 / {print $2}')</codeblock>              
+                <codeblock>neutron lbaas-listener-create --loadbalancer lb1 --protocol-port 444 --protocol TERMINATED_HTTPS --name sni_listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}') --sni-container-refs $(barbican container list | awk '/ tls_container2 / {print $2}')</codeblock>              
               </li>
             </ol>
           </li>
-          <li>Create a new pool for the load balancer using the <codeph>lbaas-pool-create</codeph>
+          <li>For each listener, create a new pool for the load balancer using the <codeph>lbaas-pool-create</codeph>
             command. Creating a new pool requires the load balancing algorithm, the name of the
-            listener, the protocol and a name for the pool.
+            listener, the protocol and a name for the pool.  In the example below we show the command for the listener 
+            named <codeph>listener</codeph>. You need to repeat that for the tis_listener and sni_listener as well. 
+            Make sure to specify different names for each pool.
             <codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener listener --protocol HTTP --name pool</codeblock></li>
           <li>You can add members to the load balancer pool by running the
               <codeph>lbaas-member-create</codeph> command. The command requires the subnet, IP
             address, protocol port and the name of the pool for each virtual machine you'd like to
-            include into the load balancer pool.
+            include into the load balancer pool.  It is important to note that this will need to be repeated for each pool
+            created above. 
             <codeblock>neutron lbaas-member-create --subnet sub --address &lt;ip address vm1> --protocol-port &lt;port> pool
 neutron lbaas-member-create --subnet sub --address &lt;ip address vm2> --protocol-port &lt;port> pool</codeblock></li>
           <li>Display the current state of the load balancer and values with
