@@ -48,14 +48,14 @@
           <li>You will use the hostname of the compute node you are repairing in these steps. To
             retrieve this you can use this command: <codeblock>nova host-list | grep compute</codeblock>
             <p>Here is an example, showing two compute nodes:</p>
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova host-list | grep compute
+            <codeblock>$ nova host-list | grep compute
 | helion-cp1-comp0001-mgmt | compute     | AZ1      |
 | helion-cp1-comp0002-mgmt | compute     | AZ2      |</codeblock></li>
           <li>Disable provisioning on the compute node, which will prevent additional instances from
             being spawned on it: <codeblock>nova service-disable --reason "&lt;describe reason>" &lt;node name> nova-compute</codeblock>
             <p>Here is an example, disabling <codeph>helion-cp1-comp0002-mgmt</codeph> and showing
               the resulting output:</p>
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-disable --reason "maintenance" helion-cp1-comp0002-mgmt nova-compute
+            <codeblock>$ nova service-disable --reason "maintenance" helion-cp1-comp0002-mgmt nova-compute
 +--------------------------+--------------+----------+-----------------+
 | Host                     | Binary       | Status   | Disabled Reason |
 +--------------------------+--------------+----------+-----------------+
@@ -64,34 +64,32 @@
             <note type="important">Make sure you re-enable provisioning once the maintenance is
               complete if you want to continue to be able to spawn instances on the
             node.</note></li>
-          <li>List all of the instances on the node so you can issue stop commands to them: <codeblock>nova list --host &lt;hostname> --all-tenants</codeblock>
-            <p>Here is an example showing the node with one instance on it:</p>
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-disable --reason "maintenance" helion-cp1-comp0002-mgmt nova-compute
-+--------------------------+--------------+----------+-----------------+
-| Host                     | Binary       | Status   | Disabled Reason |
-+--------------------------+--------------+----------+-----------------+
-| helion-cp1-comp0002-mgmt | nova-compute | disabled | maintenance     |
-+--------------------------+--------------+----------+-----------------+</codeblock></li>
-          <li>Issue the nova stop command against the instances: <codeblock>nova stop &lt;instance uuid></codeblock>
+          <li>List all of the instances on the node so you can issue stop commands to them:
+            <codeblock>nova list --host &lt;hostname> --all-tenants</codeblock>
+          </li>
+          <li>Issue the nova stop command against each of the instances: <codeblock>nova stop &lt;instance uuid></codeblock>
             <p>Example:</p>
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova stop ef31c453-f046-4355-9bd3-11e774b1772f
+            <codeblock>$ nova stop ef31c453-f046-4355-9bd3-11e774b1772f
 Request to stop server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.</codeblock></li>
           <li>Confirm that the instances are stopped. If it was successful you should see the
             instances in a <codeph>SHUTOFF</codeph> state like you see below:
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
+            <codeblock>$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+
 | ID                                   | Name      | Tenant ID                        | Status  | Task State | Power State | Networks              |
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+
 | ef31c453-f046-4355-9bd3-11e774b1772f | instance1 | 4365472e025c407c8d751fc578b7e368 | SHUTOFF | -          | Shutdown    | demo_network=10.0.0.5 |
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+</codeblock></li>
           <li>Do your required maintenance. If the required maintenance did not take down the disks
-            completely then you should be able to restart the instances again after the repair: <codeblock>nova start &lt;instance uuid></codeblock>
+            completely then you should be able to list the instances again after the repair and
+            confirm they are still in their <codeph>SHUTOFF</codeph> state:
+            <codeblock>nova list --host &lt;ihostname> --all-tenants</codeblock></li>
+          <li>Start the instances back up using this command: <codeblock>nova start &lt;instance uuid></codeblock>
             <p>Example:</p>
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova start ef31c453-f046-4355-9bd3-11e774b1772f
+            <codeblock>$ nova start ef31c453-f046-4355-9bd3-11e774b1772f
 Request to start server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.</codeblock></li>
           <li>Confirm that the instances started back up. If it was successful you should see the
             insetances in a <codeph>ACTIVE</codeph> state like you see below:
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
+            <codeblock>$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
 +--------------------------------------+-----------+----------------------------------+--------+------------+-------------+-----------------------+
 | ID                                   | Name      | Tenant ID                        | Status | Task State | Power State | Networks              |
 +--------------------------------------+-----------+----------------------------------+--------+------------+-------------+-----------------------+
@@ -101,7 +99,7 @@ Request to start server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.<
             <p>If that doesn't resolve the issue you may want to contact support.</p></li>
           <li>Re-enable provisioning when the node is fixed <codeblock>nova service-enable &lt;node name> nova-compute</codeblock>
             <p>Example, showing the output:</p>
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova service-enable helion-cp1-comp0002-mgmt nova-compute
+            <codeblock>$ nova service-enable helion-cp1-comp0002-mgmt nova-compute
 +--------------------------+--------------+---------+
 | Host                     | Binary       | Status  |
 +--------------------------+--------------+---------+
