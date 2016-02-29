@@ -45,12 +45,13 @@ Confirm Vault password:
 Encryption successful</codeblock>
       <p>Now on the lifecycle manager node run the following from the
         ~/scratch/ansible/next/hos/ansible directory: </p>
-      <codeblock>$ ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml</codeblock>
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml</codeblock>
       <p>Once this is complete, log into one of the controller nodes and become sudo user: </p>
       
-      <codeblock>$ sudo -s</codeblock>
+      <codeblock>sudo -s</codeblock>
       <p>Next, recreate the users and there password gathered above: </p>
-      <codeblock>$ rabbitmqctl add_user {username} {password}</codeblock>
+      <codeblock>rabbitmqctl add_user &lt;username> &lt;password></codeblock>
       
       <p>For example, for ops-mod this would be as follows:</p>
       
@@ -58,11 +59,11 @@ Encryption successful</codeblock>
       <codeblock>ops_mon_rmq_password:Meq9JRKgy5Sj
 ops_mon_rmq_user:ops-mon</codeblock>
       
-      <codeblock>$ rabbitmqctl add_user ops-mon Meq9JRKgy5Sj</codeblock>
+      <codeblock>rabbitmqctl add_user ops-mon Meq9JRKgy5Sj</codeblock>
       
       <p>Now add back the Ceilometer user: </p>
       
-      <codeblock>$ rabbitmqctl add_user ceilometer password</codeblock>
+      <codeblock>$ rabbitmqctl add_user ceilometer &lt;password></codeblock>
       
       <p>Next you must set the user permission for each of the users as follows: </p>
       <codeblock>$ rabbitmqctl set_permissions -p / ops-mon  ".*" ".*" ".*"
@@ -71,8 +72,7 @@ $ rabbitmqctl set_permissions -p / ceilometer  "ceilometer|metering.*|ceilometer
       <p>For ops-mon you must set this as an administrator user: </p>
       <codeblock>$ rabbitmqctl set_user_tags ops-mon administrator</codeblock>
       <p>To check that you are up and running, run: </p>
-      <codeblock>$ tail -F /var/log/rabbitmq/rabbitmq@&lt;hostname>.log
-</codeblock>
+      <codeblock>tail -F /var/log/rabbitmq/rabbitmq@&lt;hostname>.log</codeblock>
       <p>If you see an error in your log as follows, repeat the step for the user listed in the
         error: </p>
       <codeblock>=ERROR REPORT==== 8-Dec-2015::11:12:41 ===
