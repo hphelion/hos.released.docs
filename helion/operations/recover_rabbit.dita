@@ -6,32 +6,30 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
-      
-      <p>If you have experienced an outage or otherwise have had to restart nodes and need to restart RabbitMQ, follow the steps below.</p>
+      <p>If you have experienced an outage or otherwise have had to restart nodes and need to
+        restart RabbitMQ, follow the steps below.</p>
       <note type="danger">Only run the following stop command for RabbitMQ if it has already stopped
         because you lost power or faced another disaster affecting the nodes on which it
         runs.</note>
       <p>For each node running RabbitMQ perform the following:</p>
-      
       <codeblock>$ sudo –s
 $ systemctl stop rabbitmq-server.service
 $ rm -rf /var/lib/rabbitmq/mnesia/
 $ sudo systemctl start rabbitmq-server.service</codeblock>
-      
       <p>On the lifecycle manager node</p>
-      
       <codeblock>$ cd ~/helion/my_cloud/definition/data
 $ vi control_plane.yml</codeblock>
-      
       <p>Look for the name: entry under control-planes.</p>
       <codeblock>$ cd ~/scratch/ansible/next/hos/ansible/group_vars</codeblock>
-      <p>You will need to extract the list of RabbitMQ users and passwords from the file whose name ends in the control-plane 
-        name that you have already recovered. If you have supplied an encryption key to the configuration processor you will first need to decrypt the file, for example:</p>
+      <p>You will need to extract the list of RabbitMQ users and passwords from the file whose name
+        ends in the control-plane name that you have already recovered. If you have supplied an
+        encryption key to the configuration processor you will first need to decrypt the file, for
+        example:</p>
       <codeblock>$ ansible-vault decrypt &lt;cloud-name>-&lt;control plane name> (e.g. entry-scale-kvm-vsa-control-plane-1)
 Vault password: 
 Decryption successful</codeblock>
-      <p>The "Vault password" is the encryption key that you supplied to the configuration processor.
-        Now extract the set of RabbitMQ users and passwords:</p>
+      <p>The "Vault password" is the encryption key that you supplied to the configuration
+        processor. Now extract the set of RabbitMQ users and passwords:</p>
       <codeblock>$ awk '/rmq_.*/ &amp;&amp; $1 ~ /user|password/ &amp;&amp; $1 !~ /service/ {print $1$2}' &lt;cloud-name>-&lt;control plane name> | sort | uniq</codeblock>
       <p>This will supply a set of RabbitMQ users and password. Below is example output:</p>
       <codeblock>ops_mon_rmq_password:Meq9JRKgy5Sj
@@ -48,23 +46,15 @@ Encryption successful</codeblock>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml</codeblock>
       <p>Once this is complete, log into one of the controller nodes and become sudo user: </p>
-      
       <codeblock>sudo -s</codeblock>
       <p>Next, recreate the users and there password gathered above: </p>
       <codeblock>rabbitmqctl add_user &lt;username> &lt;password></codeblock>
-      
       <p>For example, for ops-mod this would be as follows:</p>
-      
-      
       <codeblock>ops_mon_rmq_password:Meq9JRKgy5Sj
 ops_mon_rmq_user:ops-mon</codeblock>
-      
       <codeblock>rabbitmqctl add_user ops-mon Meq9JRKgy5Sj</codeblock>
-      
       <p>Now add back the Ceilometer user: </p>
-      
       <codeblock>$ rabbitmqctl add_user ceilometer &lt;password></codeblock>
-      
       <p>Next you must set the user permission for each of the users as follows: </p>
       <codeblock>$ rabbitmqctl set_permissions -p / ops-mon  ".*" ".*" ".*"
 $ rabbitmqctl set_permissions -p / rmq_nova_user  ".*" ".*" ".*"
@@ -81,7 +71,6 @@ closing AMQP connection &lt;0.14219.3> (192.168.245.3:47921 -> 192.168.245.4:567
                  {amqp_error,access_refused,
                              "AMQPLAIN login refused: user 'ops-mon' - invalid credentials",
                              'connection.start_ok'}}</codeblock>
-      
     </section>
   </body>
 </topic>
