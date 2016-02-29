@@ -39,6 +39,17 @@
             scope="external" format="html">Configure multiple storage backends</xref> as well.</p>
       </sectiondiv>
     </section>
+    <section id="prereqs"><title outputclass="headerH">Prerequisites</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Ensure that disks designated to be used for the OSD data and journal storage must meet
+          the conditions below. If the do not, Ceph configuration will fail:</p>
+        <ul id="ul_xsp_mfx_dv">
+          <li>Any existing partitions must be deleted</li>
+          <li>The disk should not be mounted</li>
+          <li>The disk should not be in use or held by some other device</li>
+        </ul>
+      </sectiondiv>
+    </section>
     <section id="deployer"><title outputclass="headerH">Set Up the Lifecycle Manager as a Ceph
         Client</title>
       <sectiondiv outputclass="insideSection">
@@ -61,8 +72,8 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
             to contain the details of your environment: <codeblock>cp -r ~/helion/examples/entry-scale-kvm-ceph/* ~/helion/my_cloud/definition/</codeblock>
             <p>Begin inputting your environment information into the configuration files in the
                 <codeph>~/helion/my_cloud/definition</codeph> directory.</p>
-            <p>Full details of how to do this can be found here: <xref keyref="input_model"
-                >Input Model</xref>.</p></li>
+            <p>Full details of how to do this can be found here: <xref keyref="input_model">Input
+                Model</xref>.</p></li>
           <li>Edit the <codeph>~/helion/my_cloud/definition/data/disks_osd.yml</codeph> file and
             enter the details for the additional disks meant for OSD data and journal filesystems.
               <p>A sample <codeph>disks_osd.yml</codeph> is as follows:</p>
@@ -165,8 +176,8 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
               </tgroup>
             </table>
             <p><note>Ensure that disks designated to be used for the OSD data and journal storage
-                must be in a clean state (i.e. any existing partitions must be deleted). If you do
-                not perform this step, Ceph configuration fails with errors.</note></p></li>
+                meet the requirements outlined in the prequisites at the beginning of this document.
+                If they do not then Ceph configuration will fail.</note></p></li>
           <li>[OPTIONAL] There are parameters for Ceph that can be edited by the admin in the
             locations described below. The default values will work but if you choose to change any
             of these values, ensure that you also change them where they are referenced in your
