@@ -39,7 +39,16 @@
           </ol></li>
         <li>Then you will want to restore your data using the <xref
             href="../bura/cloud_control_plane_recovery.dita#topic_tb4_lqy_qt/deployer">Deployer
-            Disaster Recovery</xref> instructions.</li>
+            Disaster Recovery</xref> instructions. <ol>
+            <li>If your node was restored from a backup (meaning the <codeph>/home</codeph>
+              directory was replaced and the users were recreated) then the replaced node will fail
+              as these steps will check for the existence of the <codeph>vertica</codeph> user to
+              determine if we need to rebuild. So, in these cases, you need to do the following
+              step:</li>
+            <li>Delete the files below from the node you replaced:
+              <codeblock>/home/dbadmin/.ssh/id_rsa
+/home/dbadmin/.ssh/known_hosts</codeblock></li>
+          </ol></li>
         <li> Update your cloud model (<codeph>servers.yml</codeph>) with the new
             <codeph>mac-addr</codeph>, <codeph>ilo-ip</codeph>, <codeph>ilo-password</codeph>, or
             <codeph>ilo-user</codeph> fields where these have changed. Do not change the
@@ -70,6 +79,9 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock><note>After
             this step you may see failures because MySQL has not finished syncing. If so, please
             rerun this step (7).</note></li>
         <li>Delete the haproxy user: <codeblock>sudo deluser haproxy</codeblock></li>
+        <li>SSH to your other controller nodes as the <codeph>dbadmin</codeph> user and run the
+          following command:
+          <codeblock>ssh-keygen -f "/home/dbadmin/.ssh/known_hosts" -R &lt;IP_of_replaced node></codeblock></li>
         <li>Install the software on your new lifecycle manager/controller node with these three
           playbooks:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
