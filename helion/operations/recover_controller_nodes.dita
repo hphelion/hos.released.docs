@@ -18,6 +18,8 @@
             Vertica Database in <keyword keyref="kw-hos-version-20"/></xref></li>
         <li><xref href="recover_controller_nodes.dita#recover_downed_cluster/vertica2.1">Recovering
             the Vertica Database in <keyword keyref="kw-hos-version-21"/></xref></li>
+        <li><xref href="recover_controller_nodes.dita#recover_downed_cluster/monasca">Restart the
+            Monitoring Service</xref></li>
       </ol>
     </section>
 
@@ -27,6 +29,7 @@
     </section>
 
     <section id="mysql"><title>Recovering the MySQL Database</title>
+      <p conkeyref="HOS-conrefs/applies-to"/>
       <p>You will need to power on all of the controller nodes before bootstrapping the MySQL
         cluster. To bootstrap a downed MySQL cluster, you will need to discover the last node to go
         down and run bootstrap on that node. Since the cluster didn't go down cleanly, you will need
@@ -136,6 +139,24 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=&lt;host_var name&gt;
         nodes.</p>
       <p>Here is an example using the above command using the example in the previous step.</p>
       <codeblock>ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=helion-cp-c1-m1-mgmt,helion-cp-c1-m2-mgmt,helion-cp-c1-m3-mgmt</codeblock>
+    </section>
+    <section id="monasca"><title>Restart the Monitoring Service</title>
+      <p conkeyref="HOS-conrefs/applies-to"/>
+      <p>As part of the recovery process, you shoudl also restart the <codeph>monasca-agent</codeph>
+        and these steps will show you how:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Top the <codeph>monasca-agent</codeph>:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-stop.yml</codeblock></li>
+        <li>Restart the <codeph>monasca-agent</codeph>:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-start.yml</codeblock></li>
+        <li>You can then confirm the status of the <codeph>monasca-agent</codeph> with this
+          playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-status.yml</codeblock></li>
+      </ol>
     </section>
   </body>
 </topic>
