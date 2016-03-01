@@ -3,7 +3,7 @@
 <topic id="topic_rq3_mxh_rt">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Enabling Debug Logging</title>
   <abstract><shortdesc outputclass="hdphidden">Steps for changing the logging level to DEBUG to
-    allow for better troubleshooting.</shortdesc>This topic describes how to enable the EON
+      allow for better troubleshooting.</shortdesc>This topic describes how to enable the EON
     service for centralized logging, and changing the EON log level to DEBUG.</abstract>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
@@ -21,34 +21,34 @@
             <codeblock>~/helion/hos/ansible/roles/eon-common/templates/eon.conf.j2</codeblock></li>
           <li>In the <codeph>DEFAULT</codeph> section, add this line:
             <codeblock>[DEFAULT]
-              debug = True</codeblock></li>
+debug = True</codeblock></li>
           <li>Edit the file below:
             <codeblock>~/helion/hos/ansible/roles/eon-common/templates/logging.conf.j2</codeblock></li>
           <li>In the <codeph>logger_root</codeph> section, edit the logging level:
             <codeblock>[logger_root]
-              qualname: root
-              handlers: watchedfile, logstash
-              level: <b>DEBUG</b></codeblock></li>
+qualname: root
+handlers: watchedfile, logstash
+level: <b>DEBUG</b></codeblock></li>
           <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
-            repo</xref>, as follows:
+              repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
-              git add -A
-              git commit -m "My config or other commit message"</codeblock></li>
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
           <li>Run the configuration processor:
             <codeblock>cd ~/helion/hos/ansible
-              ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
           <li>Update your deployment directory:
             <codeblock>cd ~/helion/hos/ansible
-              ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <li>Deploy your changes:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-              ansible-playbook -i hosts/verb_hosts eon-reconfigure.yml</codeblock></li>
+ansible-playbook -i hosts/verb_hosts eon-reconfigure.yml</codeblock></li>
         </ol>
       </sectiondiv>
     </section>
-    
+
     <section id="enable-eon-service-centralized-logging"><title outputclass="headerH">To Enable EON
-      Service for Centralized Logging</title>
+        Service for Centralized Logging</title>
       <sectiondiv outputclass="insideSection">
         <p>To enable EON Service for centralized logging, do the following:</p>
         <ol>
@@ -58,44 +58,36 @@
               ~/helion/my_cloud/config/logging/vars/eon-conductor-clr.yml</codeblock></li>
           <li>Set the value of <codeph>centralized_logging</codeph> to <b>true</b> as shown in the
             following sample:
-            <codeblock>logr_services:
-              eon-conductor:
-              logging_options:
-              - centralized_logging:
-              <b>enabled: true</b>
-              format: json
-              files:
-              - /var/log/eon/eon-conductor.log
-              log_rotate:
-              - daily
-              - compress
-              - missingok
-              - notifempty
-              - copytruncate
-              - maxsize 45M
-              - rotate 7
-              - create 640 eon eon
-              - centralized_logging:
-              <b>enabled: true</b>
-              format: rawjson</codeblock></li>
+            <codeblock>
+logr_services:
+  eon-conductor:
+    logging_options:
+      - centralized_logging:
+        <b>enabled: true</b>
+        format: json
+        ... 
+      - centralized_logging:
+        <b>enabled: true</b>
+        format: rawjson
+        ...</codeblock></li>
           <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
-            repo</xref>, as follows:
+              repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
-              git add -A
-              git commit -m "My config or other commit message"</codeblock></li>
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
           <li>Run the configuration processor:
             <codeblock>cd ~/helion/hos/ansible
-              ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
           <li>Update your deployment directory:
             <codeblock>cd ~/helion/hos/ansible
-              ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <li>Deploy your changes:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-              ansible-playbook -i hosts/verb_hosts eon-reconfigure.yml</codeblock></li>
+ansible-playbook -i hosts/verb_hosts eon-reconfigure.yml</codeblock></li>
         </ol>
       </sectiondiv>
     </section>
-    
+
     <section>
       <title outputclass="headerH">To Modify the OVSVAPP VM Log Level</title>
       <sectiondiv outputclass="insideSection">
@@ -105,29 +97,29 @@
           <li>Edit the file below:
             <codeblock>~/helion/hos/ansible/roles/neutron-common/templates/ovsvapp-agent-logging.conf.j2</codeblock></li>
           <li>Set the logging level value of the <codeph>logger_root</codeph> section to
-            <codeph>DEBUG</codeph>, like this:
+              <codeph>DEBUG</codeph>, like this:
             <codeblock>[logger_root]
-              qualname: root
-              handlers: watchedfile, logstash
-              level: DEBUG</codeblock></li>
+qualname: root
+handlers: watchedfile, logstash
+level: DEBUG</codeblock></li>
           <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
-            repo</xref>, as follows:
+              repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
-              git add -A
-              git commit -m "My config or other commit message"</codeblock></li>
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
           <li>Run the configuration processor:
             <codeblock>cd ~/helion/hos/ansible
-              ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
           <li>Update your deployment directory:
             <codeblock>cd ~/helion/hos/ansible
-              ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <li>Deploy your changes:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-              ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock></li>
+ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock></li>
         </ol>
       </sectiondiv>
     </section>
-    
+
     <section>
       <title outputclass="headerH">To Enable OVSVAPP Service for Centralized Logging</title>
       <sectiondiv outputclass="insideSection">
@@ -136,28 +128,35 @@
           <li>Log in to the lifecycle manager.</li>
           <li>Edit the file below:
             <codeblock>~/helion/my_cloud/config/logging/vars/neutron-ovsvapp-clr.yml</codeblock></li>
-          <li>Set the value of <codeph>centralized_logging</codeph> to <b>true</b> as shown in the
-            following sample:
-            <codeblock>logr_services:
-              neutron-ovsvapp:
-              logging_options:
-              - centralized_logging:
-              enabled: <b>true</b>
-              format: json
-              ...</codeblock></li>
+          <li>Set the value of <codeph>centralized_logging</codeph> to <codeph>true</codeph>. There
+            are two available options, one for <codeph>json</codeph> format and the other for
+              <codeph>rawjson</codeph>. You can choose to centrally log one or the other, or both.
+              <p>Example:</p>
+            <codeblock>---
+logr_services:
+  neutron-ovsvapp:
+    logging_options:
+    - centralized_logging:
+        <b>enabled: true</b>
+        format: json
+        ...
+    - centralized_logging:
+        <b>enabled: true</b>
+        format: rawjson
+        ...</codeblock></li>
           <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
-            repo</xref>, as follows:
+              repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
-              git add -A
-              git commit -m "My config or other commit message"</codeblock></li>
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
           <li>Run the configuration processor:
             <codeblock>cd ~/helion/hos/ansible
-              ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
           <li>Update your deployment directory:
             <codeblock>cd ~/helion/hos/ansible
-              ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <li>Deploy your changes, specifying the hostname for your OVSAPP host: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-            ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml --limit &lt;hostname></codeblock>
+ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml --limit &lt;hostname></codeblock>
             <p>The hostname of the node can be found in the list generated from the output of the
               following command:</p>
             <codeblock>grep hostname ~/helion/my_cloud/info/server_info.yml</codeblock>
