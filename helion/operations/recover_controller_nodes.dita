@@ -4,6 +4,7 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Recovering Controller Nodes</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
+    <!-- tested on HOS 2.1.2 on 3/1/2016 -->
     <section id="about">
       <p>These are the recovery step for one or more of your controller nodes. This includes steps
         that you may follow if one or more of your controller nodes loses power or network
@@ -30,38 +31,39 @@
 
     <section id="mysql"><title>Recovering the MySQL Database</title>
       <p conkeyref="HOS-conrefs/applies-to"/>
-      <p>You will need to power on all of the controller nodes before bootstrapping the MySQL
-        cluster. To bootstrap a downed MySQL cluster, you will need to discover the last node to go
-        down and run bootstrap on that node. Since the cluster didn't go down cleanly, you will need
-        to SSH into each controller node and run the following commands to find the node with the
-        highest sequence number. When you find the node with the highest sequence number, you will
-        need to run the bootstrap on that node. </p>
+      <p>The recovery process for your MySQL database cluster will use the bootstrap command
+        described below. The node that you perform these steps on should be the last node to go
+        down. So if only one of your controller nodes went down, then you would skip to step #2 and
+        run the bootstrap commands on that node. If multiple controller nodes went down then you
+        should use the instructions in step #1 to determine which was the last node to go down and
+        then proceed to run the rest of the steps on that node.</p>
       <ol>
-        <li>SSH into each controller node and use the commands below to get the log sequence number: <codeblock>sudo /usr/bin/mysqld_safe --wsrep-recover
+        <li>SSH into each controller node that went down and use the commands below to get the log
+          sequence number: <codeblock>sudo /usr/bin/mysqld_safe --wsrep-recover
 sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1</codeblock>
-          <p>Here is an example showing the output from a three controller node cluster:</p>
+          <p>Here is an example where I have bolded the log sequence numbers from a three controller
+            node cluster:</p>
           <note type="important">In this example, two nodes have the same sequence number which
             means you can run the bootstrap on either node but you can only run the bootstrap
             command once and only on one node.</note>
           <codeblock>stack@helion-cp-c1-m1-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
 stack@helion-cp-c1-m1-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:37:12 InnoDB: Shutdown completed; log sequence number 165002105 
+151119 14:37:12 InnoDB: Shutdown completed; log sequence number <b>165002105</b> 
 
 stack@helion-cp-c1-m2-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
 stack@helion-cp-c1-m2-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number 165252407
+151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number <b>165252407</b>
 
 stack@helion-cp-c1-m3-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
 stack@helion-cp-c1-m3-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number 165252407 
-151119 14:53:23 InnoDB: Shutdown completed; log sequence number 165252407 </codeblock>
-        </li>
-        <li>SSH into the node with the highest sequence and bootstrap the cluster.
+151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number <b>165252407</b>
+151119 14:53:23 InnoDB: Shutdown completed; log sequence number 165252407</codeblock></li>
+        <li>SSH into the node with the highest log sequence number and bootstrap the cluster with
+          these commands:
           <codeblock>sudo /etc/init.d/mysql bootstrap-pxc
-sudo service mysql restart</codeblock>
-        </li>
-        <li>Log onto the other two controller nodes and run mysql start.
-          <codeblock>sudo service mysql start</codeblock>
+sudo service mysql restart</codeblock></li>
+        <li>Log onto any other controller nodes that went down and run this command to start MySQL
+          back up: <codeblock>sudo service mysql start</codeblock>
         </li>
       </ol>
     </section>
@@ -131,12 +133,12 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml</codeblock>
       <codeblock>ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml --ask-vault-pass</codeblock>
     </section>
     <section id="hlm"><title>Restarting Services on the Controller Nodes</title>
-      <p>Log into the lifecycle manager and execute the hlm-start playbook for each node you want to
-        bring back up:</p>
+      <p>Log into the lifecycle manager and execute the hlm-start playbook for each node that was
+        brought down so the services can be started back up:</p>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=&lt;host_var name&gt;</codeblock>
-      <p>If you leave off the <codeph>--limit</codeph> switch, the playbook will be run against all
-        nodes.</p>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=&lt;hostname&gt;</codeblock>
+      <note>If you leave off the <codeph>--limit</codeph> switch, the playbook will be run against
+        all nodes.</note>
       <p>Here is an example using the above command using the example in the previous step.</p>
       <codeblock>ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=helion-cp-c1-m1-mgmt,helion-cp-c1-m2-mgmt,helion-cp-c1-m3-mgmt</codeblock>
     </section>
