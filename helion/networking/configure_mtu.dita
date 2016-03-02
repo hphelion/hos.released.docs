@@ -4,36 +4,60 @@
   <title>Configuring Maximum Transmission Units in Neutron</title>
   <body>
    <section><title>Overview</title>
-     <p>There are a few different areas of HLM which pertain to MTU configuration: the physical interfaces managed and configured by HLM, the virtual interfaces created by Neutron and Nova for Neutron networking, and the interfaces inside the VMs.
-       HLM-managed physical interfaces </p>
-     
-       <p>These include the physical interfaces and the bonds, bridges, and vlans created on top of
-        them. The MTU for these interfaces will be modeled as the 'mtu' property of a network group.
-        Because multiple network groups can be mapped to a physical interface, there may have to be
-        some resolution of differing MTUs between the untagged and tagged vlans on the same physical
-        interface. For instance, if one untagged vlan 101 (mtu 1500) and tagged vlan 201 (mtu 9000)
-        are both on one interface (eth0), this means that eth0 wants 1500, but the vlan interface
-        which gets created on top of eth0 (i.e. vlan201@eth0) wants 9000. However, vlan201 can't
-        have a higher MTU than eth0, so vlan201 will get stuck with 1500 when it is brought up. </p> <p> In
-        general, vlan interface MTU must be &lt;= the base device MTU. If this case arises, either
-        the MTU of eth0 can be overridden and raised to 9000 (probably issuing a warning from the
-        CP), or the CP can throw an error, forcing the customer to fix their model to accommodate
-        vlan201. </p>
-     <b>Neutron/Nova interfaces </b>
-         <p>These include the virtual devices created by Neutron and Nova during the normal process
-        of realizing a Neutron network/router and booting a VM on it (qr-*, qg-*, tap-*, qvo-*,
-        qvb-*, etc.). There is currently no support in Neutron/Nova for per-network MTUs in which
-        every interface along the path for a particular Neutron network has the correct MTU for that
-        network. There is support for globally changing the MTU of devices created by Neutron/Nova
-        (see network_device_mtu below). This means that if a customer wants to enable jumbo frames
-        for any set of VMs, they will have to enable it for all of their VMs. They cannot just
-        enable them for a particular Neutron network. 
-      </p>
-     <b>VM interfaces</b>
-           <p>VMs typically get their MTU via dhcp advertisement, which means that the dnsmasq processes spawned by the neutron-dhcp-agent actually advertise a particular MTU to the VMs. Currently (HOS 2.0), all VMs are advertised a 1400 MTU via a forced setting in dnsmasq-neutron.conf. This is suboptimal for every network type (vxlan, flat/vlan, etc) but also prevents fragmentation of a VMs packets due to encapsulation in every network type. In Kilo, 'mtu' became an attribute of a Neutron network, with a default value of 0. This mtu attribute is read-only, but it is determined by new configuration options - path_mtu, segment_mtu, and physical_network_mtus. Neutron calculates the optimal MTU from these values and the network type (see below for more details). We can now also advertise these different MTUs to VMs on different networks.
-           </p> <p>For instance, if we set the new *-mtu configuration options to a default of 1500 and create a vxlan network, it will be given an MTU of 1450 and will advertise a 1450 MTU to any VM booted on that network. If we create a provider vlan network, it will have a 1500 mtu and will advertise 1500 to booted VMs on the network. It should be noted that this default starting point for MTU calculation and advertisement is also global, meaning we can't have an 8950 MTU on one vxlan network and 1450 on another. However, we can have provider physical networks with different MTUs by using the physical_network_mtus config option, but Nova still requires a global MTU option for the interfaces it creates (meaning we can't really take advantage of that config option).
-             </p>
-   </section>
+      <p>A Maximum Transmission Unit, or MTU is the maximum packet size a device can handle. There
+        are a number of places in HPE Helion OpenStack where MTU configuration is relevant: the
+        physical interfaces managed and configured by Helion OpenStack, the virtual interfaces
+        created by Neutron and Nova for Neutron networking, and the interfaces inside the VMs.</p>
+      <b>Helion OpenStack-managed physical interfaces </b><p>Helion OpenStack-managed physical
+        interfaces include the physical interfaces and the bonds, bridges, and VLANs created on top
+        of them. The MTU for these interfaces will be configured via the 'mtu' property of a network
+        group. Because multiple network groups can be mapped to a physical interface, there may have
+        to be some resolution of differing MTUs between the untagged and tagged VLANs on the same
+        physical interface. For instance, if one untagged VLAN 101 (MTU of 1500) and tagged VLAN 201
+        (MTU of 9000) are both on one interface (eth0), this means that eth0 can handle 1500, but
+        the VLAN interface which is created on top of eth0 (i.e. vlan201@eth0) wants 9000. However,
+        vlan201 can't have a higher MTU than eth0, so vlan201 will be limited to 1500 when it is
+        brought up. </p>
+      <p> In general, VLAN interface MTU must be lower than or equal to the base device MTU. If they
+        are different, as in the case above, either the MTU of eth0 can be overridden and raised to
+        9000 but in either case will have to be reconciled. </p>
+      <b>Neutron/Nova interfaces </b>
+      <p>Neutron/Nova interfaces include the virtual devices created by Neutron and Nova during the
+        normal process of realizing a Neutron network/router and booting a VM on it (qr-*, qg-*,
+        tap-*, qvo-*, qvb-*, etc.). There is currently no support in Neutron/Nova for per-network
+        MTUs in which every interface along the path for a particular Neutron network has the
+        correct MTU for that network. There is support for globally changing the MTU of devices
+        created by Neutron/Nova (see network_device_mtu below). This means that if a customer wants
+        to enable jumbo frames for any set of VMs, they will have to enable it for all of their VMs.
+        They cannot just enable them for a particular Neutron network. </p>
+      <b>VM interfaces</b>
+      <p>VMs typically get their MTU via
+        <?oxy_insert_start author="michelln" timestamp="20160302T165810-0500"?>DHCP<?oxy_insert_end?><?oxy_delete author="michelln" timestamp="20160302T165807-0500" content="dhcp"?>
+        advertisement, which means that the dnsmasq processes spawned by the neutron-dhcp-agent
+        actually advertise a particular MTU to the VMs.
+        <?oxy_delete author="michelln" timestamp="20160302T165839-0500" content="Currently (HOS"?><?oxy_insert_start author="michelln" timestamp="20160302T165858-0500"?>
+        In Helion OpenStack<?oxy_insert_end?> 2.0), all
+        VMs<?oxy_delete author="michelln" timestamp="20160302T165922-0500" content=" "?><?oxy_insert_start author="michelln" timestamp="20160302T165912-0500"?>re<?oxy_insert_end?><?oxy_delete author="michelln" timestamp="20160302T165911-0500" content="are"?>
+        advertised a 1400 MTU via a forced setting in dnsmasq-neutron.conf. This is suboptimal for
+        every network type (vxlan, flat/VLAN, etc)
+        <?oxy_insert_start author="michelln" timestamp="20160302T170004-0500"?>and<?oxy_insert_end?><?oxy_delete author="michelln" timestamp="20160302T170003-0500" content="but"?>
+        also prevents fragmentation of a
+        VM<?oxy_insert_start author="michelln" timestamp="20160302T170012-0500"?>'<?oxy_insert_end?>s
+        packets due to encapsulation in every network type. In Kilo, 'mtu' became an attribute of a
+        Neutron network, with a default value of 0. This mtu attribute is read-only, but it is
+        determined by new configuration options - path_mtu, segment_mtu, and physical_network_mtus.
+        Neutron calculates the optimal MTU from these values and the network type (see below for
+        more details). We can now also advertise these different MTUs to VMs on different networks. </p>
+      <p>For instance, if we set the new *-mtu configuration options to a default of 1500 and create
+        a vxlan network, it will be given an MTU of 1450 and will advertise a 1450 MTU to any VM
+        booted on that network. If we create a provider VLAN network, it will have a 1500 mtu and
+        will advertise 1500 to booted VMs on the network. It should be noted that this default
+        starting point for MTU calculation and advertisement is also global, meaning we can't have
+        an 8950 MTU on one vxlan network and 1450 on another. However, we can have provider physical
+        networks with different MTUs by using the physical_network_mtus config option, but Nova
+        still requires a global MTU option for the interfaces it creates (meaning we can't really
+        take advantage of that config option). </p>
+    </section>
     <section><title>HLM input model</title>Where do we model the MTU? network_groups.yml It can be
       the attribute of a network group, meaning that every network in the network group will be
       assigned the specified MTU. For example:
@@ -51,15 +75,18 @@
       ...</codeblock><b>Validation
       </b></section>
     <section><title>Infrastructure support for jumbo frames</title>
-    <p>The physical switches and routes that make up the infrastructure of the HOS installation must
-        be configured to support jumbo frames. A generalized statement is </p>
-      <p>All devices in the same broadcast domain must have the same MTU </p>
-      <p>If it is desired to configure jumbo frames on compute and controller nodes then all switches joining the compute and controller nodes must have jumbo frames enabled.  Similarly, the "infrastructure gateway" through which external VM network flows, commonly known as the default route for the external VM VLAN, must also have the same MTU configured.
-    </p>
+    <p>The physical switches and routers that make up the infrastructure of the HOS installation
+        must be configured to support jumbo frames. Generally, all devices in the same broadcast
+        domain must have the same MTU </p>
+      <p>If it is desired to configure jumbo frames on compute and controller nodes then all
+        switches joining the compute and controller nodes must have jumbo frames enabled. Similarly,
+        the "infrastructure gateway" through which the external VM network flows, commonly known as
+        the default route for the external VM VLAN, must also have the same MTU configured. </p>
       <p> Anything in the same broadcast domain can also be stated as anyting in the same VLAN or anything in the same IP subnet.
         </p>
     </section>
-    <section><title>enabling end-to-end jumbo frames</title> 
+    <section><title><?oxy_insert_start author="michelln" timestamp="20160302T171404-0500"?>E<?oxy_insert_end?><?oxy_delete author="michelln" timestamp="20160302T171403-0500" content="e"?>nabling
+        end-to-end jumbo frames</title> 
       <ol>
      <li>Add an 'mtu' attribute to all the
       network groups in your model, like so (~/helion/my_cloud/definition/data/network_groups.yml):
@@ -113,9 +140,10 @@
     <section><title>enable Neutron Optimal MTU advertisement feature</title>
       <note>The default values for these configuration options are changing in upstream Neutron in the Mitaka release, so by default this feature will be enabled in the Mitaka release (path_mtu = 1500 and advertise_mtu = True).
       </note>
-      <p>This feature was introduced in Kilo and allows Neutron to advertise an optimal MTU to VMs based upon the physical MTU and network type. For example, if the underlying physical MTU is 1500, you can use the following configuration to
-        advertise a 1450 MTU to VMs on a vxlan network or a 1500 MTU to VMs on a flat/vlan network:
-      </p>
+      <p>This feature was introduced in Kilo and allows Neutron to advertise an optimal MTU to VMs
+        based upon the physical MTU and network type. For example, if the underlying physical MTU is
+        1500, you can use the following configuration to advertise a 1450 MTU to VMs on a vxlan
+        network or a 1500 MTU to VMs on a flat/VLAN network: </p>
       <ol><li>Edit ~/helion/my_cloud/config/neutron/ml2_conf.ini.j2 to set the path_mtu and segment_mtu
           variables under [ml2]:
           <codeblock>[ml2]
