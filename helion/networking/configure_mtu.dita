@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="topic_srg_gsl_2v">
-  <title>Configuring MTU in Neutron</title>
+  <title>Configuring Maximum Transmission Units in Neutron</title>
   <body>
    <section><title>Overview</title>
      <p>There are a few different areas of HLM which pertain to MTU configuration: the physical interfaces managed and configured by HLM, the virtual interfaces created by Neutron and Nova for Neutron networking, and the interfaces inside the VMs.
@@ -34,13 +34,13 @@
            </p> <p>For instance, if we set the new *-mtu configuration options to a default of 1500 and create a vxlan network, it will be given an MTU of 1450 and will advertise a 1450 MTU to any VM booted on that network. If we create a provider vlan network, it will have a 1500 mtu and will advertise 1500 to booted VMs on the network. It should be noted that this default starting point for MTU calculation and advertisement is also global, meaning we can't have an 8950 MTU on one vxlan network and 1450 on another. However, we can have provider physical networks with different MTUs by using the physical_network_mtus config option, but Nova still requires a global MTU option for the interfaces it creates (meaning we can't really take advantage of that config option).
              </p>
    </section>
-    <section><title>HLM input model</title> Where do we model the MTU? network_groups.yml It can be
+    <section><title>HLM input model</title>Where do we model the MTU? network_groups.yml It can be
       the attribute of a network group, meaning that every network in the network group will be
       assigned the specified MTU. For example:
       <codeblock>network-groups:
       - name: GUEST
       mtu: 9000
-      ...</codeblock> An
+      ...</codeblock>An
       alternative could be to use a 'network-properties' attribute like so, but with 'mtu' being the
       only possible attribute right now, there doesn't seem to be much benefit to that struct
       without having more network properties:
