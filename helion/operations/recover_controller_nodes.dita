@@ -19,106 +19,47 @@
     </section>
     <section id="mysql"><title outputclass="headerH">Recovering the MySQL Database</title>
       <sectiondiv outputclass="insideSection">
-        <p>You will need to power on all of the controller nodes before bootstrapping the MySQL
-          cluster. To bootstrap a downed MySQL cluster, you will need to discover the last node to
-          go down and run bootstrap on that node. Since the cluster didn't go down cleanly, you will
-          need to SSH into each controller node and run the following commands to find the node with
-          the highest sequence number. When you find the node with the highest sequence number, you
-          will need to run the bootstrap on that node. </p>
+        <p>The recovery process for your MySQL database cluster will use the bootstrap command
+          described below.</p>
+        <p>The node that you perform these steps on should be the last node to go down. So if only
+          one of your controller nodes went down, then you would skip to step #2 and run the
+          bootstrap commands on that node. If multiple controller nodes went down then you should
+          use the instructions in step #1 to determine which was the last node to go down and then
+          proceed to run the rest of the steps on that node.</p>
         <ol>
-          <li>SSH into each controller node and use the commands below to get the log sequence
-            number: <codeblock>sudo /usr/bin/mysqld_safe --wsrep-recover
+          <li>SSH into each controller node that went down and use the commands below to get the log
+            sequence number: <codeblock>sudo /usr/bin/mysqld_safe --wsrep-recover
 sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1</codeblock>
-            <p>Here is an example showing the output from a three controller node cluster:</p>
+            <p>Here is an example where I have bolded the log sequence numbers from a three
+              controller node cluster:</p>
             <note type="important">In this example, two nodes have the same sequence number which
               means you can run the bootstrap on either node but you can only run the bootstrap
               command once and only on one node.</note>
             <codeblock>stack@helion-cp-c1-m1-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
 stack@helion-cp-c1-m1-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:37:12 InnoDB: Shutdown completed; log sequence number 165002105 
-
-stack@helion-cp-c1-m2-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover 
+151119 14:37:12 InnoDB: Shutdown completed; log sequence number <b>165002105</b> 
+              
+stack@helion-cp-c1-m2-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
 stack@helion-cp-c1-m2-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number 165252407
-
+151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number <b>165252407</b>
+              
 stack@helion-cp-c1-m3-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
 stack@helion-cp-c1-m3-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number 165252407 
-151119 14:53:23 InnoDB: Shutdown completed; log sequence number 165252407 </codeblock>
-          </li>
-          <li>SSH into the node with the highest sequence and bootstrap the cluster.
+151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number <b>165252407</b>
+151119 14:53:23 InnoDB: Shutdown completed; log sequence number 165252407</codeblock></li>
+          <li>SSH into the node with the highest log sequence number and bootstrap the cluster with
+            these commands:
             <codeblock>sudo /etc/init.d/mysql bootstrap-pxc
-sudo service mysql restart</codeblock>
-          </li>
-          <li>Log onto the other two controller nodes and run mysql start.
-            <codeblock>sudo service mysql start</codeblock>
+ sudo service mysql restart</codeblock></li>
+          <li>Log onto any other controller nodes that went down and run this command to start MySQL
+            back up: <codeblock>sudo service mysql start</codeblock>
           </li>
         </ol>
       </sectiondiv>
     </section>
-    <!-- 2.0 Instructions -->
-    <section id="vertica"><title outputclass="headerH">Recovering the Vertica Database in <keyword
-          keyref="kw-hos-version-20"/></title>
+
+    <section id="vertica"><title outputclass="headerH">Recovering the Vertica Database</title>
       <sectiondiv outputclass="insideSection">
-        <p conkeyref="HOS-conrefs/applies-to-20"/>
-        <p>The first step is to check the health of the Vertica databases as the Vertica nodes try
-          to rejoin the cluster.</p>
-        <p><b>Health Check</b></p>
-        <p>These are the steps to check the health status of the database and should be run after
-          all of your control plane nodes are up and running.</p>
-        <ol>
-          <li>Log in to any of the controller nodes and change to the root user by using
-              <codeph>sudo su</codeph>.</li>
-          <li>Check the status of the database using this command: <codeblock>su dbadmin -c '/opt/vertica/bin/admintools -t view_cluster -d mon'</codeblock>
-            <p>You should see an output that looks like this below if it's up:
-              <codeblock> DB  | Host | State
------+------+-------
-mon  | ALL  | UP</codeblock></p></li>
-          <li>If the output of all of your Vertica databases show they are up then you are good to
-            go onto the next section. If any of them show they are down then you need to continue
-            onto the next steps to recover the databases.</li>
-        </ol>
-        <p><b>Vertica Recovery Steps</b></p>
-        <p>If the output of the health check shows any node in an initializing state, you cannot
-          continue on with the Vertica recovery as Vertica is still attempting to start up on it's
-          own. You can either wait until the status goes into either a <codeph>Down</codeph> or
-            <codeph>Up</codeph> state or you can force the node into a down state to continue on
-          with the recovery steps.</p>
-        <p>To shut an initializing node down, follow these steps:</p>
-        <ol>
-          <li>Log in to any of the controller nodes and change to the root user by using
-              <codeph>sudo su</codeph>.</li>
-          <li>Shut down the node using the command below. Note that the IP address you use here is
-            going to be the IP address of the node that shows the database in an initializing state:
-            <codeblock>su dbadmin -c '/opt/vertica/bin/admintools -t stop_node -s &lt;ip address of node to shutdown>'</codeblock></li>
-        </ol>
-        <p>Once all of the nodes you need to recover are no longer in an initializing state then
-          here are the steps to recover the down nodes:</p>
-        <ol>
-          <li>Locate the Vertica admin password from the lifecycle manager node:
-            <codeblock>cd ~/scratch/ansible/next/hos/ansible
-grep dbadmin_user_password group_vars/*</codeblock></li>
-          <li>Log in to any of the controller nodes and change to the root user by using
-              <codeph>sudo su</codeph>.</li>
-          <li>Restart the Vertica database using the command below. Specify your Vertica admin
-            password in the command:
-            <codeblock>su dbadmin -c '/opt/vertica/bin/admintools -t restart_db -d mon -e last -p &lt;vertica_admin_password>'</codeblock></li>
-          <li>Check the Vertica database status:
-            <codeblock>su dbadmin -c '/opt/vertica/bin/admintools -t view_cluster -d mon'</codeblock></li>
-          <li>If the output shows that your nodes are now <codeph>Up</codeph> then you are good to
-            go. If they do not show in an <codeph>Up status then continue to the next
-            step.</codeph></li>
-          <li>Force a restart of each node. Replace the IP address in the command below to match the
-            IP address of your control plane nodes.
-            <codeblock>su dbadmin -c '/opt/vertica/bin/admintools -t restart_node -s &lt;vertica_cluster_ip> -d mon -p &lt;vertica_admin_password>'</codeblock></li>
-        </ol>
-      </sectiondiv>
-    </section>
-    <!-- 2.1 Instructions -->
-    <section id="vertica2.1"><title outputclass="headerH">Recovering the Vertica Database in
-          <keyword keyref="kw-hos-version-21"/></title>
-      <sectiondiv outputclass="insideSection">
-        <p conkeyref="HOS-conrefs/applies-to-21"/>
         <p>In order to recover your Vertica databases, run the following playbook:</p>
         <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml</codeblock>
@@ -126,17 +67,38 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml</codeblock>
         <codeblock>ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml --ask-vault-pass</codeblock>
       </sectiondiv>
     </section>
+
     <section id="hlm"><title outputclass="headerH">Restarting Services on the Controller
         Nodes</title>
       <sectiondiv outputclass="insideSection">
-        <p>Log into the lifecycle manager and execute the hlm-start playbook for each node you want
-          to bring back up:</p>
+        <p>Log in to the lifecycle manager and execute the hlm-start playbook for each node that was
+          brought down so the services can be started back up:</p>
         <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=&lt;host_var name&gt;</codeblock>
-        <p>If you leave off the <codeph>--limit</codeph> switch, the playbook will be run against
-          all nodes.</p>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=&lt;hostname&gt;</codeblock>
+        <note>If you leave off the <codeph>--limit</codeph> switch, the playbook will be run against
+          all nodes.</note>
         <p>Here is an example using the above command using the example in the previous step.</p>
         <codeblock>ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=helion-cp-c1-m1-mgmt,helion-cp-c1-m2-mgmt,helion-cp-c1-m3-mgmt</codeblock>
+      </sectiondiv>
+    </section>
+
+    <section id="monasca"><title outputclass="headerH">Restart the Monitoring Agents</title>
+      <sectiondiv outputclass="insideSection">
+        <p>As part of the recovery process, you shoudl also restart the
+            <codeph>monasca-agent</codeph> and these steps will show you how:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Top the <codeph>monasca-agent</codeph>:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-stop.yml</codeblock></li>
+          <li>Restart the <codeph>monasca-agent</codeph>:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-start.yml</codeblock></li>
+          <li>You can then confirm the status of the <codeph>monasca-agent</codeph> with this
+            playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-status.yml</codeblock></li>
+        </ol>
       </sectiondiv>
     </section>
   </body>
