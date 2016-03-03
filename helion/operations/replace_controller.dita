@@ -130,52 +130,19 @@ ansible-playbook -i hosts/verb_hosts monasca-rebuild-pretasks.yml</codeblock></l
           <li>Run osconfig on the replacement controller node. For example:
             <codeblock>ansible-playbook -i hosts/verb_hosts osconfig-run.yml -e rebuild=True --limit=&lt;controller-hostname></codeblock>
           </li>
-          <li>If the controller being replaced is the first server running the swift-proxy service
-            (see <xref href="../troubleshooting/objectstorage/identify_ring_builder.dita"
-              >Identifying the Swift Ring Building Server</xref>) you need to restore the Swift ring
-            builder files to the <codeph>/etc/swiftlm/builder_dir</codeph> directory. See <xref
+          <li>If the controller being replaced is the Swift ring builder (see <xref
+              href="../troubleshooting/objectstorage/identify_ring_builder.dita">Identifying the
+              Swift Ring Building Server</xref>) you need to restore the Swift ring builder files to
+            the <codeph>/etc/swiftlm/builder_dir</codeph> directory. See <xref
               href="../troubleshooting/objectstorage/recovering_builder_file.dita">Recovering
               Builder Files</xref> for details.</li>
-          <!-- DOCS-2306
-        <li>Run swift-deploy across all controllers using:
-          <codeblock>ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
-          -->
           <li>Run the hlm-deploy playbook on the replacement controller. <p>If the node being
               replaced is the Swift ring builder server then you only need to use the
                 <codeph>--limit</codeph> switch for that node, otherwise you need to specify the
               hostname of your Swift ringer builder server and the hostname of the node being
               replaced.</p>
-            <codeblock>ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname>,&lt;first-proxy-hostname></codeblock>
-            <p>See <xref href="../troubleshooting/objectstorage/identify_ring_builder.dita"
-                >Identifying the Swift Ring Builder Server</xref> for more details on how to
-              determine which node is your first Swift proxy node.</p>
-          </li>
+            <codeblock>ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller-hostname>,&lt;swift-ring-builder-hostname></codeblock></li>
         </ol>
-        <!--
-      <ul>
-      <li>When the node is ready to be restored, the process for re-introducing it will depend on the
-        actions performed to repair it. If it was simply rebooted to introduce new software, etc.
-        then running the <b>hlm-start.yml</b> playbook will suffice. If needed, use
-        <b>bm-power-up.yml </b>playbook to restart the node. Specify just the node(s) you want
-        to start in the 'nodelist' parameter aguments, i.e.
-        nodelist=&lt;node1>[,&lt;node2>][,&lt;node3>]
-        <codeblock>cd ~/helion/hos/ansible
-~/helion/hos/ansible$ ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=cpn-0004</codeblock>
-      </li><li>Execute the <b>hlm-start.yml </b>playbook. Specifying the node(s) you want to start in the
-        'limit' parameter arguments. This parameter accepts wildcard arguments and also
-        '@&lt;filename>' to process all hosts listed in the file.
-        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml - -limit hlm004-ccp-comp0004-mgmt</codeblock>
-      </li><li>If the node has undergone repairs that impact disk contents, then running the
-        <b>re-image.yml</b> and <b>hlm-deploy.yml </b>playbooks will be required.
-        Run:<codeblock>cd ~/helion/hos/ansible
-~/helion/hos/ansible$ ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=cpn-0004</codeblock>
-      </li><li>Then execute the <b>hlm-start.yml</b> playbook.
-        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-deploy.yml - -limit hlm004-ccp-comp0004-mgmt</codeblock>
-      </li>
-      </ul>
-      -->
       </sectiondiv>
     </section>
   </body>
