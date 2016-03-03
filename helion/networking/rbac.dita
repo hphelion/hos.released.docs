@@ -4,7 +4,7 @@
 <topic xml:lang="en-us" id="neutron_rbac">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Role-based Access Control in Neutron</title>
   <body>
-    <section><title>Overview</title>
+    <section id="overview"><title>Overview</title>
       <p>Previously in HPE Helion OpenStack, a network object was either private to a project or
         could be used by all projects. If the network's shared attribute was True, then the network
         could be used by every project in the cloud. If false, only the members of the owning
@@ -13,13 +13,34 @@
       <p>Neutron Role Based Access Control (RBAC) solves this problem for networks. Now the network
         owner can create RBAC policies that give network access to target projects. Members of a
         targeted project can use the network named in the RBAC policy the same way as if the network
-        was owned by the project. Note, however, the <xref href="#limitations"
-          format="dita">limitations described below</xref>.</p>
+        was owned by the project. Note, however, the l<xref href="#neutron_rbac/limitations"
+          format="dita">imitations described below</xref>.</p>
       <p>With RBAC you are able to let another tenant use a network that you created, but as the
         owner of the network, you need to create the subnet and the router for the network.</p>
       <p>No Neutron config file changes are required to use RBAC.</p>
     </section>
-    <section><title>Creating a network</title>
+    <section id="topics"><title>Topics covered</title>
+      <ul>
+
+        <li>
+          <xref href="#neutron_rbac/createNet" format="dita">Creating a network</xref></li>
+
+        <li><xref href="#neutron_rbac/createPolicy" format="dita">Creating an RBAC
+          policy</xref></li>
+        <li><xref href="#neutron_rbac/delete" format="dita">Deleting an RBAC</xref></li>
+        <li><xref href="#neutron_rbac/shareAll" format="dita">Sharing a network with all
+            tenants</xref></li>
+     
+        <li>   <xref href="#neutron_rbac/createPort" format="dita">Creating a port on a shared network</xref></li>
+        
+   
+        <li>     <xref href="#neutron_rbac/bootVM" format="dita">Booting a VM on a shared network</xref></li>
+        
+        <li><xref href="#neutron_rbac/limitations" format="dita">Limitations</xref></li>
+
+      </ul>
+    </section>
+    <section id="createNet"><title>Creating a network</title>
       <codeblock>$ neutron net-create demo-net
 $ neutron net-show demo-net</codeblock>
       <codeblock>+-----------------+--------------------------------------+
@@ -37,7 +58,7 @@ $ neutron net-show demo-net</codeblock>
 +-----------------+--------------------------------------+</codeblock>
     </section>
 
-    <section><title>Creating an RBAC policy</title>
+    <section id="createPolicy"><title>Creating an RBAC policy</title>
       <p>Here we will create an RBAC policy where a member of the project called 'demo' will share
         the network with members of project 'demo2'</p>
       <p>To create the RBAC policy, run:</p>
@@ -46,7 +67,7 @@ $ neutron net-show demo-net</codeblock>
       <codeblock>$ neutron rbac-create --target-tenant 5a582af8b44b422fafcd4545bd2b7eb5 --type network --action access_as_shared demo-net</codeblock>
     </section>
 
-    <section><title>Listing RBACs</title>
+    <section id="listRBACs"><title>Listing RBACs</title>
       <p>To list all the RBAC rules/policies, execute:</p>
       <codeblock>$ neutron rbac-list</codeblock>
       <codeblock>+--------------------------------------+--------------------------------------+
@@ -56,10 +77,10 @@ $ neutron net-show demo-net</codeblock>
 +--------------------------------------+--------------------------------------+</codeblock>
     </section>
 
-    <section><title>Listing the attributes of an RBAC</title> To see the attributes of a specific
-      RBAC policy, run <codeblock>$ neutron rbac-show &lt;project ID></codeblock> For example:
-      <codeblock>$ neutron rbac-show 0fd89dcb-9809-4a5e-adc1-39dd676cb386</codeblock> Here is the
-      output:
+    <section id="listAttr"><title>Listing the attributes of an RBAC</title> To see the attributes of
+      a specific RBAC policy, run <codeblock>$ neutron rbac-show &lt;project ID></codeblock> For
+      example: <codeblock>$ neutron rbac-show 0fd89dcb-9809-4a5e-adc1-39dd676cb386</codeblock> Here
+      is the output:
       <codeblock>+---------------+--------------------------------------+
 | Field         | Value                                |
 +---------------+--------------------------------------+
@@ -73,7 +94,7 @@ $ neutron net-show demo-net</codeblock>
     </section>
 
 
-    <section><title>Deleting an RBAC</title>
+    <section id="delete"><title>Deleting an RBAC</title>
       <p>To delete an RBAC policy, run rbac-delete passing the project id:</p>
       <codeblock>$ neutron rbac-delete &lt;project ID></codeblock>
       <p>For example:</p>
@@ -83,7 +104,7 @@ $ neutron net-show demo-net</codeblock>
     </section>
 
 
-    <section>
+    <section id="shareAll">
       <title>Sharing a network with all tenants</title>
       <p>Either the administrator or the network owner can make a network shareable by all
         tenants.</p>
@@ -198,7 +219,7 @@ stack@padawan-ccp-c0-m1-mgmt:~$ neutron net-create test-net
 +---------------+--------------------------------------+ </codeblock>
     </section>
 
-    <section><title>Target project (demo2) view of Networks and Subnets</title>
+    <section id="view"><title>Target project (demo2) view of Networks and Subnets</title>
       <p>Note that the owner of the network and subnet is not the tenant named 'demo2'. Both the
         network and subnet are owned by tenant 'demo'. Demo2 members cannot create subnets of the
         network. They also cannot modify or delete subnets owned by demo. </p>
@@ -238,9 +259,9 @@ stack@padawan-ccp-c0-m1-mgmt:~$ neutron net-create test-net
 +-------------------+--------------------------------------------+</codeblock>
     </section>
 
-    <section><title>Target project: Creating a port using demo-net</title>
-      Running the following command:
-      <codeblock>$ neutron port-create c3d55c21-d8c9-4ee5-944b-560b7e0ea33b</codeblock>
+    <section id="createPort"><title>Target project: Creating a port using demo-net</title><p>Note
+        the owner of the port is 'demo2'. Members of the network owner project ('demo') will not see
+        this port. </p>Running the following command: <codeblock>$ neutron port-create c3d55c21-d8c9-4ee5-944b-560b7e0ea33b</codeblock>
       <p>Creates a new port:</p>
       <codeblock>+-----------------------+-----------------------------------------------------------------------------------------------------+
 | Field                 | Value                                                                                               |
@@ -261,12 +282,10 @@ stack@padawan-ccp-c0-m1-mgmt:~$ neutron net-create test-net
 | status                | DOWN                                                                                                |
 | tenant_id             | 5a582af8b44b422fafcd4545bd2b7eb5                                                                    |
 +-----------------------+-----------------------------------------------------------------------------------------------------+</codeblock>
-      <p>Note the owner of the port is 'demo2'. Members of the network owner project ('demo') will
-        not see this port. </p>
     </section>
 
-    <section><title>Target project booting a VM using demo-net</title> Here the tenant demo2 boots a
-      VM that uses the demo-net shared network: <codeblock>$ nova boot --flavor 1 --image $OS_IMAGE --nic net-id=c3d55c21-d8c9-4ee5-944b-560b7e0ea33b demo2-vm-using-demo-net-nic
+    <section id="bootVM"><title>Target project booting a VM using demo-net</title>Here the tenant
+      demo2 boots a VM that uses the demo-net shared network: <codeblock>$ nova boot --flavor 1 --image $OS_IMAGE --nic net-id=c3d55c21-d8c9-4ee5-944b-560b7e0ea33b demo2-vm-using-demo-net-nic
 </codeblock>
       <codeblock>+--------------------------------------+------------------------------------------------------------+
 | Property                             | Value                                                      |
@@ -334,19 +353,18 @@ stack@padawan-ccp-c0-m1-mgmt:~$ neutron net-create test-net
 +-----------------------+-----------------------------------------------------------------------------------------------------+</codeblock>
     </section>
 
-    <section id="limitations"><title>Limitations</title>
-      Note the following limitations of RBAC in Neutron.
-      <ul>
+    <section id="limitations"><title>Limitations</title> Note the following limitations of RBAC in
+      Neutron. <ul>
         <li> Neutron network is the only supported RBAC Neutron object type. </li>
         <li>The "access_as_external" action is not supported – even though it is listed as a valid
           action by python-neutronclient. </li>
         <li>The neutron-api server will not accept action value of 'access_as_external'. The
-          <codeph>access_as_external</codeph> definition is not found in the specs. </li>
+            <codeph>access_as_external</codeph> definition is not found in the specs. </li>
         <li>The target project users cannot create, modify, or delete subnets on networks that have
           RBAC policies. </li>
         <li>The subnet of a network that has an RBAC policy cannot be added as an interface of a
           target tenant's router. For example, the command <codeph>neutron router-interface-add
-          tgt-tenant-router &lt;sb-demo-net uuid></codeph> will error out. </li>
+            tgt-tenant-router &lt;sb-demo-net uuid></codeph> will error out. </li>
         <li>The security group rules on the network owner do not apply to other projects that can
           use the network. </li>
         <li>A user in the target project can create a port off the shared network. This port is
