@@ -7,26 +7,27 @@
   <body>
     <section>
       <title>Provider Networks Overview</title>
-      <p> A provider network is a virtual network created in the HOS cloud that is consumed by HOS
-        services. The distinctive element of a provider network is that it does not create a virtual
-        router rather it depends on L3 routing that is provided by the infrastructure. </p>
-      <p> A provider network is created by adding the specification to the HLM Input Model. It
-        consists of at least one network and one or more subnets. </p>
+      <p>A provider network is a virtual network created in the HPE Helion OpenStack cloud that is
+        consumed by Helion services. The distinctive element of a provider network is that it does
+        not create a virtual router; rather, it depends on L3 routing that is provided by the
+        infrastructure. </p>
+      <p>A provider network is created by adding the specification to the Helion OpenStack input
+        model. It consists of at least one network and one or more subnets. </p>
     </section>
     <section>
       <title>HPE Helion OpenStack Input Model</title>
-      <p>The HLM input model is the primary mechanism a cloud admin uses in defining a HOS
-        installation. It exists as a directory with a data subdirectory which contains yaml files.
-        By convention, any service that creates a Neutron provider network will create a
-        subdirectory under the data directory and the name of the subdirectory shall be the project
-        name. For example, the Trove and Cue projects will use Neutron provider networks so they
-        will have subdirectories named 'trove' and 'cue' and the config file that specifies the
-        neutron network will exist in those subdirectories.</p>
+      <p>The input model is the primary mechanism a cloud admin uses in defining a Helion
+        installation. It exists as a directory with a data subdirectory that contains YAML files. By
+        convention, any service that creates a Neutron provider network will create a subdirectory
+        under the data directory and the name of the subdirectory shall be the project name. For
+        example, the Trove and Cue projects will use Neutron provider networks so they will have
+        subdirectories named 'trove' and 'cue' and the config file that specifies the neutron
+        network will exist in those subdirectories.</p>
       <codeblock>├── cloudConfig.yml
     ├── data
     │   ├── control_plane.yml
-    │   ├── cue
-    │   │   └── provider_net.yml
+<!--    │   ├── cue
+    │   │   └── provider_net.yml-->
     │   ├── disks_compute.yml
     │   ├── disks_controller_1TB.yml
     │   ├── disks_controller.yml
@@ -48,12 +49,12 @@
     ├── README.html
     └── README.md</codeblock>
     </section>
-    <section><title>Network/Subnet Specification</title> The required elements in the HLM input
-      model for network definition are: <ul>
+    <section><title>Network/Subnet Specification</title> The elements required in the input model
+      for you to define a network are: <ul>
         <li>name </li>
         <li>network_type </li>
         <li>physical_network</li>
-      </ul> Optional elements for the network definition are: <ul>
+      </ul> Elements that are optional when defining a network are: <ul>
         <li>segmentation_id </li>
         <li>shared </li>
       </ul> Required elements for the subnet definition are: <ul>
@@ -66,8 +67,8 @@
         <li>enable-dhcp </li>
       </ul> NOTE: Only IPv4 is supported at the present time. </section>
     <section>
-      <title/>
-    
+      <title>Network Details</title>
+    The following table outlines the network values to be set, and what they represent.
  
     <table frame="all" rowsep="1" colsep="1" id="table_lnv_y5n_2v">
       <tgroup cols="4">
@@ -117,6 +118,10 @@
         </tbody>
       </tgroup>
     </table>
+    </section>
+    <section>
+      The following table outlines the subnet values to be set, and what they represent. 
+      <title>Subnet Details</title>
     <table frame="all" rowsep="1" colsep="1" id="table_pzw_3wn_2v">
       <tgroup cols="4">
         <colspec colnum="1" colname="col1"/>
@@ -171,6 +176,10 @@
         </tbody>
       </tgroup>
     </table>
+    </section>
+    <section>
+      <title>ALLOCATION_POOLS Details</title>
+      The following table explains allocation pool settings.
     <table frame="all" rowsep="1" colsep="1" id="table_h5p_5wn_2v">
       <tgroup cols="4">
         <colspec colnum="1" colname="col1"/>
@@ -201,6 +210,10 @@
         </tbody>
       </tgroup>
     </table>
+    </section>
+    <section>
+      <title>HOST_ROUTES Details</title>
+      The following table explains host route settings.
     <table frame="all" rowsep="1" colsep="1"  id="table_gfj_dxn_2v">
       <tgroup cols="4">
         <colspec colnum="1" colname="col1"/>
@@ -231,72 +244,78 @@
         </tbody>
       </tgroup>
     </table>
+      
     <note>Multiple destination/nexthop may be used</note>
     </section>
-    <section><title>Examples</title> data/trove/provider_net.yml
+    <section><title>Examples</title>
+      The following examples show provider_net.yml settings for the 
+      
+      data/trove/provider_net.yml
       <codeblock>---
+  product:
+    version: 2
   configuration-data:
-        - name:  TROVE-CONFIG-CP1
-        services:
+    - name:  TROVE-CONFIG-CP1
+      services:
         - trove 
-        data:
+      data:
         neutron_broker_net: TROVE-BROKER-VM-NET</codeblock>
-      data/cue/provider_net.yml
-      <codeblock>---
-   product:
-        version: 2
-        configuration-data:
-        - name:  CUE-CONFIG-CP1
-        services:
+      <!--data/cue/provider_net.yml
+      <codeblock>- - -
+  product:
+    version: 2
+  configuration-data:
+    - name:  CUE-CONFIG-CP1
+      services:
         - cue 
-        data:
-        neutron_broker_net: CUE-BROKER-VM-NET</codeblock>
-      data/neutron/provider_net.yml
+      data:
+        neutron_broker_net: CUE-BROKER-VM-NET</codeblock>-->
+      
+      <p>data/neutron/provider_net.yml</p>
       <codeblock>---
-   product:
-        version: 2
-        configuration-data:
-        - name:  NEUTRON-CONFIG-CP1
-        services:
+  product:
+    version: 2
+  configuration-data:
+    - name:  NEUTRON-CONFIG-CP1
+      services:
         - neutron
-        data:
+      data:
         neutron_provider_networks:
-        - name: CUE-BROKER-VM-NET
-        provider:
-        - network_type: vlan
-        physical_network: physnet1
-        segmentation_id: 104
-        cidr: 172.17.0.0/24
-        no_gateway:  True
-        enable_dhcp: False
-        allocation_pools:
-        - start: 172.17.0.128
-        end: 172.17.0.250
-        host_routes:
-        # route to MANAGEMENT-NET-1
-        - destination: 192.168.245.0/24
-        nexthop:  172.17.0.1
-        # route to MANAGEMENT-NET-2
-        - destination: 192.168.246.0/24
-        nexthop:  172.17.0.1
+<!--        - name: CUE-BROKER-VM-NET
+          provider:
+            - network_type: vlan
+              physical_network: physnet1
+              segmentation_id: 104
+          cidr: 172.17.0.0/24
+          no_gateway:  True
+          enable_dhcp: False
+          allocation_pools:
+            - start: 172.17.0.128
+              end: 172.17.0.250
+          host_routes:
+            # route to MANAGEMENT-NET-1
+            - destination: 192.168.245.0/24
+              nexthop:  172.17.0.1
+            # route to MANAGEMENT-NET-2
+            - destination: 192.168.246.0/24
+              nexthop:  172.17.0.1-->
         - name: TROVE-BROKER-VM-NET
-        provider:
-        - network_type: vlan
-        physical_network: physnet1
-        segmentation_id: 105
-        cidr: 172.18.0.0/24
-        no_gateway:  True
-        enable_dhcp: False
-        allocation_pools:
-        - start: 172.18.0.128
-        end: 172.18.0.250
-        host_routes:
-        # route to MANAGEMENT-NET-1
-        - destination: 192.168.245.0/24
-        nexthop:  172.18.0.1
-        # route to MANAGEMENT-NET-2
-        - destination: 192.168.246.0/24
-        nexthop:  172.18.0.1</codeblock>
+          provider:
+            - network_type: vlan
+              physical_network: physnet1
+              segmentation_id: 105
+          cidr: 172.18.0.0/24
+          no_gateway:  True
+          enable_dhcp: False
+          allocation_pools:
+            - start: 172.18.0.128
+              end: 172.18.0.250
+          host_routes:
+            # route to MANAGEMENT-NET-1
+            - destination: 192.168.245.0/24
+              nexthop:  172.18.0.1
+            # route to MANAGEMENT-NET-2
+            - destination: 192.168.24</codeblock>
     </section>
   
   </body>
