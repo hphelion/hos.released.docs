@@ -210,28 +210,72 @@ dnsaas-2.0.0-20151105T142709Z.tar [auth 0.239s, headers 0.331s, total 2.531s, 12
         </ol>
       </sectiondiv>
       <sectiondiv>
-        <p><b>Booting the Deployer VM and Uploading the Deployer Tarball</b></p>
+        <p><b>Booting the DNSaaS Installer VM and Uploading the Tarball</b></p>
         <ol>
-          <li>Boot the Deployer VM.
-            <codeblock>$ nova boot --poll \
-          --nic net-id=&lt;SVC ID Value> \   # SVC Network ID
-          --image &lt;DNS Cloud Image ID>\   # DNSaaS Cloud Image ID
-          --key-name dns-shared \         # Keypair Name
-          --flavor m1.small \
-          dnsaas-deployer        </codeblock></li>
-          <li>Display the dnsaas-deployer. Make a note of the SVC-NET IP
-            Address.<codeblock>$ nova show dnsaas-deployer</codeblock></li>
-          <li>Copy the dnsaas image.
-            <codeblock>$ scp -i dns_shared dnsaas-2.0.0-b.1-20151005T183829Z.tgz stack@&lt;SVC-NET IP Address>:~</codeblock></li>
+          <li>Gather the information you will need for the next step.<ol id="ol_pr1_2hd_fv">
+              <li>Get the Image UUID of the <codeph>dnsaas-2.0.0_cloud-1.0.20151105T133934Z</codeph>
+                image that was created earlier:<codeblock>glance image-list</codeblock><p>Example
+                  output, with the Image UUID
+                  bolded:<codeblock>$ glance image-list
++--------------------------------------+-----------------------------------------+-------------+------------------+-----------+--------+
+| ID                                   | Name                                    | Disk Format | Container Format | Size      | Status |
++--------------------------------------+-----------------------------------------+-------------+------------------+-----------+--------+
+| <b>f294c359-4143-46dd-b3c4-7fd4e5fba3b5</b> | dnsaas-2.0.0_cloud-1.0.20151105T133934Z | qcow2       | bare             | 303746048 | active |
++--------------------------------------+-----------------------------------------+-------------+------------------+-----------+--------+</codeblock></p></li>
+              <li>Get the UUID for your Service Network. See step #2 in the previous section for
+                more details if needed.<codeblock>neutron net-show SVC</codeblock></li>
+            </ol></li>
+          <li>Create the DNSaaS Installer
+            VM:<codeblock>nova boot --poll --nic net-id=&lt;SVC ID> --image &lt;DNS Cloud Image ID> --key-name dns-shared --flavor m1.small dnsaas-deployer</codeblock></li>
+          <li>After the server completes the build process, display the details for your
+            dnsaas-deployer. Make a note of the SVC-NET IP address
+              value.<codeblock>nova show dnsaas-deployer</codeblock><p>Here is an example output,
+              with the IP address
+              bolded:<codeblock>$ nova show dnsaas-deployer
++--------------------------------------+--------------------------------------------------------------------------------+
+| Property                             | Value                                                                          |
++--------------------------------------+--------------------------------------------------------------------------------+
+| OS-EXT-AZ:availability_zone          | AZ1                                                                            |
+| OS-EXT-SRV-ATTR:host                 | helion-cp1-comp0001-mgmt                                                       |
+| OS-EXT-SRV-ATTR:hypervisor_hostname  | helion-cp1-comp0001-mgmt                                                       |
+| OS-EXT-SRV-ATTR:instance_name        | instance-00000023                                                              |
+| OS-EXT-STS:power_state               | 1                                                                              |
+| OS-EXT-STS:task_state                | -                                                                              |
+| OS-EXT-STS:vm_state                  | active                                                                         |
+| OS-SRV-USG:launched_at               | 2016-03-05T02:05:41.000000                                                     |
+| OS-SRV-USG:terminated_at             | -                                                                              |
+<b>| SVC network                          | 10.13.189.6                                                                    |</b>
+| accessIPv4                           |                                                                                |
+| accessIPv6                           |                                                                                |
+| config_drive                         |                                                                                |
+| created                              | 2016-03-05T02:04:12Z                                                           |
+| flavor                               | m1.small (2)                                                                   |
+| hostId                               | 350db2ce214cf779e2bb7ca9fb28b569ca8dc4a7dbbb610063c2d149                       |
+| id                                   | b198aeb3-2df2-4228-bc5a-c3f90b145f24                                           |
+| image                                | dnsaas-2.0.0_cloud-1.0.20151105T133934Z (f294c359-4143-46dd-b3c4-7fd4e5fba3b5) |
+| key_name                             | dns-shared                                                                     |
+| metadata                             | {}                                                                             |
+| name                                 | dnsaas-deployer                                                                |
+| os-extended-volumes:volumes_attached | []                                                                             |
+| progress                             | 0                                                                              |
+| security_groups                      | default                                                                        |
+| status                               | ACTIVE                                                                         |
+| tenant_id                            | 5f33236dbfcb40b4a54662c22e2563c3                                               |
+| updated                              | 2016-03-05T02:05:41Z                                                           |
+| user_id                              | 90839cc6655d405783f5e0c3fa7b7bfc                                               |
++--------------------------------------+--------------------------------------------------------------------------------+</codeblock></p></li>
+          <li>Copy the dnsaas image to your DNSaaS Installer VM.
+            <codeblock>scp -i dns_shared dnsaas-2.0.0-20151105T142709Z.tar stack@&lt;SVC-NET IP Address>:~</codeblock></li>
         </ol></sectiondiv><sectiondiv>
-        <b>Login and Initialize the Deployer VM</b>
+        <b>Log in and Initialize the Deployer VM</b>
         <ol>
-          <li>Login to the deployer.
-            <codeblock>$ ssh -i dns_shared stack@&lt;SVC-NET IP Address></codeblock> You will need
-            to extract the dnsaas tar file and execute the dns-init.bash script.
-            <codeblock>$ tar xf dnsaas-2.0.0-b.1-20151005T183829Z.tar
-$ cd dnsaas-2.0.0-b.1/
-$ ./dnsaas-init.bash 
+          <li>SSH to the DNSaaS Installer.
+            <codeblock>ssh -i dns_shared stack@&lt;SVC-NET IP Address></codeblock></li>
+          <li> Extract the dnsaas tar file and execute the dns-init.bash script:<codeblock>tar xf dnsaas-2.0.0-20151105T142709Z.tar
+cd dnsaas-2.0.0
+./dnsaas-init.bash</codeblock>
+            <p>The output will look similar to this:</p>
+            <codeblock>
 [ OUTPUT TRIMMED ]
 
 + ssh-keygen -q -t rsa -f id_rsa
@@ -242,7 +286,7 @@ Enter same passphrase again:
 
 # Do not continue with the installation steps that appear here
 # Ignore this next line.
-To continue installation copy your cloud layout to: /home/stack/helion/my_cloud/definition      </codeblock></li>
+To continue installation copy your cloud layout to: /home/stack/helion/my_cloud/definition</codeblock></li>
         </ol></sectiondiv></section>
 
     <section id="PrepareDeployment">
