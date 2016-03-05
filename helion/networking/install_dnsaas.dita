@@ -150,21 +150,30 @@ dnsaas-2.0.0-20151105T142709Z.tar [auth 0.239s, headers 0.331s, total 2.531s, 12
         <p>You must publish the DNSaaS Cloud Image to the target project/tenant before proceeding to
           the next step. </p><ol>
           <li>Update your environment. <codeblock>$ source dnsaas.osrc</codeblock></li>
-          <li>Identify the SVC network ID. Make a note of the SVC ID value. If you don't already
-            have a Service Network created, see <xref
-              href="../administration/create_hdp_servicenet.dita"/> for more details.
-            <codeblock>$ neutron net-show SVC 
+          <li>Identify the Service Network UIID. Make a note of the <codeph>id</codeph> value. If
+            you don't already have a Service Network created, see <xref
+              href="../administration/create_hdp_servicenet.dita"/> for more details. <codeblock>neutron net-show SVC</codeblock>
+            <p>Here is an example output, with the UUID bolded:</p>
+            <codeblock>$ neutron net-show SVC
 +---------------------------+--------------------------------------+
 | Field                     | Value                                |
 +---------------------------+--------------------------------------+
 | admin_state_up            | True                                 |
-| id                        | &lt;service ID Value>                   |
-
-[ OUTPUT TRIMMED ] </codeblock></li>
-          <li>Upload the SSH keypair.
-            <codeblock>$ nova keypair-add --pub-key dns_shared.pub dns-shared</codeblock></li>
-          <li>You can view the keypair information with <codeph>keypair-show</codeph>.
-            <codeblock>$ nova keypair-show dns-shared</codeblock></li>
+| id                        | <b>e14bf7c2-d322-4bc2-8fe7-50d1b8c132d7</b> |
+| mtu                       | 0                                    |
+| name                      | SVC                                  |
+| provider:network_type     | vlan                                 |
+| provider:physical_network | physnet1                             |
+| provider:segmentation_id  | 2754                                 |
+| router:external           | False                                |
+| shared                    | False                                |
+| status                    | ACTIVE                               |
+| subnets                   | 8c0f40e1-1826-44f6-90bf-d40f8f6d8819 |
+| tenant_id                 | 0253f33f56f74e9ea4d48281b5d64430     |
++---------------------------+--------------------------------------+</codeblock></li>
+          <li>Create a keypair. <codeblock>nova keypair-add dns-shared</codeblock></li>
+          <li>Save the private key portion of the keypair that displays in a file locally named
+              <codeph>dns-shared.pub</codeph></li>
           <li>Ensure the <codeph>default</codeph> security group is correctly configured. You will
             need your Project (Tenant) ID value for your <codeph>dnsaas</codeph> project. <ol>
               <li>List your current security groups and their rules in order to get the ID for your
@@ -181,9 +190,9 @@ dnsaas-2.0.0-20151105T142709Z.tar [auth 0.239s, headers 0.331s, total 2.531s, 12
 +--------------------------------------+---------+----------------------------------------------------------------------+</codeblock></li>
               <li>Create two additional security group rules for your <codeph>default</codeph>
                 security group to open up ports 22 and 79 for TCP ingress traffic. <p>Rule #1:</p>
-                <codeblock>neutron security-group-rule-create --tenant-id &lt;dnsaas Project ID> --protocol TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min 22 --port-range-max 22 &lt;default security group ID></codeblock>
+                <codeblock>neutron security-group-rule-create --tenant-id &lt;dnsaas Project ID> --protocol TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min 22 --port-range-max 22 &lt;default secgroup ID></codeblock>
                 <p>Rule #2:</p>
-                <codeblock>neutron security-group-rule-create --tenant-id &lt;dnsaas Project ID> --protocol TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min 79 --port-range-max 79 &lt;default security group ID></codeblock></li>
+                <codeblock>neutron security-group-rule-create --tenant-id &lt;dnsaas Project ID> --protocol TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min 79 --port-range-max 79 &lt;default secgroup ID></codeblock></li>
             </ol></li>
           <li>Confirm that the rules were created successfully by listing out the rules again: <codeblock>neutron security-group-list --tenant-id &lt;project ID></codeblock>
             <p>Your output should look similar to this:</p>
