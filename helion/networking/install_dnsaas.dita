@@ -396,7 +396,7 @@ $ git commit -m "Configure SSL certificate"
             </ul>
           </li>
         </ol>
-        <p>IP-Address Certificate</p>
+        <p><b>IP-Address Certificate</b></p>
         <ol>
           <li>Identify the external IP Address.
             <codeblock>grep 'external-ip' ~/helion/my_cloud/definition/data/network_groups.yml</codeblock>
@@ -462,48 +462,24 @@ $ git diff ^HEAD my_cloud/definition/data/network_groups.yml
       <sectiondiv>
         <p><b>Save Configured Deployment Model</b></p>
         <ol>
-          <li>Add your changes to Git. <codeblock>$ cd ~/helion
-$ git add -A
-$ git commit -a -m "Configured Deployment Model"      
-$ git status </codeblock>
-            <note>Make sure that there are no other files which are not committed to the Git
-              repository. If there are, begin troubleshooting.</note></li>
+          <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
+              repo</xref>, as follows:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Update your deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Run the Boot Infrastructure playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/localhost hlm-boot-infra.yml</codeblock></li>
+          <li>Complete the deployment by running this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock></li>
         </ol>
-      </sectiondiv>
-      <sectiondiv>
-        <b>Run the Configuration Processor</b>
-        <p>At the end of each playbook, ensure both "unreachable" and "failed" are
-          zero.</p><note>When asked for a encryption key, simply leave the value blank, pressing
-          enter 4 times to
-        proceed.</note><codeblock>$ cd ~/helion/hos/ansible
-$ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
-      </sectiondiv><b>Run the Ready Deployment Playbook</b>
-      <p>At the end of each playbook, ensure both "unreachable" and "failed" are
-      zero.</p><codeblock>$ ansible-playbook -i hosts/localhost ready-deployment.yml </codeblock>
-    </section>
-
-    <section id="PerformDeployment">
-      <title>Perform the Deployment</title>
-      <sectiondiv>
-        <b>Run the Boot Infrastructure Playbook</b>
-        <p>Once this is complete, all in-cloud infrastructure (VMs, Networks, Routers, Floating IPs
-          etc) will have been created.</p><note>This step takes approximately 15 minutes to
-          run.</note><codeblock>$ cd ~/scratch/ansible/next/hos/ansible
-
-# Choose between single or multiple control plane.  You only need to execute one or the other, do not run both.          
-
-# a) Multiple control plane nodes
-$ ansible-playbook -i hosts/localhost hlm-boot-infra.yml
-          
-# b) Single control plane
-$ ansible-playbook -i hosts/localhost hlm-boot-infra.yml -e neutron_router_ha=False</codeblock>
-      </sectiondiv>
-      <sectiondiv>
-        <p id="RunSitePlay"><b>Run the Site Playbook</b></p>
-        <note type="caution">Unlike all the previous ansible play's, the inventory file supplied to
-          this play is <b>hosts/verb_hosts</b> and not <b>hosts/localhost</b>.</note>
-        <note>This step take approximately 15 to 20 minutes to complete.</note>
-        <codeblock>$ ansible-playbook -i hosts/verb_hosts site.yml</codeblock>
       </sectiondiv>
     </section>
 
