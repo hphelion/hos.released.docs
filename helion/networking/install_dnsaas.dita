@@ -40,7 +40,7 @@
         only be created after the Target credentials have been successfully created. </p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
-        <li>Source the keystone.osrc file. <codeblock>source keystone.osrc</codeblock></li>
+        <li>Source the keystone.osrc file. <codeblock>source ~/keystone.osrc</codeblock></li>
         <li>Create the DNSaaS project. Make a note of the ID field value. <codeblock>openstack project create dnsaas</codeblock>
           <p>The output should look similar to this:</p>
           <codeblock>+-------------+----------------------------------+
@@ -77,9 +77,8 @@ openstack role add --project dnsaas --user dnsaas admin</codeblock></li>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Using your preferred editor, create a file named <codeph>dnsaas.osrc</codeph> in your
-          home directory with the contents below, ensuring that you replace &lt;password> with the
-          password you chose
-          earlier.<codeblock>unset OS_DOMAIN_NAME
+          home directory with the contents below, ensuring that you replace
+            <codeph>&lt;password></codeph> with the password you chose earlier.<codeblock>unset OS_DOMAIN_NAME
 export OS_IDENTITY_API_VERSION=3
 export OS_AUTH_VERSION=3
 export OS_PROJECT_DOMAIN_NAME=Default
@@ -90,7 +89,9 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt
 export OS_PROJECT_NAME=dnsaas
 export OS_USERNAME=dnsaas
 export OS_PASSWORD=&lt;password>
-export OS_AUTH_URL=http://192.168.245.5:35357/v3</codeblock></li>
+export OS_AUTH_URL=&lt;auth URL></codeblock>
+          <note type="important">For <codeph>OS_AUTH_URL</codeph> you should use the same value for
+            this key that you have in your <codeph>~/service.osrc</codeph> file.</note></li>
       </ol>
     </section>
 
@@ -98,42 +99,47 @@ export OS_AUTH_URL=http://192.168.245.5:35357/v3</codeblock></li>
       <title>Provision DNSaaS Images</title>
       <p>You will need to select which way you would like to provision the images for DNSaaS into
         your Helion instance.</p>
+      <p><b>Automatic - Using the Images and Updates extension</b></p>
       <ol>
-        <li>Automatic - Using the Images and Updates extension <ol>
-            <li>Log in to your Horizon dashboard using the DNSaaS credentials you created above. See
-                <xref href="../operations/accessing_horizon.dita"/> for details on how to do this if
-              needed</li>
-            <li>Navigate to the <codeph>Update and Extensions panel</codeph>.</li>
-            <li>If you have not already configured Horizon with your credentials to access the
-              Helion Download Network, then click the <b>Configure</b> button and enter your
-              credentials there. See <xref href="../operations/accessing_sherpa.dita"/> for more
-              details.</li>
-            <li>You should see a listing for <b>DNS Service 2.0.0</b> here. Click the Download
-              button to begin downloading this extension.</li>
-            <li>Select the <b>Install</b> button to install the extension. <note>It's best to do
-                this from within the tenant you plan on deploying DNSaaS with, as the images are
-                uploaded as private to the tenant you're logged in with during the time of
-                publication.</note>
-              <p> Now once the state goes into <i>Installed</i>, the images will be pre-uploaded
-                into Glance. The Deployer tarball is uploaded to a swift container called
-                  <codeph>dnsaas-deployer</codeph> for you to download.</p>
-              <p>To download the tarball from swift you can use the Swift client, type the following
-                command: <codeblock>swift download dnsaas-deployer</codeblock></p>
-            </li>
-          </ol>
-        </li>
-        <li>Manual - Download and provision images to your cloud. <p>Navigate to the <xref
-              scope="external" format="html"
-              href="https://helion.hpwsportal.com/catalog.html#/Home/Show"> HPE Helion Download
-              Network (HDN)</xref> and log in. If necessary, create an account first. Select the
-            required package and Download the DNSaaS Installer <i>csu</i> file to your local
-            directory.</p>
-          <p>Unzip the <i>csu</i> to extract the <i>deployer</i> and cloud image tar ball.</p>
+        <li>Log in to your Horizon dashboard using the DNSaaS credentials you created above. See
+            <xref href="../operations/accessing_horizon.dita"/> for details on how to do this if
+          needed</li>
+        <li>Navigate to the <codeph>Update and Extensions panel</codeph>.</li>
+        <li>If you have not already configured Horizon with your credentials to access the Helion
+          Download Network, then click the <b>Configure</b> button and enter your credentials there.
+          See <xref href="../operations/accessing_sherpa.dita"/> for more details.</li>
+        <li>You should see a listing for <b>DNS Service 2.0.0</b> here. Click the Download button to
+          begin downloading this extension.</li>
+        <li>Once the download has completed, select the <b>Publish</b> button to install the
+          extension. <note>It's best to do this from within the tenant you plan on deploying DNSaaS
+            with, as the images are uploaded as private to the tenant you're logged in with during
+            the time of publication.</note></li>
+      </ol>
+      <p>Once the state goes into <b>Installed</b>, the images needed will be pre-uploaded into the
+        image service (Glance). The DNSaaS deployer tarball gets uploaded to a Swift container
+        called <codeph>dnsaas-deployer</codeph> for you to download.</p>
+      <p>To download the tarball from swift you can use the SwiftClient using this steps:</p>
+      <ol>
+        <li>Source your creds: <codeblock>source ~/dnsaas.osrc</codeblock></li>
+        <li>Download the Swift container: <codeblock>swift download dnsaas-deployer</codeblock>
+          <p>The ouput should look like this:</p>
+          <codeblock>$ swift download dnsaas-deployer
+dnsaas-2.0.0-20151105T142709Z.tar [auth 0.239s, headers 0.331s, total 2.531s, 128.633 MB/s]</codeblock></li>
+        <li>Confirm you have the DNS installer tarball on your system by using
+          <codeph>ls</codeph>.</li>
+      </ol>
+      <p><b>Manual - Download and provision images to your cloud.</b></p>
+      <ol>
+        <li>Navigate to the <xref scope="external" format="html"
+            href="https://helion.hpwsportal.com/catalog.html#/Home/Show"> HPE Helion Download
+            Network (HDN)</xref> and log in. If necessary, create an account first. Select the
+          required package and download the DNSaaS Installer <i>csu</i> file to your local
+          directory. <p>Unzip the <i>csu</i> to extract the <i>deployer</i> and cloud image tar
+            ball.</p>
           <note>On Windows, for example, things may be pigeonholed into <codeph>.zip</codeph> is
               <codeph>Zip</codeph> and <codeph>.csu</codeph> is <codeph>Unknown</codeph>. So
             renaming the <codeph>.csu</codeph> file to <codeph>.zip</codeph> will possibly make it
-            work with the unzip utility of choice.</note>
-        </li>
+            work with the unzip utility of choice.</note></li>
       </ol>
     </section>
 
