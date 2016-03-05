@@ -11,26 +11,25 @@
     <section id="Prerequisites">
       <title>Prerequisites</title>
       <ul>
-        <li><keyword keyref="kw-hos-phrase"/> installation must be completed. You must know the location of
-          its <codeph>keystone.osrc</codeph> file, which contains configuration information.</li>
+        <li><keyword keyref="kw-hos-phrase"/> installation must be completed. You must know the
+          location of its <codeph>keystone.osrc</codeph> file, which contains configuration
+          information.</li>
         <li>You must know the NTP server and DNS server IP addresses.</li>
         <li>Credentials of the User and Tenant where the service is to be deployed ("Target
           Credentials")</li>
         <li>"openrc" credentials file for the Target user and project
           <!--why this file?: the values don't seem to be used anywhere in the process?--></li>
         <li>The v2 CLI must be installed on all nodes due to client differences.</li>
-        <li>The SVC network correctly configured within <keyword keyref="kw-hos"/>. 
-          See the <xref href="http://docs.hpcloud.com/#helion/administration/create_hdp_servicenet.html"
-            format="html" scope="external">Creating the HPE Helion Development Platform Service Net</xref> 
-          for information on setting
-          up the network. 
-          <note type="important">The DNSaaS installation requires
-            that the svc network be named "SVC". User defined names for the SVC network are
-            currently not supported. </note></li>
+        <li>The SVC network correctly configured within <keyword keyref="kw-hos"/>. See the <xref
+            href="http://docs.hpcloud.com/#helion/administration/create_hdp_servicenet.html"
+            format="html" scope="external">Creating the HPE Helion Development Platform Service
+            Net</xref> for information on setting up the network. <note type="important">The DNSaaS
+            installation requires that the svc network be named "SVC". User defined names for the
+            SVC network are currently not supported. </note></li>
         <li>A SSH public and private keypair.</li>
-        <li><note type="important">Selecting a flavor larger than m1.medium for the Deployer or 
-          Control Plane nodes fails due to a failure to re-size LVM. The recommended flavors for the 
-          Deployer and Control Plane nodes are m1.small or m1.medium.</note></li>
+        <li><note type="important">Selecting a flavor larger than m1.medium for the Deployer or
+            Control Plane nodes fails due to a failure to re-size LVM. The recommended flavors for
+            the Deployer and Control Plane nodes are m1.small or m1.medium.</note></li>
       </ul>
     </section>
 
@@ -40,34 +39,47 @@
         deployed. Target credentials include a project name and a username. Service credentials can
         only be created after the Target credentials have been successfully created. </p>
       <ol>
-        <li>SSH to the <keyword keyref="kw-hos"/> deployer.</li>
-        <li>Source the keystone.osrc file. <codeblock>$ source keystone.osrc</codeblock></li>
-        <li>Create the DNSaaS project. Make a note of the ID field
-          value.<codeblock>$ openstack project create dnsaas
-+-------------+----------------------------------+
+        <li>Log in to the lifecycle manager.</li>
+        <li>Source the keystone.osrc file. <codeblock>source keystone.osrc</codeblock></li>
+        <li>Create the DNSaaS project. Make a note of the ID field value. <codeblock>openstack project create dnsaas</codeblock>
+          <p>The output should look similar to this:</p>
+          <codeblock>+-------------+----------------------------------+
 | Field       | Value                            |
 +-------------+----------------------------------+
 | description |                                  |
 | domain_id   | default                          |
-| enabled     | True                             |<b>
-| id          | a6c8339e816c4f4fb9118b31e2e101ad |</b>
-
-[ OUPUT TRIMMED]</codeblock></li>
-        <li>Create a dnsaas user.
-          <codeblock>$ openstack user create dnsaas --password password --email dnsaas@example.com --project dnsaas</codeblock></li>
+| enabled     | True                             |
+| id          | 5f33236dbfcb40b4a54662c22e2563c3 |
+| name        | dnsaas                           |
++-------------+----------------------------------+</codeblock></li>
+        <li>Create a dnsaas user, specifying a unique password.<codeblock>openstack user create dnsaas --password &lt;password> --email dnsaas@example.com --project dnsaas</codeblock>
+          <p>The output should look similar to this:</p>
+          <codeblock>+--------------------+----------------------------------+
+| Field              | Value                            |
++--------------------+----------------------------------+
+| default_project_id | 5f33236dbfcb40b4a54662c22e2563c3 |
+| domain_id          | default                          |
+| email              | dnsaas@example.com               |
+| enabled            | True                             |
+| id                 | 90839cc6655d405783f5e0c3fa7b7bfc |
+| name               | dnsaas                           |
++--------------------+----------------------------------+</codeblock></li>
         <li>Add roles to the dnsaas user.
-          <codeblock>$ openstack role add --project dnsaas --user dnsaas _member_
-$ openstack role add --project dnsaas --user dnsaas admin</codeblock></li>
-        <li>You can view the roles with <codeph>role list</codeph>.
-          <codeblock>$ openstack role list</codeblock></li>
+          <codeblock>openstack role add --project dnsaas --user dnsaas _member_
+openstack role add --project dnsaas --user dnsaas admin</codeblock></li>
       </ol>
     </section>
 
     <section id="CredentialsFile">
       <title>DNSaaS User and Project Credentials</title>
-      <p>Prepare the credentials files for the DNSaaS user and project.</p>
-      <codeblock>$ cat &lt;&lt;EOF &gt; dnsaas.osrc
-unset OS_DOMAIN_NAME
+      <p>Create a credentials files for the DNSaaS user and project. This will be used in later
+        steps.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Using your preferred editor, create a file named <codeph>dnsaas.osrc</codeph> in your
+          home directory with the contents below, ensuring that you replace &lt;password> with the
+          password you chose
+          earlier.<codeblock>unset OS_DOMAIN_NAME
 export OS_IDENTITY_API_VERSION=3
 export OS_AUTH_VERSION=3
 export OS_PROJECT_DOMAIN_NAME=Default
@@ -77,23 +89,31 @@ export OS_INTERFACE=internal
 export OS_CACERT=/etc/ssl/certs/ca-certificates.crt
 export OS_PROJECT_NAME=dnsaas
 export OS_USERNAME=dnsaas
-export OS_PASSWORD=password
-export OS_AUTH_URL=http://192.168.245.5:35357/v3
-EOF</codeblock>
+export OS_PASSWORD=&lt;password>
+export OS_AUTH_URL=http://192.168.245.5:35357/v3</codeblock></li>
+      </ol>
     </section>
-    
+
     <section id="ProvisionDNSaaSImages">
       <title>Provision DNSaaS Images</title>
-      <p>You will need to select which way you would like to provision the images for DNSaaS into your Helion instance.</p>
+      <p>You will need to select which way you would like to provision the images for DNSaaS into
+        your Helion instance.</p>
       <ol>
-        <li>Automatic - Using the Images and Updates extension
-          <ol>
-            <li>Login into Horizon using the DNSaaS credentials created above.</li>
+        <li>Automatic - Using the Images and Updates extension <ol>
+            <li>Log in to your Horizon dashboard using the DNSaaS credentials you created above. See
+                <xref href="../operations/accessing_horizon.dita"/> for details on how to do this if
+              needed</li>
             <li>Navigate to the <codeph>Update and Extensions panel</codeph>.</li>
-            <li>Click Download and <codeph>Install</codeph>
-              <note>It's best to do this from within the tenant you plan on deploying DNSaaS with,
-                as the images are uploaded as private to the tenant you're logged in with during the
-                time of publication.</note>
+            <li>If you have not already configured Horizon with your credentials to access the
+              Helion Download Network, then click the <b>Configure</b> button and enter your
+              credentials there. See <xref href="../operations/accessing_sherpa.dita"/> for more
+              details.</li>
+            <li>You should see a listing for <b>DNS Service 2.0.0</b> here. Click the Download
+              button to begin downloading this extension.</li>
+            <li>Select the <b>Install</b> button to install the extension. <note>It's best to do
+                this from within the tenant you plan on deploying DNSaaS with, as the images are
+                uploaded as private to the tenant you're logged in with during the time of
+                publication.</note>
               <p> Now once the state goes into <i>Installed</i>, the images will be pre-uploaded
                 into Glance. The Deployer tarball is uploaded to a swift container called
                   <codeph>dnsaas-deployer</codeph> for you to download.</p>
@@ -113,10 +133,10 @@ EOF</codeblock>
               <codeph>Zip</codeph> and <codeph>.csu</codeph> is <codeph>Unknown</codeph>. So
             renaming the <codeph>.csu</codeph> file to <codeph>.zip</codeph> will possibly make it
             work with the unzip utility of choice.</note>
-        </li>    
+        </li>
       </ol>
     </section>
-    
+
     <section id="PreparingTheDeployer">
       <title>Prepare the Deployer VM</title>
       <sectiondiv>
@@ -225,9 +245,9 @@ ansible-playbook -i hosts/verb_hosts platform-pass-through.yml -e pass_through_k
             <codeblock>$ git add -A
 $ git commit -a -m "Save DNSaaS config file changes."
             </codeblock></li>
-          <li>Run the Pre-Installation Playbook <p>Copy the ~/dnsaas.osrc file from the <keyword keyref="kw-hos"/>
-              deployer. At the end of each playbook, ensure both "unreachable" and
-              "failed" are zero.</p>
+          <li>Run the Pre-Installation Playbook <p>Copy the ~/dnsaas.osrc file from the <keyword
+                keyref="kw-hos"/> deployer. At the end of each playbook, ensure both "unreachable"
+              and "failed" are zero.</p>
             <codeblock>$ source ~/dnsaas.osrc
 $ cd ~/helion/hos/ansible/
 $ ansible-playbook -i hosts/localhost hlm-pre-install.yml</codeblock>
@@ -236,10 +256,10 @@ $ ansible-playbook -i hosts/localhost hlm-pre-install.yml</codeblock>
       </sectiondiv>
       <sectiondiv>
         <p><b>Create SSL Certificates</b></p>
-        <p>If you want to install a self-signed certificate that meets the needs of <keyword keyref="kw-hos"/>
-          and HPE Helion Development Platform, follow the steps outlined in the FQDN-based
-          Certificate section. If you want to create an IP-address Certificate follow the steps in
-          the IP-Address Certificate section.</p>
+        <p>If you want to install a self-signed certificate that meets the needs of <keyword
+            keyref="kw-hos"/> and HPE Helion Development Platform, follow the steps outlined in the
+          FQDN-based Certificate section. If you want to create an IP-address Certificate follow the
+          steps in the IP-Address Certificate section.</p>
         <p>FQDN-based Certificate</p>
         <p>You will need a real or fictional domain name e.g. "your.domain.com" and it must match
           across the next 3 steps. </p>
@@ -411,21 +431,18 @@ $ ansible-playbook -i hosts/localhost hlm-boot-infra.yml -e neutron_router_ha=Fa
         <codeblock>$ ansible-playbook -i hosts/verb_hosts site.yml</codeblock>
       </sectiondiv>
     </section>
-    
+
     <section id="InitialConfiguration">
       <title>Initial Configuration</title>
-      
       <sectiondiv>
         <p><b>Identify Name Server Public IPs</b></p>
-        <p>To direct DNS traffic towards the DNSaaS managed nameservers, you must first 
-          identify the Floating IPs associated with each server. Each of the name servers 
-          (e.g. dnsaas-cp-ns0001-mgmt) will have two IPs listed for the DNSAAS_NET_EXT 
-          network, the second IP address (e.g. 172.31.0.10) is the Floating IP. 
-          It is recommended that you gather all IPs for the nameservers and before 
-          proceeding to the next step.</p>
+        <p>To direct DNS traffic towards the DNSaaS managed nameservers, you must first identify the
+          Floating IPs associated with each server. Each of the name servers (e.g.
+          dnsaas-cp-ns0001-mgmt) will have two IPs listed for the DNSAAS_NET_EXT network, the second
+          IP address (e.g. 172.31.0.10) is the Floating IP. It is recommended that you gather all
+          IPs for the nameservers and before proceeding to the next step.</p>
         <ol>
-          <li>Source the dnsaas.osrc file.
-            <codeblock>$ source dnsaas.osrc</codeblock></li>
+          <li>Source the dnsaas.osrc file. <codeblock>$ source dnsaas.osrc</codeblock></li>
           <li>View server list.
             <codeblock>$ openstack server list
 +--------------------------------------+-----------------------+--------+----------------------------------------------------------------------------------------+
@@ -441,14 +458,12 @@ $ ansible-playbook -i hosts/localhost hlm-boot-infra.yml -e neutron_router_ha=Fa
 +--------------------------------------+-----------------------+--------+----------------------------------------------------------------------------------------+</codeblock></li>
         </ol>
       </sectiondiv>
-      
       <sectiondiv>
-       <p><b>Create Server Entries in Designate</b></p>
-        <p>For each nameserver, choose a public FQDN. For example "ns1.mycloud.com", 
-          and create the server entry in Designate.</p>
+        <p><b>Create Server Entries in Designate</b></p>
+        <p>For each nameserver, choose a public FQDN. For example "ns1.mycloud.com", and create the
+          server entry in Designate.</p>
         <ol>
-          <li>Source the dnsaas.osrc file.
-            <codeblock>$ source dnsaas.osrc</codeblock></li>
+          <li>Source the dnsaas.osrc file. <codeblock>$ source dnsaas.osrc</codeblock></li>
           <li>Create server 1.
             <codeblock>$ designate server-create --name ns1.mycloud.com.
 +------------+--------------------------------------+
@@ -490,11 +505,10 @@ $ ansible-playbook -i hosts/localhost hlm-boot-infra.yml -e neutron_router_ha=Fa
 +--------------------------------------+------------------+</codeblock></li>
         </ol>
       </sectiondiv>
-      
       <sectiondiv>
         <p><b>Create the A records for each Name Server</b></p>
-        <p>The following table of data is required - the table here is based on the example outputs above.</p>
-
+        <p>The following table of data is required - the table here is based on the example outputs
+          above.</p>
         <p><table frame="all" rowsep="1" colsep="1" id="NSTable">
             <title/>
             <tgroup cols="3">
@@ -530,13 +544,12 @@ $ ansible-playbook -i hosts/localhost hlm-boot-infra.yml -e neutron_router_ha=Fa
           address for each nameserver, or create the matching zone and records within Designate.</p>
       </sectiondiv>
     </section>
-    
+
     <section id="MoreInformation">
       <title>More Information</title>
-      <p>For more information on creating servers, domains and examples, see the 
-        <xref format="html" scope="external" href="http://docs.openstack.org/developer/designate/rest.html">OpenStack REST API 
-      documentation</xref>.</p>
-      
+      <p>For more information on creating servers, domains and examples, see the <xref format="html"
+          scope="external" href="http://docs.openstack.org/developer/designate/rest.html">OpenStack
+          REST API documentation</xref>.</p>
     </section>
   </body>
 </topic>
