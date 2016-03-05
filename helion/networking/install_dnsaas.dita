@@ -41,7 +41,7 @@
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Source the keystone.osrc file. <codeblock>source ~/keystone.osrc</codeblock></li>
-        <li>Create the DNSaaS project. Make a note of the ID field value. <codeblock>openstack project create dnsaas</codeblock>
+        <li>Create the DNSaaS project. Make a note of the ID field value as it will be used in later commands.<codeblock>openstack project create dnsaas</codeblock>
           <p>The output should look similar to this:</p>
           <codeblock>+-------------+----------------------------------+
 | Field       | Value                            |
@@ -144,14 +144,16 @@ dnsaas-2.0.0-20151105T142709Z.tar [auth 0.239s, headers 0.331s, total 2.531s, 12
     </section>
 
     <section id="PreparingTheDeployer">
-      <title>Prepare the Deployer VM</title>
+      <title>Prepare the DNSaaS Installer</title>
       <sectiondiv>
-        <b>Preparing to boot the Deployer VM</b>
+        <p><b>Preparing to boot the DNS Installer Virtual Machine</b></p>
         <p>You must publish the DNSaaS Cloud Image to the target project/tenant before proceeding to
           the next step. </p><ol>
           <li>Update your environment. <codeblock>$ source dnsaas.osrc</codeblock></li>
-          <li>Identify the SVC network ID. Make a note of the SVC ID
-            value.<codeblock>$ neutron net-show SVC 
+          <li>Identify the SVC network ID. Make a note of the SVC ID value. If you don't already
+            have a Service Network created, see <xref
+              href="../administration/create_hdp_servicenet.dita"/> for more details.
+            <codeblock>$ neutron net-show SVC 
 +---------------------------+--------------------------------------+
 | Field                     | Value                                |
 +---------------------------+--------------------------------------+
@@ -163,29 +165,43 @@ dnsaas-2.0.0-20151105T142709Z.tar [auth 0.239s, headers 0.331s, total 2.531s, 12
             <codeblock>$ nova keypair-add --pub-key dns_shared.pub dns-shared</codeblock></li>
           <li>You can view the keypair information with <codeph>keypair-show</codeph>.
             <codeblock>$ nova keypair-show dns-shared</codeblock></li>
-          <li>Ensure the default security group is correctly configured. You will need the ID value
-            from the "create the project"
-            step.<codeblock>$ neutron security-group-list --tenant-id &lt;value of the owner parameter></codeblock></li>
-          <li>Create security group rules.
-            <codeblock>$ neutron security-group-rule-create \
-          --tenant-id &lt;value of the owner parameter from OpenStack Project Create command> \
-          --protocol TCP \
-          --remote-ip-prefix 0.0.0.0/0 \
-          --port-range-min 22 \
-          --port-range-max 22 \
-          &lt;default security group rule ID>
-
-$ neutron security-group-rule-create \
-          --tenant-id &lt;value of the project ID parameter from the OpenStack Project Create command> \
-          --protocol TCP \
-          --remote-ip-prefix 0.0.0.0/0 \
-          --port-range-min 79 \
-          --port-range-max 79 \
-          &lt;default security group rule ID>        </codeblock></li>
-          <li>You can view the security groups with <codeph>security_group_list</codeph>
-            <codeblock>$ neutron security-group-list --tenant-id &lt;project ID></codeblock></li>
-        </ol></sectiondiv><sectiondiv>
-        <b>Booting the Deployer VM and Uploading the Deployer Tarball</b>
+          <li>Ensure the <codeph>default</codeph> security group is correctly configured. You will
+            need your Project (Tenant) ID value for your <codeph>dnsaas</codeph> project. <ol>
+              <li>List your current security groups and their rules in order to get the ID for your
+                  <codeph>default</codeph> security group: <codeblock>neutron security-group-list --tenant-id &lt;project ID></codeblock>
+                <p>Here is an example output:</p>
+                <codeblock>$ neutron security-group-list --tenant-id 5f33236dbfcb40b4a54662c22e2563c3
++--------------------------------------+---------+----------------------------------------------------------------------+
+| id                                   | name    | security_group_rules                                                 |
++--------------------------------------+---------+----------------------------------------------------------------------+
+| 6e0b14cd-f2d8-4f53-b978-68dd68086cdc | default | egress, IPv4                                                         |
+|                                      |         | egress, IPv6                                                         |
+|                                      |         | ingress, IPv4, remote_group_id: 6e0b14cd-f2d8-4f53-b978-68dd68086cdc |
+|                                      |         | ingress, IPv6, remote_group_id: 6e0b14cd-f2d8-4f53-b978-68dd68086cdc |
++--------------------------------------+---------+----------------------------------------------------------------------+</codeblock></li>
+              <li>Create two additional security group rules for your <codeph>default</codeph>
+                security group to open up ports 22 and 79 for TCP ingress traffic. <p>Rule #1:</p>
+                <codeblock>neutron security-group-rule-create --tenant-id &lt;dnsaas Project ID> --protocol TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min 22 --port-range-max 22 &lt;default security group ID></codeblock>
+                <p>Rule #2:</p>
+                <codeblock>neutron security-group-rule-create --tenant-id &lt;dnsaas Project ID> --protocol TCP --remote-ip-prefix 0.0.0.0/0 --port-range-min 79 --port-range-max 79 &lt;default security group ID></codeblock></li>
+            </ol></li>
+          <li>Confirm that the rules were created successfully by listing out the rules again: <codeblock>neutron security-group-list --tenant-id &lt;project ID></codeblock>
+            <p>Your output should look similar to this:</p>
+            <codeblock>$ neutron security-group-list --tenant-id 5f33236dbfcb40b4a54662c22e2563c3
++--------------------------------------+---------+----------------------------------------------------------------------+
+| id                                   | name    | security_group_rules                                                 |
++--------------------------------------+---------+----------------------------------------------------------------------+
+| 6e0b14cd-f2d8-4f53-b978-68dd68086cdc | default | egress, IPv4                                                         |
+|                                      |         | egress, IPv6                                                         |
+|                                      |         | <b>ingress, IPv4, 22/tcp, remote_ip_prefix: 0.0.0.0/0</b>                 |
+|                                      |         | <b>ingress, IPv4, 79/tcp, remote_ip_prefix: 0.0.0.0/0</b>                 |
+|                                      |         | ingress, IPv4, remote_group_id: 6e0b14cd-f2d8-4f53-b978-68dd68086cdc |
+|                                      |         | ingress, IPv6, remote_group_id: 6e0b14cd-f2d8-4f53-b978-68dd68086cdc |
++--------------------------------------+---------+----------------------------------------------------------------------+ </codeblock></li>
+        </ol>
+      </sectiondiv>
+      <sectiondiv>
+        <p><b>Booting the Deployer VM and Uploading the Deployer Tarball</b></p>
         <ol>
           <li>Boot the Deployer VM.
             <codeblock>$ nova boot --poll \
