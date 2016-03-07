@@ -13,13 +13,13 @@
       <b>Helion OpenStack-managed physical interfaces </b><p>Helion OpenStack-managed physical
         interfaces include the physical interfaces and the bonds, bridges, and VLANs created on top
         of them. The MTU for these interfaces is configured via the 'mtu' property of a network
-        group. Because multiple network groups can be mapped to a physical interface, there may have
-        to be some resolution of differing MTUs between the untagged and tagged VLANs on the same
-        physical interface. For instance, if one untagged VLAN 101 (MTU of 1500) and tagged VLAN 201
-        (MTU of 9000) are both on one interface (eth0), this means that eth0 can handle 1500, but
-        the VLAN interface which is created on top of eth0 (i.e. vlan201@eth0) wants 9000. However,
-        vlan201 can't have a higher MTU than eth0, so vlan201 will be limited to 1500 when it is
-        brought up. </p>
+        group. Because multiple network groups can be mapped to one physical interface, there may
+        have to be some resolution of differing MTUs between the untagged and tagged VLANs on the
+        same physical interface. For instance, if one untagged VLAN, vlan101 (with an MTU of 1500)
+        and a tagged VLAN vlan201 (with an MTU of 9000) are both on one interface (eth0), this means
+        that eth0 can handle 1500, but the VLAN interface which is created on top of eth0 (i.e.
+        vlan201@eth0) wants 9000. However, vlan201 can't have a higher MTU than eth0, so vlan201
+        will be limited to 1500 when it is brought up. </p>
       <p>In general, a VLAN interface MTU must be lower than or equal to the base device MTU. If
         they are different, as in the case above, the MTU of eth0 can be overridden and raised to
         9000, but in any case the discrepancy will have to be reconciled. </p>
@@ -28,9 +28,9 @@
         normal process of realizing a Neutron network/router and booting a VM on it (qr-*, qg-*,
         tap-*, qvo-*, qvb-*, etc.). There is currently no support in Neutron/Nova for per-network
         MTUs in which every interface along the path for a particular Neutron network has the
-        correct MTU for that network. There is support for globally changing the MTU of devices
-        created by Neutron/Nova (see network_device_mtu below). This means that if you want to
-        enable jumbo frames for any set of VMs, you will have to enable it for all your VMs. You
+        correct MTU for that network. There is, however, support for globally changing the MTU of
+        devices created by Neutron/Nova (see network_device_mtu below). This means that if you want
+        to enable jumbo frames for any set of VMs, you will have to enable it for all your VMs. You
         cannot just enable them for a particular Neutron network. </p>
       <b>VM interfaces</b>
       <p>VMs typically get their MTU via
@@ -38,88 +38,107 @@
         advertisement, which means that the dnsmasq processes spawned by the neutron-dhcp-agent
         actually advertise a particular MTU to the VMs.
         <?oxy_delete author="michelln" timestamp="20160302T165839-0500" content="Currently (HOS"?><?oxy_insert_start author="michelln" timestamp="20160302T165858-0500"?>
-        In Helion OpenStack<?oxy_insert_end?> 2.0, the dhcp server advertises to all
+        In Helion OpenStack<?oxy_insert_end?> 2.0, the DHCP server advertises to all
         VMS<?oxy_delete author="michelln" timestamp="20160302T165911-0500" content="are"?> a 1400
         MTU via a forced setting in dnsmasq-neutron.conf. This is suboptimal for every network type
         (vxlan, flat/VLAN, etc) but it does prevent fragmentation of a
         VM<?oxy_insert_start author="michelln" timestamp="20160302T170012-0500"?>'<?oxy_insert_end?>s
-        packets due to encapsulation in every network type. </p>
-      <p>For instance, if we set the new *-mtu configuration options to a default of 1500 and create
-        a vxlan network, it will be given an MTU of 1450 and will advertise a 1450 MTU to any VM
-        booted on that network. If we create a provider VLAN network, it will have a 1500 mtu and
-        will advertise 1500 to booted VMs on the network. It should be noted that this default
-        starting point for MTU calculation and advertisement is also global, meaning we can't have
-        an 8950 MTU on one vxlan network and 1450 on another. However, we can have provider physical
-        networks with different MTUs by using the physical_network_mtus config option, but Nova
-        still requires a global MTU option for the interfaces it creates (meaning we can't really
-        take advantage of that config option). </p>
+        packets due to encapsulation. </p>
+      <p>For instance, if you set the new *-mtu configuration options to a default of 1500 and
+        create a VXLAN network, it will be given an MTU of 1450 and will advertise a 1450 MTU to any
+        VM booted on that network. If you create a provider VLAN network, it will have an MTU of
+        1500 and will advertise 1500 to booted VMs on the network. It should be noted that this
+        default starting point for MTU calculation and advertisement is also global, meaning you
+        can't have an MTU of 8950 on one VXLAN network and 1450 on another. However, you can have
+        provider physical networks with different MTUs by using the physical_network_mtus config
+        option, but Nova still requires a global MTU option for the interfaces it creates, thus you
+        can't really take advantage of that config option. </p>
     </section>
-    <section><title>HLM input model</title>In network_groups.yml is where MTU can be set as an
-      attribute of a network group, meaning that every network in the network group will be assigned
-      the specified MTU. This is set individually for each network group. For example:
+    <section><title>HPE Helion OpenStack input model</title>MTU can be set as an attribute of a
+      network group in network_groups.yml. That setting means that every network in the network
+      group will be assigned the specified MTU. The MTU value must be set individually for each
+      network group. For example:
         <codeblock>network-groups:
-      - name: GUEST
+    - name: GUEST
       mtu: 9000
-      ...</codeblock><b>Validation
+      ...
+        
+    - name: EXTERNAL-API
+      mtu: 9000
+      ...
+        
+    - name: EXTERNAL-VM
+      mtu: 9000
+      ... </codeblock><b>Validation
       </b></section>
     <section><title>Infrastructure support for jumbo frames</title>
     <p>The physical switches and routers that make up the infrastructure of the HOS installation
         must be configured to support jumbo frames. Generally, all devices in the same broadcast
         domain must have the same MTU. </p>
-      <p>If it is desired to configure jumbo frames on compute and controller nodes then all
-        switches joining the compute and controller nodes must have jumbo frames enabled. Similarly,
-        the "infrastructure gateway" through which the external VM network flows, commonly known as
-        the default route for the external VM VLAN, must also have the same MTU configured. </p>
+      <p>If you want to configure jumbo frames on compute and controller nodes then all switches
+        joining the compute and controller nodes must have jumbo frames enabled. Similarly, the
+        "infrastructure gateway" through which the external VM network flows, commonly known as the
+        default route for the external VM VLAN, must also have the same MTU configured. </p>
       <p> You can also consider anything in the same broadcast domain to be anything in the same
         VLAN or anything in the same IP subnet. </p>
     </section> 
     <section><title><?oxy_insert_start author="michelln" timestamp="20160302T171404-0500"?>E<?oxy_insert_end?><?oxy_delete author="michelln" timestamp="20160302T171403-0500" content="e"?>nabling
         end-to-end jumbo frames for a vm</title> 
       <ol>
-     <li>Add an 'mtu' attribute to all the network groups in your model, like so
-          (~/helion/my_cloud/definition/data/network_groups.yml): all the network groups changes
-          will do is config for physical  network
-          intefaces<codeblock>network-groups:
+     <li>Add an 'mtu' attribute to all the network groups in your model. Note that adding the MTU
+          for the network grops will only affect the configuration for physical network
+          intefaces.<p/>To add the mtu attribute, edit network_groups.yml, which is found in
+          ~/helion/my_cloud/definition/data/. Thed steps to properly edit the files abd save them to
+          the local git instance are below in <xref href="#topic_srg_gsl_2v/steps" format="dita"
+            >Changing and saving the configuration
+          files</xref><codeblock>network-groups:
    - name: HLM that this will change ...................
      hostname-suffix: hlm
      mtu: 9000
      component-endpoints:
    - lifecycle-manager
    - lifecycle-manager-target</codeblock>
-          This will set the MTU of the physical interfaces managed by HLM. </li> <li> In the layer 2 agent config file Edit ~/helion/my_cloud/config/neutron/ml2_conf.ini.j2 to set
-          the path_mtu and segment_mtu variables under [ml2]: modular layer 2
+          This will set the MTU of the physical interfaces managed by HPE Helion OpenStack. </li> <li>Next edit the layer 2 agent config file, ml2_conf.ini.j2, found in
+          ~/helion/my_cloud/config/neutron/ to set the path_mtu and segment_mtu variables under
+          [ml2]: (modular layer 2)
           <codeblock>[ml2]
  ...
  path_mtu = 9000
- segment_mtu = 9000</codeblock> This changes what
-          MTU gets advertised to VMs, based upon the network type. </li> <li>Edit ~/helion/my_cloud/config/neutron/neutron.conf.j2 to set advertise_mtu under [DEFAULT]:
+ segment_mtu = 9000</codeblock> This changes the
+          MTU value that will be advertised to VMs, based upon the network type. </li> <li>Next, edit neutron.conf.j2  found in ~/helion/my_cloud/config/neutron/to set advertise_mtu (to
+          true) under [DEFAULT]: <codeblock>[DEFAULT]
+ ...
+ advertise_mtu = True</codeblock> This
+          allows Neutron to advertise the optimal MTU to instances (based upon path_mtu minus the
+          encapsulation size). Remove the "dhcp-option-force=26,1400" line from
+          ~/helion/my_cloud/config/neutron/dnsmasq-neutron.conf.j2. </li> <li>Edit each of the following files:<ul>
+            <li>~/helion/my_cloud/config/neutron/dhcp_agent.ini.j2 </li>
+            <li>~/helion/my_cloud/config/neutron/l3_agent.ini.j2 </li>
+            <li>~/helion/my_cloud/config/nova/nova.conf.j2 </li>
+          </ul> to set the network_device_mtu variable under [DEFAULT]:
           <codeblock>[DEFAULT]
  ...
- advertise_mtu = True</codeblock> This allows neutron to
-          advertise the optimal MTU to instances (based upon path_mtu minus the encapsulation size).
-          Remove the "dhcp-option-force=26,1400" line from
-          ~/helion/my_cloud/config/neutron/dnsmasq-neutron.conf.j2. </li> <li>Edit
-      ~/helion/my_cloud/config/neutron/dhcp_agent.ini.j2,
-      ~/helion/my_cloud/config/neutron/l3_agent.ini.j2, and
-      ~/helion/my_cloud/config/nova/nova.conf.j2 to set the network_device_mtu variable under
-      [DEFAULT]: <codeblock>[DEFAULT]
- ...
- network_device_mtu = 9000</codeblock> This tells the
-      dhcp agent, l3 agent, and nova to create new network devices with that particular MTU. 
-       </li> <li>If HLM
-      has already been deployed, follow the procedure to commit this new configuration, run the
-      Config Processor, and ready the deployment. Then run the osconfig-run.yml playbook, followed
-      by the nova-reconfigure.yml and neutron-reconfigure.yml playbooks. Note: adding/changing
-      network-group mtu settings will likely require a network restart during osconfig-run. 
-       </li> <li>If HLM
-      hasn't been deployed yet, simply make sure these config changes have been committed before
-      running the typical deployment procedure. 
-       </li> <li>Follow the normal process for creating a neutron
-      network and booting a VM or two. In this example, if a vxlan network is created and a VM is
-      booted on it, the VM will have an MTU of 8950. 
-       </li> <li>Test and verify that the VM can send/receive
-      jumbo frames without fragmentation. </li>
-    </ol></section>
+ network_device_mtu = 9000</codeblock> This tells the dhcp
+          agent, l3 agent, and Nova to create new network devices with that particular MTU. </li> <li>If HPE Helion OpenStack has already been deployed, follow the procedure to commit this new
+          configuration, run the Config Processor, and ready the deployment. Then run the
+          osconfig-run.yml playbook, followed by the nova-reconfigure.yml and
+          neutron-reconfigure.yml playbooks. Note: adding/changing network-group mtu settings will
+          likely require a network restart during osconfig-run. <p id="steps">
+            <b>Changing and saving the configuration files</b></p><p>Follow these steps replacing
+            the example files below with the files you are editing here.</p></li></ol>
+    </section>
+        
+        
+        
+        
+        <section><sectiondiv conref="../installation/using_git.dita#using_git/steps"/><ul>
+        <li>If HPE Helion OpenStack hasn't been deployed yet, simply make sure these config changes
+          have been committed before running the typical deployment procedure. </li>
+        <li>Follow the normal process for creating a neutron network and booting a VM or two. In
+          this example, if a vxlan network is created and a VM is booted on it, the VM will have an
+          MTU of 8950. </li>
+        <li>Test and verify that the VM can send/receive jumbo frames without fragmentation. </li>
+      </ul></section>
   
   </body>
 </topic>
