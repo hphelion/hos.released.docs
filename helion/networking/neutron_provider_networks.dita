@@ -20,9 +20,9 @@
         installation. It exists as a directory with a data subdirectory that contains YAML files. By
         convention, any service that creates a Neutron provider network will create a subdirectory
         under the data directory and the name of the subdirectory shall be the project name. For
-        example, the Trove project will use Neutron provider networks so it will have a subdirectory
-        named 'trove' and the config file that specifies the neutron network will exist in that
-        subdirectory.</p>
+        example, the Octavia project will use Neutron provider networks so it will have a
+        subdirectory named 'octavia' and the config file that specifies the neutron network will
+        exist in that subdirectory.</p>
       <codeblock>├── cloudConfig.yml
     ├── data
     │   ├── control_plane.yml
@@ -42,7 +42,7 @@
     │   ├── servers.yml
     │   ├── swift
     │   │   └── rings.yml
-    │   └── trove
+    │   └── octavia
     │       └── provider_net.yml
     ├── README.html
     └── README.md</codeblock>
@@ -246,18 +246,16 @@
     <note>Multiple destination/nexthop may be used</note>
     </section>
     <section><title>Examples</title>
-      <p>The following examples show provider_net.yml settings for neutron and trove</p>
-      
-      data/trove/provider_net.yml
-      <codeblock>---
+      <p>The following examples show provider_net.yml settings for neutron and octavia</p>
+      data/octavia/provider_net.yml <codeblock>---
   product:
     version: 2
   configuration-data:
-    - name:  TROVE-CONFIG-CP1
+    - name:  OCTAVIA-CONFIG-CP1
       services:
-        - trove 
+        - octavia 
       data:
-        neutron_broker_net: TROVE-BROKER-VM-NET</codeblock>
+        neutron_broker_net: OCTAVIA-BROKER-VM-NET</codeblock>
       <!--data/cue/provider_net.yml
       <codeblock>- - -
   product:
@@ -268,7 +266,6 @@
         - cue 
       data:
         neutron_broker_net: CUE-BROKER-VM-NET</codeblock>-->
-      
       <p>data/neutron/provider_net.yml</p>
       <codeblock>---
   product:
@@ -297,7 +294,7 @@
             # route to MANAGEMENT-NET-2
             - destination: 192.168.246.0/24
               nexthop:  172.17.0.1-->
-        - name: TROVE-BROKER-VM-NET
+        - name: OCTAVIA-BROKER-VM-NET
           provider:
             - network_type: vlan
               physical_network: physnet1

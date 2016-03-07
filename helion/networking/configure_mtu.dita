@@ -38,16 +38,12 @@
         advertisement, which means that the dnsmasq processes spawned by the neutron-dhcp-agent
         actually advertise a particular MTU to the VMs.
         <?oxy_delete author="michelln" timestamp="20160302T165839-0500" content="Currently (HOS"?><?oxy_insert_start author="michelln" timestamp="20160302T165858-0500"?>
-        In Helion OpenStack<?oxy_insert_end?> 2.0), all
-        VMS<?oxy_delete author="michelln" timestamp="20160302T165911-0500" content="are"?>
-        advertised a 1400 MTU via a forced setting in dnsmasq-neutron.conf. This is suboptimal for
-        every network type (vxlan, flat/VLAN, etc) but it does prevent fragmentation of a
+        In Helion OpenStack<?oxy_insert_end?> 2.0, the dhcp server advertises to all
+        VMS<?oxy_delete author="michelln" timestamp="20160302T165911-0500" content="are"?> a 1400
+        MTU via a forced setting in dnsmasq-neutron.conf. This is suboptimal for every network type
+        (vxlan, flat/VLAN, etc) but it does prevent fragmentation of a
         VM<?oxy_insert_start author="michelln" timestamp="20160302T170012-0500"?>'<?oxy_insert_end?>s
-        packets due to encapsulation in every network type. In Kilo, 'mtu' became an attribute of a
-        Neutron network, with a default value of 0. This mtu attribute is read-only, but it is
-        determined by new configuration options - path_mtu, segment_mtu, and physical_network_mtus.
-        Neutron calculates the optimal MTU from these values and the network type (see below for
-        more details). We can now also advertise these different MTUs to VMs on different networks. </p>
+        packets due to encapsulation in every network type. </p>
       <p>For instance, if we set the new *-mtu configuration options to a default of 1500 and create
         a vxlan network, it will be given an MTU of 1450 and will advertise a 1450 MTU to any VM
         booted on that network. If we create a provider VLAN network, it will have a 1500 mtu and
@@ -58,19 +54,11 @@
         still requires a global MTU option for the interfaces it creates (meaning we can't really
         take advantage of that config option). </p>
     </section>
-    <section><title>HLM input model</title>Where do we model the MTU? network_groups.yml It can be
-      the attribute of a network group, meaning that every network in the network group will be
-      assigned the specified MTU. For example:
-      <codeblock>network-groups:
-      - name: GUEST
-      mtu: 9000
-      ...</codeblock>An
-      alternative could be to use a 'network-properties' attribute like so, but with 'mtu' being the
-      only possible attribute right now, there doesn't seem to be much benefit to that struct
-      without having more network properties:
+    <section><title>HLM input model</title>In network_groups.yml is where MTU can be set as an
+      attribute of a network group, meaning that every network in the network group will be assigned
+      the specified MTU. This is set individually for each network group. For example:
         <codeblock>network-groups:
       - name: GUEST
-      network-properties:
       mtu: 9000
       ...</codeblock><b>Validation
       </b></section>
@@ -86,28 +74,25 @@
         VLAN or anything in the same IP subnet. </p>
     </section> 
     <section><title><?oxy_insert_start author="michelln" timestamp="20160302T171404-0500"?>E<?oxy_insert_end?><?oxy_delete author="michelln" timestamp="20160302T171403-0500" content="e"?>nabling
-        end-to-end jumbo frames</title> 
+        end-to-end jumbo frames for a vm</title> 
       <ol>
-     <li>Add an 'mtu' attribute to all the
-      network groups in your model, like so (~/helion/my_cloud/definition/data/network_groups.yml):
-      <codeblock>network-groups:
-   - name: HLM
+     <li>Add an 'mtu' attribute to all the network groups in your model, like so
+          (~/helion/my_cloud/definition/data/network_groups.yml): all the network groups changes
+          will do is config for physical  network
+          intefaces<codeblock>network-groups:
+   - name: HLM that this will change ...................
      hostname-suffix: hlm
      mtu: 9000
      component-endpoints:
    - lifecycle-manager
    - lifecycle-manager-target</codeblock>
-       
-      This will set the MTU of the physical interfaces managed by HLM. 
-       </li> <li> Edit
-      ~/helion/my_cloud/config/neutron/ml2_conf.ini.j2 to set the path_mtu and segment_mtu variables
-      under [ml2]: <codeblock>[ml2]
+          This will set the MTU of the physical interfaces managed by HLM. </li> <li> In the layer 2 agent config file Edit ~/helion/my_cloud/config/neutron/ml2_conf.ini.j2 to set
+          the path_mtu and segment_mtu variables under [ml2]: modular layer 2
+          <codeblock>[ml2]
  ...
  path_mtu = 9000
- segment_mtu = 9000</codeblock> This
-      changes what MTU gets advertised to VMs, based upon the network type. 
-      
-       </li> <li>Edit ~/helion/my_cloud/config/neutron/neutron.conf.j2 to set advertise_mtu under [DEFAULT]:
+ segment_mtu = 9000</codeblock> This changes what
+          MTU gets advertised to VMs, based upon the network type. </li> <li>Edit ~/helion/my_cloud/config/neutron/neutron.conf.j2 to set advertise_mtu under [DEFAULT]:
           <codeblock>[DEFAULT]
  ...
  advertise_mtu = True</codeblock> This allows neutron to
@@ -135,33 +120,6 @@
        </li> <li>Test and verify that the VM can send/receive
       jumbo frames without fragmentation. </li>
     </ol></section>
-    <section><title>Enable Neutron Optimal MTU advertisement feature</title>
-      <note>The default values for these configuration options are changing in upstream Neutron in the Mitaka release, so by default this feature will be enabled in the Mitaka release (path_mtu = 1500 and advertise_mtu = True).
-      </note>
-      <p>This feature was introduced in Kilo and allows Neutron to advertise an optimal MTU to VMs
-        based upon the physical MTU and network type. For example, if the underlying physical MTU is
-        1500, you can use the following configuration to advertise a 1450 MTU to VMs on a vxlan
-        network or a 1500 MTU to VMs on a flat/VLAN network: </p>
-      <ol><li>Edit ~/helion/my_cloud/config/neutron/ml2_conf.ini.j2 to set the path_mtu and segment_mtu
-          variables under [ml2]:
-          <codeblock>[ml2]
- ...
- path_mtu = 9000
- segment_mtu = 9000</codeblock> This changes what
-          MTU gets advertised to VMs, based upon the network type. </li><li>Edit ~/helion/my_cloud/config/neutron/neutron.conf.j2 to set advertise_mtu under [DEFAULT]:
-          <codeblock>[DEFAULT]
- ...
- advertise_mtu = True</codeblock>This allows neutron to
-          advertise the optimal MTU to instances (based upon path_mtu minus the encapsulation size). </li><li>Remove the "dhcp-option-force=26,1400" line from ~/helion/my_cloud/config/neutron/dnsmasq-neutron.conf.j2.
-      </li><li>If HLM has already been deployed, follow the procedure to commit this new configuration, run the Config Processor, and ready the deployment. Then run the neutron-reconfigure.yml playbook. If not already deployed, make these configuration changes before deploying and follow the normal deployment procedure.
-      </li></ol>
-    </section>
-    <section><title>Use cases</title>Increasing MTU of guest network layer to 1550 to account for
-      vxlan encapsulation header Questions: Does setting the MTU of the guest network layer to 1550
-      produce a substantial performance gain over simply advertising an MTU of 1450 to the nova
-      instance itself? Increasing MTU of ISCSI interface to 9000 for better block storage
-      performance Questions: Does this imply an MTU of 9000 end-to-end between the physical
-      interface and the interface inside the nova instance? Rawlin: I don't think the MTU is needed
-      end-to-end in this use case, because block storage is handled by the hypervisor. </section>
+  
   </body>
 </topic>
