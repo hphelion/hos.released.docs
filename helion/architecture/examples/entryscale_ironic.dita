@@ -8,6 +8,383 @@
         <p><image keyref="ironic_entry_scale_network_model"/></p>    
         <!--  TODO Find hi-res image -->
         <p><xref keyref="ironic_entry_scale_network_model_lg">Download a high-resolution version</xref></p>
+
+
+      <section id="min_requirements_ironic">
+        <title>Recommended Minimum Hardware Requirements for an Ironic Flat Network Model</title>
+        <p>These recommended minimums are based on the included <xref
+          keyref="example_configurations">Example Configurations</xref> included with the base
+          installation and are suitable only for demo environments. For production systems you will
+          want to consider your capacity and performance requirements when making decisions about your
+          hardware.</p>
+        
+        <table>
+          <tgroup cols="8">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <colspec colname="c4" colnum="4"/>
+            <colspec colname="c5" colnum="5"/>
+            <colspec colname="c6" colnum="6"/>   
+            <colspec colname="c7" colnum="7"/>
+            <colspec colname="c8" colnum="8"/>             
+            <thead>
+              <row>
+                <entry morerows="1">Node Type</entry>
+                <entry morerows="1">Role Name</entry>
+                <entry morerows="1">Required Number</entry>
+                <entry namest="c4" nameend="c7" align="center">Server Hardware - Minimum Requirements and Recommendations</entry>
+
+              </row>
+              <row>
+                <entry>Disk </entry>
+                <entry>Memory</entry>
+                <entry>Network</entry>
+                <entry>CPU </entry>
+              </row>
+              
+            </thead>
+            <tbody>
+              <row>
+                <entry>Dedicated lifecycle manager (optional)</entry>
+                <entry>Lifecycle-manager</entry>
+                <entry>1</entry>
+               
+                <entry>300 GB</entry>
+                <entry>8 GB</entry>
+                <entry>1 x 10 GB with PXE Support</entry>
+                <entry>8 CPU (64-bit) cores total (can be Intel or AMD)</entry>
+              </row>
+
+              <row>
+                <entry>Control Plane</entry>
+                <entry>Controller</entry>
+                <entry>3</entry>
+                <entry>
+                  <ul>
+                    <li>1 x 600 GB (minimum) - operating system drive</li>
+                    <li>2 x 600 GB (minimum) - Data drive</li>
+                  </ul>
+                </entry>
+                <entry>64 GB</entry>
+                <entry>2 x 10 GB with one PXE enabled NIC port</entry>
+                <entry>8 CPU (64-bit) cores total (can be Intel or AMD)</entry>
+              </row>
+              <row>
+                <entry>Compute</entry>
+                <entry>Compute</entry>
+                <entry>1</entry>
+                <entry>2 X 1 TB (minimum, shared across all nodes)</entry>
+                <entry>128 GB (minimum, shared across all nodes)</entry>
+                <entry>2 x 10 GB with one PXE enabled NIC port</entry>
+                <entry>16 CPU (64-bit) cores total (can be Intel or AMD)</entry>
+              </row>            
+            </tbody>
+          </tgroup>
+        </table>
+        <p>For more details about the supported network requirements, see <xref
+          keyref="example_configurations"/>.</p>
+      </section>
+
+
+
+        <section id="ironic_control_plane_yml"><title>control_plane.yml</title>
+            
+<codeblock>
+---
+  product:
+    version: 2
+
+  control-planes:
+    - name: control-plane-1
+      control-plane-prefix: cp1
+      region-name: region1
+      failure-zones:
+        - AZ1
+        - AZ2
+        - AZ3
+      common-service-components:
+        - logging-producer
+        - monasca-agent
+        - freezer-agent
+        - stunnel
+        - lifecycle-manager-target
+      clusters:
+        - name: cluster1
+          cluster-prefix: c1
+          server-role: CONTROLLER-ROLE
+          member-count: 3
+          allocation-policy: strict
+          service-components:
+            - lifecycle-manager
+            - ntp-server
+            - swift-ring-builder
+            - mysql
+            - ip-cluster
+            - apache2
+            - keystone-api
+            - keystone-client
+            - rabbitmq
+            - glance-api
+            - glance-registry
+            - glance-client
+            - nova-api
+            - nova-scheduler-ironic
+            - nova-scheduler
+            - nova-conductor
+            - nova-console-auth
+            - nova-novncproxy
+            - nova-client
+            - neutron-server
+            - neutron-ml2-plugin
+            - neutron-dhcp-agent
+            - neutron-metadata-agent
+            - neutron-openvswitch-agent
+            - neutron-client
+            - horizon
+            - sherpa-api
+            - swift-proxy
+            - memcached
+            - swift-account
+            - swift-container
+            - swift-object
+            - swift-client
+            - heat-api
+            - heat-api-cfn
+            - heat-api-cloudwatch
+            - heat-engine
+            - heat-client
+            - ironic-api
+            - ironic-conductor
+            - ironic-client
+            - openstack-client
+            - ceilometer-api
+            - ceilometer-polling
+            - ceilometer-agent-notification
+            - ceilometer-common
+            - ceilometer-client
+            - zookeeper
+            - kafka
+            - vertica
+            - storm
+            - monasca-api
+            - monasca-persister
+            - monasca-notifier
+            - monasca-threshold
+            - monasca-client
+            - logging-server
+            - ops-console-web
+            - ops-console-monitor
+            - freezer-api
+            - barbican-api
+            - barbican-client
+            - barbican-worker
+
+      resources:
+        - name: ironic-compute
+          resource-prefix: ir-compute
+          server-role: IRONIC-COMPUTE-ROLE
+          allocation-policy: any
+          service-components:
+            - neutron-openvswitch-agent
+            - nova-compute-ironic
+            - nova-compute
+            - ntp-client
+</codeblock>
+</section>
+
+
+        <section id="ironic_networks_yml"><title>networks.yml</title>
+            
+<codeblock>
+---
+  product:
+    version: 2
+
+  networks:
+    #
+    # This example uses the following networks
+    #
+    # Network       CIDR             VLAN
+    # -------       ----             ----
+    # External API  10.0.1.0/24      101 (tagged)
+    # Guest                          102 (tagged)
+    # Management    192.168.10.0/24  100 (untagged)
+    #
+    # Notes:
+    # 1. Defined as part of Neutron configuration
+    #
+    # Modify these values to match your environment
+    #
+    - name: EXTERNAL-API-NET
+      tagged-vlan: true
+      vlanid: 101
+      cidr: 10.0.1.0/24
+      gateway-ip: 10.0.1.1
+      network-group: EXTERNAL-API
+      #start-address: 10.0.1.10
+      #end-address: 10.0.1.250
+
+    - name: GUEST-NET
+      tagged-vlan: true
+      vlanid: 102
+      network-group: GUEST
+
+    - name: MANAGEMENT-NET
+      tagged-vlan: false
+      vlanid: 100
+      cidr: 192.168.10.0/24
+      gateway-ip: 192.168.10.1
+      network-group: MANAGEMENT
+      #start-address: 192.168.10.10
+      #end-address: 192.168.10.250    
+</codeblock>
+        </section> 
+      
+      
+      <section id="ironic_network_groups_yml"><title>network_groups.yml</title>     
+
+<codeblock>
+---
+  product:
+    version: 2
+
+  network-groups:
+
+    #
+    # External API
+    #
+    # This is the network group that users will use to
+    # access the public API endpoints of your cloud
+    #
+    - name: EXTERNAL-API
+      hostname-suffix: extapi
+
+      load-balancers:
+        - provider: ip-cluster
+          name: extlb
+          # If external-name is set then public urls in keystone
+          # will use this name instead of the IP address.
+          # You must either set this to a name that can be resolved in your network
+          # or comment out this line to use IP addresses
+          external-name:
+
+          tls-components:
+            - default
+          roles:
+            - public
+          cert-file: my-public-cert
+          # This is the name of the certificate that will be used on load balancer.
+          # Replace this with name of file in "~helion/my_cloud/config/tls/certs/".
+          # This is the certificate that matches your setting for external-name
+          #
+          # Note that it is also possible to have per service certificates:
+          #
+          # cert-file:
+          # default: my-public-cert
+          # horizon: my-horizon-cert
+          # nova-api: my-nova-cert
+          #
+          #
+
+
+    #
+    # GUEST
+    #
+    # This is the network group that will be used to provide
+    # private networks to Baremetals
+    #
+    - name: GUEST
+      hostname-suffix: guest
+      tags:
+        - neutron.networks.flat:
+            provider-physical-network: physnet1
+
+    # Management
+    #
+    # This is the network group that will be used to for
+    # management traffic within the cloud.
+    #
+    # The interface used by this group will be presented
+    # to Neutron as physnet1, and used by provider VLANS
+    #
+    - name: MANAGEMENT
+      hostname-suffix: mgmt
+      hostname: true
+
+      component-endpoints:
+        - default
+
+      routes:
+        - default
+
+      load-balancers:
+        - provider: ip-cluster
+          name: lb
+          components:
+            - default
+          roles:
+            - internal
+            - admin
+
+</codeblock>      
+      
+      
+      </section>
+      
+      <section id="ironic_nic_interfaces_yml"><title>nic_interfaces.yml</title>     
+
+<codeblock>
+---
+  product:
+    version: 2
+
+  interface-models:
+      # These examples uses hed3 and hed4 as a bonded
+      # pair for all networks on all three server roles
+      #
+      # Edit the device names and bond options
+      # to match your environment
+      #
+    - name: CONTROLLER-INTERFACES
+      network-interfaces:
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed3
+              provider: linux
+              devices:
+                - name: hed3
+                - name: hed4
+          network-groups:
+            - EXTERNAL-API
+            - GUEST
+            - MANAGEMENT
+
+    - name: COMPUTE-IRONIC-INTERFACES
+      network-interfaces:
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed3
+              provider: linux
+              devices:
+                - name: hed3
+                - name: hed4
+          network-groups:
+            - MANAGEMENT
+            - GUEST
+</codeblock>
+</section>
+        
         
     </body>
 </topic>
