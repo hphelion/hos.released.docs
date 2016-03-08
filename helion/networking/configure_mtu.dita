@@ -58,7 +58,7 @@
       an attribute of a network group in network_groups.yml. That setting means that every network
       in the network group will be assigned the specified MTU. The MTU value must be set
       individually for each network group. For example:
-        <codeblock>network-groups:
+      <codeblock>network-groups:
     - name: GUEST
       mtu: 9000
       ...
@@ -69,13 +69,14 @@
         
     - name: EXTERNAL-VM
       mtu: 9000
-      ... </codeblock><b>Validation
-      </b></section>
+      ... </codeblock>
+    </section>
     <section><title>Infrastructure support for jumbo frames</title>
-    <p>The physical switches and routers that make up the infrastructure of the HOS installation
-        must be configured to support jumbo frames. Generally, all devices in the same broadcast
-        domain must have the same MTU. </p>
-      <p>If you want to configure jumbo frames on compute and controller nodes then all switches
+    <p>If you want to use jumbo frames, or frames with an MTU of 9000 or more, the physical switches
+        and routers that make up the infrastructure of the Helion installation must be configured to
+        support them. To realize the advantages, generally all devices in the same broadcast domain
+        must have the same MTU. </p>
+      <p>If you want to configure jumbo frames on compute and controller nodes, then all switches
         joining the compute and controller nodes must have jumbo frames enabled. Similarly, the
         "infrastructure gateway" through which the external VM network flows, commonly known as the
         default route for the external VM VLAN, must also have the same MTU configured. </p>
@@ -83,7 +84,7 @@
         VLAN or anything in the same IP subnet. </p>
     </section> 
     <section><title><?oxy_insert_start author="michelln" timestamp="20160302T171404-0500"?>E<?oxy_insert_end?><?oxy_delete author="michelln" timestamp="20160302T171403-0500" content="e"?>nabling
-        end-to-end jumbo frames for a vm</title> 
+        end-to-end jumbo frames for a VM</title> 
       <ol>
      <li>Add an 'mtu' attribute to all the network groups in your model. Note that adding the MTU
           for the network grops will only affect the configuration for physical network
@@ -91,10 +92,10 @@
           ~/helion/my_cloud/definition/data/, along with
           ~/helion/my_cloud/config/neutron/dhcp_agent.ini.j2,
           ~/helion/my_cloud/config/neutron/l3_agent.ini.j2, and
-          ~/helion/my_cloud/config/nova/nova.conf.j2 <p/>To do so begin by checking out the
-            <b>site</b> branch. You may already be on that branch. If so, git will tell you that and
-          the command will leave you there.<codeblock>git checkout site</codeblock> Then begin
-          editing the files. In network_groups.yml, add mtu:
+          ~/helion/my_cloud/config/nova/nova.conf.j2 <p/>To edit these files, begin by checking out
+          the <b>site</b> branch on the lifecycle manager node. You may already be on that branch.
+          If so, you will remain there.<codeblock>git checkout site</codeblock>Then begin editing
+          the files. In network_groups.yml, add mtu:
           9000<codeblock>network-groups:
    - name: HLM that this will change ...................
      hostname-suffix: hlm
@@ -102,7 +103,7 @@
      component-endpoints:
    - lifecycle-manager
    - lifecycle-manager-target</codeblock>
-          This will set the MTU of the physical interfaces managed by HPE Helion OpenStack. </li> <li>Next edit the layer 2 agent config file, ml2_conf.ini.j2, found in
+          This will set the MTU of the physical interfaces managed by HPE Helion OpenStack. </li> <li>Next, edit the layer 2 agent config file, ml2_conf.ini.j2, found in
           ~/helion/my_cloud/config/neutron/ to set the path_mtu and segment_mtu variables under
           [ml2]: (modular layer 2)
           <codeblock>[ml2]
@@ -122,22 +123,22 @@
           </ul> to set the network_device_mtu variable under [DEFAULT]:
           <codeblock>[DEFAULT]
  ...
- network_device_mtu = 9000</codeblock> This tells the dhcp
-          agent, l3 agent, and Nova to create new network devices with that particular MTU. </li> <li>If HPE Helion OpenStack has already been deployed, follow the procedure to commit this new
-          configuration,
+ network_device_mtu = 9000</codeblock>This tells the dhcp agent,
+          l3 agent, and Nova to create new network devices with that particular MTU. </li> <li>If HPE Helion OpenStack has already been deployed, follow the procedure to commit this new
+          configuration:
           <codeblock>git add -A
-git commit -m "your commit message goes here in quotes"</codeblock>
-          run the configuration
+git commit -m "your commit message goes here in quotes"</codeblock>run
+          the configuration
           processor:<codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
-          and ready the
-          deployment:<codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
-          Then run the osconfig-run.yml
-          playbook:<codeblock>ansible-playbook -i hosts/localhost osconfig-run.yml </codeblock>
-          followed by the
-          nova-reconfigure.yml:<codeblock>ansible-playbook -i hosts/localhost nova-reconfigure.yml </codeblock>
-          Then run neutron-reconfigure.yml:
-          <codeblock>ansible-playbook -i hosts/localhost neutron-reconfigure.yml</codeblock> Note:
+ansible-playbook -i hosts/verb_hosts config-processor-run.yml</codeblock>and
+          ready the
+          deployment:<codeblock>ansible-playbook -i hosts/verb_hosts ready-deployment.yml</codeblock>Then
+          run the osconfig-run.yml
+          playbook:<codeblock>ansible-playbook -i hosts/verb_hosts osconfig-run.yml </codeblock>followed
+          by the
+          nova-reconfigure.yml:<codeblock>ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml </codeblock>Then
+          run neutron-reconfigure.yml:
+          <codeblock>ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock>Note:
           adding/changing network-group mtu settings will likely require a network restart during
           osconfig-run. </li>
 
@@ -148,7 +149,7 @@ git commit -m "your commit message goes here in quotes"</codeblock></li>
         <li>Follow the normal process for creating a neutron network and booting a VM or two. In
           this example, if a vxlan network is created and a VM is booted on it, the VM will have an
           MTU of 8950. </li>
-        <li>Test and verify that the VM can send/receive jumbo frames without fragmentation. </li>
+        <li>Test and verify that the VM can send and receive jumbo frames without fragmentation. </li>
       </ol></section>
   
   </body>
