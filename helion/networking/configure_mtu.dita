@@ -54,10 +54,10 @@
         option, but Nova still requires a global MTU option for the interfaces it creates, thus you
         can't really take advantage of that config option. </p>
     </section>
-    <section><title>HPE Helion OpenStack input model</title>MTU can be set as an attribute of a
-      network group in network_groups.yml. That setting means that every network in the network
-      group will be assigned the specified MTU. The MTU value must be set individually for each
-      network group. For example:
+    <section><title>Netwok settings in the HPE Helion OpenStack input model</title>MTU can be set as
+      an attribute of a network group in network_groups.yml. That setting means that every network
+      in the network group will be assigned the specified MTU. The MTU value must be set
+      individually for each network group. For example:
         <codeblock>network-groups:
     - name: GUEST
       mtu: 9000
@@ -88,10 +88,14 @@
      <li>Add an 'mtu' attribute to all the network groups in your model. Note that adding the MTU
           for the network grops will only affect the configuration for physical network
           intefaces.<p/>To add the mtu attribute, edit network_groups.yml, which is found in
-          ~/helion/my_cloud/definition/data/. The steps to properly edit the files and save them to
-          the local git instance are found below in <xref href="#topic_srg_gsl_2v/steps"
-            format="dita">Changing and saving the configuration
-          files</xref><codeblock>network-groups:
+          ~/helion/my_cloud/definition/data/, along with
+          ~/helion/my_cloud/config/neutron/dhcp_agent.ini.j2,
+          ~/helion/my_cloud/config/neutron/l3_agent.ini.j2, and
+          ~/helion/my_cloud/config/nova/nova.conf.j2 <p/>To do so begin by checking out the
+            <b>site</b> branch. You may already be on that branch. If so, git will tell you that and
+          the command will leave you there.<codeblock>git checkout site</codeblock> Then begin
+          editing the files. In network_groups.yml, add mtu:
+          9000<codeblock>network-groups:
    - name: HLM that this will change ...................
      hostname-suffix: hlm
      mtu: 9000
@@ -120,25 +124,32 @@
  ...
  network_device_mtu = 9000</codeblock> This tells the dhcp
           agent, l3 agent, and Nova to create new network devices with that particular MTU. </li> <li>If HPE Helion OpenStack has already been deployed, follow the procedure to commit this new
-          configuration, run the Config Processor, and ready the deployment. Then run the
-          osconfig-run.yml playbook, followed by the nova-reconfigure.yml and
-          neutron-reconfigure.yml playbooks. Note: adding/changing network-group mtu settings will
-          likely require a network restart during osconfig-run. <p id="steps">
-            <b>Changing and saving the configuration files</b></p><p>Follow these steps replacing
-            the example files below with the files you are editing here.</p></li></ol>
-    </section>
-        
-        
-        
-        
-        <section><sectiondiv conref="../installation/using_git.dita#using_git/steps"/><ul>
+          configuration,
+          <codeblock>git add -A
+git commit -m "your commit message goes here in quotes"</codeblock>
+          run the configuration
+          processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
+          and ready the
+          deployment:<codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+          Then run the osconfig-run.yml
+          playbook:<codeblock>ansible-playbook -i hosts/localhost osconfig-run.yml </codeblock>
+          followed by the
+          nova-reconfigure.yml:<codeblock>ansible-playbook -i hosts/localhost nova-reconfigure.yml </codeblock>
+          Then run neutron-reconfigure.yml:
+          <codeblock>ansible-playbook -i hosts/localhost neutron-reconfigure.yml</codeblock> Note:
+          adding/changing network-group mtu settings will likely require a network restart during
+          osconfig-run. </li>
+
         <li>If HPE Helion OpenStack hasn't been deployed yet, simply make sure these config changes
-          have been committed before running the typical deployment procedure. </li>
+          have been committed before running the typical deployment procedure.
+          <codeblock>git add -A
+git commit -m "your commit message goes here in quotes"</codeblock></li>
         <li>Follow the normal process for creating a neutron network and booting a VM or two. In
           this example, if a vxlan network is created and a VM is booted on it, the VM will have an
           MTU of 8950. </li>
         <li>Test and verify that the VM can send/receive jumbo frames without fragmentation. </li>
-      </ul></section>
+      </ol></section>
   
   </body>
 </topic>
