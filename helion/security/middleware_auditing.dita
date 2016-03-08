@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="auditing">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Middleware Auditing</title>
+  
+  <body>
+    
+    <section><title>The need for auditing</title>
+    
+      <p>Enterprises need the capability to audit and monitor their workload and data in accordance
+        with their strict corporate, industry or regional policies and compliance requirements
+        (FIPS-140-2, PCI-DSS, SOX, ISO 27017 etc). So as part of HPE Helion OpenStack, services need
+        to provide auditing support as a basic security feature which can be easily integrated with
+        an organization's Security Information and Event Management (SIEM) tools. Such auditing is
+        valuabel not only to demonstrate compliance but also for correlating threat forensics.</p>
+      
+      
+      <p>Existing OpenStack service logging is not built from auditing perspective and greatly
+        varies across services. Generally these log messages do not have details about who is
+        requesting the API, context-specific details about action performed and are not consistently
+        logged across various service APIs. In addition, the logged data format is not consistent
+        across services so it can be difficult to integrate it with existing common audit tools and
+        processes.</p>
+      
+      
+ 
+    
+    
+    </section>
+    
+    <section><title>Introducing middleware auditing</title>
+      <p>Audit Middleware is a python middleware logic which is added in service request processing pipeline via paste deploy filters. Audit middleware 
+        constructs audit event data in CADF format. The CADF model can answer critical questions about activity or event happening on rest resources
+        in a normative manner using CADF's seven W's of auditing (What, When, Who, On What, Where, From Where, To Where) .  With this option, 
+        the changes are only configuration related and does not require changes in service existing code base.</p>
+      
+      <p>Audit middleware supports delivery of CADF audit events via Oslo messaging notifier capability. Based on 'notification_driver' 
+        configuration, audit events can be routed to messaging infrastructure (notification_driver = messagingv2)  or can be routed to a log
+        file (notification_driver = log) . From queue or log files, messages are sent to logstash for potential transformation and then pushed to elastic search.</p>
+      
+      <p><b>Centralized Auditing Configuration</b></p>
+        
+  <p> Each service gets two audit-related configuration variables via the configuration processor.
+        Its configuration is centrally managed in cloudConfig.yml within audit-settings.</p>
+      
+    <p> The available audit attributes are:</p>
+        <dl>
+          
+          <dlentry>
+            <dt> &lt;service-mnemonic>.audit.enabled </dt>
+            <dd>     indicates whether audit is currently enabled or
+              disabled for the service.          As an example, for Barbican this variable is KEYMGR.audit.enabled
+              . (Barbican mnemonic here).</dd>
+          </dlentry>
+          
+          <dlentry>
+            <dt>&lt;service-mnemonic>.audit.dir</dt>
+            <dd> indicates what is the
+              base directory for audit logs. Base directory is expected to be same for all services e.g.
+              for barbican audit file path /var/audit/barbican/barbican-audit.log , the base directory
+              variable will have /var/audit as the value. </dd>
+          </dlentry>
+        </dl>
+        
+        
+    <p> Further details on auditing centralized configuration and steps to make changes are listed
+        below (link : here) .</p>
+
+
+<p></p>
+    
+    </section>
+    <p></p>
+  </body>
+</topic>
