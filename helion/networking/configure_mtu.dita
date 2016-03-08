@@ -45,14 +45,15 @@
         VM<?oxy_insert_start author="michelln" timestamp="20160302T170012-0500"?>'<?oxy_insert_end?>s
         packets due to encapsulation. </p>
       <p>For instance, if you set the new *-mtu configuration options to a default of 1500 and
-        create a VXLAN network, it will be given an MTU of 1450 and will advertise a 1450 MTU to any
-        VM booted on that network. If you create a provider VLAN network, it will have an MTU of
-        1500 and will advertise 1500 to booted VMs on the network. It should be noted that this
-        default starting point for MTU calculation and advertisement is also global, meaning you
-        can't have an MTU of 8950 on one VXLAN network and 1450 on another. However, you can have
-        provider physical networks with different MTUs by using the physical_network_mtus config
-        option, but Nova still requires a global MTU option for the interfaces it creates, thus you
-        can't really take advantage of that config option. </p>
+        create a VXLAN network, it will be given an MTU of 1450 (with the remaining 50 bytes used by
+        the VXLAN encapsulation header) and will advertise a 1450 MTU to any VM booted on that
+        network. If you create a provider VLAN network, it will have an MTU of 1500 and will
+        advertise 1500 to booted VMs on the network. It should be noted that this default starting
+        point for MTU calculation and advertisement is also global, meaning you can't have an MTU of
+        8950 on one VXLAN network and 1450 on another. However, you can have provider physical
+        networks with different MTUs by using the physical_network_mtus config option, but Nova
+        still requires a global MTU option for the interfaces it creates, thus you can't really take
+        advantage of that config option. </p>
     </section>
     <section><title>Netwok settings in the HPE Helion OpenStack input model</title>MTU can be set as
       an attribute of a network group in network_groups.yml. That setting means that every network
@@ -148,7 +149,7 @@ ansible-playbook -i hosts/verb_hosts config-processor-run.yml</codeblock>and
 git commit -m "your commit message goes here in quotes"</codeblock></li>
         <li>Follow the normal process for creating a neutron network and booting a VM or two. In
           this example, if a vxlan network is created and a VM is booted on it, the VM will have an
-          MTU of 8950. </li>
+          MTU of 8950, with the remaining 50 bytes used by the VXLAN encapsulation header</li>
         <li>Test and verify that the VM can send and receive jumbo frames without fragmentation. </li>
       </ol></section>
   
