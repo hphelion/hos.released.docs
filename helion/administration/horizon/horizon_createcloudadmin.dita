@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd" >
+<topic xml:lang="en-us" id="CreateCloudAdmin">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Create Additional Cloud Admins</title>
+  <body outputclass="accordionWrapper">
+    
+    <section id="intro">
+      <title>Creating Additional Cloud Admins</title>
+      <p>You can create additional Cloud Admins to help with the administration of your cloud. </p>
+      <p>Additional Cloud Admins can be created by first creating users in the <b>default</b> admin domain
+        using Horizon or the OpenStack command-line client. If you are using the command-line client
+        to create the new Cloud Admin user, you must first set your credentials to an existing Cloud
+        Admin in the keystone.osrc file. 
+      </p>
+      
+      <p>Example keystone.osrc file:
+        <codeblock># Refer http://docs.openstack.org/developer/python-openstackclient/command-list.html
+        
+ # Environment variables for keystone v3 API using openstack client
+        
+ # Keystone requires domain scoped token
+        
+ unset OS_PROJECT_NAME
+ unset OS_PROJECT_DOMAIN_NAME
+        
+ export OS_IDENTITY_API_VERSION=3
+ export OS_USERNAME=admin
+ export OS_USER_DOMAIN_NAME=Default
+ export OS_PASSWORD=&lt;REDACTED&gt;
+ export OS_DOMAIN_NAME=Default
+ export OS_AUTH_URL=http://&lt;HOST_IP&gt;:5000/v3
+ export OS_INTERFACE=internal
+ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt
+        
+ # Environment variables for openstack client v3 API if you are using hardcoded ADMIN token
+ # Note if you use the env variables below, this takes precedence.
+ #export OS_TOKEN=&lt;REDACTED&gt;
+ #export OS_URL=http://&lt;HOST_IP&gt;:5000/v3</codeblock>
+      </p>
+      <p>You will need to source the <codeph>keystone.osrc</codeph> file once you have set the
+        proper credentials for an existing Cloud Admin. Once the Cloud Admin environment variables
+        are set, execute the following command-line command to assign the Admin role:
+        <codeblock>openstack role add --domain default --user USERNAME --user-domain default admin</codeblock>
+      </p>      
+      <p>
+        <note>In the example above, it's assumed that the default admin domain's name has 
+          not been altered from the default of <b>default</b>.</note>
+      </p>
+      <p>Alternatively, the OpenStack command-line client will accept command-line arguments instead
+        of reading exported and environment variables. See the OpenStack Command List for additional
+        information on command-line options: <xref
+          href="http://docs.openstack.org/developer/python-openstackclient/command-list.html"
+          format="html" scope="external"/>
+      </p>
+
+    
+    </section>
+  </body>
+</topic>
