@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="barbican">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Barbican Integration</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Key Management with the Barbican Service</title>
   <body>
-    <p>
-      Barbican is an OpenStack key management service offering secure storage, provisioning and management of key material. The following topic describes the service and how to install and maintain it.</p>
+
   
   
   <ul>
@@ -29,15 +28,18 @@
   </ul>
     
     <section id="overview"><title>General service overview</title>
-      <p>The Barbican service provides management of secrets, keys and certificates via multiple
-        storage backends. The support for various backends is provided via plugins e.g. KMIP or
-        PKCS11 HSM plugins, Dogtag CA and KRA plugins. Barbican supports symmetric, asymmetric keys
-        generation with various algorithm. Barbican is added as a new service to the Helion
-        OpenStack (HOS) 3.0 release. Cinder, neutron-lbaas v2 and Nova will integrate with Barbican
-        for their encryption keys generation and storage. </p><p>Barbican service currently has two types of core feature sets. </p>
-      <ul><li>Barbican component which exposes REST API for secrets/containers/orders feature and is developed as a WSGI application.
+      <p> Barbican is an OpenStack key management service offering secure storage, provisioning, and
+        management of key data. The Barbican service provides management of secrets, keys and
+        certificates via multiple storage back ends. The support for various back ends is provided
+        via plugins e.g. Key Management Interoperability Protocol (KMIP) 
+        or (Public Key Cryptography Standards) PKCS11 HSM plugins, Dogtag CA and KRA plugins. Barbican supports symmetric and asymmetric
+        key generation using various algorithms. Barbican is new in this release. Cinder,
+        neutron-lbaas v2 and Nova will integrate with Barbican for their encryption key generation
+        and storage. Barbican has two types of core feature sets. </p>
+      <ul><li>The Barbican component,  which exposes a REST API for secrets/containers/orders and is developed as a WSGI application.
+        
       </li>
-        <li>Barbican workers for asynchronous order processing feature (used for various mq event driven tasks related to certificate generation)
+        <li>Barbican workers for asynchronous order processing (used for various messaging event-driven tasks related to certificate generation).
         </li>
       </ul>
     
@@ -46,8 +48,7 @@
     <section id="features"><title>Features and limitations</title>
       <ul>
       <li>Ability to encrypt volumes/disks. In OpenStack context, this means support for encrypting Cinder Volumes (Volume Encryption). Cinder has its own key manager interface (KeyMgr) and can use BarbicanClient as one of its implementation. KeyMgr encypts data in virtualization host before writing data to remote disk. There are three options available in HOS v3.0:
-     <ul><li> Tenant-based encryption for block volume storage using Barbican for KMS 
-      </li><li>Barbican with KMIP and PKCS11 and external KMS (certified with HPE Atalla ESKM)
+     <ul><li>Tenant-based encryption for block volume storage using Barbican for KMS </li><li>Barbican with KMIP and PKCS11 and external KMS (certified with HPE Atalla ESKM)
       </li><li>3PAR StoreServ Data-At-Rest Encryption </li></ul></li>
       <li>Encrypting container and objects at server side.
       </li><li>Storage and Retrieval of secrets (passwords)
@@ -59,17 +60,29 @@
       </li><li>Ability to effectively scale up Key Management solution and can be highly available (handle fail over).</li></ul>
     </section>
     <section id="installation"><title>Installation</title>
-     <p>Barbican is essential service in Helion Openstack V3.0 and will be installed automatically among other services like Keystone, Nova etc... Recommended way of installing Barbican is to let the installer install the default configuration. Once Helion OpenStack is up and running, you can add any customization and redeploy it. Please refer to "Updating" section below for more details on the available customization options.
-     </p>
-     <p id="config"><b>Configuration</b>
-      As part of HLM reconfigure playbook, some of Barbican features and service configuration can be updated. As an example, via reconfigure log level can be changed from INFO to DEBUG and vice-versa. If needed, this change can be restricted to set of nodes via playbook's host limit option.
-     </p>
+     <p>Barbican is an essential service in Helion Openstack V3.0 and will be installed
+        automatically. You should allow the installer to install Barbican using the default
+        configuration, and customize later once Helion OpenStack is up and running. If you do make
+        configuration changes, you will need to redeploy the service. Please refer to the Updating
+        Barbican section below for more details on the available customization options. </p>
+     <p id="config"><b>Configuration</b></p><p> Some Barbican features and service configurations can be
+        changed. This is done using the HLM reconfigure Ansible playbook. For example, the log level
+        can be changed from INFO to DEBUG and vice-versa. If needed, this change can be restricted
+        to a set of nodes via the playbook's host limit option. </p>
       <p id="kmip">
-      <b>KMIP Plugin Support</b>
-      Barbican has a KMIP plugin to store encryption keys ( 'secrets' in barbican service terminology) in HSM device using KMIP protocol. In HOS, we tested this plugin against Atalla ESKM with KMIP server. To enable its support, Barbican needs to be configured with corresponding plugin, connection details and client certificates information needs to be defined in its configuration. ESKM KMIP server uses client certificate to validate KMIP client connection established by Barbican server. As part of that KMIP configuration, playbooks provide mechanism to upload customer provided client certs to nodes hosting Barbican API server.
-      </p>
-  <note>The Installation and deployment of the Atalla ESKM or any other HSM (Hardware Security Module) devices and dependent components is out of scope for this document. Client should refer the relevant documentations on the given product site. For example, you can get more information on Atalla ESKM and related Data Security and Encryption Products at  http://www8.hp.com/us/en/software-solutions/data-security-encryption/.
-  </note>
+      <b>KMIP Plugin Support</b></p><p>Barbican has a KMIP plugin to store encryption keys ( 'secrets' in Barbican service terminology)
+        in a hardware security module (HSM) device using KMIP protocol. In HOS, we tested this
+        plugin against Atalla ESKM with KMIP server. To enable its support, Barbican needs to be
+        configured with corresponding plugin, connection details and client certificates information
+        needs to be defined in its configuration. ESKM KMIP server uses client certificate to
+        validate KMIP client connection established by Barbican server. As part of that KMIP
+        configuration, playbooks provide mechanism to upload customer provided client certs to nodes
+        hosting Barbican API server. </p>
+  <note>The Installation and deployment of the Atalla ESKM or any other HSM devices and dependent
+        components is out of scope for this document. Client should refer the relevant
+        documentations on the given product site. For example, you can get more information on
+        Atalla ESKM and related Data Security and Encryption Products at
+        http://www8.hp.com/us/en/software-solutions/data-security-encryption/. </note>
       <p id="auditing">
      <b>Auditing</b>
       Barbican uses Openstack Audit Middleware to generate auditing data in CADF format. Auditing feature can be enabled and disabled thorough service re-configure playbook. As part of service configuration, the audit messages can be directed to log or to a messaging queue. By default, messages are written to service log file. Once architecture level decision is made with regards to default consumer of audit events i..e. either log or messaging,  Barbican service can configure that as default option when auditing is enabled.
