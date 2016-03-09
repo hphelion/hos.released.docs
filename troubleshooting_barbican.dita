@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="barbicanTroubleshooting">
+  <title>Barbican Service Troubleshooting</title>
+  <body>
+<section>
+  
+  
+
+  
+  List of known issues and workarounds.
+  False measurement after TLS to non-TLS switch 
+  
+  After reconfiguring VIP to non-TLS (from TLS), monasca measurements for http_status checks are alternating between '0' and '1'
+  Code Block
+  
+  stack@padawan-ccp-c1-m1-mgmt:~$ monasca --os-username monasca measurement-list --dimensions component=barbican-api,monitored_host_type=vip,api_endpoint=internal --merge_metrics http_status 2016-02-17T20:17:00
+  
+  <codeblock>+-------------+------------+--------------------------+--------------+------------+
+  | name        | dimensions | timestamp                | value        | value_meta |
+  +-------------+------------+--------------------------+--------------+------------+
+  | http_status |            | 2016-02-17T20:17:28.000Z |        1.000 |            |
+  |             |            | 2016-02-17T20:17:29.000Z |        0.000 |            |
+  |             |            | 2016-02-17T20:17:29.000Z |        1.000 |            |
+  |             |            | 2016-02-17T20:17:31.000Z |        0.000 |            |
+  |             |            | 2016-02-17T20:17:31.000Z |        1.000 |            |
+  |             |            | 2016-02-17T20:17:57.000Z |        0.000 |            |
+  |             |            | 2016-02-17T20:17:57.000Z |        1.000 |            |
+  +---------------------------------------------------------------------------------+</codeblock>
+  
+  Monasca team has confirmed the above behavior, that both URLs (http and https) are being monitored after the non-TLS switch. They are implementing the fix and plan to have the solution available in HOS 3.0.
+  
+  
+  
+  Edit the control plane definition file i.e. ~/helion/my_cloud/definition/data/control_plane.yml
+  
+  Make changes to add barbican service components if not already there (Above sample configuration can be followed)
+  
+  Commit the change in git repository.
+  
+  cd ~/helion/hos/ansible/
+  
+  ansible-playbook -i hosts/localhost config-processor-run.yml
+  
+  ansible-playbook -i hosts/localhost ready-deployment.yml
+  
+  cd ~/scratch/ansible/next/hos/ansible
+  
+  ansible-playbook -i hosts/verb_hosts site.yml
+  
+  
+</section>
+  </body>
+</topic>
