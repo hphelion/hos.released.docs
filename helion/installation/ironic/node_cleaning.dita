@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ironic-node-cleaning">
+    <title>Node Cleaning</title>
+
+    <body>
+
+    <p>Cleaning is the process by which data is removed after a previous tenant has used the node. 
+        Cleaning requires use of ironic's agent_ drivers.  It is extremely important to note that if 
+        the pxe_ drivers are utilized, no node cleaning operations will occur, and a previous tenant's 
+        data could be found on the node.  The same risk of a previous tenant's data possibly can occur 
+        if cleaning is explicitly disabled as part of the installation.
+    </p>
+    
+    <p>        
+        By default, cleaning attempts to utilize ATA secure erase to wipe the contents of the disk.  
+        If secure erase is unavailable, the cleaning functionality built into the Ironic Python Agent 
+        falls back to an operation referred to as "shred" where random data is written over the contents 
+        of the disk, and then followed up by writing "0"s across the disk.  This can be a time-consuming process.
+       </p>
+    
+    <p> 
+        An additional feature of cleaning is the ability to update firmware or potentially assert new hardware 
+        configuration, however, this is an advanced feature that must be built into the Ironic Python Agent 
+        image. Due to the complex nature of such operations, and the fact that no one size fits all, this 
+        requires a custom Ironic Python Agent image to be constructed with an appropriate hardware manager. 
+        For more information on hardware managers, see 
+        <xref href="http://docs.openstack.org/developer/ironic-python-agent/#hardware-managers" scope="external" format="html"/>
+        </p>
+    
+    <p>
+        Ironic's upstream documentation for cleaning may be found here:  
+        <xref href="http://docs.openstack.org/developer/ironic/deploy/cleaning.html" scope="external" format="html"/>
+        
+    </p>
+
+    <section>
+        <title>Setup</title>
+    
+        <p>Cleaning is enabled by default in ironic when installed via the Lifecycle Manager. You can verify this 
+        by examining the ironic-conductor.conf file. Look for:
+        </p>
+    
+<codeblock>
+[conductor]
+clean_nodes=true      
+</codeblock>  
+
+        <p>If it is not enabled, you will need to reconfigure ironic with cleaning_network: guest-network under 
+            configuration-data:data: in ironic_config.yml in the entry-scale-ironic-flat-networks model. This will 
+            also create a cleaning network using neutron. See 
+            <xref href="http://docs.openstack.org/developer/ironic/deploy/cleaning.html#cleaning-network" scope="external" format="html"/> and 
+            <xref href="http://docs.openstack.org/developer/ironic/deploy/install-guide.html#cleaningnetworksetup" scope="external" format="html"/> 
+            for more information on the cleaning network.
+        </p>
+    </section>
+
+
+
+    <section>
+        <title>In use</title>
+
+        <p>When enabled, cleaning will be run automatically when nodes go from active to available state or 
+            from manageable to available. To monitor what step of cleaning the node is in, run:
+        </p>
+ 
+<codeblock>
+ironic node-show
+</codeblock> 
+
+        <p>    
+            The status will be in the driver_internal_info field. You will also be able to see the 
+            <codeph>clean_steps</codeph> list there.
+        </p>
+        
+        <p>To force cleaning, create a file with contents as follows:</p>        
+        
+<codeblock>
+{
+"target":"clean",
+"clean_steps": [{
+"interface": "deploy",
+"step": "erase_devices"
+}]
+}
+</codeblock>   
+        
+        <p>(You can of course add additional clean steps and their arguments.)</p>   
+        
+        <p>Then run:</p>
+        
+<codeblock>
+ironic --ironic-api-version 1.15 node-set-provision-state &lt;node id> clean --clean-steps &lt;file> 
+</codeblock>
+
+    </section>
+    
+    <section>
+        <title>Troubleshooting</title>
+  
+    
+    <p>If an error occurs during the cleaning process, the node will enter the clean failed state so that 
+        it is not deployed. The node remains powered on for debugging purposes. The node can be moved to 
+        the manageable state to attempt a fix using the following command:
+    </p>
+        
+<codeblock>
+ironic node-set-provision-state &lt;node id> manage
+</codeblock>   
+        
+        <p>
+        Once you have identified and fixed the issue, you can return the node to available state by executing the following commands:
+        </p>
+        
+<codeblock>        
+ironic node-set-maintenance &lt;node id> false
+ironic node-set-provision-state &lt;node id> provide
+</codeblock> 
+        
+        <p>This will retry the cleaning steps and set the node to available state upon their successful completion.</p>
+                
+  
+    </section>
+    <section>
+        <title>Future work</title>
+        
+        <p>Manual cleaning refers to the ability to initiate cleaning steps less frequently than every time 
+            a node is redeployed. Examples of this type of task include firmware updates, setting up new 
+            RAID levels, or other long-running or destructive tasks. This feature is not in the liberty 
+            release, but will be available in a future release. For more details, see the specification here:
+            <xref href=" https://specs.openstack.org/openstack/ironic-specs/specs/not-implemented/manual-cleaning.html" scope="external" format="html"/>
+        </p>
+     
+                
+    </section>
+    </body>
+    
+</topic>
+
+            
