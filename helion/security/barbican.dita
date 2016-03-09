@@ -7,35 +7,35 @@
   
   
   <ul>
-    <li><xref href="#barbican/overview" format="dita">General Service Overview</xref></li>
+    <li><xref href="#barbican/overview" format="dita">Barbican service overview</xref></li>
     <li><xref href="#barbican/installation" format="dita">Installation</xref>
         <ul>
           <li><xref href="#barbican/config" format="dita">Configuration</xref>
             <ul>
-              <li><xref href="#barbican/kmip" format="dita">KMIP Plugin Support</xref></li>
+              <li><xref href="#barbican/kmip" format="dita">KMIP plug-in support</xref></li>
               <li><xref href="#barbican/auditing" format="dita">Auditing</xref></li>
             </ul>
           </li>
-          <li><xref href="#barbican/post_installation" format="dita">Post-Install Verification and
-              Administration</xref></li>
+          <li><xref href="#barbican/post_installation" format="dita">Post-Installation verification
+              and dministration</xref></li>
         </ul></li>
       <li><xref href="#barbican/updating" format="dita">Updating </xref><ul>
-          <li><xref href="#barbican/configFile" format="dita">Updating Barbican API Service
-              Configuration File</xref></li>
+          <li><xref href="#barbican/configFile" format="dita">Updating Barbican API service
+              configuration file</xref></li>
         </ul>
       </li>
     <li><xref href="#barbican/troubleshooting" format="dita">Troubleshooting</xref></li>
   </ul>
     
-    <section id="overview"><title>General service overview</title>
-      <p> Barbican is an OpenStack key management service offering secure storage, provisioning, and
+    <section id="overview"><title>Barbican service overview</title>
+      <p>Barbican is an OpenStack key management service offering secure storage, provisioning, and
         management of key data. The Barbican service provides management of secrets, keys and
         certificates via multiple storage back ends. The support for various back ends is provided
-        via plugins e.g. Key Management Interoperability Protocol (KMIP) 
-        or (Public Key Cryptography Standards) PKCS11 HSM plugins, Dogtag CA and KRA plugins. Barbican supports symmetric and asymmetric
-        key generation using various algorithms. Barbican is new in this release. Cinder,
-        neutron-lbaas v2 and Nova will integrate with Barbican for their encryption key generation
-        and storage. Barbican has two types of core feature sets. </p>
+        via plug-ins e.g. Key Management Interoperability Protocol (KMIP) or (Public Key
+        Cryptography Standards) PKCS11 HSM plugins, Dogtag CA and KRA plug-ins. Barbican supports
+        symmetric and asymmetric key generation using various algorithms. Barbican is new in this
+        release. Cinder, neutron-lbaas v2 and Nova will integrate with Barbican for their encryption
+        key generation and storage. Barbican has two types of core feature sets. </p>
       <ul><li>The Barbican component,  which exposes a REST API for secrets/containers/orders and is developed as a WSGI application.
         
       </li>
@@ -60,33 +60,104 @@
       </li><li>Ability to effectively scale up Key Management solution and can be highly available (handle fail over).</li></ul>
     </section>
     <section id="installation"><title>Installation</title>
-     <p>Barbican is an essential service in Helion Openstack V3.0 and will be installed
-        automatically. You should allow the installer to install Barbican using the default
-        configuration, and customize later once Helion OpenStack is up and running. If you do make
-        configuration changes, you will need to redeploy the service. Please refer to the Updating
-        Barbican section below for more details on the available customization options. </p>
-     <p id="config"><b>Configuration</b></p><p> Some Barbican features and service configurations can be
-        changed. This is done using the HLM reconfigure Ansible playbook. For example, the log level
-        can be changed from INFO to DEBUG and vice-versa. If needed, this change can be restricted
-        to a set of nodes via the playbook's host limit option. </p>
-      <p id="kmip">
-      <b>KMIP Plugin Support</b></p><p>Barbican has a KMIP plugin to store encryption keys ( 'secrets' in Barbican service terminology)
-        in a hardware security module (HSM) device using KMIP protocol. In HOS, we tested this
-        plugin against Atalla ESKM with KMIP server. To enable its support, Barbican needs to be
-        configured with corresponding plugin, connection details and client certificates information
-        needs to be defined in its configuration. ESKM KMIP server uses client certificate to
-        validate KMIP client connection established by Barbican server. As part of that KMIP
-        configuration, playbooks provide mechanism to upload customer provided client certs to nodes
-        hosting Barbican API server. </p>
+     <p>Barbican is an essential service in HPE Helion Openstack 3.0 and is installed automatically.
+        You should allow the installer to install Barbican using the default configuration, and
+        customize later once your cloud is up and running. If you do make configuration changes, you
+        will need to redeploy the service. Please refer to the Updating Barbican section below for
+        more details on the available customization options. </p>
+     <p id="config"><b>Configuration</b></p><p>Some Barbican features and service configurations can be changed. This is done using the HLM
+        reconfigure Ansible playbook. For example, the log level can be changed from INFO to DEBUG
+        and vice-versa. If needed, this change can be restricted to a set of nodes via the
+        playbook's host limit option. </p>
+      
+      <p><b>Secret Store Backends</b></p><p>
+        
+        HOS Barbican currently supports database and KMIP backend as its secret store backend. In Openstack upstream, there are additional backends available 
+        e.g. PKCS11 plugin, dogtag plugin which are currently not tested and supported by HOS Barbican engineering team.
+        </p><p><b>Database plugin for Secret Store</b></p><p> In Helion Openstack distribution, by default Barbican is configured to use database as secret
+        (keys) storage backend. This backend encrypts barbican managed keys with a project level key
+        (kek , key encryption key) before storing it in database. And project level keys are
+        encrypted using a master key. As part of initial barbican configuration, customer must
+        generate and configure this master key.</p>
+      
+      <ol>
+        <li>Generate master key using provided python *generate_kek* script on deployer node
+        
+       <codeblock> python  ~/helion/hos/ansible/roles/KEYMGR-API/templates/generate_kek</codeblock>
+        
+        Master key is generated at stdout from previous command</li>
+        
+        <li>Set above master key in file  
+          <codeblock>~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock></li>
+        
+        <li>Replace existing *barbican_customer_master_key* value with above generated master key if there</li>
+        
+        <li>Commit the change in git repository.
+          <codeblock>cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>    <li>
+        
+        Once master key is set, continue with cloud deployment.</li></ol>
+        
+      <note>For Barbican deployment with DB backend, master key needs to be generated and configured before barbican is deployed for first time.
+        Once master key is set, it must not be modified.</note>
+        
+      <note>Changing master key can result in read error for existing secrets as those secrets are stored in DB and are encrypted using previous master key. 
+        Once new master key is used, barbican would not be
+        able to read those secrets. Also it would not be able to create new secrets within that project as project kek is encrypted using previous master key.</note>
+      
+      
+      
+      
+      <p id="kmip"><b>KMIP Plug-in Support</b></p><p>Barbican has a KMIP plug-in to store encryption keys ( called secrets in Barbican service
+        terminology) in a hardware security module (HSM) device using KMIP protocol. In HOS, we
+        tested this plug-in against Atalla ESKM with KMIP server. To enable its support, Barbican
+        needs to be configured with corresponding plug-in, connection details and client
+        certificates information needs to be defined in its configuration. ESKM KMIP server uses
+        client certificate to validate KMIP client connection established by Barbican server. As
+        part of that KMIP configuration, playbooks provide mechanism to upload customer provided
+        client certs to nodes hosting Barbican API server. </p>
   <note>The Installation and deployment of the Atalla ESKM or any other HSM devices and dependent
         components is out of scope for this document. Client should refer the relevant
         documentations on the given product site. For example, you can get more information on
         Atalla ESKM and related Data Security and Encryption Products at
         http://www8.hp.com/us/en/software-solutions/data-security-encryption/. </note>
-      <p id="auditing">
-     <b>Auditing</b>
-      Barbican uses Openstack Audit Middleware to generate auditing data in CADF format. Auditing feature can be enabled and disabled thorough service re-configure playbook. As part of service configuration, the audit messages can be directed to log or to a messaging queue. By default, messages are written to service log file. Once architecture level decision is made with regards to default consumer of audit events i..e. either log or messaging,  Barbican service can configure that as default option when auditing is enabled.
-      </p>
+      <p id="auditing"><b>Auditing</b></p><p>Barbican is one of the services in HOS 3.0 which has added support for auditing. It uses
+        Openstack <xref href="middleware_auditing.dita#auditing">Audit Middleware </xref> to
+        generate auditing data in Cloud Auditing Data Federation (CADF) format. HLM input model has
+        the mechanism to enable / disable per service auditing support. When barbican auditing is
+        enabled, service writes audit messages to audit log file, different from service own
+        logging. The base location of audit log file is driven by common auditing configuration.</p>
+      <p>The
+        auditing feature can be enabled and disabled thorough the particular service's reconfigure
+        playbook. As part of service configuration, the audit messages can be directed to log or to
+        a messaging queue. By default, messages are written to service log file. Once architecture
+        level decision is made with regards to default consumer of audit events i.e. either log or
+        messaging, Barbican service can configure that as default option when auditing is enabled. </p>
+      
+      
+      
+     Auditing can be disabled or enabled by following steps on deployer node.
+      <ol><li>Edit the file ~/helion/my_cloud/definition/cloudConfig.yml All audit related configuration is
+          defined under the audit-settings section. Please note that you must use valid yaml syntax
+          when specifying values.</li>
+      
+        <li>Service name defined under `enabled-services` or `disabled-services` override the
+          default setting (i.e. `default: enabled` or `default: disabled`) To enable auditing, make
+          sure that `barbican` service name is within `enabled-services` list of `audit-settings`
+          section or is not present in `disabled-services` list when `default: enabled`. <p>To disable
+          auditing for barbican service specifically, make sure that `barbican` service name is
+          within `disabled-services` list of `audit-settings` section or is **not** present in
+          `enabled-services` list when `default: disabled`. It is incorrect to specify service name
+          in both list. If its specified, then `enabled-services` value takes precedence.</p></li>
+      
+        <li>Commit the change in git repository. <codeblock>cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
+        </li></ol>
+      
+      
     </section>
     <section id="post_installation"><title>Post-installation verification and administration</title>
      <p>In production environment, verification can be done by running the barbican-status.yml on the deployer / administrator node.
@@ -94,22 +165,26 @@
       In any non-production environment, along with the playbook, verification can be done by storing and retrieving the secret from barbican. </p>
     </section>
     <section id="updating"><title>Updating Barbican</title>
-      <p>Helion Lifecycle Manager supports updating the following parts of Barbican service configuration:</p>
-      <ul><li>
-      Any content in main barbican configuration file: /etc/barbican/barbican.conf</li>
-      <li>Any content in main barbican worker configuration file: /etc/barbican/barbican-worker.conf</li></ul>
-     <p>Updating certain configuration options and enabling features, such as:</p>
-      <ul><li>
-      Verbosity of logs being written to barbican log files (var/log/barbican/). 
-      </li><li>Enabling/disabling auditing.
-      </li><li>barbican_secret_store plugins, there two options<ul>
-      <li>store_crypto – to store the secrets in database
-      </li><li>kmip_plugin – to store the secrets into KMIP enabled external devices like Atalla ESKM</li></ul></li></ul>
+      <p>The HPE Helion OpenStack lifecycle manager allows you to update the following Barbican
+        configuration settings:</p>
+      <ul><li>Anything in the main Barbican configuration file: /etc/barbican/barbican.conf</li>
+      <li>Anythng in the main Barbican worker configuration file:
+          /etc/barbican/barbican-worker.conf</li></ul>
+     <p>You can also update the following configuration options and enable features. For example,
+        you can:</p>
+      <ul><li>Change the verbosity of logs written to Barbican log files (var/log/barbican/). </li><li>Enable and disable auditing. </li><li>Edit barbican_secret_store plug-ins. The two options are:<ul>
+            <li>store_crypto – to store the secrets in the database </li>
+            <li>kmip_plugin – to store the secrets into KMIP enabled external devices like Atalla
+              ESKM</li>
+          </ul></li></ul>
       
-     <p id="configFile"><b>Updating Barbican API service configuration file</b></p>
-      <ul><li>The Barbican API Service configuration file (/etc/barbican/barbican.conf), located on each control plane server (controller node) is generated from the following template file located on a lifecycle manager: /home/stack/helion/my_cloud/config/barbican/barbican.conf.j2
-      Modify this template file as appropriate. This is a Jinja2 template, which expects certain template variables to be set. Do not change values inside double curly braces: {{ }}.
-      </li><li>Once the template is modified, commit the change to the local git repository, and rerun the
+     <p id="configFile"><b>Updating the Barbican API service configuration file</b></p>
+      <ul><li>The Barbican API service configuration file (/etc/barbican/barbican.conf), located on each
+          control plane server (controller node) is generated from the following template file
+          located on the lifecycle manager node:
+          /home/stack/helion/my_cloud/config/barbican/barbican.conf.j2 Modify this template file as
+          appropriate. This is a Jinja2 template, which expects certain template variables to be
+          set. Do not change values inside double curly braces: {{ }}. </li><li>Once the template is modified, commit the change to the local git repository, and rerun the
           configuration processor / deployment area preparation playbooks
           <codeblock>cd ~/helion
 git checkout site
