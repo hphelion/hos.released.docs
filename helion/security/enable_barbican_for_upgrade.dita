@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="barbicanUpgrade">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Enabling Barbican Support When Upgrading</title>
+  <body>
+    
+    <section><title>Enabling Barbican in previous versions of HPE Helion OpenStack</title>
+      <p>
+        Barbican is a new service added in HPE Helion OpenStack 3.0 and is not available in 2.x distributions. Therefore if you upgrade to HPE Helion OpenStack 3.0 with your
+        existing input model files, you will have to include barbican sections in the relevant inut model configuration files. There are three 
+        service components (barbican-api, barbican-client, barbican-worker) 
+        that need to be included in the service-components list. These service-components are provided in control plane configuration file, control_plane.yml at 
+        ~/helion/my_cloud/definition/data/control_plane.yml. These three barbican components need to be defined for cluster that has 
+        server-role of 'CONTROLLER-ROLE' or 'CORE-ROLE' in its control plane definition.</p>
+      
+      <codeblock>  control-planes:
+        - name: control-plane-1
+        ...
+        ...
+        clusters:
+        - name: cluster1
+        ...
+        ...
+        cluster-prefix: c1
+        server-role: CONTROLLER-ROLE
+        ...
+        ...
+        service-components:
+        - lifecycle-manager
+        - ntp-server
+        ...
+        ...
+        - barbican-api
+        - barbican-client
+        - barbican-worker
+        ...
+        ...
+        
+        ...
+        ...</codeblock>
+      
+    </section>
+  </body>
+</topic>
