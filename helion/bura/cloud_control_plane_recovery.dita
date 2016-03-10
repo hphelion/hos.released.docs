@@ -226,7 +226,7 @@ ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
         <b>Restore from a Swift backup</b>
         <ol>
           <li>On the lifecycle manager, install the freezer-agent, as follows:<codeblock>cd ~/helion/hos/ansible/
-ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
+ansible-playbook -i hosts/localhost _deployer_restore_helper.yml -e '{ "old_deployer_hostname": "&lt;hostname of the server that was your lifecycle manager>" }'</codeblock>
             <p>You must retrieve the following two files
                 <codeph>/opt/stack/service/freezer-agent/etc/backup.osrc</codeph> and
                 <codeph>/opt/stack/service/freezer-agent/etc/systemd_env_vars.cfg</codeph> from any
@@ -234,19 +234,18 @@ ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
                 (<codeph>/opt/stack/service/freezer-agent/etc/</codeph>) on the lifecycle
               manager.</p>
             <p>You must then retrieve the /etc/hosts file from any compute or controller node and
-              replace the one found on the lifecycle manager with the one retrieved. Be sure to edit
-              the  127.0.0.1 line so it points to hlinux like
-            so:</p><codeblock>127.0.0.1       localhost
-::1             localhost ip6-localhost ip6-loopback
-ff02::1         ip6-allnodes
-ff02::2         ip6-allrouters
-127.0.0.1       hlinux</codeblock></li>
+              replace the one found on the lifecycle manager with the one retrieved.</p></li>
           <li>On the lifecycle manager: <p>Become root:</p><codeblock>sudo su</codeblock> Source the
             credentials:
-            <codeblock>source /opt/stack/service/freezer-agent/etc/backup.osrc</codeblock> List the
-            jobs <codeblock>freezer-scheduler -c &lt;hostname> job-list</codeblock>Get the id of the
-            job corresponding to "HLM Default: Deployer restore from Swift." Stop that job so the
-            freezer-scheduler doesn't begin making backups when started.
+            <codeblock>source /opt/stack/service/freezer-agent/etc/backup.osrc</codeblock>Change the
+            hostname of the server so it points to the hostname for the server that was your
+            lifecycle manager: <!-- DOCS-2588 -->
+              <codeblock>sudo hostname &lt;hostname of the server that was your lifecycle manager></codeblock><p>Edit
+              the <codeph>/etc/hosts</codeph> file and replace the default hLinux install name (hlm)
+              with the old lifecycle manager name which you modified in the previous step.</p>List
+            the jobs <codeblock>freezer-scheduler -c &lt;hostname> job-list</codeblock>Get the id of
+            the job corresponding to "HLM Default: Deployer restore from Swift." Stop that job so
+            the freezer-scheduler doesn't begin making backups when started.
             <codeblock>freezer-scheduler -c &lt;hostname> job-stop -j &lt;job-id&gt;</codeblock>If
             it is present, also stop the lifecycle manager's SSH backup. <p>Next, stop the dayzero
               UI installer:</p><codeblock>systemctl stop dayzero</codeblock>Start the
