@@ -99,9 +99,11 @@
    - name: GUEST
      hostname-suffix: guest
      mtu: 9000
-     component-endpoints:
+     tags:
+     - neutron.networks.vxlan
+     
           </codeblock>This
-          will set the physical interface managed by HPE Helion OpenStack that has the HLM network
+          will set the physical interface managed by HPE Helion OpenStack that has the GUEST network
           group tag assigned to it. This can be found in the interfaces_set.yml file under the
           interface-models section. </li> <li>Next, edit the layer 2 agent config file, ml2_conf.ini.j2, found in
           ~/helion/my_cloud/config/neutron/ to set the path_mtu and segment_mtu variables under
@@ -149,8 +151,11 @@ git commit -m "your commit message goes here in quotes"</codeblock></li>
         <li>Follow the normal process for creating a neutron network and booting a VM or two. In
           this example, if a vxlan network is created and a VM is booted on it, the VM will have an
           MTU of 8950, with the remaining 50 bytes used by the VXLAN encapsulation header.</li>
-        <li>Test and verify that the VM can send and receive jumbo frames without fragmentation.
-          Ping and see how big the response packets are??</li>
+        <li>Test and verify that the VM can send and receive jumbo frames without fragmentation. You
+          can use ping . For example, to test an  MTU of 9000 using vxlan:
+          <codeblock>ping –M do –s 8950 &lt;your_vm_floating_ip></codeblock>Just substitute your
+          actual floating ip address for the &lt;your vm floating ip> Ping and see how big the
+          response packets are??</li>
         <li>If they don't agree, the config processor will raise an error... if VMs are already
           running when you make a change...??? pinging VIP?? so are you seeing the right value?? or
           is something bypassed (tunnel mentioned) jumbo frames may or may not make it for 30 </li>

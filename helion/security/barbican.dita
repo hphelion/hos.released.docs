@@ -86,19 +86,24 @@
         <li>Replace existing *barbican_customer_master_key* value with above generated master key if
           there</li>
         <li>Commit the change in git repository.
+          <codeblock>cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/
+cd ~/helion
+git add -A
+git commit -m "My config"</codeblock></li>
+        <li>Next, run ready-deloyment:
           <codeblock>cd ~/helion/hos/ansible/
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-        <li> Once master key is set, continue with cloud deployment.</li>
+        <li> Once the master key is set, continue with cloud deployment.</li>
       </ol>
-      <note>For Barbican deployment with a database back end, master key needs to be generated and
-        configured before Barbican is deployed for first time. Once master key is set, it must not
-        be modified.</note>
+      <note>For a Barbican deployment with a database back end, the master key needs to be generated
+        and configured before Barbican is deployed for the first time. Once the master key is set,
+        it must not be modified.</note>
       <note>Changing master key can result in read error for existing secrets as those secrets are
         stored in DB and are encrypted using previous master key. Once new master key is used,
         Barbican would not be able to read those secrets. Also it would not be able to create new
         secrets within that project as project kek is encrypted using previous master key.</note>
-      <p id="kmip"><b>KMIP Plug-in Support</b></p><p>Barbican has a KMIP plug-in to store encryption
-        keys ( called secrets in Barbican service terminology) in an HSM device using KMIP protocol.
+      <p id="kmip"><b>KMIP plug-in support</b></p><p>Barbican has a KMIP plug-in to store encryption
+        keys (called secrets in Barbican service terminology) in an HSM device using KMIP protocol.
         In HOS, we tested this plug-in against Atalla ESKM with KMIP server. To enable its support,
         Barbican needs to be configured with corresponding plug-in, connection details and client
         certificates information needs to be defined in its configuration. ESKM KMIP server uses
@@ -152,7 +157,13 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
             - ceilometer
             - neutron</codeblock>
         </li>
-        <li>Once you are satisfied with your settings, commit the change in the git repository.
+        <li>Once you are satisfied with your settings, copy the files to
+          ~/helion/my_cloud/definition/, and commit the changes in the git repository.
+          <codeblock>cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/
+cd ~/helion
+git add -A
+git commit -m "My config"</codeblock></li>
+        <li>Then run the configuration processor and ready-deployment:
           <codeblock>cd ~/helion/hos/ansible/
 ansible-playbook -i hosts/localhost config-processor-run.yml
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>

@@ -30,21 +30,21 @@
         located on the lifecycle manager node:
         /home/stack/helion/my_cloud/config/barbican/barbican.conf.j2 Modify this template file as
         appropriate. This is a Jinja2 template, which expects certain template variables to be
-        set. Do not change values inside double curly braces: {{ }}. </li><li>Once the template is modified, commit the change to the local git repository, and rerun the
-          configuration processor / deployment area preparation playbooks
-          <codeblock>cd ~/helion
-            git checkout site
-            git add my_cloud/config/barbican/barbican.conf.j2
-            git commit -m "Adjusting some parameters in barbican.conf"
-            cd ~/helion/hos/ansible
-            ansible-playbook -i hosts/localhost config-processor-run.yml
-            ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+        set. Do not change values inside double curly braces: {{ }}. </li><li>Once the template is modified, copy the files to ~/helion/my_cloud/definition/, and commit the
+          change to the local git repository:
+          <codeblock>cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/
+cd ~/helion
+git add -A
+git commit -m "My config"</codeblock></li>
+          
+         <li>Then rerun the configuration processor and ready-deployent playbooks:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
-        <li><p>Run the barbican-reconfigure playbook in deployment area:</p>
+        <li>Finally, run the barbican-reconfigure playbook in deployment area:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-            ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
-          
-          
+ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
         </li></ul>
     </section>
     
