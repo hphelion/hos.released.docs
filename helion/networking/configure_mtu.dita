@@ -3,7 +3,6 @@
 <topic id="configureMTU">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring Maximum Transmission Units in Neutron</title>
   <body>    <p conkeyref="HOS-conrefs/applies-to"/>
-    <note type="danger">This document is still under development</note>
    <section><title>Overview</title>
       <p>A Maximum Transmission Unit, or MTU is the maximum packet size (in bytes) that a network
         device can or is configured to handle. There are a number of places in HPE Helion OpenStack
@@ -31,8 +30,7 @@
         correct MTU for that network. There is, however, support for globally changing the MTU of
         devices created by Neutron/Nova (see network_device_mtu below). This means that if you want
         to enable jumbo frames for any set of VMs, you will have to enable it for all your VMs. You
-        cannot just enable them for a particular Neutron network. </p>
-      <b>VM interfaces</b>
+        cannot just enable them for a particular Neutron network. </p><b>VM interfaces</b>
       <p>VMs typically get their MTU via
         <?oxy_insert_start author="michelln" timestamp="20160302T165810-0500"?>DHCP<?oxy_insert_end?><?oxy_delete author="michelln" timestamp="20160302T165807-0500" content="dhcp"?>
         advertisement, which means that the dnsmasq processes spawned by the neutron-dhcp-agent
@@ -41,7 +39,7 @@
         In Helion OpenStack<?oxy_insert_end?> 2.0, the DHCP server advertises to all
         VMS<?oxy_delete author="michelln" timestamp="20160302T165911-0500" content="are"?> a 1400
         MTU via a forced setting in dnsmasq-neutron.conf. This is suboptimal for every network type
-        (vxlan, flat/VLAN, etc) but it does prevent fragmentation of a
+        (vxlan, flat, vlan, etc) but it does prevent fragmentation of a
         VM<?oxy_insert_start author="michelln" timestamp="20160302T170012-0500"?>'<?oxy_insert_end?>s
         packets due to encapsulation.</p>
       <p>For instance, if you set the new *-mtu configuration options to a default of 1500 and
@@ -98,13 +96,14 @@
           If so, you will remain there.<codeblock>git checkout site</codeblock>Then begin editing
           the files. In network_groups.yml, add mtu:
           9000<codeblock>network-groups:
-   - name: HLM that this will change ...................
-     hostname-suffix: hlm
+   - name: GUEST
+     hostname-suffix: guest
      mtu: 9000
      component-endpoints:
-   - lifecycle-manager
-   - lifecycle-manager-target</codeblock>
-          This will set the MTU of the physical interfaces managed by HPE Helion OpenStack. </li> <li>Next, edit the layer 2 agent config file, ml2_conf.ini.j2, found in
+          </codeblock>This
+          will set the physical interface managed by HPE Helion OpenStack that has the HLM network
+          group tag assigned to it. This can be found in the interfaces_set.yml file under the
+          interface-models section. </li> <li>Next, edit the layer 2 agent config file, ml2_conf.ini.j2, found in
           ~/helion/my_cloud/config/neutron/ to set the path_mtu and segment_mtu variables under
           [ml2]: (modular layer 2)
           <codeblock>[ml2]
@@ -116,7 +115,7 @@
  ...
  advertise_mtu = True</codeblock> This
           allows Neutron to advertise the optimal MTU to instances (based upon path_mtu minus the
-          encapsulation size). Remove the "dhcp-option-force=26,1400" line from
+          encapsulation size).</li><li>Next, remove the "dhcp-option-force=26,1400" line from
           ~/helion/my_cloud/config/neutron/dnsmasq-neutron.conf.j2. </li> <li>Edit each of the following files:<ul>
             <li>~/helion/my_cloud/config/neutron/dhcp_agent.ini.j2 </li>
             <li>~/helion/my_cloud/config/neutron/l3_agent.ini.j2 </li>
@@ -134,14 +133,14 @@ git commit -m "your commit message goes here in quotes"</codeblock>run
 ansible-playbook -i hosts/verb_hosts config-processor-run.yml</codeblock>and
           ready the
           deployment:<codeblock>ansible-playbook -i hosts/verb_hosts ready-deployment.yml</codeblock>Then
-          run the osconfig-run.yml
-          playbook:<codeblock>ansible-playbook -i hosts/verb_hosts osconfig-run.yml </codeblock>followed
+          run the network_interface-reconfigure.yml
+          playbook:<codeblock>ansible-playbook -i hosts/verb_hosts network_interface-reconfigure.yml</codeblock>followed
           by the
           nova-reconfigure.yml:<codeblock>ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml </codeblock>Then
           run neutron-reconfigure.yml:
           <codeblock>ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock>Note:
           adding/changing network-group mtu settings will likely require a network restart during
-          osconfig-run. </li>
+          network_interface-reconfigure.yml. </li>
 
         <li>If HPE Helion OpenStack hasn't been deployed yet, simply make sure these config changes
           have been committed before running the typical deployment procedure.
