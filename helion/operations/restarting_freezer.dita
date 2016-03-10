@@ -5,28 +5,58 @@
     Crash</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <section>
-      <sectiondiv id="restartFreezer">
-      <p> Every time the freezer-scheduler is restarted on a node (or anytime a node is
-      rebooted), this procedure must be applied. For example, during an upgrade process that
-      requires node rebooting, freezer-schedulers are rebooted. In this case, if you do not follow
-      this procedure after those reboots, no backup will be taken after the freezer-scheduler is
-      restarted. In the case where the freezer-scheduler was restarted on every node, the procedure
-      is as follows:</p>
-    <p>From the deployer, navigate to the indicated directory and run the following commands:</p>
-      <codeblock>cd /home/stack/scratch/ansible/next/hos/ansible
-ansible -i hosts/verb_hosts FRE-AGN --sudo -m file -a 'path=/etc/freezer/scheduler/to_upload state=absent'
-ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock>
-      <p>If the freezer-scheduler has been restarted on only a specific node, in the case of a crash or
-      single reboot, for example, the procedure is as follows: </p>
-    <p>From the deployer, navigate to the indicated directory and run the following commands:</p>
-      <codeblock>cd /home/stack/scratch/ansible/next/hos/ansible
-ansible --limit &lt;hostname of the node> -i hosts/verb_hosts FRE-AGN --sudo -m file -a 'path=/etc/freezer/scheduler/to_upload state=absent'
-ansible-playbook --limit &lt;hostname of the node> -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock>
+    <section id="restartFreezer">
+      <p>Each time the <codeph>freezer-scheduler</codeph> is restarted on a node, which will occur
+        any time a node is rebooted, the procedure documented below must be applied to the nodes
+        that were rebooted.</p>
+      <p>If you do not do these steps for the rebooted nodes then no backups will be taken after the
+          <codeph>freezer-scheduler</codeph> is restarted.</p>
+    </section>
+    <section id="ansible"><title>Create an Ansible Playbook to Clean the Freezer Jobs</title>
+      <p>These steps will show you how to create an ansible playbook that you can use to restart the
+        backup jobs after a node reboot. This playbook will delete the old backup jobs and create
+        fresh ones.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Change the scratch directory:
+          <codeblock>cd ~/stack/scratch/ansible/next/hos/ansible</codeblock></li>
+        <li>Create a file named <codeph>_clean_freezer_jobs.yml</codeph> with the contents below:
+          <codeblock>
+---
+- hosts: FRE-AGN
+  roles:
+    - freezer-jobs
+  tasks:
+  - name: Clean old job templates
+    become: yes
+    file:
+      path: /etc/freezer/scheduler/to_upload
+      state: absent
+
+- include: _freezer_manage_jobs.yml</codeblock></li>
+      </ol>
+    </section>
+    <section id="allnodes"><title>Running the Ansible Playbook to Clean the Freezer Jobs</title>
+      <p>These steps will show you how to run the ansible playbook to clean the Freezer jobs.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Run the playbook. <p>If you want to run the playbook against all of the nodes in your
+            environment, such as after an upgrade where all of your nodes are rebooted, use this
+            command:</p>
+          <codeblock>cd ~/stack/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts _clean_freezer_jobs.yml</codeblock>
+          <p>If you only rebooted specific nodes in your environment, but not all nodes, then you
+            can specify a list of hosts like this:</p>
+          <codeblock>cd ~/stack/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts _clean_freezer_jobs.yml --limit &lt;hostname></codeblock>
+          <note>You can get a full list of hostnames in your environment by looking in your
+              <codeph>/etc/hosts</codeph> file.</note></li>
+      </ol>
+    </section>
+    <section id="moreinfo">
       <p>More information on the upstream bug is available here: <xref
-        href="https://bugs.launchpad.net/freezer/+bug/1546269" format="html" scope="external"
-        >https://bugs.launchpad.net/freezer/+bug/1546269</xref></p>
-      </sectiondiv>
+          href="https://bugs.launchpad.net/freezer/+bug/1546269" format="html" scope="external"
+          >https://bugs.launchpad.net/freezer/+bug/1546269</xref></p>
     </section>
   </body>
 </topic>
