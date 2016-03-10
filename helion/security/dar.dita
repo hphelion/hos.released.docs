@@ -4,9 +4,9 @@
   <title>Data at Rest Encryption</title>
   <body>    <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
-    This section describes the data-at-rest encryption model available in HOS 3.0. Cinder service to request the creation and 
+      This section describes the data-at-rest encryption model available in <keyword keyref="kw-hos"/> . Cinder service to request the creation and 
     attachment of encrypted storage volumes. These volumes are protected with an encryption key that may be stored in HSM appliance.
-    The Barbican service in HOS 3.0 supports two methods to store encryption keys:
+    The Barbican service supports two methods to store encryption keys:
     
     Native DB backend
     HSM device (KMIP + Atalla ESKM)
@@ -16,52 +16,53 @@
     Different backends can be enabled as described below.
     
     Native DataBase:
-    This is the default configuration in HOS 3.0.
+    This is the default configuration in <keyword keyref="kw-hos"/> .
     KMIP + Atalla ESKM:
-    Access details for your HSM appliance are to be used in steps below. After successful configuration, you should now see Barbican make requests of the HSM for key material as needed. You can also confirm key operations are going to your HSM via its admin portal.
+    Access details for your HSM appliance are to be used in steps below. After successful configuration, you should now see Barbican make requests of the 
+    HSM for key material as needed. You can also confirm key operations are going to your HSM via its admin portal.
     
     Copy KMIP plugin certs:
     Code Block
     
     # On deployer node
-    stack@localhost:~$ cd ~/stack/scratch/ansible/next/hos/ansible
-    stack@localhost:~$ ansible-playbook  -i hosts/verb_hosts barbican-reconfigure.yml -e@/tmp/kmip_plugin_certs.yml
+      <codeblock>stack@localhost:~$ cd ~/stack/scratch/ansible/next/hos/ansible
+    stack@localhost:~$ ansible-playbook  -i hosts/verb_hosts barbican-reconfigure.yml -e@/tmp/kmip_plugin_certs.yml</codeblock>
     
     Enable KMIP plugin:
-    Code Block
-    
-    stack@localhost:~$ vi ~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml
+
+      <codeblock>stack@localhost:~$ vi ~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock>
     * Change the value `use_kmip_secretstore_plugin` to True to use KMIP
     plugin or False to use default secret store plugin (`store_crypto`).
     * Provide KMIP client connection credentials and KMIP server hostname and port: 
-    barbican_kmip_username: 'hlm_barbican'
+      <codeblock>barbican_kmip_username: 'hlm_barbican'
     barbican_kmip_password: 'openstack'
     barbican_kmip_port: 5696
-    barbican_kmip_host : 16.103.18.54
+    barbican_kmip_host : 16.103.18.54</codeblock>
     
     Commit the change in git repository:
-    Code Block
+
     
-    stack@localhost:~$ git add -A
+      <codeblock>stack@localhost:~$ git add -A
     stack@localhost:~$ git commit -m 'Enable KMIP'
     stack@localhost:~$ cd ~/helion/hos/ansible/
-    stack@localhost:~$ ansible-playbook -i hosts/localhost ready-deployment.yml
+    stack@localhost:~$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
     
     Run reconfiguration playbook in deployment area:
-    Code Block
+ 
     
-    stack@localhost:~$ cd ~/scratch/ansible/next/hos/ansible
-    stack@localhost:~$ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml
+      <codeblock>stack@localhost:~$ cd ~/scratch/ansible/next/hos/ansible
+    stack@localhost:~$ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
     
-    Usage Examples
+  <p><b>Usage Examples</b></p>
     
-    Now that Barbican and Cinder services are installed, we need to configure a cinder volume type for encryption. This will create a new cinder volume type "LUKS" that can be selected when creating a new volume. Such volumes will be encrypted with a 512bit AES key:
-    Code Block
+    Now that Barbican and Cinder services are installed, we need to configure a cinder volume type for encryption.
+    This will create a new cinder volume type "LUKS" that can be selected when creating a new volume. Such volumes will be encrypted with a 512bit AES key:
+
     
-    stack@localhost:~$ cinder --os-username admin --os-password openstack type-­create LUKS
+      <codeblock>stack@localhost:~$ cinder --os-username admin --os-password openstack type-­create LUKS
     stack@localhost:~$ cinder --os­username admin --os­password openstack encryption-type-create \
     ­­                  --cipher aes-xts-plain64 --key_size 512 --control_location \ 
-    front-end LUKS nova.volume.encryptors.luks.LuksEncryptor
+    front-end LUKS nova.volume.encryptors.luks.LuksEncryptor</codeblock>
     
     <codeblock>+--------------------------------------+-------------------------------------------+-----------------+----------+------------------+
     |            Volume Type ID            |                  Provider                 |      Cipher     | Key Size | Control Location |
