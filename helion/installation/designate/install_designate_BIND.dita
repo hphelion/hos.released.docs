@@ -6,12 +6,36 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="Overview">
       <title>Install Designate with BIND</title>
-      <p><keyword keyref="kw-hos"/>Designate</p>
-
+      <p><keyword keyref="kw-hos"/> Designate service and BIND can be installed together instead of
+        the default <b>PowerDNS</b> backend. BIND will be deployed to one or more control planes
+        clusters, based on the placement of the <b>bind</b> service component.</p>
 	  
     </section>
-    <section id="GettingStarted">
-      <title>Getting Started</title>
+    <section id="ConfigureBackend">
+      <title>Configure the Backend</title>
+      <p>Ensure the Designate components, and the BIND component have been placed on a cluster. BIND
+        may be placed on a separate cluster to the other Designate components. Additionally, ensure
+        the default <b>powerdns</b> component has been removed.
+        <codeblock>control-planes: 
+  - name: control-plane-1
+    region-name: region1
+      - lifecycle-manager-target
+          
+    clusters:
+        - name: cluster1
+          service-components:
+            - lifecycle-manager
+            - mysql
+            - ip-cluster
+            - apache2
+            - ...
+            - designate-api
+            - designate-central
+            - designate-pool-manager
+            - designate-zone-manager
+            - designate-mdns
+            - designate-client
+            - bind</codeblock></p>
 	
 	</section>
 

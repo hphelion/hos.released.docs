@@ -6,12 +6,38 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="Overview">
       <title>Install Designate with PowerDNS</title>
-      <p><keyword keyref="kw-hos"/>Designate</p>
+      <p><keyword keyref="kw-hos"/> Designate Service defaults to the PowerDNS Backend 
+        if another backend is not configured for domain name service.  PowerDNS will be 
+        deployed to one or more control planes clusters, based on the placement of the 
+        <b>powerdns</b> service component.</p>
 
 	  
     </section>
-    <section id="GettingStarted">
-      <title>Getting Started</title>
+    <section id="ConfigureBackend">
+      <title>Configure the Backend</title>
+      <p>Ensure the Designate components, and the PowerDNS component have been 
+        placed on a cluster. PowerDNS may be placed on a separate cluster to the other 
+        Designate components.
+        <codeblock>control-planes: 
+  - name: control-plane-1
+    region-name: region1
+      - lifecycle-manager-target
+          
+    clusters:
+      - name: cluster1
+        service-components:
+          - lifecycle-manager
+          - mysql
+          - ip-cluster
+          - apache2
+          - ...
+          - designate-api
+          - designate-central
+          - designate-pool-manager
+          - designate-zone-manager
+          - designate-mdns
+          - designate-client
+          - powerdns</codeblock></p>
 	
 	</section>
 
