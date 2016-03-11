@@ -24,10 +24,11 @@
         <li>Copy KMIP plugin certs. On the lifecycle manager node:
           <codeblock>stack@localhost:~$ cd ~/stack/scratch/ansible/next/hos/ansible
 stack@localhost:~$ ansible-playbook  -i hosts/verb_hosts barbican-reconfigure.yml -e@/tmp/kmip_plugin_certs.yml</codeblock>
-          Enable KMIP plugin:
-          <codeblock>stack@localhost:~$ vi ~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock></li>
-        <li>Change the value of <codeph>use_kmip_secretstore_plugin</codeph> to True to use the KMIP plugin or False to
-          use the default secret store plugin (store_crypto). </li>
+          Next you will enable KMIP plugin. First open
+          barbican-common/vars/barbican_deploy_config.yml for
+          editing:<codeblock>stack@localhost:~$ vi ~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock></li>
+        <li>In that file, change the value of <codeph>use_kmip_secretstore_plugin</codeph> to True
+          to use the KMIP plugin or False to use the default secret store plugin (store_crypto). </li>
         <li>Provide KMIP client connection credentials and KMIP server hostname and port:
           <codeblock>barbican_kmip_username: 'hlm_barbican'
 barbican_kmip_password: 'openstack'
@@ -40,7 +41,7 @@ stack@localhost:~$ git commit -m 'Enable KMIP'
 stack@localhost:~$ cd ~/helion/hos/ansible/
 stack@localhost:~$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
-        <li>Run reconfiguration playbook in deployment area:
+        <li>Run the Barbican reconfiguration playbook in deployment area:
           <codeblock>stack@localhost:~$ cd ~/scratch/ansible/next/hos/ansible
 stack@localhost:~$ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
         </li>
