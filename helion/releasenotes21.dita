@@ -11,8 +11,8 @@
                 <keyword keyref="kw-hos-version-21"/>, including known issues and workarounds for
                 this release:</p>
             <ul>
-                <li><xref href="releasenotes21.dita#release-notes-21/features">New Features Available in
-                        this Release</xref></li> 
+                <li><xref href="releasenotes21.dita#release-notes-21/features">New Features
+                        Available in this Release</xref></li>
                 <li><xref href="releasenotes21.dita#release-notes-21/issues_fixed">Issues Fixed in
                         this Release</xref></li>
                 <li><xref href="releasenotes21.dita#release-notes-21/known_issues">Known Issues in
@@ -305,6 +305,15 @@ restore_from_host = hlm101-cp1-core-m1-mgmt
 freezer-agent --config backup.ini        
 </codeblock>
             </p>
+            <!-- https://jira.hpcloud.net/browse/DOCS-2792 -->
+            <p id="DOCS-2792"><b>Restarting lifecycle manager leaves Apache2 down</b></p>
+            <p>If you reboot your lifecycle management node, this would apply to both a dedicated
+                lifecycle manager or a shared lifecycle manager/controller node, the Apache2 service
+                will not restart on its own. This will cause a variety of issues, including making
+                migrating your <codeph>cinder-volume</codeph> singleton service impossible.</p>
+            <p>The workaround is to manually start the service using this command:</p>
+            <codeblock>sudo systemctl start apache2</codeblock>
+            <p>You will need to do this anytime your lifecycle manager is rebooted.</p>
             <!--  https://jira.hpcloud.net/browse/DOCS-2414 -->
             <p id="DOCS-2414"><b>Deployer disaster recovery will fail if the new system does not
                     have the same <codeph>hostname</codeph> as the originally backed-up
