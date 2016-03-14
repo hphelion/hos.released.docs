@@ -32,7 +32,6 @@
         <codeblock>control-planes: 
           - name: control-plane-1
           region-name: region1
-          - lifecycle-manager-target
           
           clusters:
           - name: cluster1
@@ -55,12 +54,12 @@ $ nano config/designate/pool-manager.conf.j2</codeblock></p>
       <p>In the <codeph>config/designate/pool-manager.conf.j2</codeph>, find the following code
         block:
         <codeblock>{# backends.infoblox(wapi_url="https://.../",
-username="myuser",
-password="mypassword",
-ns_group="designate",
-nameservers=[],
-also_notifies=[],
-masters=designate_pool_masters) #}</codeblock></p>
+                     username="myuser",
+                     password="mypassword",
+                     ns_group="designate",
+                     nameservers=[],
+                     also_notifies=[],
+                     masters=designate_pool_masters) #}</codeblock></p>
       <p>Make the following changes:
         <ol>
           <li>Uncomment the block.  In Jinja2, this means replacing the {# and #} markers with {{ and }}.</li>
@@ -68,44 +67,44 @@ masters=designate_pool_masters) #}</codeblock></p>
           <li>Save the file.</li>
         </ol>
         </p>
-      <p>Once complete, the block should look like this: 
+      <p>Once complete, the block should look like this:
         <codeblock>{{ backends.infoblox(wapi_url="https://infoblox.mycorp.com/",
-username="hos-designate",
-password="MySecretPassword",
-ns_group="designate",
-nameservers=['192.0.2.1', '192.0.2.2', '192.0.2.3'],
-also_notifies=[],
-masters=designate_pool_masters) }}</codeblock></p>
+                     username="hos-designate",
+                     password="MySecretPassword", 
+                     ns_group="designate",
+                     nameservers=['192.0.2.1', '192.0.2.2', '192.0.2.3'],
+                     also_notifies=[],
+                     masters=designate_pool_masters) }}</codeblock></p>
         
       <p>You will need to inspect and commit the changes before proceeding with the deployment:
         <codeblock>$ git diff
 diff --git a/hos/ansible/roles/designate-pool-manager/templates/pool-manager.conf.j2 b/hos/ansible/roles/designate-pool-manager/templates/pool-manager.conf.j2
 index 614aac2..a69c5a1 100644
- --- a/hos/ansible/roles/designate-pool-manager/templates/pool-manager.conf.j2
- +++ b/hos/ansible/roles/designate-pool-manager/templates/pool-manager.conf.j2
- @@ -53,13 +53,13 @@ backend_url = {{ designate_backend_url }}
- also_notifies=["193.108.155.34", "23.73.134.141", "80.67.64.148", "23.73.134.237", "23.73.133.141", "23.73.133.237", "80.67.64.10", "72.246.0.10", "72.247.45.157", "72.246.192.168", "193.108.152.143", "60.254.128.45", "72.247.45.110", "72.247.45.65", "72.247.45.25"],
- masters=designate_pool_masters) #}
+--- a/hos/ansible/roles/designate-pool-manager/templates/pool-manager.conf.j2
++++ b/hos/ansible/roles/designate-pool-manager/templates/pool-manager.conf.j2
+@@ -53,13 +53,13 @@ backend_url = {{ designate_backend_url }}
+also_notifies=["193.108.155.34", "23.73.134.141", "80.67.64.148", "23.73.134.237", "23.73.133.141", "23.73.133.237", "80.67.64.10", "72.246.0.10", "72.247.45.157", "72.246.192.168", "193.108.152.143", "60.254.128.45", "72.247.45.110", "72.247.45.65", "72.247.45.25"],
+masters=designate_pool_masters) #}
           
- -{# backends.infoblox(wapi_url="https://.../",
- -                     username="myuser",
- -                     password="mypassword",
- +{{ backends.infoblox(wapi_url="https://infoblox.mycorp.com/",
- +                     username="hos-designate",
- +                     password="MySecretPassword",
- ns_group="designate",
- -                     nameservers=[],
- +                     nameservers=['192.0.2.1', '192.0.2.2', '192.0.2.3'],
- also_notifies=[],
- -                     masters=designate_pool_masters) #}
- +                     masters=designate_pool_masters) }}
+-{# backends.infoblox(wapi_url="https://.../",
+-                     username="myuser",
+-                     password="mypassword",
++{{ backends.infoblox(wapi_url="https://infoblox.mycorp.com/",
++                     username="hos-designate",
++                     password="MySecretPassword",
+                      ns_group="designate",
+-                     nameservers=[],
++                     nameservers=['192.0.2.1', '192.0.2.2', '192.0.2.3'],
+                      also_notifies=[],
+-                     masters=designate_pool_masters) #}
++                     masters=designate_pool_masters) }}
           
 {# End Pool Assisted Configuration #}
         </codeblock></p>
           <p>Commit changes.
-            <codeblock>$ git commit -a -m "Configure Designate's InfoBlox Backend"
+        <codeblock>$ git commit -a -m "Configure Designate's InfoBlox Backend"
 [site 7a00f61] Configure Designate's InfoBlox Backend
-1 file changed, 5 insertions(+), 5 deletions(-)</codeblock></p>
+ 1 file changed, 5 insertions(+), 5 deletions(-)</codeblock></p>
 	</section>
 
   </body>
