@@ -91,7 +91,54 @@ $ ansible-playbook -i hosts/verb_hosts -e service_package=&lt;image path/name&gt
  
     
     <p><b>Testing that the Octavia Load Balancer</b></p>
-    <p></p>
+
+    <note>You should perform the following steps from a node that has a route to the private
+      network. Using the examples from above, 10.1.0.0/24 should be reachable. </note>
+    <ol>
+      <li>SSH into both vm1 and vm2 in two separate windows and make them listen on your
+        configured port. </li>
+      <li>From one
+        window.<codeblock>ssh cirros@&lt;ip address vm1>
+          pass: &lt;password&gt;</codeblock></li>
+      <li>From another window.
+        <codeblock>ssh cirros@&lt;ip address vm2>
+          pass: &lt;password&gt;</codeblock></li>
+      <li>Start running web servers on both of the virtual machines.</li>
+      <li>Create a webserv.sh script with below contents. In this example, the port is
+        80.<codeblock>$ vi webserv.sh
+          
+#!/bin/bash
+          
+MYIP=$(/sbin/ifconfig eth0|grep 'inet addr'|awk -F: '{print $2}'| awk '{print $1}');
+while true; do
+    echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $MYIP" | sudo nc -l -p 80
+done
+          
+## Give it Exec rights
+$ chmod 755 webserv.sh
+          
+## Start webserver
+$ ./webserv.sh</codeblock></li>
+      <li>Open a separate window. From the respective source node in external network (in case
+        of accessing LBaaS VIP thorough its FIP) or in private network (in case of no FIP), add
+        the respective IP address to the no_proxy env variable, if required. You can get the
+        <i>VIP</i> from the <codeph>neutron lbaas-loadbalancer-list</codeph> for LBaaS v2 and
+        <codeph>neutron lb-vip-list</codeph> for LBaaS v1.</li>
+      <li>Run the following commands to test load balancing. In this example, the VIP IP address
+        is 10.1.0.7 and when executing curl against the VIP, the responses are returned from the
+        load balanced services.<codeblock>$ export no_proxy=$no_proxy,10.1.0.7
+          
+## Curl the VIP
+$ curl -k 10.1.0.7
+Welcome to 10.1.0.4
+         
+$ curl -k 10.1.0.7
+Welcome to 10.1.0.5
+          
+$ curl -k 10.1.0.7
+Welcome to 10.1.0.4</codeblock></li>
+    </ol>
+    
   </section>
     
 
