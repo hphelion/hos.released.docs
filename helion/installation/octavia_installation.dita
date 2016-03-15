@@ -33,9 +33,67 @@
           keyref="kw-hos-phrase-30"/>. Also note that the Octavia load balancer provider is listed
         as the default.</note>
 
-
- 
     </section>
+
+  <section id="OctaviaProvider">
+    <title>Octavia Load Balancing Provider</title>
+    <p>The Octavia Load balancing provider bundled with <keyword keyref="kw-hos-phrase-30"/> is an
+        operator grade load balancer for OpenStack. It is based on the Liberty version of Octavia.
+        It differs from the namespace driver by starting a new nova virtual machine to house the
+        haproxy performing the load balancing for each load balancer requested. A virtual machine
+        for each load balancer requested provides a better separation of load balancers between
+        tenants and makes it easier to grow load balancing capacity alongside compute node growth.
+        Additionally, if the virtual machine fails for any reason Octavia will replace it with a new
+        VM from a pool of spare VM's, assuming that the feature is configured.</p>
+    
+    <p><b>Prerequisites</b></p>
+    <p>The Octavia Load Balancing Provider requires a provider network. This needs to be set 
+      up and configured in the hlm-input model prior to installing Octavia. 
+      Please refer to the corresponding Neutron documentation.
+      <!-- Need link to appropriate documentation -->
+    </p>
+    
+    <p><b>Installing the Amphora Image</b></p>
+    <p>Octavia is utilizing Nova VMs for it's load balancing function and HPE provides images used to 
+      boot those VM's called <codeph>octavia-amphora-haproxy</codeph>. 
+      <note type="warning">Without these images the Octavia load balancer won't work.</note></p>
+    <!-- Need download link and instructions to run it -->
+      
+    <p>You can download those images form the software depot. Once the image is downloaded 
+      it needs to be placed on the lifecycle manager node and the image registered. </p>
+    <ol>
+      <li>Switch to the ansible directory and register the image by giving the full path and 
+        name (e.g. <codeph>/tmp/octavia-amphora-haproxy-guest-image.tgz</codeph>) as 
+        argument to service_package:
+        <codeblock>$ cd ~/scratch/ansible/next/hos/ansible/
+$ ansible-playbook -i hosts/verb_hosts -e service_package=&lt;image path/name&gt; service-guest-image.yml</codeblock></li>
+      <li>Source the service user (this can be done on a different computer)
+        <codeblock>$ . service.osrc</codeblock></li>
+      <li>Verify if the image got uploaded and registered (this van be done on a computer 
+        with access to the glance CLI client)
+      <codeblock>$ glance image-list
++--------------------------------------+---------------------------------------+
+| ID                                   | Name                                  |
++--------------------------------------+---------------------------------------+
+|  01ff1f0d-fc35-4e3e-bae2-e7e2ee1f65b6 | cirros-0.3.3-x86_64                   |
+| e64cb914-15d2-4ad8-a63c-b7c60a6c232e | octavia-amphora-x64-haproxy_hos-3.0.0 |
++--------------------------------------+---------------------------------------+
+    </codeblock></li>
+    </ol>
+    <note>In rare circumstances the image won't be registered and you have to run the 
+      whole registration again. Rest assured that if you run it by accident the system will only upload 
+      a new image if the underlying image has changed.</note>
+    <p>Please be aware that if you have already created load balancer they won;t receive the new image. 
+      Only load balancers created after the image has been successfully created will use the new image. 
+      If existing load balancers need to be switched to the new image please follow the instructions 
+      in the admin guide.</p>
+    <!-- Need link here to point to the Octavia admin guide when it's created. -->
+ 
+    
+    <p><b>Testing that the Octavia Load Balancer</b></p>
+    <p></p>
+  </section>
+    
 
   </body>
 </topic>
