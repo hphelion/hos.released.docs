@@ -28,17 +28,15 @@
             are supported. Customers with HP Moonshot servers should utilize the IPMI driver instead 
             of the iLO driver due to interface compatability. 
             </p>
-        
-        <p>
-            The <codeph>agent_ipmitool</codeph> and <codeph>agent_ilo</codeph> drivers support "node cleaning" - the process by which data is
-                removed after a previous tenant has used the node - while the
-                    <codeph>pxe_ipmitool</codeph>, and <codeph>pxe_ilo</codeph> drivers do not. See
-                the section on <xref keyref="ironic-node-cleaning">Node Cleaning</xref> for more
-                details. </p>
-        
+               
         
         <p>Before you start, you should be aware that:
             <ul>
+                <li>The <codeph>agent_ipmitool</codeph> and <codeph>agent_ilo</codeph> drivers support "node cleaning" - the process by which data is
+                    removed after a previous tenant has used the node - while the
+                    <codeph>pxe_ipmitool</codeph>, and <codeph>pxe_ilo</codeph> drivers do not. See
+                    the section on <xref keyref="ironic-node-cleaning">Node Cleaning</xref> for more
+                    details.</li>
                 <li>Node parameter settings must have matching flavors in terms of cpus, local_gb, and memory_mb.
                   </li>
                 <li>It is advisable that nodes are pre-validated in terms of bios settings, in terms of boot mode, prior to setting capabilities.  
@@ -47,6 +45,8 @@
                    </li>
                 <li>Network cabling and interface layout should also be pre-validated in any given particular boot mode 
                     or configuration that is registered</li>
+                <li>The use of <codeph>agent_</codeph> drivers is predicated upon Glance images being backed by a Swift image store, 
+                    specificially the need for the temporary file access features.  Use of Ceph or the filesystem as a Glance back-end image store means that the <codeph>agent_</codeph> drivers cannot be used.</li>
             </ul>
             
         </p>
@@ -83,17 +83,40 @@ This will produce output like the following example, showing three images that h
     </section>
     
     <section>
-        <title>Creating a node using agent_ilo</title>
+        <title>Provisioning a node</title>
         
-        <p>If you are using a boot mode of "bios", then you need to ensure that the boot mode has been set 
-            correctly on the iLO:
-        <image keyref="ilo_boot_order_legacy_bios"/>
-            
-            While the iLO driver can automatically set a node to boot in UEFI mode via the 
-            boot_mode defined capability, it cannot set BIOS boot mode once UEFI mode has been set.
+        <p> The information required to provision a node varies slightly depending on the driver used. In general the 
+             following details are required.</p>
+        
+        <ul>
+            <li>Network access information and credentials to connect to the management interface of the node.</li>
+            <li>Sufficent properties to allow for nova flavor matching.</li>
+            <li>A deployment image to perform the actual deployment of the guest operating system to the baremetal node. </li>
+        </ul>
+        
+        
+        <p>A combination of the <codeph>ironic node-create</codeph> and <codeph>ironic node-update</codeph> commands 
+            are used for registering a node's characteristics with the Ironic service. In particular, 
+            <codeph>ironic node-update &lt;nodeid> add</codeph> and <codeph>ironic node-update &lt;nodeid> replace</codeph> 
+            can be used to modify the prorerties of a node after it has been created while <codeph>ironic node-update &lt;nodeid> remove</codeph> 
+            will remove a property.
         </p>
         
-        <p>
+    </section>
+    
+    <section>
+        <title>Creating a node using <codeph>agent_ilo</codeph></title>
+        
+        <p>If you want to use a boot mode of BIOS as opposed to UEFI, then you need to ensure that the boot mode has been set 
+            correctly on the iLO: </p>
+        <image keyref="ilo_boot_order_legacy_bios"/>
+        <p>   
+            While the iLO driver can automatically set a node to boot in UEFI mode via the 
+            <codeph>boot_mode</codeph> defined capability, it cannot set BIOS boot mode once UEFI mode has been set.
+        </p>
+        
+        <p>Use the <codeph>ironic node-create</codeph> command to specify the <codeph>agent_ilo</codeph> driver, network access and credential information for the iLO, properties of the node and 
+            the Glance ID of the supplied ISO IPA image. Note that memory size is specified in megabytes while disk size is gigabytes.</p>
  
 <codeblock>
 ironic node-create -d agent_ilo -i ilo_address=10.1.196.117 -i ilo_username=Administrator -i ilo_password=******* \  
@@ -101,12 +124,13 @@ ironic node-create -d agent_ilo -i ilo_address=10.1.196.117 -i ilo_username=Admi
 -i ilo_deploy_iso=b9499494-7db3-4448-b67f-233b86489c1f
 </codeblock>
             
-            
+        <p>This will generate output similar to the following:</p>
+        
 <codeblock>           
 +--------------+---------------------------------------------------------------+
 | Property     | Value                                                         |
 +--------------+---------------------------------------------------------------+
-| uuid         | ea7246fd-e1d6-4637-9699-0b7c59c22e67                          |
+| uuid         | <b>ea7246fd-e1d6-4637-9699-0b7c59c22e67</b>                          |
 | driver_info  | {u'ilo_address': u'10.1.196.117', u'ilo_password': u'******', |
 |              | u'ilo_deploy_iso': u'b9499494-7db3-4448-b67f-233b86489c1f',   |
 |              | u'ilo_username': u'Administrator'}                            |
@@ -118,24 +142,58 @@ ironic node-create -d agent_ilo -i ilo_address=10.1.196.117 -i ilo_username=Admi
 +--------------+---------------------------------------------------------------+
 </codeblock>
             
-        </p>       
+        <p>Now update the node with <codeph>boot_mode</codeph> and <codeph>boot_option</codeph> properties:                      
+        </p>   
         
-        
-        
-    </section>
+ <codeblock>
+     ironic node-update <b>ea7246fd-e1d6-4637-9699-0b7c59c22e67</b> add  properties/capabilities="boot_mode:bios,boot_option:local"
+ </codeblock>
  
+        <p>The <codeph>ironic node-update</codeph> command returns details for all the node's characteristics. </p>
  
- 
- 
- 
- 
-    <section>
-        <title>Generate Key Pair</title>
-        
 <codeblock>
-nova keypair-add ironic_kp > ironic_kp.pem    
-</codeblock>               
++------------------------+---------------------------------------------------------------------+
+| Property               | Value                                                               |
++------------------------+---------------------------------------------------------------------+
+| target_power_state     | None                                                                |
+| extra                  | {}                                                                  |
+| last_error             | None                                                                |
+| updated_at             | None                                                                |
+| maintenance_reason     | None                                                                |
+| provision_state        | available                                                           |
+| clean_step             | {}                                                                  |
+| uuid                   | ea7246fd-e1d6-4637-9699-0b7c59c22e67                                |
+| console_enabled        | False                                                               |
+| target_provision_state | None                                                                |
+| provision_updated_at   | None                                                                |
+| maintenance            | False                                                               |
+| inspection_started_at  | None                                                                |
+| inspection_finished_at | None                                                                |
+| power_state            | None                                                                |
+| driver                 | agent_ilo                                                           |
+| reservation            | None                                                                |
+| properties             | {u'memory_mb': 64000, u'local_gb': 99, u'cpus': 2, u'capabilities': |
+|                        | u'boot_mode:bios,boot_option:local'}                                |
+| instance_uuid          | None                                                                |
+| name                   | None                                                                |
+| driver_info            | {u'ilo_address': u'10.1.196.117', u'ilo_password': u'******',       |
+|                        | u'ilo_deploy_iso': u'b9499494-7db3-4448-b67f-233b86489c1f',         |
+|                        | u'ilo_username': u'Administrator'}                                  |
+| created_at             | 2016-03-11T10:17:10+00:00                                           |
+| driver_internal_info   | {}                                                                  |
+| chassis_uuid           |                                                                     |
+| instance_info          | {}                                                                  |
++------------------------+---------------------------------------------------------------------+
+</codeblock>       
+        
     </section>
+ 
+ 
+ 
+ 
+ 
+ 
+
     
     
     
@@ -206,97 +264,14 @@ glance image-create --name='ubuntu-qcow2' --disk-format=qcow2 --container-format
     </section>
     
     <section>
-        <title>Create Ironic Node</title>
+        <title>Generate Key Pair</title>
         
         <codeblock>
-            ironic node-create -d agent_ilo -i ilo_address=10.12.8.110 -i ilo_username=DOCAdmin -i ilo_password=lab35ting \
-            -p cpus=2 -p memory_mb=12000 -p local_gb=1832 -p cpu_arch=x86_64 \
-            -i ilo_deploy_iso=11783a99-18e9-4d5c-81aa-b2e4e3c9964d
-        </codeblock>
-        
-        <codeblock>
-            +--------------+------------------------------------------------------------------+
-            | Property     | Value                                                            |
-            +--------------+------------------------------------------------------------------+
-            | uuid         | 15c7fc4a-d11c-4eca-90c4-438102168990                             |
-            | driver_info  | {u'ilo_address': u'10.12.8.110', u'ilo_password': u'******',     |
-            |              | u'ilo_deploy_iso': u'11783a99-18e9-4d5c-81aa-b2e4e3c9964d',      |
-            |              | u'ilo_username': u'DOCAdmin'}                                    |
-            | extra        | {}                                                               |
-            | driver       | agent_ilo                                                        |
-            | chassis_uuid |                                                                  |
-            | properties   | {u'memory_mb': 12000, u'cpu_arch': u'x86_64', u'local_gb': 1832, |
-            |              | u'cpus': 2}                                                      |
-            | name         | None                                                             |
-            +--------------+------------------------------------------------------------------+    
-        </codeblock>  
-        
-        <p>Update the Node</p>
-        
-        <codeblock>
-            ironic node-update 15c7fc4a-d11c-4eca-90c4-438102168990 add properties/capabilities="boot_mode:bios,boot_option:local"
-        </codeblock>
-        <codeblock>
-            +------------------------+-------------------------------------------------------------------+
-            | Property               | Value                                                             |
-            +------------------------+-------------------------------------------------------------------+
-            | target_power_state     | None                                                              |
-            | extra                  | {}                                                                |
-            | last_error             | None                                                              |
-            | updated_at             | 2016-02-17T10:56:07+00:00                                         |
-            | maintenance_reason     | None                                                              |
-            | provision_state        | available                                                         |
-            | clean_step             | {}                                                                |
-            | uuid                   | 15c7fc4a-d11c-4eca-90c4-438102168990                              |
-            | console_enabled        | False                                                             |
-            | target_provision_state | None                                                              |
-            | provision_updated_at   | None                                                              |
-            | maintenance            | False                                                             |
-            | inspection_started_at  | None                                                              |
-            | inspection_finished_at | None                                                              |
-            | power_state            | power on                                                          |
-            | driver                 | agent_ilo                                                         |
-            | reservation            | None                                                              |
-            | properties             | {u'memory_mb': 12000, u'cpu_arch': u'x86_64', u'local_gb': 1832,  |
-            |                        | u'cpus': 2, u'capabilities': u'boot_mode:bios,boot_option:local'} |
-            | instance_uuid          | None                                                              |
-            | name                   | None                                                              |
-            | driver_info            | {u'ilo_address': u'10.12.8.110', u'ilo_password': u'******',      |
-            |                        | u'ilo_deploy_iso': u'11783a99-18e9-4d5c-81aa-b2e4e3c9964d',       |
-            |                        | u'ilo_username': u'DOCAdmin'}                                     |
-            | created_at             | 2016-02-17T10:55:06+00:00                                         |
-            | driver_internal_info   | {}                                                                |
-            | chassis_uuid           |                                                                   |
-            | instance_info          | {}                                                                |
-            +------------------------+-------------------------------------------------------------------+
-            
-        </codeblock>
-        
+            nova keypair-add ironic_kp > ironic_kp.pem    
+        </codeblock>               
     </section>
     
-    <section>
-        <title>Create the port</title>
-        
-        <codeblock>
-            ironic port-create -a ec:b1:d7:77:21:38 -n 15c7fc4a-d11c-4eca-90c4-438102168990
-        </codeblock>
-        
-        <codeblock>
-            +-----------+--------------------------------------+
-            | Property  | Value                                |
-            +-----------+--------------------------------------+
-            | node_uuid | 15c7fc4a-d11c-4eca-90c4-438102168990 |
-            | extra     | {}                                   |
-            | uuid      | f5c85023-e870-4074-8188-e1c27854f68c |
-            | address   | ec:b1:d7:77:21:38                    |
-            +-----------+--------------------------------------+    
-        </codeblock>
-        
-    </section>
     
-    <section>
-        <title></title>
-    </section>
     
 </body>
 </topic>
