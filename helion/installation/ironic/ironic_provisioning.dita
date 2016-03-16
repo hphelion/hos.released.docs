@@ -6,74 +6,131 @@
     
 <body>
     <section>
-        <title>Generate Key Pair</title>
-        <codeblock>
-            nova keypair-add ironic_kp > ironic_kp.pem    
-        </codeblock>               
+        <title>Introduction</title>
+        
+        <p>A number of drivers are available to provision and manage bare-metal machines. The drivers are named 
+            based on the deployment mode and the power management interface and include:
+        
+            <ul>
+                <li>agent_ilo</li>
+                <li>agent_ipmi</li>
+                <li>pxe_ilo</li>
+                <li>pxe_ipmi</li>
+            </ul>
+        </p>
+        
+        <p>For HPE servers, <codeph>agent_ipmitool</codeph> and <codeph>agent_ilo</codeph> drivers
+                are supported. These drivers do support node cleaning - the process by which data is
+                removed after a previous tenant has used the node - while the
+                    <codeph>pxe_ipmitool</codeph>, and <codeph>pxe_ilo</codeph> driver do not. . See
+                the section on <xref conkeyref="ironic-node-cleaning">Node Cleaning</xref> for more
+                details. </p>
+        
+   </section>
+    
+    <section>     
+        <title>Supplied Images</title>
+        
+        <p>As part of the Helion Entry-Scale Ironic Cloud installation, Ironic Python Agent (IPA) images are 
+            supplied and loaded into Glance.  To see what images have been loaded, execute 
+            the following commands on the deployer node:
+            
+<codeblock>$ source ~/service.osrc
+$ glance image-list</codeblock>  
+
+This will produce output like the following example, showing three images that have been added by Ironic:
+<codeblock>  
++--------------------------------------+--------------------------+
+| ID                                   | Name                     |
++--------------------------------------+--------------------------+
+| b9499494-7db3-4448-b67f-233b86489c1f | ir-deploy-iso-HOS3.0     |
+| 8bee92b7-98ae-4242-b80e-1201a475361a | ir-deploy-kernel-HOS3.0  |
+| 0c889803-469d-4aad-8cf6-3501e39c532c | ir-deploy-ramdisk-HOS3.0 |
++--------------------------------------+--------------------------+
+</codeblock>           
+
+            The <codeph>ir-deploy-ramdisk-HOS3.0</codeph> image is a traditional boot ramdisk 
+             used by the <codeph>agent_ipmitool</codeph>, <codeph>pxe_ipmitool</codeph>, and <codeph>pxe_ilo</codeph> drivers while 
+            <codeph>ir-deploy-iso-HOS3.0</codeph> is an ISO image 
+            that is supplied as virtual media to the host when using the <codeph>agent_ilo</codeph> driver.
+        </p>
+        
     </section>
     
     <section>
+        <title>Generate Key Pair</title>
+        
+<codeblock>
+nova keypair-add ironic_kp > ironic_kp.pem    
+</codeblock>               
+    </section>
+    
+    
+    
+    <section>
         <title>Create Flavor</title>
-        <codeblock>
-            nova flavor-create bmtest-flavor 12 12000  1832 2
-            nova flavor-key 12 set cpu_arch=x86_64
-            nova flavor-key 12 set capabilities:boot_option="local"
-            nova flavor-key 12 set capabilities:boot_mode="bios"    
-        </codeblock>
+<codeblock>
+nova flavor-create bmtest-flavor 12 12000  1832 2
+nova flavor-key 12 set cpu_arch=x86_64
+nova flavor-key 12 set capabilities:boot_option="local"
+nova flavor-key 12 set capabilities:boot_mode="bios"    
+</codeblock>
         
-        <codeblock> 
-            nova flavor-show 12
-        </codeblock>
+<codeblock> 
+nova flavor-show 12
+</codeblock>
+
+<codeblock>
++----------------------------+-----------------------------------------------------------------------------------------------+
+| Property                   | Value                                                                                         |
++----------------------------+-----------------------------------------------------------------------------------------------+
+| OS-FLV-DISABLED:disabled   | False                                                                                         |
+| OS-FLV-EXT-DATA:ephemeral  | 0                                                                                             |
+| disk                       | 1832                                                                                          |
+| extra_specs                | {"capabilities:boot_option": "local", "cpu_arch": "x86_64", "capabilities:boot_mode": "bios"} |
+| id                         | 12                                                                                            |
+| name                       | bmtest-flavor                                                                                 |
+| os-flavor-access:is_public | True                                                                                          |
+| ram                        | 12000                                                                                         |
+| rxtx_factor                | 1.0                                                                                           |
+| swap                       |                                                                                               |
+| vcpus                      | 2                                                                                             |
++----------------------------+-----------------------------------------------------------------------------------------------+
+
+</codeblock>         
         
-        <codeblock>
-            +----------------------------+-----------------------------------------------------------------------------------------------+
-            | Property                   | Value                                                                                         |
-            +----------------------------+-----------------------------------------------------------------------------------------------+
-            | OS-FLV-DISABLED:disabled   | False                                                                                         |
-            | OS-FLV-EXT-DATA:ephemeral  | 0                                                                                             |
-            | disk                       | 1832                                                                                          |
-            | extra_specs                | {"capabilities:boot_option": "local", "cpu_arch": "x86_64", "capabilities:boot_mode": "bios"} |
-            | id                         | 12                                                                                            |
-            | name                       | bmtest-flavor                                                                                 |
-            | os-flavor-access:is_public | True                                                                                          |
-            | ram                        | 12000                                                                                         |
-            | rxtx_factor                | 1.0                                                                                           |
-            | swap                       |                                                                                               |
-            | vcpus                      | 2                                                                                             |
-            +----------------------------+-----------------------------------------------------------------------------------------------+
-            
-        </codeblock>         
     </section> 
     
     <section>
         <title>Create Glance Image</title>
         
-        <codeblock>
-            glance image-create --name='ubuntu-qcow2' --disk-format=qcow2 --container-format=bare   --file ~/ubuntu.qcow2
-        </codeblock>
-        <codeblock>
-            +------------------+--------------------------------------+
-            | Property         | Value                                |
-            +------------------+--------------------------------------+
-            | checksum         | 45a4a06997e64f7120795c68beeb0e3c     |
-            | container_format | bare                                 |
-            | created_at       | 2016-02-17T10:42:14Z                 |
-            | disk_format      | qcow2                                |
-            | id               | 11783a99-18e9-4d5c-81aa-b2e4e3c9964d |
-            | min_disk         | 0                                    |
-            | min_ram          | 0                                    |
-            | name             | ubuntu-qcow2                         |
-            | owner            | 821b7bb8148f439191d108764301af64     |
-            | protected        | False                                |
-            | size             | 372047872                            |
-            | status           | active                               |
-            | tags             | []                                   |
-            | updated_at       | 2016-02-17T10:42:23Z                 |
-            | virtual_size     | None                                 |
-            | visibility       | private                              |
-            +------------------+--------------------------------------+    
-            
-        </codeblock>                
+<codeblock>
+glance image-create --name='ubuntu-qcow2' --disk-format=qcow2 --container-format=bare   --file ~/ubuntu.qcow2
+</codeblock>
+        
+<codeblock>
++------------------+--------------------------------------+
+| Property         | Value                                |
++------------------+--------------------------------------+
+| checksum         | 45a4a06997e64f7120795c68beeb0e3c     |
+| container_format | bare                                 |
+| created_at       | 2016-02-17T10:42:14Z                 |
+| disk_format      | qcow2                                |
+| id               | 11783a99-18e9-4d5c-81aa-b2e4e3c9964d |
+| min_disk         | 0                                    |
+| min_ram          | 0                                    |
+| name             | ubuntu-qcow2                         |
+| owner            | 821b7bb8148f439191d108764301af64     |
+| protected        | False                                |
+| size             | 372047872                            |
+| status           | active                               |
+| tags             | []                                   |
+| updated_at       | 2016-02-17T10:42:23Z                 |
+| virtual_size     | None                                 |
+| visibility       | private                              |
++------------------+--------------------------------------+    
+
+</codeblock>                
     </section>
     
     <section>
