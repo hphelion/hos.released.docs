@@ -6,10 +6,15 @@
     
 <body>
     <section>
+        
+        <note type="warning">Providing bare metal resources to an un-trusted third party is not advised as a malicious user can potentially modify hardware firmware.</note>
+        
         <title>Introduction</title>
         
         <p>A number of drivers are available to provision and manage bare-metal machines. The drivers are named 
-            based on the deployment mode and the power management interface and include:
+            based on the deployment mode and the power management interface. Helion OpenStack has been tested 
+            with the following drivers:
+            <!--  https://etherpad.hpcloud.net/p/HOSKiloIronicHLM2_0-DOC -->
         
             <ul>
                 <li>agent_ilo</li>
@@ -20,11 +25,31 @@
         </p>
         
         <p>For HPE servers, <codeph>agent_ipmitool</codeph> and <codeph>agent_ilo</codeph> drivers
-                are supported. These drivers do support node cleaning - the process by which data is
+            are supported. Customers with HP Moonshot servers should utilize the IPMI driver instead 
+            of the iLO driver due to interface compatability. 
+            </p>
+        
+        <p>
+            The <codeph>agent_ipmitool</codeph> and <codeph>agent_ilo</codeph> drivers support "node cleaning" - the process by which data is
                 removed after a previous tenant has used the node - while the
-                    <codeph>pxe_ipmitool</codeph>, and <codeph>pxe_ilo</codeph> driver do not. See
+                    <codeph>pxe_ipmitool</codeph>, and <codeph>pxe_ilo</codeph> drivers do not. See
                 the section on <xref keyref="ironic-node-cleaning">Node Cleaning</xref> for more
                 details. </p>
+        
+        
+        <p>Before you start, you should be aware that:
+            <ul>
+                <li>Node parameter settings must have matching flavors in terms of cpus, local_gb, and memory_mb.
+                  </li>
+                <li>It is advisable that nodes are pre-validated in terms of bios settings, in terms of boot mode, prior to setting capabilities.  
+                    The iLO driver can automatically set a node to boot in UEFI mode via the boot_mode defined capability, 
+                    however it cannot set BIOS boot mode once UEFI mode has been set.
+                   </li>
+                <li>Network cabling and interface layout should also be pre-validated in any given particular boot mode 
+                    or configuration that is registered</li>
+            </ul>
+            
+        </p>
         
    </section>
     
@@ -57,6 +82,53 @@ This will produce output like the following example, showing three images that h
         
     </section>
     
+    <section>
+        <title>Creating a node using agent_ilo</title>
+        
+        <p>If you are using a boot mode of "bios", then you need to ensure that the boot mode has been set 
+            correctly on the iLO:
+        <image keyref="ilo_boot_order_legacy_bios"/>
+            
+            While the iLO driver can automatically set a node to boot in UEFI mode via the 
+            boot_mode defined capability, it cannot set BIOS boot mode once UEFI mode has been set.
+        </p>
+        
+        <p>
+ 
+<codeblock>
+ironic node-create -d agent_ilo -i ilo_address=10.1.196.117 -i ilo_username=Administrator -i ilo_password=******* \  
+-p cpus=2 -p memory_mb=64000 -p local_gb=99  \
+-i ilo_deploy_iso=b9499494-7db3-4448-b67f-233b86489c1f
+</codeblock>
+            
+            
+<codeblock>           
++--------------+---------------------------------------------------------------+
+| Property     | Value                                                         |
++--------------+---------------------------------------------------------------+
+| uuid         | ea7246fd-e1d6-4637-9699-0b7c59c22e67                          |
+| driver_info  | {u'ilo_address': u'10.1.196.117', u'ilo_password': u'******', |
+|              | u'ilo_deploy_iso': u'b9499494-7db3-4448-b67f-233b86489c1f',   |
+|              | u'ilo_username': u'Administrator'}                            |
+| extra        | {}                                                            |
+| driver       | agent_ilo                                                     |
+| chassis_uuid |                                                               |
+| properties   | {u'memory_mb': 64000, u'local_gb': 99, u'cpus': 2}            |
+| name         | None                                                          |
++--------------+---------------------------------------------------------------+
+</codeblock>
+            
+        </p>       
+        
+        
+        
+    </section>
+ 
+ 
+ 
+ 
+ 
+ 
     <section>
         <title>Generate Key Pair</title>
         
