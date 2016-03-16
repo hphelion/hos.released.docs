@@ -120,7 +120,7 @@
         indices takes up CPU and memory. If these indicies are left unattended they will continue to
         consume system resources and eventually deplete them.</p>
       <p>Elasticsearch, by itself, doesn't prevent this from happening.</p>
-      <p><keyword keyref="kw-hos"/> uses a tool called "curator" that is developed by the
+      <p><keyword keyref="kw-hos"/> uses a tool called <b>curator</b> that is developed by the
         Elasticsearch community to handle these situations. <keyword keyref="kw-hos"/> installs and
         uses a curator in conjunction with several configurable settings. This curator is called
         cron job and perfoms the following checks:</p>
@@ -138,6 +138,7 @@
         <li><b>Final Check.</b> A final check verifies if the partition size is still high. If it is, an error
           message is written to the log file but the current index is NOT deleted.</li>
       </ul>
+      <p>In the case of an extreme network issue, log files can run out of disk space in under an hour. To avoid this <keyword keyref="kw-hos"/> uses a shell script called <codeph>logrotate_if_needed.sh</codeph>. The cron process runs this script every 5 minutes to see if the value in <codeph>/var/log</codeph> is at 95% or more of its default. If it is at or above this level, cron runs the <codeph>logrotate_if_needed.sh</codeph> script to rotate logs and to free up extra space. This script helps to minimize the chance of running out of disk space on <codeph>/var/log</codeph>.</p>
     </section>
     <section id="types">
       <title>Centralized Logging Data</title>
