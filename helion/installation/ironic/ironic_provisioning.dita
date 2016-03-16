@@ -6,168 +6,381 @@
     
 <body>
     <section>
-        <title>Generate Key Pair</title>
-        <codeblock>
-            nova keypair-add ironic_kp > ironic_kp.pem    
-        </codeblock>               
+        
+        <note type="warning">Providing bare metal resources to an un-trusted third party is not advised as a malicious user can potentially modify hardware firmware.</note>
+        
+        <title>Introduction</title>
+        
+        <p>A number of drivers are available to provision and manage bare-metal machines. The drivers are named 
+            based on the deployment mode and the power management interface. Helion OpenStack has been tested 
+            with the following drivers:
+            <!--  https://etherpad.hpcloud.net/p/HOSKiloIronicHLM2_0-DOC -->
+        
+            <ul>
+                <li>agent_ilo</li>
+                <li>agent_ipmi</li>
+                <li>pxe_ilo</li>
+                <li>pxe_ipmi</li>
+            </ul>
+        </p>
+        
+        <p>For HPE servers, <codeph>agent_ipmitool</codeph> and <codeph>agent_ilo</codeph> drivers
+            are supported. Customers with HP Moonshot servers should utilize the IPMI driver instead 
+            of the iLO driver due to interface compatability. 
+            </p>
+               
+        
+        <p>Before you start, you should be aware that:
+            <ul>
+                <li>The <codeph>agent_ipmitool</codeph> and <codeph>agent_ilo</codeph> drivers support "node cleaning" - the process by which data is
+                    removed after a previous tenant has used the node - while the
+                    <codeph>pxe_ipmitool</codeph>, and <codeph>pxe_ilo</codeph> drivers do not. See
+                    the section on <xref keyref="ironic-node-cleaning">Node Cleaning</xref> for more
+                    details.</li>
+                <li>Node parameter settings must have matching flavors in terms of cpus, local_gb, and memory_mb.
+                  </li>
+                <li>It is advisable that nodes are pre-validated in terms of bios settings, in terms of boot mode, prior to setting capabilities.  
+                    The iLO driver can automatically set a node to boot in UEFI mode via the boot_mode defined capability, 
+                    however it cannot set BIOS boot mode once UEFI mode has been set.
+                   </li>
+                <li>Network cabling and interface layout should also be pre-validated in any given particular boot mode 
+                    or configuration that is registered</li>
+                <li>The use of <codeph>agent_</codeph> drivers is predicated upon Glance images being backed by a Swift image store, 
+                    specificially the need for the temporary file access features.  Use of Ceph or the filesystem as a Glance back-end image store means that the <codeph>agent_</codeph> drivers cannot be used.</li>
+            </ul>
+            
+        </p>
+        
+   </section>
+    
+    <section>     
+        <title>Supplied Images</title>
+        
+        <p>As part of the Helion Entry-Scale Ironic Cloud installation, Ironic Python Agent (IPA) images are 
+            supplied and loaded into Glance.  To see the images that have been loaded, execute 
+            the following commands on the deployer node:
+            
+<codeblock>$ source ~/service.osrc
+$ glance image-list</codeblock>  
+
+This will produce output like the following example, showing three images that have been added by Ironic:
+<codeblock>  
++--------------------------------------+--------------------------+
+| ID                                   | Name                     |
++--------------------------------------+--------------------------+
+| b9499494-7db3-4448-b67f-233b86489c1f | ir-deploy-iso-HOS3.0     |
+| 8bee92b7-98ae-4242-b80e-1201a475361a | ir-deploy-kernel-HOS3.0  |
+| 0c889803-469d-4aad-8cf6-3501e39c532c | ir-deploy-ramdisk-HOS3.0 |
++--------------------------------------+--------------------------+
+</codeblock>           
+
+            The <codeph>ir-deploy-ramdisk-HOS3.0</codeph> image is a traditional boot ramdisk 
+             used by the <codeph>agent_ipmitool</codeph>, <codeph>pxe_ipmitool</codeph>, and <codeph>pxe_ilo</codeph> drivers while 
+            <codeph>ir-deploy-iso-HOS3.0</codeph> is an ISO image 
+            that is supplied as virtual media to the host when using the <codeph>agent_ilo</codeph> driver.
+        </p>
+        
     </section>
     
     <section>
-        <title>Create Flavor</title>
-        <codeblock>
-            nova flavor-create bmtest-flavor 12 12000  1832 2
-            nova flavor-key 12 set cpu_arch=x86_64
-            nova flavor-key 12 set capabilities:boot_option="local"
-            nova flavor-key 12 set capabilities:boot_mode="bios"    
-        </codeblock>
+        <title>Provisioning a node</title>
         
-        <codeblock> 
-            nova flavor-show 12
-        </codeblock>
+        <p> The information required to provision a node varies slightly depending on the driver used. In general the 
+             following details are required.</p>
         
-        <codeblock>
-            +----------------------------+-----------------------------------------------------------------------------------------------+
-            | Property                   | Value                                                                                         |
-            +----------------------------+-----------------------------------------------------------------------------------------------+
-            | OS-FLV-DISABLED:disabled   | False                                                                                         |
-            | OS-FLV-EXT-DATA:ephemeral  | 0                                                                                             |
-            | disk                       | 1832                                                                                          |
-            | extra_specs                | {"capabilities:boot_option": "local", "cpu_arch": "x86_64", "capabilities:boot_mode": "bios"} |
-            | id                         | 12                                                                                            |
-            | name                       | bmtest-flavor                                                                                 |
-            | os-flavor-access:is_public | True                                                                                          |
-            | ram                        | 12000                                                                                         |
-            | rxtx_factor                | 1.0                                                                                           |
-            | swap                       |                                                                                               |
-            | vcpus                      | 2                                                                                             |
-            +----------------------------+-----------------------------------------------------------------------------------------------+
+        <ul>
+            <li>Network access information and credentials to connect to the management interface of the node.</li>
+            <li>Sufficent properties to allow for nova flavor matching.</li>
+            <li>A deployment image to perform the actual deployment of the guest operating system to the baremetal node. </li>
+        </ul>
+        
+        
+        <p>A combination of the <codeph>ironic node-create</codeph> and <codeph>ironic node-update</codeph> commands 
+            are used for registering a node's characteristics with the Ironic service. In particular, 
+            <codeph>ironic node-update &lt;nodeid> <b>add</b></codeph> and <codeph>ironic node-update &lt;nodeid> <b>replace</b></codeph> 
+            can be used to modify the prorerties of a node after it has been created while <codeph>ironic node-update &lt;nodeid> <b>remove</b></codeph> 
+            will remove a property.
+        </p>
+        
+    </section>
+    
+    <section>
+        <title>Creating a node using <codeph>agent_ilo</codeph></title>
+        
+        <p>If you want to use a boot mode of BIOS as opposed to UEFI, then you need to ensure that the boot mode has been set 
+            correctly on the iLO: </p>
+        <image keyref="ilo_boot_order_legacy_bios"/>
+        <p>   
+            While the iLO driver can automatically set a node to boot in UEFI mode via the 
+            <codeph>boot_mode</codeph> defined capability, it cannot set BIOS boot mode once UEFI mode has been set.
+        </p>
+        
+        <p>Use the <codeph>ironic node-create</codeph> command to specify the <codeph>agent_ilo</codeph> driver, network access and credential information for the iLO, properties of the node and 
+            the Glance ID of the supplied ISO IPA image. Note that memory size is specified in megabytes while disk size is gigabytes.</p>
+ 
+<codeblock>
+ironic node-create -d agent_ilo -i ilo_address=10.1.196.117 -i ilo_username=Administrator -i ilo_password=******* \  
+-p cpus=2 -p memory_mb=64000 -p local_gb=99  \
+-i ilo_deploy_iso=<b>b9499494-7db3-4448-b67f-233b86489c1f</b>
+</codeblock>
             
-        </codeblock>         
+        <p>This will generate output similar to the following:</p>
+        
+<codeblock>           
++--------------+---------------------------------------------------------------+
+| Property     | Value                                                         |
++--------------+---------------------------------------------------------------+
+| uuid         | <b>ea7246fd-e1d6-4637-9699-0b7c59c22e67</b>                          |
+| driver_info  | {u'ilo_address': u'10.1.196.117', u'ilo_password': u'******', |
+|              | u'ilo_deploy_iso': u'b9499494-7db3-4448-b67f-233b86489c1f',   |
+|              | u'ilo_username': u'Administrator'}                            |
+| extra        | {}                                                            |
+| driver       | agent_ilo                                                     |
+| chassis_uuid |                                                               |
+| properties   | {u'memory_mb': 64000, u'local_gb': 99, u'cpus': 2}            |
+| name         | None                                                          |
++--------------+---------------------------------------------------------------+
+</codeblock>
+            
+        <p>Now update the node with <codeph>boot_mode</codeph> and <codeph>boot_option</codeph> properties:                      
+        </p>   
+        
+ <codeblock>
+     ironic node-update <b>ea7246fd-e1d6-4637-9699-0b7c59c22e67</b> add  properties/capabilities="boot_mode:bios,boot_option:local"
+ </codeblock>
+ 
+        <p>The <codeph>ironic node-update</codeph> command returns details for all the node's characteristics. </p>
+ 
+<codeblock>
++------------------------+---------------------------------------------------------------------+
+| Property               | Value                                                               |
++------------------------+---------------------------------------------------------------------+
+| target_power_state     | None                                                                |
+| extra                  | {}                                                                  |
+| last_error             | None                                                                |
+| updated_at             | None                                                                |
+| maintenance_reason     | None                                                                |
+| provision_state        | available                                                           |
+| clean_step             | {}                                                                  |
+| uuid                   | ea7246fd-e1d6-4637-9699-0b7c59c22e67                                |
+| console_enabled        | False                                                               |
+| target_provision_state | None                                                                |
+| provision_updated_at   | None                                                                |
+| maintenance            | False                                                               |
+| inspection_started_at  | None                                                                |
+| inspection_finished_at | None                                                                |
+| power_state            | None                                                                |
+| driver                 | agent_ilo                                                           |
+| reservation            | None                                                                |
+| properties             | {u'memory_mb': 64000, u'local_gb': 99, u'cpus': 2, u'capabilities': |
+|                        | u'boot_mode:bios,boot_option:local'}                                |
+| instance_uuid          | None                                                                |
+| name                   | None                                                                |
+| driver_info            | {u'ilo_address': u'10.1.196.117', u'ilo_password': u'******',       |
+|                        | u'ilo_deploy_iso': u'b9499494-7db3-4448-b67f-233b86489c1f',         |
+|                        | u'ilo_username': u'Administrator'}                                  |
+| created_at             | 2016-03-11T10:17:10+00:00                                           |
+| driver_internal_info   | {}                                                                  |
+| chassis_uuid           |                                                                     |
+| instance_info          | {}                                                                  |
++------------------------+---------------------------------------------------------------------+
+</codeblock>       
+        
+    </section>
+ 
+ 
+ 
+    <section>
+        <title>Creating a node using <codeph>agent_ipmi</codeph></title>
+
+        <p>Use the <codeph>ironic node-create</codeph> command to specify the <codeph>agent_ipmi</codeph> driver, network access and credential information for the iLO, properties of the node and 
+            the Glance IDs of the supplied kernel and ramdisk images. Note that memory size is specified in megabytes while disk size is gigabytes.</p>
+        
+<codeblock>
+ironic node-create -d <b>agent_ipmitool</b> \
+-i ipmi_address=10.1.196.117 -i ipmi_username=Administrator -i ipmi_password=******  \
+-p cpus=2 -p memory_mb=64000 -p local_gb=99 -p cpu_arch=x86_64 \
+-i deploy_kernel=8<b>bee92b7-98ae-4242-b80e-1201a475361a</b>  \
+-i deploy_ramdisk=<b>0c889803-469d-4aad-8cf6-3501e39c532c</b>
+</codeblock>
+ 
+        <p>This will generate output similar to the following:</p>
+ 
+<codeblock>
++--------------+-------------------------------------------------------------------------+
+| Property     | Value                                                                   |
++--------------+-------------------------------------------------------------------------+
+| uuid         | cf25b19d-098d-406c-b7a1-e0c40cc84a12                                    |
+| driver_info  | {u'deploy_kernel': u'8bee92b7-98ae-4242-b80e-1201a475361a',             |
+|              | u'ipmi_address': u'10.1.196.117', u'ipmi_username': u'Administrator',   |
+|              | u'ipmi_password': u'******', u'deploy_ramdisk': u'0c889803-469d-4aad-   |
+|              | 8cf6-3501e39c532c'}                                                     |
+| extra        | {}                                                                      |
+| driver       | agent_ipmitool                                                          |
+| chassis_uuid |                                                                         |
+| properties   | {u'memory_mb': 64000, u'cpu_arch': u'x86_64', u'local_gb': 99, u'cpus': |
+|              | 2}                                                                      |
+| name         | None                                                                    |
++--------------+-------------------------------------------------------------------------+   
+</codeblock>
+        
+        <p>Now update the node with <codeph>boot_mode</codeph> and <codeph>boot_option</codeph> properties:                      
+        </p>   
+        
+<codeblock>
+ironic node-update <b>cf25b19d-098d-406c-b7a1-e0c40cc84a12</b> add  properties/capabilities="boot_mode:bios,boot_option:local"
+</codeblock>
+        
+        <p>The <codeph>ironic node-update</codeph> command returns details for all the node's characteristics. </p>
+        
+<codeblock>
++------------------------+-------------------------------------------------------------------------+
+| Property               | Value                                                                   |
++------------------------+-------------------------------------------------------------------------+
+| target_power_state     | None                                                                    |
+| extra                  | {}                                                                      |
+| last_error             | None                                                                    |
+| updated_at             | None                                                                    |
+| maintenance_reason     | None                                                                    |
+| provision_state        | available                                                               |
+| clean_step             | {}                                                                      |
+| uuid                   | cf25b19d-098d-406c-b7a1-e0c40cc84a12                                    |
+| console_enabled        | False                                                                   |
+| target_provision_state | None                                                                    |
+| provision_updated_at   | None                                                                    |
+| maintenance            | False                                                                   |
+| inspection_started_at  | None                                                                    |
+| inspection_finished_at | None                                                                    |
+| power_state            | None                                                                    |
+| driver                 | agent_ipmitool                                                          |
+| reservation            | None                                                                    |
+| properties             | {u'memory_mb': 64000, u'cpu_arch': u'x86_64', u'local_gb': 99, u'cpus': |
+|                        | 2, u'capabilities': u'boot_mode:bios,boot_option:local'}                |
+| instance_uuid          | None                                                                    |
+| name                   | None                                                                    |
+| driver_info            | {u'ipmi_password': u'******', u'ipmi_address': u'10.1.196.117',         |
+|                        | u'ipmi_username': u'Administrator', u'deploy_kernel':                   |
+|                        | u'8bee92b7-98ae-4242-b80e-1201a475361a', u'deploy_ramdisk': u'0c889803  |
+|                        | -469d-4aad-8cf6-3501e39c532c'}                                          |
+| created_at             | 2016-03-11T14:19:18+00:00                                               |
+| driver_internal_info   | {}                                                                      |
+| chassis_uuid           |                                                                         |
+| instance_info          | {}                                                                      |
++------------------------+-------------------------------------------------------------------------+            
+</codeblock>           
+
+ 
+    </section>
+    
+
+    
+    
+    
+    <section>
+        <title>Create Flavor</title>
+        
+        <p>Nova uses flavors when fulfilling requests for bare metal nodes. The Nova scheduler attempts match the 
+        requested flavor against the properties of the created Ironic nodes. So an adminstrator needs to set up 
+        flavors that correspond to the bare metal nodes that are available using the <codeph>nova flavor-create</codeph>
+        command.</p>
+        
+        
+<codeblock>
+$ nova flavor-create bmtest auto 64000  99 2</codeblock>
+        
+        
+<codeblock>
++--------------------------------------+--------+-----------+------+-----------+------+-------+-------------+-----------+
+| ID                                   | Name   | Memory_MB | Disk | Ephemeral | Swap | VCPUs | RXTX_Factor | Is_Public |
++--------------------------------------+--------+-----------+------+-----------+------+-------+-------------+-----------+
+| 645de08d-2bc6-43f1-8a5f-2315a75b1348 | bmtest | 64000     | 99   | 0         |      | 2     | 1.0         | True      |
++--------------------------------------+--------+-----------+------+-----------+------+-------+-------------+-----------+
+stack@helion-cp1-c1-m1-mgmt:~$ nova flavor-list
++--------------------------------------+--------------+-----------+------+-----------+------+-------+-------------+-----------+
+| ID                                   | Name         | Memory_MB | Disk | Ephemeral | Swap | VCPUs | RXTX_Factor | Is_Public |
++--------------------------------------+--------------+-----------+------+-----------+------+-------+-------------+-----------+
+| 1                                    | m1.tiny      | 512       | 1    | 0         |      | 1     | 1.0         | True      |
+| 2                                    | m1.small     | 2048      | 20   | 0         |      | 1     | 1.0         | True      |
+| 3                                    | m1.medium    | 4096      | 40   | 0         |      | 2     | 1.0         | True      |
+| 4                                    | m1.large     | 8192      | 80   | 0         |      | 4     | 1.0         | True      |
+| 5                                    | m1.xlarge    | 16384     | 160  | 0         |      | 8     | 1.0         | True      |
+| 6                                    | m1.baremetal | 4096      | 80   | 0         |      | 2     | 1.0         | True      |
+| 645de08d-2bc6-43f1-8a5f-2315a75b1348 | bmtest       | 64000     | 99   | 0         |      | 2     | 1.0         | True      |
++--------------------------------------+--------------+-----------+------+-----------+------+-------+-------------+-----------+
+</codeblock>
+        
+        <codeblock>
+nova flavor-key 12 set cpu_arch=x86_64
+nova flavor-key 12 set capabilities:boot_option="local"
+nova flavor-key 12 set capabilities:boot_mode="bios"    
+</codeblock>
+        
+<codeblock> 
+nova flavor-show 12
+</codeblock>
+
+<codeblock>
++----------------------------+-----------------------------------------------------------------------------------------------+
+| Property                   | Value                                                                                         |
++----------------------------+-----------------------------------------------------------------------------------------------+
+| OS-FLV-DISABLED:disabled   | False                                                                                         |
+| OS-FLV-EXT-DATA:ephemeral  | 0                                                                                             |
+| disk                       | 1832                                                                                          |
+| extra_specs                | {"capabilities:boot_option": "local", "cpu_arch": "x86_64", "capabilities:boot_mode": "bios"} |
+| id                         | 12                                                                                            |
+| name                       | bmtest-flavor                                                                                 |
+| os-flavor-access:is_public | True                                                                                          |
+| ram                        | 12000                                                                                         |
+| rxtx_factor                | 1.0                                                                                           |
+| swap                       |                                                                                               |
+| vcpus                      | 2                                                                                             |
++----------------------------+-----------------------------------------------------------------------------------------------+
+
+</codeblock>         
+        
     </section> 
     
     <section>
         <title>Create Glance Image</title>
         
-        <codeblock>
-            glance image-create --name='ubuntu-qcow2' --disk-format=qcow2 --container-format=bare   --file ~/ubuntu.qcow2
-        </codeblock>
-        <codeblock>
-            +------------------+--------------------------------------+
-            | Property         | Value                                |
-            +------------------+--------------------------------------+
-            | checksum         | 45a4a06997e64f7120795c68beeb0e3c     |
-            | container_format | bare                                 |
-            | created_at       | 2016-02-17T10:42:14Z                 |
-            | disk_format      | qcow2                                |
-            | id               | 11783a99-18e9-4d5c-81aa-b2e4e3c9964d |
-            | min_disk         | 0                                    |
-            | min_ram          | 0                                    |
-            | name             | ubuntu-qcow2                         |
-            | owner            | 821b7bb8148f439191d108764301af64     |
-            | protected        | False                                |
-            | size             | 372047872                            |
-            | status           | active                               |
-            | tags             | []                                   |
-            | updated_at       | 2016-02-17T10:42:23Z                 |
-            | virtual_size     | None                                 |
-            | visibility       | private                              |
-            +------------------+--------------------------------------+    
-            
-        </codeblock>                
+<codeblock>
+glance image-create --name='ubuntu-qcow2' --disk-format=qcow2 --container-format=bare   --file ~/ubuntu.qcow2
+</codeblock>
+        
+<codeblock>
++------------------+--------------------------------------+
+| Property         | Value                                |
++------------------+--------------------------------------+
+| checksum         | 45a4a06997e64f7120795c68beeb0e3c     |
+| container_format | bare                                 |
+| created_at       | 2016-02-17T10:42:14Z                 |
+| disk_format      | qcow2                                |
+| id               | 11783a99-18e9-4d5c-81aa-b2e4e3c9964d |
+| min_disk         | 0                                    |
+| min_ram          | 0                                    |
+| name             | ubuntu-qcow2                         |
+| owner            | 821b7bb8148f439191d108764301af64     |
+| protected        | False                                |
+| size             | 372047872                            |
+| status           | active                               |
+| tags             | []                                   |
+| updated_at       | 2016-02-17T10:42:23Z                 |
+| virtual_size     | None                                 |
+| visibility       | private                              |
++------------------+--------------------------------------+    
+
+</codeblock>                
     </section>
     
     <section>
-        <title>Create Ironic Node</title>
+        <title>Generate Key Pair</title>
         
         <codeblock>
-            ironic node-create -d agent_ilo -i ilo_address=10.12.8.110 -i ilo_username=DOCAdmin -i ilo_password=lab35ting \
-            -p cpus=2 -p memory_mb=12000 -p local_gb=1832 -p cpu_arch=x86_64 \
-            -i ilo_deploy_iso=11783a99-18e9-4d5c-81aa-b2e4e3c9964d
-        </codeblock>
-        
-        <codeblock>
-            +--------------+------------------------------------------------------------------+
-            | Property     | Value                                                            |
-            +--------------+------------------------------------------------------------------+
-            | uuid         | 15c7fc4a-d11c-4eca-90c4-438102168990                             |
-            | driver_info  | {u'ilo_address': u'10.12.8.110', u'ilo_password': u'******',     |
-            |              | u'ilo_deploy_iso': u'11783a99-18e9-4d5c-81aa-b2e4e3c9964d',      |
-            |              | u'ilo_username': u'DOCAdmin'}                                    |
-            | extra        | {}                                                               |
-            | driver       | agent_ilo                                                        |
-            | chassis_uuid |                                                                  |
-            | properties   | {u'memory_mb': 12000, u'cpu_arch': u'x86_64', u'local_gb': 1832, |
-            |              | u'cpus': 2}                                                      |
-            | name         | None                                                             |
-            +--------------+------------------------------------------------------------------+    
-        </codeblock>  
-        
-        <p>Update the Node</p>
-        
-        <codeblock>
-            ironic node-update 15c7fc4a-d11c-4eca-90c4-438102168990 add properties/capabilities="boot_mode:bios,boot_option:local"
-        </codeblock>
-        <codeblock>
-            +------------------------+-------------------------------------------------------------------+
-            | Property               | Value                                                             |
-            +------------------------+-------------------------------------------------------------------+
-            | target_power_state     | None                                                              |
-            | extra                  | {}                                                                |
-            | last_error             | None                                                              |
-            | updated_at             | 2016-02-17T10:56:07+00:00                                         |
-            | maintenance_reason     | None                                                              |
-            | provision_state        | available                                                         |
-            | clean_step             | {}                                                                |
-            | uuid                   | 15c7fc4a-d11c-4eca-90c4-438102168990                              |
-            | console_enabled        | False                                                             |
-            | target_provision_state | None                                                              |
-            | provision_updated_at   | None                                                              |
-            | maintenance            | False                                                             |
-            | inspection_started_at  | None                                                              |
-            | inspection_finished_at | None                                                              |
-            | power_state            | power on                                                          |
-            | driver                 | agent_ilo                                                         |
-            | reservation            | None                                                              |
-            | properties             | {u'memory_mb': 12000, u'cpu_arch': u'x86_64', u'local_gb': 1832,  |
-            |                        | u'cpus': 2, u'capabilities': u'boot_mode:bios,boot_option:local'} |
-            | instance_uuid          | None                                                              |
-            | name                   | None                                                              |
-            | driver_info            | {u'ilo_address': u'10.12.8.110', u'ilo_password': u'******',      |
-            |                        | u'ilo_deploy_iso': u'11783a99-18e9-4d5c-81aa-b2e4e3c9964d',       |
-            |                        | u'ilo_username': u'DOCAdmin'}                                     |
-            | created_at             | 2016-02-17T10:55:06+00:00                                         |
-            | driver_internal_info   | {}                                                                |
-            | chassis_uuid           |                                                                   |
-            | instance_info          | {}                                                                |
-            +------------------------+-------------------------------------------------------------------+
-            
-        </codeblock>
-        
+            nova keypair-add ironic_kp > ironic_kp.pem    
+        </codeblock>               
     </section>
     
-    <section>
-        <title>Create the port</title>
-        
-        <codeblock>
-            ironic port-create -a ec:b1:d7:77:21:38 -n 15c7fc4a-d11c-4eca-90c4-438102168990
-        </codeblock>
-        
-        <codeblock>
-            +-----------+--------------------------------------+
-            | Property  | Value                                |
-            +-----------+--------------------------------------+
-            | node_uuid | 15c7fc4a-d11c-4eca-90c4-438102168990 |
-            | extra     | {}                                   |
-            | uuid      | f5c85023-e870-4074-8188-e1c27854f68c |
-            | address   | ec:b1:d7:77:21:38                    |
-            +-----------+--------------------------------------+    
-        </codeblock>
-        
-    </section>
     
-    <section>
-        <title></title>
-    </section>
     
 </body>
 </topic>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="cert-ramdisk">
+    <title>Adding a certificate into a ramdisk image</title>
+    <body>
+<p>
+
+
+As root, from a folder where the ramdisk image is present, perform the following steps.
+1.Download the ramdisk image to /tmp/ and name the file ironic-deploy.initramfs
+2.Change your working directory to /tmp/
+
+cd /tmp/
+
+
+3.Create a temporary folder that will hold the temporarily extracted image contents.
+
+mkdir new_deploy_ramdisk
+
+
+4.Change your shell working directory to the temporary folder
+
+cd /tmp/new_deploy_ramdisk
+
+
+5.Extract the original deployment archive file.
+
+zcat /tmp/ironic-deploy.initramfs | cpio —extract —make-directories
+
+
+6.Append your CA certificate to the file located at “/tmp/new_deploy_ramdisk/usr/local/lib/python2.7/dist-packages/requests/cacert.pem”, example below:
+
+cat your_ca_certificate.pem >> /tmp/new_deploy_ramdisk/usr/local/lib/python2.7/dist-packages/requests/cacert.pem
+
+
+7.Package a new ramdisk file. From with-in the /tmp/new_deploy_ramdisk folder, execute the following command.
+find . | cpio --create --format='newc' |gzip -c -9 > /tmp/updated-ironic-deploy.initramfs
+
+Once completed, the new image can be found at /tmp/updated-ironic-deploy.initramfs, and will need to be uploaded to glance. New glance IDs will need to be recorded for any instances requiring this new image, as noted in the parent paragraph.
+</p>
+    </body>
+</topic>
+
