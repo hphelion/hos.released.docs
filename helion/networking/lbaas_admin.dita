@@ -11,7 +11,7 @@
       multiple servers thereby reducing the load on any single server.  This document describes the
       installation steps for LBaaS v1 (see prerequisites) and the configuration for LBaaS v1 and
       v2.</p>
-
+    
     <p><keyword keyref="kw-hos-phrase"/> can support either LBaaS v1 or LBaaS v2 to allow for wide ranging
       customer requirements. If the decision is made to utilize LBaaS v1 it is highly unlikely that
       you will be able to perform an on-line upgrade of the service to v2 after the fact as the
@@ -19,10 +19,18 @@
       support will be needed from Helion Professional Services and your chosen load balancer
       partner.</p>
     
-    <p>Currently neither version offers a software load balancing solution that supports both a highly available 
-      control plane and data plane. However, should an external hardware load balancer be selected the cloud operation 
-      can achieve a highly available data plane.</p>
+    <note type="warning">Octavia is the default load balancing provider in <keyword
+        keyref="kw-hos-phrase-30"/>for LBaaS V2 and needs to be configured before load balancers can
+      be created. Until Octavia is configured the creation of load balancers will fail with an
+      error. Please refer to <xref href="../installation/octavia_installation.dita#OctaviaInstall"
+      >Octavia installation</xref> document for information on installing Octavia.</note>
     
+    <p>LBaaS V2 offers with <xref
+        href="../installation/octavia_installation.dita#OctaviaInstall">Octavia</xref> a software
+      load balancing solution that supports both a highly available control plane and data plane.
+      However, should an external hardware load balancer be selected the cloud operation can achieve
+      additional performance and availability.</p>
+        
     <p><b>LBaaS v1</b></p>
     <p>Reasons to select this version.</p>
     <ol>
@@ -45,7 +53,7 @@
         vendors already support LBaaS v2 and this list is growing all the time.</li>
       <li>You intend to script your load balancer creation and management so a UI is not important right now (Horizon support will be added in a future release).</li>
       <li>You intend in future releases to support TLS termination at the load balancer.</li>
-      <li>You intend in future releases to use the Octavia software load balancer (adding HA and scalability).</li>
+      <li>You intend in to use the Octavia software load balancer (adding HA and scalability).</li>
       <li>You don’t want to take your load balancers offline in order to perform subsequent LBaaS upgrades.</li>
       <li>You intend in future releases to need L7 load balancing.</li>
     </ol>
@@ -68,12 +76,20 @@
         <li><xref href="lbaas_admin.dita#HP2.0LBaaSAdmin/Configuration">Configuration</xref></li>
       </ul>
     </p>
+    <!-- Original note from Tim Cuddy 
     <note>Neither LBaaS API currently supports load balancer failover. If a load balancer is deleted
       it will need to be manually recreated. Future releases of the v2 API are targeted to include
       automatic failover of a deployed load balancer. This functionality is targeted for the
       OpenStack Mitaka release via the Octavia software driver. More information about this driver
       can be found at: <xref href="https://www.youtube.com/watch?v=8n7FGhtOiXk" format="html"
         scope="external"/>.</note>
+        -->
+    
+    <note>Only LBaaS V2 API currently supports load balancer failover with Octavia. However, in
+      LBaaS V1 and if Octavia is not deployed when a load balancer is deleted it will need to be
+      manually recreated. LBaaS v2 API includes automatic failover of a deployed load balancer with
+      Octavia. More information about this driver can be found at <xref
+        href="../installation/octavia_installation.dita#OctaviaInstall"/></note>
     
     <section id="Prerequisites">
       <title>Prerequisites</title>
@@ -87,22 +103,13 @@
         is the default. If you have selected to install and use LBaaS v1 you will replace the
         control_plane.yml directories and neutron.conf.j2 file to use version 1. </note>
       
-      <p>Before you modify the control_plane.yml and neutron.conf.j2 files, it is recommended that
-        you back up the original versions of those files. Once you have backed them up, modify the
-        control_plane.yml and neutron.conf.j2 files - please refer to the chapter <xref
-          href="../installation/using_git.dita#using_git"><keyword keyref="kw-hos-phrase"/>: 
-          Using Git for Configuration Management</xref> for details on how to edit
-        those configuration files.</p>
-      
+      <p>Before you modify the control_plane.yml file, it is recommended that you back up the 
+        original version of this file. Once you have backed them up, modify the control_plane.yml 
+        file.</p>
       <ol>
         <li>Edit ~/helion/my_cloud/definition/data/control_plane.yml - depending on your installation the control_plane.yml file might be in a different location.</li>
         <li>In the section specifying the compute nodes (resources/compute) replace neutron-lbaasv2-agent with neutron-lbaas-agent - there will only be one occurrence in that file.</li>
         <li>Save the modified file.</li>
-        <li>Edit the ~/helion/my_cloud/config/neutron/neutron.conf.j2  - depending on your installation the neutron.conf.j2 file might be in a different location.</li>
-        <li>Comment out the LBaaS v2 service_plugin and service_provider lines.   Both lines must be
-          commented out in order to avoid deployment failures.</li>
-        <li>Uncomment the LBaaS v1 lines.</li>
-        <li>Save the file.</li>
         <li>Follow the steps in <xref href="../installation/using_git.dita#using_git"><keyword keyref="kw-hos-phrase"/>: Using Git for Configuration Management</xref> to commit and apply the changes.</li>
       </ol>
       
@@ -111,32 +118,10 @@
       <p><b><keyword keyref="kw-hos"/> LBaaS v2</b></p>
       <ol>
         <li><keyword keyref="kw-hos"/> must be installed for LBaaS v2.</li>
+        <li>Follow the instructions to install <xref
+            href="../installation/octavia_installation.dita#OctaviaInstall">Octavia</xref></li>
       </ol> 
     </section>
-    
-    <section id="Configuration">
-      <title>Configuration</title>
-      <p><keyword keyref="kw-hos-phrase"/> LBaaS Configuration</p>
-    
-      
-      
-      <sectiondiv id="CreateExternalNetwork">
-        <p><b>Create External Network and Register Image</b></p>
-        <p>You will need to create an external network and register an image to test LBaaS functionality.  If you have already created
-          an external network and registered and image, this step can be skipped.</p>
-
-         <ol>
-          <li>You can run commands from the lifecycle manager or from a shell with access to the API nodes.
-            Run the playbook which registers a Cirros image and creates a public network under
-            Neutron. <note>Running this step configures 172.16.0.0/16 by default as the external
-              network with name <i>ext-net</i> and registers a Cirros image.  You will need to
-              change the IP for your external network.</note>
-            <codeblock>ansible-playbook -i hosts/verb_hosts hlm-cloud-configure.yml</codeblock></li>
-        </ol>
-      </sectiondiv>
-      
- 
-    </section>
-    
+       
   </body>
 </topic>
