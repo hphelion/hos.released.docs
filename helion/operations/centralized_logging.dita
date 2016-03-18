@@ -9,7 +9,7 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <p>A typical <keyword keyref="kw-hos"/> cloud consists of multiple servers which makes locating
       a specific log from a single server difficult. The <keyword keyref="kw-hos"/> Centralized
-      Logging feature helps the administrator triage and troubleshoot the distributed cloud
+      Logging feature helps the administrator evaluate and troubleshoot the distributed cloud
       deployment from a single location.</p>
     <p>The Centralized Logging feature collects logs on a central system, rather than leaving the
       logs scattered across the network. The administrator can use a single Kibana interface to view
@@ -26,7 +26,8 @@
     <ul>
       <li><xref href="#centralized_logging/install">Installation</xref></li>
       <li><xref href="#centralized_logging/components">Centralized Logging Components</xref></li>
-      <li><xref href="#centralized_logging/retaining_logs">Log Retention Information</xref></li>
+      <li><xref href="#centralized_logging/retaining_logs">Log Retention Overview</xref></li>
+      <li><xref href="#centralized_logging/rotating_logs">Log Rotation Overview</xref></li>
       <li>
         <xref href="#centralized_logging/types">Centralized Logging Data</xref>
       </li>
@@ -111,7 +112,7 @@
         also be seen as coming from the credential holder to the application requiring
         authentication.</note>
     </section>
-    <section id="retaining_logs"><title>Log Retention Information</title>
+    <section id="retaining_logs"><title>Log Retention Overview</title>
       <p>The logs that are centrally stored are saved to persistent storage as Elasticsearch
         indices. These indices are stored in the partition <codeph>/var/lib/elasticsearch</codeph>
         on each of the Elasticsearch cluster nodes. Out of the box, each day&apos;s worth of logs is
@@ -123,7 +124,7 @@
       <p><keyword keyref="kw-hos"/> uses a tool called <b>curator</b> that is developed by the
         Elasticsearch community to handle these situations. <keyword keyref="kw-hos"/> installs and
         uses a curator in conjunction with several configurable settings. This curator is called
-        cron job and perfoms the following checks:</p>
+        <b>cron</b> and perfoms the following checks:</p>
       <ul>
         <li><b>First Check.</b> The hourly cron job checks to see if the currently used Elasticsearch
           partition size is over the value set in:
@@ -241,6 +242,129 @@
         </tgroup>
       </table>
     </section>
+    
+    <section id="rotating_logs"><title>Log Rotation Overview</title>
+      <p>Helion Openstack uses the the cron process which in turn calls <codeph>logrotate</codeph> to provide rotation, compression, and removal of log files. Each log file can be rotated hourly, daily, weekly, or monthly. If no rotation period is set then the log file will only be rotated when it grows too large.</p>
+      
+      <p> Rotating a file means that the logrotate process creates a copy of the log file with a new extension, for eaxmple, the <b>.1</b> extension. Then logrotate empties the contents of the original file. Logrotate continues to create the number of copies specified in the <b>Rotation</b> variable. When logrotate reaches the last possible file extension, the first file is deleted. By the time the logrotate process needs to delete a file, the results have been copied to Elasticsearch, the central logging database.</p> 
+      
+      <p>As an example, the Backup and Restore (BURA) service may be configured to create log files
+        by setting the <b>Rotated Log Files</b> variable to
+        <codeblock>/var/log/freezer-agent/freezer-scheduler.log</codeblock>This configuration means
+        that in the <codeph>/var/log/freezer-agent</codeph> directory, in a live environment, there
+        should be a file called <codeph>freezer-scheduler.log</codeph>. As the log file grows, the
+        cron process runs every hour to check the log file size against the settings in the
+        configuration files. The example freezer-agent settings are described in the table below. </p>
+        
+         <p>
+      <table frame="all" rowsep="1" colsep="1" id="table_itd_tjh_ht">
+        <tgroup cols="7">
+            <colspec colname="c1" colnum="1" colwidth="1.32*"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <colspec colname="c3" colnum="3" colwidth="3.26*"/>
+            <colspec colname="c4" colnum="4" colwidth="1.46*"/>
+            <colspec colname="c5" colnum="5" colwidth="1.05*"/>
+            <colspec colname="c6" colnum="6" colwidth="1.4*"/>
+            <colspec colname="c7" colnum="7" colwidth="3.38*"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Node Type</entry>
+                <entry>Rotated Log Files</entry>
+                <entry>Frequency</entry>
+                <entry>Max Size</entry>
+                <entry>Rotation</entry>
+                <entry>Centrally Logged Files</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <p>BURA (Backup and Restore)</p>
+                </entry>
+                <entry>
+                  <p>Control</p>
+                </entry>
+                <entry>
+                  <p>/var/log/freezer-agent/freezer-scheduler.log</p>
+                  <p>/var/log/freezer-agent/freezer-agent-json.log</p>
+                </entry>
+                <entry>
+                  <p>Daily</p>
+                </entry>
+                <entry>
+                  <p>32 MB</p>
+                </entry>
+                <entry>
+                  <p>7</p>
+                </entry>
+                <entry>
+                  <p>/var/log/freezer-agent/freezer-agent-json.log</p>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+      </table>
+    </p>
+        
+        <p>For the <codeph>freezer-scheduler.log</codeph> file specifically, the information in the table tells the cron and logrotate processes that the log file is to be rotated daily, and it can have a maximum size of 32 MB. After a week of log rotation, you would see something similar to this list:
+        <codeblock>
+          freezer-scheduler.log at 10K
+          freezer-scheduler.log1 at 123K
+          freezer-scheduler.log2 at 13K
+          freezer-scheduler.log3 at 17K
+          freezer-scheduler.log4 at 128K
+          freezer-scheduler.log5 at 22K
+          freezer-scheduler.log6 at 323K
+          freezer-scheduler.log7 at 123K
+        </codeblock>
+        
+        Since the Rotation value is set to 7 for this log file, there will never be a <codeph>freezer-scheduler.log8</codeph>. When the cron process runs its checks, if the <codeph>freezer-scheduler.log</codeph> size is more than 32 MB, then cron calls the logrotate process to roate the file.</p>
+      
+      <p>In this example, the following log files are rotated:
+      <codeblock>
+        /var/log/freezer-agent/freezer-scheduler.log
+        /var/log/freezer-agent/freezer-agent-json.log
+      </codeblock>
+      </p>
+      
+      <p>However, only the follwoing file is centrally logged with Elasticsearch:
+        <codeblock>
+          /var/log/freezer-agent/freezer-agent-json.log
+        </codeblock>
+        Only files that are listed in the <b>Centrally Logged Files</b> variable are copied to Elasticsearch.
+      </p>
+        
+        <p>All of the variables for logging are found in the following file:
+          <codeblock>
+            .../logging-ansible/kronos-common/defaults/main.yml
+          </codeblock>
+        </p>
+        
+        <p>Cron uses the following values to determine when to call the logrotate process: <ul>
+          <li>Low watermark:
+            <codeblock>
+          #The following low watermark will be used to trigger alarms if the /var/log parition size grows over it.
+          #Tuning this to a higher percent may not give sufficient time to free disk space on /var/log before
+          # it reaches 100% full, at which time log rotate will not work.
+          
+          <b>var_log_low_watermark_percent:80</b>
+        </codeblock>
+          </li>
+          <li> High watermark:
+            <codeblock>
+                #The following high watermark will be used to alert the user that when /var/log is 100% full,
+                #log rotate will not work, and to free up space on /var/log.
+                #Don't set it at 100%, as by then alarms may not fire properly.
+                
+                <b>var_log_high_watermark_percent:95</b>
+              </codeblock>
+          </li>
+        </ul>
+      </p>
+      
+    </section>
+    
     <section id="kibana">
       <title>Kibana Configuration</title>
       <p>You can use the Kibana dashboards to view log data. Kibana is a tool developed to create

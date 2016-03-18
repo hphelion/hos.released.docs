@@ -4,22 +4,30 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Default Logging Settings</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <p>The following table shows which files are rotated, how often they are rotated, and how large they can grow before getting rotated. Rotating a file means that the cron process creates a copy of the file with a <b>.1</b> extension. Then the cron process empties the contents of the original file. The cron process will continue to create the number of copies specified in the Rotation variable. When it reaches the last possible file extension, the last file is deleted. By the time the cron process needs to delete a file, the results have been copied to Elasticsearch, the central logging database.</p>
-
-      <p>For example, the first file is <codeblock>/var/log/freezer-agent/freezer-scheduler.log</codeblock>
-      In the <codeph>/var/log/freezer-agent</codeph> directory, in a live environment, there should be a file called <codeph>freezer-scheduler.log</codeph>. As it grows, and the cron process runs every hour and checks the configuration files that contain the information in the table below. For the <codeph>freezer-scheduler.log</codeph> file specifically, the information in the table tells the cron process that the file is to be rotated daily, and it can have a maximum size of 32 MB. After a week of log rotation, you would see something similar to this list:
-        <codeblock>
-          freezer-scheduler.log at 10K
-          freezer-scheduler.log1 at 123K
-          freezer-scheduler.log2 at 13K
-          freezer-scheduler.log3 at 17K
-          freezer-scheduler.log4 at 128K
-          freezer-scheduler.log5 at 22K
-          freezer-scheduler.log6 at 323K
-          freezer-scheduler.log7 at 123K
-        </codeblock>
-        
-        Since the Rotation value is set to 7 for this log file, there will never be a <codeph>freezer-scheduler.log8</codeph>. When the cron process runs its checks, if the <codeph>freezer-scheduler.log</codeph> size is more than 32 MB, then the file is rotated.</p>
+    <p>The following table shows which files are rotated, how often they are rotated, and how large
+      they can grow before being rotated. Helion Openstack uses the the cron process which in turn calls
+      <codeph>logrotate</codeph> to provide rotation, compression, and removal of log files. Each log file can be checked hourly, daily,
+      weekly, or monthly. If no rotation period is set then the log file will only be rotated when it grows too large.</p>
+    <p>All of the variables for logging are found in the following file:
+      <codeblock>        .../logging-ansible/kronos-common/defaults/main.yml</codeblock>
+    </p>
+    
+    <p>Cron uses the following values to determine when to call the logrotate process: <ul>
+        <li>Low watermark:
+          <codeblock>          #The following low watermark will be used to trigger alarms if the /var/log parition size grows over it.
+          #Tuning this to a higher percent may not give sufficient time to free disk space on /var/log before
+          # it reaches 100% full, at which time log rotate will not work.
+          
+          <b>var_log_low_watermark_percent:80</b></codeblock>
+        </li>
+        <li> High watermark:
+          <codeblock>          #The following high watermark will be used to alert the user that when /var/log is 100% full,
+          #log rotate will not work, and to free up space on /var/log.
+          #Don't set it at 100%, as by then alarms may not fire properly.
+          
+          <b>var_log_high_watermark_percent:95</b></codeblock>
+        </li>
+      </ul></p>
     
     <p>The table below describes the default logging policies for each service. The columns are as
       follows:</p>
@@ -30,20 +38,24 @@
           <dd>The name of the service that creates the log entries.</dd>
         </dlentry>
         <dlentry>
-          <dt>Plane</dt>
-          <dd></dd>
+          <dt>Node Type</dt>
+          <dd>The type of virtual machine (VM) instance that is running the service.</dd>
         </dlentry>
         <dlentry>
           <dt>Rotated Log Files</dt>
-          <dd>These files are kept locally on the server and will be rotated out. If the files is listed as Centrally Logged in the last column, it will be copied to Elasticsearch.</dd>
+          <dd>Updated copies of an original log file. These files are kept locally on the server and
+            will continue to be rotated. If the files is also listed as Centrally Logged in the last
+            column, it will also be copied to Elasticsearch.</dd>
         </dlentry>
         <dlentry>
           <dt>Frequency</dt>
-          <dd>Determines if the logs are rotated on a daily or weekly basis. If this value is left blank- what happens?</dd>
+          <dd>Determines how often the cron process checks a log file to verify its size. The
+            following values can be used: hourly, daily, weekly, or monthly. If no rotation period
+            is set then the log file is only rotated when it grows too large.</dd>
         </dlentry>
         <dlentry>
           <dt>Max Size</dt>
-          <dd>The maximum file size the log can reach before it is rotated out.</dd>
+          <dd>The maximum file size the log can reach before it is rotated.</dd>
         </dlentry>
         <dlentry>
           <dt>Rotation</dt>
@@ -56,7 +68,10 @@
         </dlentry>
       </dl>
     </p>
-    <p>
+    <note type="note">If a field is left blank in the table it means that no value is set by default after installation. You can specify a value for any of the settings in the following table.</note>
+   
+     
+      <p>
       <table frame="all" rowsep="1" colsep="1" id="table_itd_tjh_ht">
         <tgroup cols="7">
           <colspec colname="c1" colnum="1" colwidth="1.13*"/>
@@ -69,7 +84,7 @@
           <thead>
             <row>
               <entry>Service</entry>
-              <entry>Plane</entry>
+              <entry>Node Type</entry>
               <entry>Rotated Log Files</entry>
               <entry>Frequency</entry>
               <entry>Max Size</entry>
@@ -455,17 +470,17 @@
               <entry>
                 <p>/var/log/ops-console/access.log</p>
                 <p>/var/log/ops-console/error.log</p>
-                <p>/var/log/ops-console/monitor.log</p>
               </entry>
               <entry>
                 <p>Weekly</p>
               </entry>
               <entry>
-                <p>5 MB</p>
+                <p>1 MB</p>
               </entry>
-              <entry/>
+              <entry>5</entry>
               <entry>
-                <p>TBD</p>
+                <p>/var/log/ops-console/access.log</p>
+                <p>/var/log/ops-console/error.log</p>
               </entry>
             </row>
             <row>
