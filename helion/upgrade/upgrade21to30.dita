@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="upgradeto21">
-  <title>Upgrade from <keyword keyref="kw-hos-phrase-20"/> to <keyword keyref="kw-hos-phrase-21"
-    /></title>
+<topic id="upgradeto30">
+  <title>Upgrade from <keyword keyref="kw-hos-phrase-21"/> to <keyword keyref="kw-hos-phrase-30"/></title>
   <body>
     <!--<p conkeyref="HOS-conrefs/applies-to"/>-->
     <section id="about">
-      <title>Performing the Upgrade from HPE Helion OpenStack 2.0 to 2.1</title>
-      <note type="warning">The process for upgrading HPE Helion OpenStack to version 2.1 requires a
-        reboot which may prevent core <b>HPE Helion Development Platform</b> services from
+      <title>Performing the Upgrade from HPE Helion OpenStack <keyword keyref="kw-hos-phrase-21"/> to <keyword keyref="kw-hos-phrase-30"/></title>
+      <note type="warning">The process for upgrading HPE Helion OpenStack to version <keyword keyref="kw-hos-phrase-30"/> requires a
+        reboot
+        <!-- TODO Is there an upgrade path for HDP ? -->
+        <!-- which may prevent core <b>HPE Helion Development Platform</b> services from
         restarting. If your environment relies on HPE Helion Development Platform, please follow
         instructions for the <xref href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
-          scope="external">HPE Helion Development Platform upgrade process</xref>.</note>
-      <p>When upgrading from <keyword keyref="kw-hos-phrase-20"/> to <keyword
-          keyref="kw-hos-phrase-21"/> you will use the same configuration files in your
+          scope="external">HPE Helion Development Platform upgrade process</xref>-->.</note>
+      <p>When upgrading from <keyword keyref="kw-hos-phrase-21"/> to <keyword
+          keyref="kw-hos-phrase-30"/> you will use the same configuration files in your
           <codeph>~/helion/my_cloud/definition</codeph> directory as you used when originally
         installing the software.</p>
       <p>The configuration you specified will remain unchanged through the upgrade process;
@@ -22,10 +23,10 @@
         the required changes directly in the files in <codeph>~/helion/my_cloud</codeph> and commit
         them to the git repository so that those changes are tracked and applied during the upgrade
         process. Otherwise they will not be applied after the upgrade.</p>
-      <p>You may also install <keyword keyref="kw-hos-phrase-21"/> as a full install. Those
+      <p>You may also install <keyword keyref="kw-hos-phrase-30"/> as a full install. Those
         instructions are found in the installation guide. See <xref
           href="../installation/installation_overview.dita">Installation Overview</xref> for details. If you choose
-        to do a fresh install it is important that you completely wipe your disk prior to doing the
+        to do a fresh install it is important that you completely wipe your disks prior to doing the
         installation, otherwise errors may occur.</p>
     </section>
 
@@ -49,11 +50,14 @@ ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml
 ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
       </ol>
     </section>
+    
     <section id="prereqs"><title>Prerequisites</title>
-      <p>These steps assume you have an installed and working <keyword keyref="kw-hos-phrase-20"/>
-        cloud, and that you have followed the <xref href="/#devplatform/2.0/upgrade_HOS_21.html"
+      <p>These steps assume you have an installed and working <keyword keyref="kw-hos-phrase-21"/>
+        cloud
+        <!-- TODO Is there an upgrade path for HDP ? -->
+        <!--, and that you have followed the <xref href="/#devplatform/2.0/upgrade_HOS_21.html"
           format="html" scope="external">HPE Helion Development Platform upgrade process</xref> to
-        gracefully shutdown Helion Development Platform Services and instances.</p>
+        gracefully shutdown Helion Development Platform Services and instances-->.</p>
     </section>
 
     <section id="mainSteps"><title>Upgrade Overview</title>
@@ -62,7 +66,7 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
         <li>Run the upgrade to apply updates to all nodes in the cloud (including the node hosting
           the lifecycle manager itself), as per instructions below.</li>
         <li>Reboot all of the nodes in your cloud in order to take in the new kernel changes
-          introduced in <keyword keyref="kw-hos-phrase-21"/>. Instructions on reboot your cloud
+          introduced in <keyword keyref="kw-hos-phrase-30"/>. Instructions on rebooting your cloud
           nodes are provided below.</li>
         <li>Note the additional step that is specifically required for upgrading clouds with ESX and
           a further additional step for ESX after all nodes are rebooted.</li>
@@ -73,7 +77,7 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
 
     <section id="upgradesteps"><title>Upgrade Instructions</title>
       <ol>
-        <li>Sign in and download the <keyword keyref="kw-hos-phrase-21"/> product and signature
+        <li>Sign in and download the <keyword keyref="kw-hos-phrase-30"/> product and signature
           files at the links below: <ol>
             <li><xref
                 href="https://helion.hpwsportal.com/catalog.html#/Category/%7B%22categoryId%22%3A10389%7D/Show"
@@ -87,13 +91,14 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
             href="https://h20392.www2.hpe.com/portal/swdepot/displayProductInfo.do?productNumber=HPLinuxCodeSigning"
             scope="external" format="html">here</xref>.</li>
         <li>To begin the upgrade process, log in to the lifecycle manager as the user you created
-          during the <keyword keyref="kw-hos-phrase-20"/> deployment, and mount the install media at
+          during the <keyword keyref="kw-hos-phrase-21"/> deployment, and mount the install media at
             <codeph>/media/cdrom</codeph>; for example:
-          <codeblock>sudo mount Helion-OpenStack-2.1.iso /media/cdrom</codeblock></li>
-        <li>Unpack the following
-          tarball:<codeblock>tar faxv /media/cdrom/hos/hos-2.1.0-20151211T063256Z.tar</codeblock></li>
+          <codeblock>sudo mount Helion-OpenStack-3.0.iso /media/cdrom</codeblock></li>
+        <li>Unpack the following tarball:
+          <!-- TODO V3 FILENAME -->
+          <codeblock>tar faxv /media/cdrom/hos/hos-3.0.0-????????????.tar</codeblock></li>
         <li>Run the included initialization script to update the deployer:
-          <codeblock>~/hos-2.1.0/hos-init.bash</codeblock></li>
+          <codeblock>~/hos-3.0.0/hos-init.bash</codeblock></li>
         <li>If you have made any made any changes to your configuration files, ensure that you
           commit them to your local git and if any merge conflicts are reported, you must resolve
           them before proceeding:
@@ -128,7 +133,7 @@ ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock>
           <note>You may run the <codeph>hlm-status.yml</codeph> playbook any time you like for
             status information.</note></li>
         <li><b>ESX - additional step:</b> Once the upgrade is complete, skip to the <xref
-            href="upgrade.dita#upgradeto21/esx">Further ESX Model Upgrade Instructions</xref>
+            href="upgrade21to30.dita#upgradeto21/esx">Further ESX Model Upgrade Instructions</xref>
           section.</li>
       </ol>
     </section>
