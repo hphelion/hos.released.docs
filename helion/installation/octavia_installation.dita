@@ -70,8 +70,27 @@
         corresponding Neutron document, <xref
           href="../networking/neutron_provider_networks.dita#neutron_provider_networks"/> for more
         information. 
+    </p>
+    <p>Octavia uses two-way SSL encryption to communicate with the amphora. There are demo
+        Certificate Authority (CA) certificates include with <keyword keyref="kw-hos-phrase-30"/> in
+          <codeph>/home/stack/scratch/ansible/next/hos/ansible/roles/octavia-common/files</codeph>
+        on the lifecycle manager. For additional security in production deployments, all certificate
+        authorities should be replaced with ones you generated yourself by running the following
+        commands:
+        <codeblock>openssl genrsa -passout pass:foobar -des3 -out cakey.pem 2048
+openssl req -x509 -passin pass:foobar -new -nodes -key cakey.pem -out ca_01.pem
+openssl genrsa -passout pass:foobar -des3 -out servercakey.pem 2048
+openssl req -x509 -passin pass:foobar -new -nodes -key cakey.pem -out serverca_01.pem</codeblock>
       </p>
-    
+      <p>For more details refer to the openssl man page. <note> If you change the certificate
+          authority and have amphora running with an old CA you won’t be able to control the
+          amphora.  The Amphora's will need to be failed over so they can utilize the new
+          certificate. If you change the CA password for the server certificate you need to change
+          that in the Octavia configuration files as well. See the <xref
+            href="../networking/octavia_admin.dita#OctaviaAdmin/Tuning"> Octavia Installation
+            guide</xref> for more information.</note>
+      </p>
+   
     <p><b>Installing the Amphora Image</b></p>
     <p>Octavia is utilizing Nova VMs for it's load balancing function and HPE provides images used to 
       boot those VM's called <codeph>octavia-amphora-haproxy</codeph>. 
