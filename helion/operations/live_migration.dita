@@ -27,6 +27,10 @@
           live migrate.</li>
         <li>Instances in a <codeph>Paused</codeph> state cannot be live migrated using the Horizon
           GUI. You will need to utilize the CLI to perform these.</li>
+        <li>The <codeph>nova host-evacuate-live</codeph> command cannot be used for a Compute host
+          that has a mix of instances that use both ephemeral storage or are booted from a block
+          storage volume or have any number of block storage volumes attached. It will only work if
+          you use one or the other.</li>
       </ul>
     </section>
     <section id="notes"><title>Notes about the Difference between Nova Migrate and Nova Live
@@ -150,9 +154,9 @@ Optional arguments:
           utilize the <codeph>nova host-evacuate-live</codeph> command.</p>
         <p>
           <note type="important">There is a limitation with this feature which is that if you have a
-            mix of instances on the Compute host that use either ephemeral storage or are booted
-            from a block storage volume or have any number of block storage volumes attached then
-            this command will fail as it will not be able to detect whether or not to use the
+            mix of instances on the Compute host that use both ephemeral storage or are booted from
+            a block storage volume or have any number of block storage volumes attached then this
+            command will fail as it will not be able to detect whether or not to use the
               <codeph>--block-migrate</codeph> option or not.  You will need to live migrate the
             instances off the host individually using the instructions in the earlier
             sections.</note>
