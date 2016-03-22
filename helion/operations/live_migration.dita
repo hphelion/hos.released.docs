@@ -30,7 +30,8 @@
         <li>The <codeph>nova host-evacuate-live</codeph> command cannot be used for a Compute host
           that has a mix of instances that use ephemeral storage and instances that are booted from
           a block storage volume or have any number of block storage volumes attached. It will only
-          work if the host has instances that are comprised of one or the other. <!-- Thanks Lash --></li>
+          work if the host has instances that are comprised of one or the other.
+          <!-- Thanks Lash --></li>
       </ul>
     </section>
     <section id="notes"><title>Notes about the Difference between Nova Migrate and Nova Live
@@ -154,12 +155,13 @@ Optional arguments:
           utilize the <codeph>nova host-evacuate-live</codeph> command.</p>
         <p>
           <note type="important">There is a limitation with this feature which is that if you have a
-            mix of instances on the Compute host that use both ephemeral storage or are booted from
-            a block storage volume or have any number of block storage volumes attached then this
-            command will fail as it will not be able to detect whether or not to use the
-              <codeph>--block-migrate</codeph> option or not.  You will need to live migrate the
-            instances off the host individually using the instructions in the earlier
-            sections.</note>
+            mix of instances on the Compute host in that some have at least one ephemeral disk and
+            others have no ephemeral disks (i.e. they use only block storage volumes) then this
+            command will fail as it will not be able to evacuate all instances. This is because the
+              <codeph>--block-migrate</codeph> option is required for instances with ephemeral disks
+            and must be omitted for instances with only block storage volumes. In this case you will
+            need to live migrate the instances off the host individually using the instructions in
+            the earlier sections.</note>
         </p>
         <ol>
           <li>Using admin credentials, determine the hostname of the Compute host you wish to live
@@ -170,12 +172,12 @@ Optional arguments:
               <codeph>Active</codeph> or <codeph>Paused</codeph> state:
             <codeblock>nova list --all-tenants --host &lt;hostname></codeblock></li>
           <li>Issue the host-evacuate-live command, which will begin the live migration process.
-              <p>If all of the instances on the host are booted from a block storage volume or has
-              any number of block storage volumes attached, use this syntax:</p>
-            <codeblock>nova host-evacuate-live &lt;hostname></codeblock>
-            <p>If all of the instances on the host are using local (ephemeral) disk(s) only, you
-              should use this syntax:</p>
+              <p>If all of the instances on the host are using at least one local (ephemeral) disk,
+              you should use this syntax:</p>
             <codeblock>nova host-evacuate-live --block-migrate &lt;hostname></codeblock>
+            <p>Alternatively, if all of the instances are only using block storage volumes then omit
+              the <codeph>--block-migrate</codeph> option:</p>
+            <codeblock>nova host-evacuate-live &lt;hostname></codeblock>
             <note>You can either let the nova-scheduler choose a suitable target host or you can
               specify one using the <codeph>--target-host &lt;hostname> </codeph> switch. See
                 <codeph>nova help host-evacuate-live</codeph> for details.</note></li>
