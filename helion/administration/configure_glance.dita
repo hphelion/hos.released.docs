@@ -19,21 +19,26 @@
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Edit your <codeph>~/helion/my_cloud/definition/data/disks_controller.yml</codeph> file
-          and specify the mount point for your glance-cache: <codeblock># Glance cache: if a logical volume with consumer usage 'glance-cache' 	73
-# is defined Glance caching will be enabled. The logical volume can be 	74
-# part of an existing volume group or a dedicated volume group. 
-- name: glance-cache
-  size: 5%
-  mount: /var/lib/glance/cache
-  fstype: ext4
-  mkfs-opts: -O large_file
-  consumer:
-      name: glance-api
-      usage: glance-cache</codeblock>
-          <p>If you are enabling image caching during your initial installation, prior to running
-              <codeph>site.yml</codeph> the first time, then continue with the installation steps.
-            However, if you are making this change post-installation then you will need to commit
-            your changes with the steps below.</p></li>
+          and specify the volume and mount point for your glance-cache.  Here is
+          example:<codeblock># Glance cache: if a logical volume with consumer usage 'glance-cache'
+# is defined Glance caching will be enabled. The logical volume can be
+# part of an existing volume group or a dedicated volume group.
+ - name: glance-vg
+   physical-volumes:
+     - /dev/sdx
+   logical-volumes:
+     - name: glance-cache
+       size: 95%
+       mount: /var/lib/glance/cache
+       fstype: ext4
+       mkfs-opts: -O large_file
+       consumer:
+         name: glance-api
+         usage: glance-cache</codeblock>
+          If you are enabling image caching during your initial installation, prior to running
+            <codeph>site.yml</codeph> the first time, then continue with the installation steps.
+          However, if you are making this change post-installation then you will need to commit your
+          changes with the steps below.</li>
         <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
             repo</xref>, as follows:
           <codeblock>cd ~/helion/hos/ansible
