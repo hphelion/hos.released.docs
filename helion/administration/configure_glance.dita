@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-  <topic xml:lang="en-us" id="configure_glance">
-    <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring the Image Service</title>
+<topic xml:lang="en-us" id="configure_glance">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring the Image Service</title>
   <body>
     <section id="about">
-      <p>In <keyword keyref="kw-hos-phrase"/>, by default, image caching is not enabled. You have the option to have Glance image caching enabled and these steps will show you how to do that.</p>
-     
+      <p>In <keyword keyref="kw-hos-phrase"/>, by default, image caching is not enabled. You have
+        the option to have Glance image caching enabled and these steps will show you how to do
+        that.</p>
+    </section>
+    <section id="config">
+      <p>If you wish to use the Glance image caching option, you will see the section below in your
+          <codeph>~/helion/my_cloud/definition/data/disks_controller.yml</codeph> file. You will
+        specify the the mount point for the logical volume you wish to use for this.</p>
+      <codeblock># Glance cache: if a logical volume with consumer usage 'glance-cache' 	73
+# is defined Glance caching will be enabled. The logical volume can be 	74
+# part of an existing volume group or a dedicated volume group. 
+- name: glance-cache
+  size: 5%
+  mount: /var/lib/glance/cache
+  fstype: ext4
+  mkfs-opts: -O large_file
+  consumer:
+      name: glance-api
+      usage: glance-cache</codeblock>
     </section>
   </body>
 </topic>
