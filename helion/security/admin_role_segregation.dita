@@ -20,16 +20,15 @@
       <p/>
       <p>Service Administrator Roles is an alternative to the current one-size-fits-all admin role
         model and can help you institute different privileges for different administrators.</p>
-    </section><section><title>
-      Pre-installed Service Admin Roles</title>  The main components of Service Administrator Roles are as
-      follows <ul>
+    </section><section><title> Pre-installed service admin role components</title> The main components of Service
+      Administrator Roles are as follows <ul>
         <li>nova_admin role in Keystone and support in nova policy.json </li>
         <li>neutron_admin role in Keystone and support in neutron policy.json </li>
         <li>cinder_admin role in Keystone and support in cinder policy.json </li>
         <li>glance_admin role in Keystone and support in glance policy.json </li>
       </ul>
     </section>
-    <section><title>Features and Benefits</title> Service Administrator Roles offer the following
+    <section><title>Features and benefits</title> Service Administrator Roles offer the following
       features and benefits. They:<ul>
         <li>Support separation of duties through more finely grained roles </li>
         <li>Are enabled by default </li>
@@ -38,12 +37,12 @@
         <li>Have predefined policy.json files to facilitate quick and easy deployment </li>
       </ul>
     </section>
-    <section><title/>The following are the new roles defined in HOS 3.0. These roles serve as
+    <section><title/>The following are the new roles defined in <ph conkeyref="HOS-conrefs/product-title"/>. These roles serve as
       grouping mechanism for common administrative needs at the OpenStack service level. Each role
       represents administrative privilege into each service. Multiple roles can be assigned to a
       user. You can assign a Service Admin Role to a user once you have determined that the user is
       authorized to perform administrative actions and access resources in that service.
-          <p><b>Pre-installed Service Admin Roles</b></p>The following service admin roles exist by
+          <p><b>Pre-installed service admin roles</b></p>The following service admin roles exist by
       default: <dl>
         <dlentry>
           <dt>nova_admin role</dt>
@@ -61,18 +60,19 @@
             related administrative tasks..</dd>
         </dlentry>
         <dlentry>
-          <dt>glance_Admin role</dt>
+          <dt>glance_admin role</dt>
           <dd> Assign this role to users whose job function it is to perform glance (image service)
             related administrative tasks.</dd>
         </dlentry>
       </dl>
     </section>
-    <section><title>Usage examples</title>
-      <p><b>Glance</b></p>A user with "admin" role is required in order to assign glance_admin role
-      to a test user we will call "testuser." To assign the role, you will set the environment
-      variables needed for Keystone administrator. First source the Keystone credentials:
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> The user called testuser and
-      project test_project are used for demonstration purposes. Here you can add
+    <section><title>Assigning the default service admin roles</title>The following examples
+      illustrate how you can assign each of the new service admin roles to a user. <p><b>Assigning
+          the glance_admin role</b></p>A user must have the role of admin in order to assign the
+      glance_admin role to a test user we will call "testuser." To assign the role, you will set the
+      environment variables needed for Keystone administrator. First source the Keystone
+      credentials: <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> The user called
+      testuser and project test_project are used for demonstration purposes. Here you can add
       them:<codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project glance_admin</codeblock>
       Next, list role assignment for testuser.
       <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock> Your
@@ -100,13 +100,12 @@ export OS_AUTH_URL=http://192.168.245.9:35357/v3
 export OS_ENDPOINT_TYPE=internalURL
 # OpenstackClient uses OS_INTERFACE instead of OS_ENDPOINT
 export OS_INTERFACE=internal
-export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
-      Source the environment variables for testuser
-      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> Upload an image and publicize
-      it
+export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>Source
+      the environment variables for testuser
+      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock>Upload an image and publicize it
       <codeblock>stack@localhost:~$ glance image-create  --name "upload me" --visibility public --container-format bare --disk-format qcow2 -
-      -file uploadme.txt</codeblock>
-      Here is the output:<codeblock>+------------------+--------------------------------------+
+      -file uploadme.txt</codeblock>Here
+      is the output:<codeblock>+------------------+--------------------------------------+
 | Property         | Value                                |
 +------------------+--------------------------------------+
 | checksum         | dd75c3b840a16570088ef12f6415dd15     |
@@ -126,14 +125,14 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
 | virtual_size     | None                                 |
 | visibility       | public                               |
 +------------------+--------------------------------------+</codeblock>
-      <p><b>Nova example</b></p>A user with the "admin" role is required in order to assign the
-      nova_admin role to the user called testuser. To accomplish this, set the environment variables
-      needed for Keystone administrator.
+      <p><b>Assigning the nova_admin role</b></p>A user must have the role of admin in order to
+      assign the nova_admin role to the user called testuser. To accomplish this, set the
+      environment variables needed for Keystone administrator.
       <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>User testuser and project
-      test_project are used for demonstration purpose. Assign nova_admin role to user test_user
+      test_project are used for demonstration purpose. Assign nova_admin role to user testuser
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project nova_admin list</codeblock>Get
       the role assignment for testuser
-      <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock> Your
+      <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock>Your
       output should look like
       this:<codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | Role                             | User                             | Group | Project                          | Domain | Inherited |
@@ -146,35 +145,35 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
       delete a VM from a project other than test_proejct. Only a user with either the admin role or
       the nova_admin role can delete a VM on a different project. To try this, begin by sourcing the
       environment variables for testuser
-      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> List all the VMs in project
+      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock>List all the VMs in project
       test_project.
       <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
       OS_PROJECT_NAME=test_project
-      stack@localhost:~$ nova list</codeblock>
-      There are no VMs in test_project, therefore running "nova list" yields an empty
+      stack@localhost:~$ nova list</codeblock>There
+      are no VMs in test_project, therefore running "nova list" yields an empty
       list:<codeblock>+----+------+--------+------------+-------------+----------+
 | ID | Name | Status | Task State | Power State | Networks |
 +----+------+--------+------------+-------------+----------+
-+----+------+--------+------------+-------------+----------+</codeblock>
-      Next, list VMs from all projects. In this particular case, for demonstration purposes, there
-      is a VM associated with project admin (project id, dc0f8b0076d4403b83ad517021803d30).
-      <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock> Here is the
++----+------+--------+------------+-------------+----------+</codeblock>Next,
+      list VMs from all projects. In this particular case, for demonstration purposes, there is a VM
+      associated with project admin (project id, dc0f8b0076d4403b83ad517021803d30).
+      <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock>Here is the
       result:<codeblock>+--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
 | ID                                   | Name    | Tenant ID                        | Status | Task State | Power State | Networks |
 +--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
 | da4f46e2-4432-411b-82f7-71ab546f91f3 | testvm1 | dc0f8b0076d4403b83ad517021803d30 | ACTIVE | -          | Running     |          |
-+--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+</codeblock>
-      Since test_user has the nova_admin role, test_user can delete a VM in another project. This is
++--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+</codeblock>Since
+      testuser has the nova_admin role, testuser can delete a VM in another project. This is
       accomplished using the -all-tenants argument.
       <codeblock>stack@localhost:~$ nova delete --all-tenants da4f46e2-4432-411b-82f7-71ab546f91f3</codeblock>Next,
       confirm that the VM with id da4f46e2-4432-411b-82f7-71ab546f91f3 was deleted by runnig nova
-      list again:<codeblock>stack@localhost:~$ nova list --all-tenants</codeblock> Here you see the
+      list again:<codeblock>stack@localhost:~$ nova list --all-tenants</codeblock>Here you see the
       VM is
       gone.<codeblock>+----+------+-----------+--------+------------+-------------+----------+
 | ID | Name | Tenant ID | Status | Task State | Power State | Networks |
 +----+------+-----------+--------+------------+-------------+----------+
-+----+------+-----------+--------+------------+-------------+----------+</codeblock>
-      The following is a list of nova commands with -all-tenants support. <ul>
++----+------+-----------+--------+------------+-------------+----------+</codeblock>The
+      following is a list of nova commands with -all-tenants support. <ul>
         <li>nova start -all-tenants </li>
         <li>nova stop -all-tenants </li>
         <li>nova delete -all-tenants </li>
@@ -184,11 +183,11 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
         <li>nova secgroup-list -all-tenants 1 </li>
         <li>nova server-group-list -all-projects</li>
       </ul>
-      <p><b>Neutron example</b></p>A user with  the "admin" role is required in order to assign the
-      neutron_admin role to the user called test_user. To begin, set the environment variables
-      needed for Keystone
+      <p><b>Assigning the neutron_admin role</b></p>A user must have the role of admin in order to
+      assign the neutron_admin role to the user called testuser. To begin, set the environment
+      variables needed for Keystone
       administrator:<codeblock>stack@localhost:~$ source keystone.osrc</codeblock>Next, assign the
-      neutron_admin role to the user called test_user
+      neutron_admin role to the user called testuser
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project neutron_admin</codeblock>For
       demonstration purposes, an exisintg Neutron network named mynet is used. Mynet is associated
       with admin project. <codeblock>stack@localhost:~$ source service.osrc
@@ -219,8 +218,8 @@ stack@localhost:~$ neutron net-list</codeblock>
 +--------------------------------------+---------+------------------------------------------------------+
 | 0e560113-f578-4c16-b978-a02ab55a7d6e | mynet   |                                                      |
 | 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
-+--------------------------------------+---------+------------------------------------------------------+</codeblock>
-      Delete the neutron network called mynet.
++--------------------------------------+---------+------------------------------------------------------+</codeblock>Delete
+      the neutron network called mynet.
       <codeblock>stack@localhost:~$ neutron net-delete mynet</codeblock>Next, run neutron net-list
       <codeblock>stack@localhost:~$ neutron net-list</codeblock> And note that the network called
       mynet has been deleted:<codeblock>+--------------------------------------+---------+------------------------------------------------------+
@@ -228,14 +227,14 @@ stack@localhost:~$ neutron net-list</codeblock>
 +--------------------------------------+---------+------------------------------------------------------+
 | 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
 +--------------------------------------+---------+------------------------------------------------------+</codeblock>
-      <p><b>Cinder example</b></p> A user with the "admin" role is required in order to assign the
-      cinder_admin role to the user called test_user. Set environment variables needed for Keystone
-      administrator <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User test_user
-      and project test_project are used for demonstration purpose. Assign cinder_admin role to user
-      test_user
-      <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project cinder_admin</codeblock>
-      Switch to testuser environment vairable
-      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> For demonstration purpose,
+      <p><b>Assigning the cinder_admin role</b></p>A user must have the role of admin in order to
+      assign the cinder_admin role to the user called testuser. Set environment variables needed for
+      Keystone administrator <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>User
+      testuser and project test_project are used for demonstration purpose. Assign cinder_admin role
+      to user testuser
+      <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project cinder_admin</codeblock>Switch
+      to testuser environment vairable
+      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock>For demonstration purposes,
       project test_project does not have any cinder volumes. <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
       OS_PROJECT_NAME=test_project
       stack@localhost:~$ cinder list</codeblock>
@@ -243,7 +242,7 @@ stack@localhost:~$ neutron net-list</codeblock>
 | ID | Status | Migration Status | Name | Size | Volume Type | Bootable | Multiattach | Attached to |
 +----+--------+------------------+------+------+-------------+----------+-------------+-------------+
 +----+--------+------------------+------+------+-------------+----------+-------------+-------------+</codeblock>
-      User test_user can list projects from other tenants. For demonstration purpose, the cloud only
+      User testuser can list projects from other tenants. For demonstration purpose, the cloud only
       has one cinder volume, and is associated with admin project. The key is to use --all-tennats,
       an admin only argument. <codeblock>stack@localhost:~$ cinder list --all-tenants </codeblock>
       <codeblock>+--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
@@ -266,14 +265,14 @@ stack@localhost:~$ neutron net-list</codeblock>
       read/write access to swift.
       <codeblock>stack@localhost:~$ Source keystone.osrc
 stack@localhost:~$ openstack role add --user testuser --project test_project swiftoperator</codeblock>
-      Now testuser can back up Cinder volume to Swift. <p><b>Customize policy.json on the
-          deployer</b></p>One way to deploy policy.json for a service is by going to each target
-      node and making the changes there. This isn't necessary anymore. Policy files can be edited on
-      the deployer and then deployed to nodes. As you would when modifying a conf file, you should
-      exercise caution when modifying policy.json files. It is best to validate the changes in a
-      non-production environment before rolling out policy.json changes into productiob. It is not
-      recommended that you make policy.json changes without a way to validate the desired resulting
-      behavior. </section>
+      Now testuser can back up Cinder volume to Swift. <p><b>Customizing policy.json on the
+          deployer</b></p>why would you do this? One way to deploy policy.json for a service is by
+      going to each target node and making the changes there. This isn't necessary anymore. Policy
+      files can be edited on the deployer and then deployed to nodes. As you would when modifying a
+      conf file, you should exercise caution when modifying policy.json files. It is best to
+      validate the changes in a non-production environment before rolling out policy.json changes
+      into productiob. It is not recommended that you make policy.json changes without a way to
+      validate the desired resulting behavior. </section>
     
   </body>
 </topic>
