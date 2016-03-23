@@ -129,41 +129,48 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
       <p><b>Nova example</b></p>A user with the "admin" role is required in order to assign the
       nova_admin role to the user called testuser. To accomplish this, set the environment variables
       needed for Keystone administrator.
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User testuser and project
+      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>User testuser and project
       test_project are used for demonstration purpose. Assign nova_admin role to user test_user
-      stack@localhost:~$ openstack role add --user testuser --project test_project nova_admin list
-      role assignment for testuser <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock>
-      <codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+      <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project nova_admin list</codeblock>Get
+      the role assignment for testuser
+      <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock> Your
+      output should look like
+      this:<codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | Role                             | User                             | Group | Project                          | Domain | Inherited |
 +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | 8cdb02bab38347f3b65753099f3ab73c | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
 +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>
-      <codeblock>stack@localhost:~$ openstack role list | grep 8cdb02bab38347f3b65753099f3ab73c
-      | 8cdb02bab38347f3b65753099f3ab73c | nova_admin                |</codeblock>
-      To demonstrate that testuser has nova admin privilege, we use testuser to delete a vm from a
-      project other than test_proejct. Only user with admin role or nova_admin can delete a vm on a
-      different project. Source the environment variable for testuser
+      Now<codeblock>stack@localhost:~$ openstack role list | grep 8cdb02bab38347f3b65753099f3ab73c
+      | 8cdb02bab38347f3b65753099f3ab73c | nova_admin                |</codeblock>To
+      demonstrate that the user called testuser has nova admin privileges, you can use testuser to
+      delete a VM from a project other than test_proejct. Only a user with either the admin role or
+      the nova_admin role can delete a VM on a different project. To try this, begin by sourcing the
+      environment variables for testuser
       <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> List all the VMs in project
-      test_project. There are no VMs in test_project, therefore "nova list" Shows an empty list. <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
+      test_project.
+      <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
       OS_PROJECT_NAME=test_project
       stack@localhost:~$ nova list</codeblock>
-      <codeblock>+----+------+--------+------------+-------------+----------+
+      There are no VMs in test_project, therefore running "nova list" yields an empty
+      list:<codeblock>+----+------+--------+------------+-------------+----------+
 | ID | Name | Status | Task State | Power State | Networks |
 +----+------+--------+------------+-------------+----------+
 +----+------+--------+------------+-------------+----------+</codeblock>
-      List VMs from all projects. In this particular case, for demonstration purpose, there is a VM
-      associated with project admin (project id, dc0f8b0076d4403b83ad517021803d30). <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock>
-      <codeblock>+--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
+      Next, list VMs from all projects. In this particular case, for demonstration purposes, there
+      is a VM associated with project admin (project id, dc0f8b0076d4403b83ad517021803d30).
+      <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock> Here is the
+      result:<codeblock>+--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
 | ID                                   | Name    | Tenant ID                        | Status | Task State | Power State | Networks |
 +--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
 | da4f46e2-4432-411b-82f7-71ab546f91f3 | testvm1 | dc0f8b0076d4403b83ad517021803d30 | ACTIVE | -          | Running     |          |
 +--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+</codeblock>
-      Since test_user has nova_admin role, test user can delete a VM in another project. This is
-      done with -all-tenants argument.
-      <codeblock>stack@localhost:~$ nova delete --all-tenants da4f46e2-4432-411b-82f7-71ab546f91f3</codeblock>
-      Request to delete server da4f46e2-4432-411b-82f7-71ab546f91f3 has been accepted. Confirm that
-      the VM with id da4f46e2-4432-411b-82f7-71ab546f91f3 was deleted. <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock>
-      <codeblock>+----+------+-----------+--------+------------+-------------+----------+
+      Since test_user has the nova_admin role, test_user can delete a VM in another project. This is
+      accomplished using the -all-tenants argument.
+      <codeblock>stack@localhost:~$ nova delete --all-tenants da4f46e2-4432-411b-82f7-71ab546f91f3</codeblock>Next,
+      confirm that the VM with id da4f46e2-4432-411b-82f7-71ab546f91f3 was deleted by runnig nova
+      list again:<codeblock>stack@localhost:~$ nova list --all-tenants</codeblock> Here you see the
+      VM is
+      gone.<codeblock>+----+------+-----------+--------+------------+-------------+----------+
 | ID | Name | Tenant ID | Status | Task State | Power State | Networks |
 +----+------+-----------+--------+------------+-------------+----------+
 +----+------+-----------+--------+------------+-------------+----------+</codeblock>
@@ -177,14 +184,14 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
         <li>nova secgroup-list -all-tenants 1 </li>
         <li>nova server-group-list -all-projects</li>
       </ul>
-      <p><b>Neutron example</b></p> A user with "admin" role is required in order to assign the
-      neutron_admin role to the user called testuser. Set environment variables needed for Keystone
-      administrator <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User testuser and
-      project test_project are used for demonstration purpose. Assign neutron_admin role to user
-      test_user
-      <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project neutron_admin</codeblock>
-      For demonstration purpose, an exisintg Neutron network named mynet is used. Mynet is
-      associated with admin project. <codeblock>stack@localhost:~$ source service.osrc
+      <p><b>Neutron example</b></p>A user with  the "admin" role is required in order to assign the
+      neutron_admin role to the user called test_user. To begin, set the environment variables
+      needed for Keystone
+      administrator:<codeblock>stack@localhost:~$ source keystone.osrc</codeblock>Next, assign the
+      neutron_admin role to the user called test_user
+      <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project neutron_admin</codeblock>For
+      demonstration purposes, an exisintg Neutron network named mynet is used. Mynet is associated
+      with admin project. <codeblock>stack@localhost:~$ source service.osrc
       stack@localhost:~$ neutron net-show 0e560113-f578-4c16-b978-a02ab55a7d6e</codeblock>
       <codeblock>+---------------------------+--------------------------------------+
 | Field                     | Value                                |
@@ -204,26 +211,28 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
 +---------------------------+--------------------------------------+</codeblock>
       <codeblock>stack@localhost:~$ source keystone.osrc 
       stack@localhost:~$ openstack project list | grep dc0f8b0076d4403b83ad517021803d30
-      | dc0f8b0076d4403b83ad517021803d30 | admin</codeblock>
-      # Switch to testuser <codeblock>stack@localhost:~$ source testuser.osrc
-      stack@localhost:~$ neutron net-list</codeblock>
+      | dc0f8b0076d4403b83ad517021803d30 | admin</codeblock>Switch
+      to testuser <codeblock>stack@localhost:~$ source testuser.osrc
+stack@localhost:~$ neutron net-list</codeblock>
       <codeblock>+--------------------------------------+---------+------------------------------------------------------+
 | id                                   | name    | subnets                                              |
 +--------------------------------------+---------+------------------------------------------------------+
 | 0e560113-f578-4c16-b978-a02ab55a7d6e | mynet   |                                                      |
 | 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
 +--------------------------------------+---------+------------------------------------------------------+</codeblock>
-      Delete neetron network mynet.
-      <codeblock>stack@localhost:~$ neutron net-delete mynet</codeblock> Deleted network: mynet <codeblock>stack@localhost:~$ neutron net-list</codeblock>
-      <codeblock>+--------------------------------------+---------+------------------------------------------------------+
+      Delete the neutron network called mynet.
+      <codeblock>stack@localhost:~$ neutron net-delete mynet</codeblock>Next, run neutron net-list
+      <codeblock>stack@localhost:~$ neutron net-list</codeblock> And note that the network called
+      mynet has been deleted:<codeblock>+--------------------------------------+---------+------------------------------------------------------+
 | id                                   | name    | subnets                                              |
 +--------------------------------------+---------+------------------------------------------------------+
 | 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
 +--------------------------------------+---------+------------------------------------------------------+</codeblock>
-      <p><b>Cinder example</b></p> An user with "admin" role is required in order to assign
-      cinder_admin role to testuser. Set environment variables needed for Keystone administrator
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User testuser and project
-      test_project are used for demonstration purpose. Assign cinder_admin role to user test_user
+      <p><b>Cinder example</b></p> A user with the "admin" role is required in order to assign the
+      cinder_admin role to the user called test_user. Set environment variables needed for Keystone
+      administrator <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User test_user
+      and project test_project are used for demonstration purpose. Assign cinder_admin role to user
+      test_user
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project cinder_admin</codeblock>
       Switch to testuser environment vairable
       <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> For demonstration purpose,
