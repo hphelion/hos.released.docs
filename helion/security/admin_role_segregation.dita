@@ -39,147 +39,134 @@
       </ul>
     </section>
     <section><title/>The following are the new roles defined in HOS 3.0. These roles serve as
-      grouping mechanism for common administrative needs at OpenStack service level. Each role
+      grouping mechanism for common administrative needs at the OpenStack service level. Each role
       represents administrative privilege into each service. Multiple roles can be assigned to a
-      user. When assigning a Service Admin Role to a user, it means that you determined that the
-      user is authorized to perform administrative actions and access resources in that service.
-      Pre-installed Service Admin Roles <dl>
+      user. You can assign a Service Admin Role to a user once you have determined that the user is
+      authorized to perform administrative actions and access resources in that service.
+          <p><b>Pre-installed Service Admin Roles</b></p>The following service admin roles exist by
+      default: <dl>
         <dlentry>
           <dt>nova_admin role</dt>
-          <dd>Assign this role to users with job function to perform nova (compute) related
+          <dd>Assign this role to users whose job function it is to perform nova (compute) related
             administrative tasks.</dd>
         </dlentry>
         <dlentry>
           <dt>neutron_admin role</dt>
-          <dd>Assign this role to users with job function to perform neutron (networking) related
-            administrative tasks.</dd>
+          <dd>Assign this role to users whose job function it is to perform neutron (networking)
+            related administrative tasks.</dd>
         </dlentry>
         <dlentry>
           <dt>cinder_admin role</dt>
-          <dd> Assign this role to users with job function to perform cinder (storage) related
-            administrative tasks..</dd>
+          <dd> Assign this role to users whose job function it is to perform cinder (storage)
+            related administrative tasks..</dd>
         </dlentry>
         <dlentry>
           <dt>glance_Admin role</dt>
-          <dd> Assign this role to users with job function to perform glance (image service) related
-            administrative tasks.</dd>
+          <dd> Assign this role to users whose job function it is to perform glance (image service)
+            related administrative tasks.</dd>
         </dlentry>
       </dl>
     </section>
     <section><title>Usage examples</title>
       <p><b>Glance</b></p>A user with "admin" role is required in order to assign glance_admin role
-      to testuser.
-       Set environment variables needed for Keystone administrator
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>
-      User testuser and project test_project are used for demonstration purposes.
-      <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project glance_admin</codeblock>
-      List role assignment for testuser
-      <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock>
-      <codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
-      | Role                             | User                             | Group | Project                          | Domain | Inherited |
-      +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
-      | 46ba80078bc64853b051c964db918816 | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
-      +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>
-      <codeblock>stack@localhost:~$ openstack role list | grep 46ba80078bc64853b051c964db918816</codeblock>
-      <codeblock>| 46ba80078bc64853b051c964db918816 | glance_admin              |</codeblock>
-      To demonstrate that testuser has glance admin privilege, we use testuser to upload and then
-      publicize an image. Only user with admin role or glance_admin can publicize an image.
-     The following is a sample testuser.osrc.  OS_AUTH_URL might vary from deployement 
-       to deployment.
+      to a test user we will call "testuser." To assign the role, you will set the environment
+      variables needed for Keystone administrator. First source the Keystone credentials:
+      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> The user called testuser and
+      project test_project are used for demonstration purposes. Here you can add
+      them:<codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project glance_admin</codeblock>
+      Next, list role assignment for testuser.
+      <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock> Your
+      results should look like this:<codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+| Role                             | User                             | Group | Project                          | Domain | Inherited |
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+| 46ba80078bc64853b051c964db918816 | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>
+      <codeblock>stack@localhost:~$ openstack role list | grep 46ba80078bc64853b051c964db918816  
+        | 46ba80078bc64853b051c964db918816 | glance_admin  |</codeblock>To
+      demonstrate that the user testuser has glance admin privileges, use testuser to upload and
+      then publicize an image. Only a user with an admin role or glance_admin can publicize an
+      image. The following is a sample testuser.osrc. OS_AUTH_URL might vary from deployement to
+      deployment.
       <codeblock>stack@localhost:~$ cat testuser.osrc
-      unset OS_DOMAIN_NAME
-      export OS_IDENTITY_API_VERSION=3
-      export OS_AUTH_VERSION=3
-      export OS_PROJECT_NAME=test_project
-      export OS_PROJECT_DOMAIN_NAME=Default
-      export OS_USERNAME=testuser
-      export OS_USER_DOMAIN_NAME=Default
-      export OS_PASSWORD=testuser
-      export OS_AUTH_URL=http://192.168.245.9:35357/v3
-      export OS_ENDPOINT_TYPE=internalURL
-      # OpenstackClient uses OS_INTERFACE instead of OS_ENDPOINT
-      export OS_INTERFACE=internal
-      export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
-      
-      Source the environment variable for testuser
-      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock>
-      
-      Upload an image and publicize it
+unset OS_DOMAIN_NAME
+export OS_IDENTITY_API_VERSION=3
+export OS_AUTH_VERSION=3
+export OS_PROJECT_NAME=test_project
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_USERNAME=testuser
+export OS_USER_DOMAIN_NAME=Default
+export OS_PASSWORD=testuser
+export OS_AUTH_URL=http://192.168.245.9:35357/v3
+export OS_ENDPOINT_TYPE=internalURL
+# OpenstackClient uses OS_INTERFACE instead of OS_ENDPOINT
+export OS_INTERFACE=internal
+export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
+      Source the environment variables for testuser
+      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> Upload an image and publicize
+      it
       <codeblock>stack@localhost:~$ glance image-create  --name "upload me" --visibility public --container-format bare --disk-format qcow2 -
       -file uploadme.txt</codeblock>
-      <codeblock>+------------------+--------------------------------------+
-      | Property         | Value                                |
-      +------------------+--------------------------------------+
-      | checksum         | dd75c3b840a16570088ef12f6415dd15     |
-      | container_format | bare                                 |
-      | created_at       | 2016-01-06T23:31:27Z                 |
-      | disk_format      | qcow2                                |
-      | id               | cf1490f4-1eb1-477c-92e8-15ebbe91da03 |
-      | min_disk         | 0                                    |
-      | min_ram          | 0                                    |
-      | name             | upload me                            |
-      | owner            | bd24897932074780a20b780c4dde34c7     |
-      | protected        | False                                |
-      | size             | 10                                   |
-      | status           | active                               |
-      | tags             | []                                   |
-      | updated_at       | 2016-01-06T23:31:31Z                 |
-      | virtual_size     | None                                 |
-      | visibility       | public                               |
-      +------------------+--------------------------------------+</codeblock>
-      Nova example An user with "admin" role is required in order to assign nova_admin role to
-      testuser.
-      Set environment variables needed for Keystone administrator
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>
-      
-      User testuser and project test_project are used for demonstration purpose.
-       Assign nova_admin role to user test_user
-      stack@localhost:~$ openstack role add --user testuser --project test_project nova_admin
-      
-      list role assignment for testuser
-      <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock>
+      Here is the output:<codeblock>+------------------+--------------------------------------+
+| Property         | Value                                |
++------------------+--------------------------------------+
+| checksum         | dd75c3b840a16570088ef12f6415dd15     |
+| container_format | bare                                 |
+| created_at       | 2016-01-06T23:31:27Z                 |
+| disk_format      | qcow2                                |
+| id               | cf1490f4-1eb1-477c-92e8-15ebbe91da03 |
+| min_disk         | 0                                    |
+| min_ram          | 0                                    |
+| name             | upload me                            |
+| owner            | bd24897932074780a20b780c4dde34c7     |
+| protected        | False                                |
+| size             | 10                                   |
+| status           | active                               |
+| tags             | []                                   |
+| updated_at       | 2016-01-06T23:31:31Z                 |
+| virtual_size     | None                                 |
+| visibility       | public                               |
++------------------+--------------------------------------+</codeblock>
+      <p><b>Nova example</b></p>A user with the "admin" role is required in order to assign the
+      nova_admin role to the user called testuser. To accomplish this, set the environment variables
+      needed for Keystone administrator.
+      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User testuser and project
+      test_project are used for demonstration purpose. Assign nova_admin role to user test_user
+      stack@localhost:~$ openstack role add --user testuser --project test_project nova_admin list
+      role assignment for testuser <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock>
       <codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
-      | Role                             | User                             | Group | Project                          | Domain | Inherited |
-      +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
-      | 8cdb02bab38347f3b65753099f3ab73c | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
-      +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>
+| Role                             | User                             | Group | Project                          | Domain | Inherited |
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+| 8cdb02bab38347f3b65753099f3ab73c | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>
       <codeblock>stack@localhost:~$ openstack role list | grep 8cdb02bab38347f3b65753099f3ab73c
       | 8cdb02bab38347f3b65753099f3ab73c | nova_admin                |</codeblock>
       To demonstrate that testuser has nova admin privilege, we use testuser to delete a vm from a
       project other than test_proejct. Only user with admin role or nova_admin can delete a vm on a
-      different project.
-      Source the environment variable for testuser
-      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock>
-      
-       List all the VMs in project test_project.  There are no VMs in test_project, therefore "nova list"
-      Shows an empty list.
-      <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
+      different project. Source the environment variable for testuser
+      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> List all the VMs in project
+      test_project. There are no VMs in test_project, therefore "nova list" Shows an empty list. <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
       OS_PROJECT_NAME=test_project
       stack@localhost:~$ nova list</codeblock>
       <codeblock>+----+------+--------+------------+-------------+----------+
-      | ID | Name | Status | Task State | Power State | Networks |
-      +----+------+--------+------------+-------------+----------+
-      +----+------+--------+------------+-------------+----------+</codeblock>
-      
-      List VMs from all projects.  In this particular case, for demonstration purpose, there is a
-      VM associated with project admin (project id, dc0f8b0076d4403b83ad517021803d30).
-      <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock>
+| ID | Name | Status | Task State | Power State | Networks |
++----+------+--------+------------+-------------+----------+
++----+------+--------+------------+-------------+----------+</codeblock>
+      List VMs from all projects. In this particular case, for demonstration purpose, there is a VM
+      associated with project admin (project id, dc0f8b0076d4403b83ad517021803d30). <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock>
       <codeblock>+--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
-      | ID                                   | Name    | Tenant ID                        | Status | Task State | Power State | Networks |
-      +--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
-      | da4f46e2-4432-411b-82f7-71ab546f91f3 | testvm1 | dc0f8b0076d4403b83ad517021803d30 | ACTIVE | -          | Running     |          |
-      +--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+</codeblock>
-      
-      Since test_user has nova_admin role, test user can delete a VM in another project.  This is
-       done with -all-tenants argument.
+| ID                                   | Name    | Tenant ID                        | Status | Task State | Power State | Networks |
++--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
+| da4f46e2-4432-411b-82f7-71ab546f91f3 | testvm1 | dc0f8b0076d4403b83ad517021803d30 | ACTIVE | -          | Running     |          |
++--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+</codeblock>
+      Since test_user has nova_admin role, test user can delete a VM in another project. This is
+      done with -all-tenants argument.
       <codeblock>stack@localhost:~$ nova delete --all-tenants da4f46e2-4432-411b-82f7-71ab546f91f3</codeblock>
-      Request to delete server da4f46e2-4432-411b-82f7-71ab546f91f3 has been accepted.
-      Confirm that the VM with id da4f46e2-4432-411b-82f7-71ab546f91f3 was deleted.
-      <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock>
+      Request to delete server da4f46e2-4432-411b-82f7-71ab546f91f3 has been accepted. Confirm that
+      the VM with id da4f46e2-4432-411b-82f7-71ab546f91f3 was deleted. <codeblock>stack@localhost:~$ nova list --all-tenants</codeblock>
       <codeblock>+----+------+-----------+--------+------------+-------------+----------+
-      | ID | Name | Tenant ID | Status | Task State | Power State | Networks |
-      +----+------+-----------+--------+------------+-------------+----------+
-      +----+------+-----------+--------+------------+-------------+----------+</codeblock>
+| ID | Name | Tenant ID | Status | Task State | Power State | Networks |
++----+------+-----------+--------+------------+-------------+----------+
++----+------+-----------+--------+------------+-------------+----------+</codeblock>
       The following is a list of nova commands with -all-tenants support. <ul>
         <li>nova start -all-tenants </li>
         <li>nova stop -all-tenants </li>
@@ -191,102 +178,85 @@
         <li>nova server-group-list -all-projects</li>
       </ul>
       <p><b>Neutron example</b></p> A user with "admin" role is required in order to assign the
-      neutron_admin role to the user called testuser.  Set environment variables needed for Keystone administrator
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>
-      
-     User testuser and project test_project are used for demonstration purpose.
-     Assign neutron_admin role to user test_user
+      neutron_admin role to the user called testuser. Set environment variables needed for Keystone
+      administrator <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User testuser and
+      project test_project are used for demonstration purpose. Assign neutron_admin role to user
+      test_user
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project neutron_admin</codeblock>
-      
-      For demonstration purpose, an exisintg Neutron network named mynet is used.
-      Mynet is associated with admin project.
-      <codeblock>stack@localhost:~$ source service.osrc
+      For demonstration purpose, an exisintg Neutron network named mynet is used. Mynet is
+      associated with admin project. <codeblock>stack@localhost:~$ source service.osrc
       stack@localhost:~$ neutron net-show 0e560113-f578-4c16-b978-a02ab55a7d6e</codeblock>
       <codeblock>+---------------------------+--------------------------------------+
-      | Field                     | Value                                |
-      +---------------------------+--------------------------------------+
-      | admin_state_up            | True                                 |
-      | id                        | 0e560113-f578-4c16-b978-a02ab55a7d6e |
-      | mtu                       | 0                                    |
-      | name                      | mynet                                |
-      | provider:network_type     | vxlan                                |
-      | provider:physical_network |                                      |
-      | provider:segmentation_id  | 1006                                 |
-      | router:external           | False                                |
-      | shared                    | False                                |
-      | status                    | ACTIVE                               |
-      | subnets                   |                                      |
-      | tenant_id                 | dc0f8b0076d4403b83ad517021803d30     |
-      +---------------------------+--------------------------------------+</codeblock>
+| Field                     | Value                                |
++---------------------------+--------------------------------------+
+| admin_state_up            | True                                 |
+| id                        | 0e560113-f578-4c16-b978-a02ab55a7d6e |
+| mtu                       | 0                                    |
+| name                      | mynet                                |
+| provider:network_type     | vxlan                                |
+| provider:physical_network |                                      |
+| provider:segmentation_id  | 1006                                 |
+| router:external           | False                                |
+| shared                    | False                                |
+| status                    | ACTIVE                               |
+| subnets                   |                                      |
+| tenant_id                 | dc0f8b0076d4403b83ad517021803d30     |
++---------------------------+--------------------------------------+</codeblock>
       <codeblock>stack@localhost:~$ source keystone.osrc 
       stack@localhost:~$ openstack project list | grep dc0f8b0076d4403b83ad517021803d30
       | dc0f8b0076d4403b83ad517021803d30 | admin</codeblock>
-      
-      #  Switch to testuser 
-      <codeblock>stack@localhost:~$ source testuser.osrc
+      # Switch to testuser <codeblock>stack@localhost:~$ source testuser.osrc
       stack@localhost:~$ neutron net-list</codeblock>
       <codeblock>+--------------------------------------+---------+------------------------------------------------------+
-      | id                                   | name    | subnets                                              |
-      +--------------------------------------+---------+------------------------------------------------------+
-      | 0e560113-f578-4c16-b978-a02ab55a7d6e | mynet   |                                                      |
-      | 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
-      +--------------------------------------+---------+------------------------------------------------------+</codeblock>
-      
+| id                                   | name    | subnets                                              |
++--------------------------------------+---------+------------------------------------------------------+
+| 0e560113-f578-4c16-b978-a02ab55a7d6e | mynet   |                                                      |
+| 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
++--------------------------------------+---------+------------------------------------------------------+</codeblock>
       Delete neetron network mynet.
-      <codeblock>stack@localhost:~$ neutron net-delete mynet</codeblock>
-      Deleted network: mynet
-      <codeblock>stack@localhost:~$ neutron net-list</codeblock>
+      <codeblock>stack@localhost:~$ neutron net-delete mynet</codeblock> Deleted network: mynet <codeblock>stack@localhost:~$ neutron net-list</codeblock>
       <codeblock>+--------------------------------------+---------+------------------------------------------------------+
-      | id                                   | name    | subnets                                              |
-      +--------------------------------------+---------+------------------------------------------------------+
-      | 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
-      +--------------------------------------+---------+------------------------------------------------------+</codeblock>
+| id                                   | name    | subnets                                              |
++--------------------------------------+---------+------------------------------------------------------+
+| 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
++--------------------------------------+---------+------------------------------------------------------+</codeblock>
       <p><b>Cinder example</b></p> An user with "admin" role is required in order to assign
       cinder_admin role to testuser. Set environment variables needed for Keystone administrator
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>
-      
-      User testuser and project test_project are used for demonstration purpose.
-      Assign cinder_admin role to user test_user
+      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User testuser and project
+      test_project are used for demonstration purpose. Assign cinder_admin role to user test_user
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project cinder_admin</codeblock>
-      
       Switch to testuser environment vairable
-      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> 
-      
-      For demonstration purpose, project test_project does not have any cinder volumes.
-      <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
+      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> For demonstration purpose,
+      project test_project does not have any cinder volumes. <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
       OS_PROJECT_NAME=test_project
       stack@localhost:~$ cinder list</codeblock>
       <codeblock>+----+--------+------------------+------+------+-------------+----------+-------------+-------------+
-      | ID | Status | Migration Status | Name | Size | Volume Type | Bootable | Multiattach | Attached to |
-      +----+--------+------------------+------+------+-------------+----------+-------------+-------------+
-      +----+--------+------------------+------+------+-------------+----------+-------------+-------------+</codeblock>
-      
-      User test_user can list projects from other tenants.  For demonstration purpose, the cloud only
- has one cinder volume, and is associated with admin project.  The key is to use --all-tennats,
-      an admin only argument.
-      <codeblock>stack@localhost:~$ cinder list --all-tenants </codeblock>
+| ID | Status | Migration Status | Name | Size | Volume Type | Bootable | Multiattach | Attached to |
++----+--------+------------------+------+------+-------------+----------+-------------+-------------+
++----+--------+------------------+------+------+-------------+----------+-------------+-------------+</codeblock>
+      User test_user can list projects from other tenants. For demonstration purpose, the cloud only
+      has one cinder volume, and is associated with admin project. The key is to use --all-tennats,
+      an admin only argument. <codeblock>stack@localhost:~$ cinder list --all-tenants </codeblock>
       <codeblock>+--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
-      |                  ID                  |            Tenant ID             |   Status  | Migration Status |  Name | Size | Volume Type | Bootable | Multiattach | Attached to |
-      +--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
-      | 2c3b4612-4762-4b3c-84b4-4597d6ec8000 | dc0f8b0076d4403b83ad517021803d30 | available |        -         | myvol | 256  |      -      |  false   |    False    |             |
-      +--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
-      </codeblock>
-       Here is another a way to list volumes in project admin (project id: dc0f8b0076d4403b83ad517021803d30)
-      <codeblock>stack@localhost:~$ cinder list --tenant dc0f8b0076d4403b83ad517021803d30</codeblock>
+|                  ID                  |            Tenant ID             |   Status  | Migration Status |  Name | Size | Volume Type | Bootable | Multiattach | Attached to |
++--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
+| 2c3b4612-4762-4b3c-84b4-4597d6ec8000 | dc0f8b0076d4403b83ad517021803d30 | available |        -         | myvol | 256  |      -      |  false   |    False    |             |
++--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+</codeblock>
+      Here is another a way to list volumes in project admin (project id:
+      dc0f8b0076d4403b83ad517021803d30) <codeblock>stack@localhost:~$ cinder list --tenant dc0f8b0076d4403b83ad517021803d30</codeblock>
       <codeblock>+--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
-      |                  ID                  |            Tenant ID             |   Status  | Migration Status |  Name | Size | Volume Type | Bootable | Multiattach | Attached to |
-      +--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
-      | 2c3b4612-4762-4b3c-84b4-4597d6ec8000 | dc0f8b0076d4403b83ad517021803d30 | available |        -         | myvol | 256  |      -      |  false   |    False    |             |
-      +--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
-      </codeblock>
+|                  ID                  |            Tenant ID             |   Status  | Migration Status |  Name | Size | Volume Type | Bootable | Multiattach | Attached to |
++--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+
+| 2c3b4612-4762-4b3c-84b4-4597d6ec8000 | dc0f8b0076d4403b83ad517021803d30 | available |        -         | myvol | 256  |      -      |  false   |    False    |             |
++--------------------------------------+----------------------------------+-----------+------------------+-------+------+-------------+----------+-------------+-------------+</codeblock>
       Delete Cinder volume myvol
       <codeblock>stack@localhost:~$ cinder delete 2c3b4612-4762-4b3c-84b4-4597d6ec8000</codeblock>
-      Request to delete volume 2c3b4612-4762-4b3c-84b4-4597d6ec8000 has been accepted.
-      <p><b>Cinder volume backup to Swift</b></p> If Cinder is configured to volume backup to Swift,
-      the user account with cinder_admin role is required to have swiftoperator role in order to
-      have read/write access to swift.
+      Request to delete volume 2c3b4612-4762-4b3c-84b4-4597d6ec8000 has been accepted. <p><b>Cinder
+          volume backup to Swift</b></p> If Cinder is configured to volume backup to Swift, the user
+      account with cinder_admin role is required to have swiftoperator role in order to have
+      read/write access to swift.
       <codeblock>stack@localhost:~$ Source keystone.osrc
-        stack@localhost:~$ openstack role add --user testuser --project test_project swiftoperator</codeblock>
+stack@localhost:~$ openstack role add --user testuser --project test_project swiftoperator</codeblock>
       Now testuser can back up Cinder volume to Swift. <p><b>Customize policy.json on the
           deployer</b></p>One way to deploy policy.json for a service is by going to each target
       node and making the changes there. This isn't necessary anymore. Policy files can be edited on
