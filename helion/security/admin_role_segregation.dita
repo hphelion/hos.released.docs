@@ -38,12 +38,12 @@
         <li>Have predefined policy.json files to facilitate quick and easy deployment </li>
       </ul>
     </section>
-    <section><title/>The following are the new roles defined in HOS 3.0. These roles serve as
+    <section><title/>The following are the new roles defined in <ph conkeyref="HOS-conrefs/product-title"/>. These roles serve as
       grouping mechanism for common administrative needs at the OpenStack service level. Each role
       represents administrative privilege into each service. Multiple roles can be assigned to a
       user. You can assign a Service Admin Role to a user once you have determined that the user is
       authorized to perform administrative actions and access resources in that service.
-          <p><b>Pre-installed Service Admin Roles</b></p>The following service admin roles exist by
+          <p><b>Pre-installed service admin roles</b></p>The following service admin roles exist by
       default: <dl>
         <dlentry>
           <dt>nova_admin role</dt>
@@ -67,13 +67,13 @@
         </dlentry>
       </dl>
     </section>
-    <section><title>Usage examples</title>The following examples illustrate how you can assign each
-      of the new service admin roles to a user. <p><b>Assigning the glance_admin role</b></p>A user
-      with "admin" role is required in order to assign the glance_admin role to a test user we will
-      call "testuser." To assign the role, you will set the environment variables needed for
-      Keystone administrator. First source the Keystone credentials:
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> The user called testuser and
-      project test_project are used for demonstration purposes. Here you can add
+    <section><title>Assigning the default service admin roles</title>The following examples
+      illustrate how you can assign each of the new service admin roles to a user. <p><b>Assigning
+          the glance_admin role</b></p>A user must have the role of admin in order to assign the
+      glance_admin role to a test user we will call "testuser." To assign the role, you will set the
+      environment variables needed for Keystone administrator. First source the Keystone
+      credentials: <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> The user called
+      testuser and project test_project are used for demonstration purposes. Here you can add
       them:<codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project glance_admin</codeblock>
       Next, list role assignment for testuser.
       <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock> Your
@@ -101,13 +101,12 @@ export OS_AUTH_URL=http://192.168.245.9:35357/v3
 export OS_ENDPOINT_TYPE=internalURL
 # OpenstackClient uses OS_INTERFACE instead of OS_ENDPOINT
 export OS_INTERFACE=internal
-export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
-      Source the environment variables for testuser
-      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> Upload an image and publicize
-      it
+export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>Source
+      the environment variables for testuser
+      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock>Upload an image and publicize it
       <codeblock>stack@localhost:~$ glance image-create  --name "upload me" --visibility public --container-format bare --disk-format qcow2 -
-      -file uploadme.txt</codeblock>
-      Here is the output:<codeblock>+------------------+--------------------------------------+
+      -file uploadme.txt</codeblock>Here
+      is the output:<codeblock>+------------------+--------------------------------------+
 | Property         | Value                                |
 +------------------+--------------------------------------+
 | checksum         | dd75c3b840a16570088ef12f6415dd15     |
@@ -127,14 +126,14 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
 | virtual_size     | None                                 |
 | visibility       | public                               |
 +------------------+--------------------------------------+</codeblock>
-      <p><b>Assigning the nova_admin role</b></p>A user with the "admin" role is required in order
-      to assign the nova_admin role to the user called testuser. To accomplish this, set the
+      <p><b>Assigning the nova_admin role</b></p>A user must have the role of admin in order to
+      assign the nova_admin role to the user called testuser. To accomplish this, set the
       environment variables needed for Keystone administrator.
       <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>User testuser and project
       test_project are used for demonstration purpose. Assign nova_admin role to user testuser
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project nova_admin list</codeblock>Get
       the role assignment for testuser
-      <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock> Your
+      <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock>Your
       output should look like
       this:<codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | Role                             | User                             | Group | Project                          | Domain | Inherited |
@@ -185,9 +184,9 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>
         <li>nova secgroup-list -all-tenants 1 </li>
         <li>nova server-group-list -all-projects</li>
       </ul>
-      <p><b>Assigning the neutron_admin role</b></p>A user with  the "admin" role is required in
-      order to assign the neutron_admin role to the user called testuser. To begin, set the
-      environment variables needed for Keystone
+      <p><b>Assigning the neutron_admin role</b></p>A user must have the role of admin in order to
+      assign the neutron_admin role to the user called testuser. To begin, set the environment
+      variables needed for Keystone
       administrator:<codeblock>stack@localhost:~$ source keystone.osrc</codeblock>Next, assign the
       neutron_admin role to the user called testuser
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project neutron_admin</codeblock>For
@@ -229,14 +228,14 @@ stack@localhost:~$ neutron net-list</codeblock>
 +--------------------------------------+---------+------------------------------------------------------+
 | 54a3ad5f-1313-4ed6-b8f3-65d944c1faf5 | ext-net | 2c10cfa6-520e-4bfa-92ab-b21fd16a9a52 192.168.99.0/24 |
 +--------------------------------------+---------+------------------------------------------------------+</codeblock>
-      <p><b>Assigning the cinder_admin role</b></p> A user with the "admin" role is required in
-      order to assign the cinder_admin role to the user called testuser. Set environment variables
-      needed for Keystone administrator
-      <codeblock>stack@localhost:~$ source keystone.osrc</codeblock> User testuser and project
-      test_project are used for demonstration purpose. Assign cinder_admin role to user testuser
-      <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project cinder_admin</codeblock>
-      Switch to testuser environment vairable
-      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock> For demonstration purpose,
+      <p><b>Assigning the cinder_admin role</b></p>A user must have the role of admin in order to
+      assign the cinder_admin role to the user called testuser. Set environment variables needed for
+      Keystone administrator <codeblock>stack@localhost:~$ source keystone.osrc</codeblock>User
+      testuser and project test_project are used for demonstration purpose. Assign cinder_admin role
+      to user testuser
+      <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project cinder_admin</codeblock>Switch
+      to testuser environment vairable
+      <codeblock>stack@localhost:~$ source testuser.osrc</codeblock>For demonstration purposes,
       project test_project does not have any cinder volumes. <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
       OS_PROJECT_NAME=test_project
       stack@localhost:~$ cinder list</codeblock>
