@@ -7,10 +7,10 @@
         <p conkeyref="HOS-conrefs/applies-to"/>
         
         <section>
-            <title>Introduction</title>
+            <title>Introduction</title> 
             
                <sectiondiv id="multipath_overview">
-               
+                
                <p>
                    <keyword keyref="kw-hos-version-30"/> includes support for multipath boot from SAN for FC and FCoE devices.
                    
@@ -31,93 +31,114 @@
             </section>
         
         <section>
-For FC connected nodes and for FCoE nodes where the network processor used is from the emulex family such as for the 650FLB. Then the following changes need to be made.
+        	<title>Install Phase Configuration</title>
+        	
+        	<p>For FC connected nodes and for FCoE nodes where the network processor used is from the Emulex family such as 
+        		for the 650FLB, the following changes need to be made.
+			</p>
+			
+			<ol>
+				<li>In each stanza of the servers.yml insert a line stating the boot-from-san: true
+<codeblock>
+    - id: controller2
+      ip-addr: 192.168.10.4
+      role: CONTROLLER-ROLE
+      server-group: RACK2
+      nic-mapping: HP-DL360-4PORT
+      mac-addr: "8a:8e:64:55:43:76"
+      ilo-ip: 192.168.9.4
+      ilo-password: password
+      ilo-user: admin
+      boot-from-san: true
+</codeblock>				
+				This uses the disk <codeph>/dev/mapper/mpatha</codeph> as the default device on which to install the OS.
+				</li>
+				
+				<li> In the disk input models you also need to specify the devices that will be used via their
+multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, <codeph>/dev/mapper/mpathb</codeph> etc).
 
-Install Phase:
+<codeblock>
+    volume-groups:
+      - name: hlm-vg
+        physical-volumes:
+ 
+          # NOTE: 'sda_root' is a templated value. This value is checked in
+          # os-config and replaced by the partition actually used on sda
+          #e.g. sda1 or sda5
+          - /dev/mpatha_root
+</codeblock>
 
-1) In each stanza of the servers.yml insert a line stating the boot-from-san: true
-e.g
-- id: controller2
-ip-addr: 192.168.10.4
-role: CONTROLLER-ROLE
-server-group: RACK2
-nic-mapping: HP-DL360-4PORT
-mac-addr: "8a:8e:64:55:43:76"
-ilo-ip: 192.168.9.4
-ilo-password: password
-ilo-user: admin
-boot-from-san: true
+				
+				</li>
+				
+			</ol>
 
-This uses the disk /dev/mapper/mpatha as the default device on which to install the OS.
-
-2) In the disk input models you also need to specify the devices that will be used via their
-multipath names (which will be of the form /dev/mapper/mpatha, /dev/mapper/mpathb etc).
-
-e.g
-volume-groups:
-- name: hlm-vg
-physical-volumes:
-
-# NOTE: 'sda_root' is a templated value. This value is checked in
-# os-config and replaced by the partition actually used on sda
-#e.g. sda1 or sda5
-- /dev/mpatha_root
-
-</section>
+		</section>
         
         <section>
-If you are using network cards such as the 536FLB where the devices are being presented as
-"native fcoe" then there are additional configuration steps as well as some restrictions on
-supported configurations.
+        	<title>Native FCoE restrictions and additional configurations</title>
+        	<p>
+				If you are using network cards such as the 536FLB where the devices are being presented as
+				"native fcoe" then there are additional configuration steps as well as some restrictions on
+				supported configurations.
+        	</p>
 
-The restrictions are
+		<p>The restrictions are:</p>
+		
+		<ol>
+			<li>Only one network card can be in the system</li>
+			<li>A number of the interfaces on this card are dedicated to FCoE traffic - these cannot have ip addresses associated with them.</li>
+			<li>Do not configure nic mappings for the system (i.e. use eth name in the input model).</li>
+		</ol>
 
-1) Only one network card can be in the system.
-2) A number of the interfaces on this card are dedicated to FCoE traffic - these cannot have ip addresses associated with them.
-3) Do not configure nic mappings for the system (i.e. use eth name in the input model).
+		<p>
+			In addition to the configuration options above you also need to specify the FCoE interfaces for boot install and for os configuration.
+			To configure for the os install phase specify the fcoe interfaces for each node as:
+		</p>
+		
+<codeblock>
+    - id: controller2
+      ip-addr: 192.168.10.4
+      role: CONTROLLER-ROLE
+      server-group: RACK2
+      nic-mapping: HP-DL360-4PORT
+      mac-addr: "8a:8e:64:55:43:76"
+      ilo-ip: 192.168.9.4
+      ilo-password: password
+      ilo-user: admin
+      boot-from-san: true
+</codeblock>
 
-In addition to the configuration options above you also need to specify the fcoe interfaces for boot install and for os configuration.
-To configure for the os install phase specify the fcoe interfaces for each node as:
+		<p>For the osconfig phase you will need to specify the <codeph>fcoe-interfaces</codeph> at the same level as the <codeph>network-interfaces</codeph>:</p>
 
-- id: controller2
-ip-addr: 192.168.10.4
-role: CONTROLLER-ROLE
-server-group: RACK2
-nic-mapping: HP-DL360-4PORT
-mac-addr: "8a:8e:64:55:43:76"
-ilo-ip: 192.168.9.4
-ilo-password: password
-ilo-user: admin
-boot-from-san: true
-
-For the osconfig phase you will need to specify the fcoe-interfaces at the same level as the network-interfaces:
-
-- name: CONTROLLER-INTERFACES
-
-fcoe-interfaces:
-- name: FCOE-INTERFACE
-devices:
-- eth0
-- eth1
-
-network-interfaces:
-- name: BOND0
-device:
-name: bond0
-bond-data:
-options:
-mode: active-backup
-miimon: 200
-primary: eth3
-provider: linux
-devices:
-- name: eth0
-- name: eth1
-network-groups:
-- EXTERNAL-API
-- EXTERNAL-VM
-- GUEST
-- MANAGEMENT
+<codeblock>
+    - name: CONTROLLER-INTERFACES
+ 
+      fcoe-interfaces:
+        - name: FCOE-INTERFACE
+          devices:
+            - eth0
+            - eth1
+ 
+     network-interfaces:
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: eth3
+              provider: linux
+              devices:
+                - name: eth0
+                - name: eth1
+          network-groups:
+            - EXTERNAL-API
+            - EXTERNAL-VM
+            - GUEST
+            - MANAGEMENT
+</codeblock>
 
         </section>
     </body>
