@@ -55,6 +55,39 @@ ansible-playbook -i hosts/verb_hosts glance-cloud-configure.yml -e proxy=&#60;PR
         your image member lists, which allows you to share access to images across multiple tenants.
         As with most of the OpenStack CLI tools, you can use the <codeph>glance help</codeph>
         command to get a full list of commands as well as their syntax.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Edit the <codeph>~/helion/my_cloud/config/glance/glance-api.conf.j2</codeph> file and
+          add <codeph>http</codeph> to the list of Glance stores in the
+            <codeph>[glance_store]</codeph> section as seen below in bold:
+          <codeblock>[glance_store]
+# List of which store classes and store class locations are
+# currently known to glance at startup.
+# Deprecated group/name - [DEFAULT]/known_stores
+# Existing but disabled stores:
+#      glance.store.rbd.Store,
+#      glance.store.s3.Store,
+#      glance.store.swift.Store,
+#      glance.store.sheepdog.Store,
+#      glance.store.cinder.Store,
+#      glance.store.gridfs.Store,
+#      glance.store.vmware_datastore.Store,
+stores = {{ glance_stores }}<b>, http</b></codeblock></li>
+        <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
+            repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Run the Glance reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
+      </ol>
     </section>
   </body>
 </topic>
