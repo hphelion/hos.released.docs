@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="multipath_boot_from_san">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Multipath Boot from SAN</title>
+    
+    <body>
+        <p conkeyref="HOS-conrefs/applies-to"/>
+        
+        <section>
+            <title>Introduction</title>
+            
+               <sectiondiv id="multipath_overview">
+               
+               <p>
+                   <keyword keyref="kw-hos-version-30"/> includes support for multipath boot from SAN for FC and FCoE devices.
+                   
+                   The supported FCoE device families are those from 650FLB family with an Emulex network processor 
+                   (these present the FCoE LUNs directly into the node) and the 536FLB family with a 
+                   QLogic/Broadcom network processor that present the LUNs as "native FCoE" to the operating system.
+               </p>
+               
+               <p>
+                   In order to allow <keyword keyref="kw-hos-version-30"/> use volumes from a SAN,
+                   a number of configuration options need to be specified for both the install phases and for the osconfig phases.
+                   In all cases the devices that are utilised are devices for which multipath is configured.
+                   
+               </p>            
+               
+               </sectiondiv>
+            
+            </section>
+        
+        <section>
+For FC connected nodes and for FCoE nodes where the network processor used is from the emulex family such as for the 650FLB. Then the following changes need to be made.
+
+Install Phase:
+
+1) In each stanza of the servers.yml insert a line stating the boot-from-san: true
+e.g
+- id: controller2
+ip-addr: 192.168.10.4
+role: CONTROLLER-ROLE
+server-group: RACK2
+nic-mapping: HP-DL360-4PORT
+mac-addr: "8a:8e:64:55:43:76"
+ilo-ip: 192.168.9.4
+ilo-password: password
+ilo-user: admin
+boot-from-san: true
+
+This uses the disk /dev/mapper/mpatha as the default device on which to install the OS.
+
+2) In the disk input models you also need to specify the devices that will be used via their
+multipath names (which will be of the form /dev/mapper/mpatha, /dev/mapper/mpathb etc).
+
+e.g
+volume-groups:
+- name: hlm-vg
+physical-volumes:
+
+# NOTE: 'sda_root' is a templated value. This value is checked in
+# os-config and replaced by the partition actually used on sda
+#e.g. sda1 or sda5
+- /dev/mpatha_root
+
+</section>
+        
+        <section>
+If you are using network cards such as the 536FLB where the devices are being presented as
+"native fcoe" then there are additional configuration steps as well as some restrictions on
+supported configurations.
+
+The restrictions are
+
+1) Only one network card can be in the system.
+2) A number of the interfaces on this card are dedicated to FCoE traffic - these cannot have ip addresses associated with them.
+3) Do not configure nic mappings for the system (i.e. use eth name in the input model).
+
+In addition to the configuration options above you also need to specify the fcoe interfaces for boot install and for os configuration.
+To configure for the os install phase specify the fcoe interfaces for each node as:
+
+- id: controller2
+ip-addr: 192.168.10.4
+role: CONTROLLER-ROLE
+server-group: RACK2
+nic-mapping: HP-DL360-4PORT
+mac-addr: "8a:8e:64:55:43:76"
+ilo-ip: 192.168.9.4
+ilo-password: password
+ilo-user: admin
+boot-from-san: true
+
+For the osconfig phase you will need to specify the fcoe-interfaces at the same level as the network-interfaces:
+
+- name: CONTROLLER-INTERFACES
+
+fcoe-interfaces:
+- name: FCOE-INTERFACE
+devices:
+- eth0
+- eth1
+
+network-interfaces:
+- name: BOND0
+device:
+name: bond0
+bond-data:
+options:
+mode: active-backup
+miimon: 200
+primary: eth3
+provider: linux
+devices:
+- name: eth0
+- name: eth1
+network-groups:
+- EXTERNAL-API
+- EXTERNAL-VM
+- GUEST
+- MANAGEMENT
+
+        </section>
+    </body>
+</topic>
+
