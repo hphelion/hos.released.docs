@@ -19,7 +19,7 @@
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Edit your <codeph>~/helion/my_cloud/definition/data/disks_controller.yml</codeph> file
-          and specify the volume and mount point for your glance-cache.  Here is
+          and specify the volume and mount point for your glance-cache. Here is
           example:<codeblock># Glance cache: if a logical volume with consumer usage 'glance-cache'
 # is defined Glance caching will be enabled. The logical volume can be
 # part of an existing volume group or a dedicated volume group.
@@ -56,13 +56,27 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
       </ol>
     </section>
     <section id="copyfrom"><title>Allowing the Glance Copy-From Option</title>
-    
-      <ol>
-        <li>Log in to the lifecycle manager.</li>
-        <li>Edit the <codeph>~/helion/my_cloud/config/glance/glance-api.conf.j2</codeph> file and
-          add <codeph>http</codeph> to the list of Glance stores in the
-          <codeph>[glance_store]</codeph> section as seen below in bold:
-          <codeblock>[glance_store]
+      <p>When creating images, one of the options you have is to copy the image from a remote
+        location to your local Glance store. You do this by specifying the
+          <codeph>--copy-from</codeph> option when creating the image. To use this feature though
+        you need to ensure the following conditions are met:</p>
+      <ul>
+        <li>The server hosting the Glance service must have network access to the remote location
+          that is hosting the image.</li>
+        <li>There cannot be a proxy between Glance and the remote location.</li>
+        <li>The Glance v1 API must be enabled, as v2 does not currently support the
+            <codeph>copy-from</codeph> function.</li>
+        <li>The http Glance store must be enabled in the environment, following the steps
+          below.</li>
+      </ul>
+      <sectiondiv><p><b>Enabling the HTTP Glance Store</b></p>
+        <p>
+          <ol>
+            <li>Log in to the lifecycle manager.</li>
+            <li>Edit the <codeph>~/helion/my_cloud/config/glance/glance-api.conf.j2</codeph> file
+              and add <codeph>http</codeph> to the list of Glance stores in the
+                <codeph>[glance_store]</codeph> section as seen below in bold:
+              <codeblock>[glance_store]
 # List of which store classes and store class locations are
 # currently known to glance at startup.
 # Deprecated group/name - [DEFAULT]/known_stores
@@ -75,21 +89,23 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
 #      glance.store.gridfs.Store,
 #      glance.store.vmware_datastore.Store,
 stores = {{ glance_stores }}<b>, http</b></codeblock></li>
-        <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git
-          repo</xref>, as follows:
-          <codeblock>cd ~/helion/hos/ansible
+            <li>Commit your configuration to the <xref href="../installation/using_git.dita">local
+                git repo</xref>, as follows:
+              <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
-        <li>Run the configuration processor:
-          <codeblock>cd ~/helion/hos/ansible
+            <li>Run the configuration processor:
+              <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-        <li>Update your deployment directory:
-          <codeblock>cd ~/helion/hos/ansible
+            <li>Update your deployment directory:
+              <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-        <li>Run the Glance reconfigure playbook:
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+            <li>Run the Glance reconfigure playbook:
+              <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
-      </ol>
+          </ol>
+        </p>
+      </sectiondiv>
     </section>
   </body>
 </topic>
