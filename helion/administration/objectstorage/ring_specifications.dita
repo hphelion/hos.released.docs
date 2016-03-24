@@ -214,6 +214,14 @@
         equal to the total number of fragments of an object. For example, if you define an erasure
         coded ring with 10 data fragments and 4 parity fragments, there must be at least 14 (10+4)
         devices added to the ring.</p>
+      <p>When using erasure codes, for a PUT object to be successful it must store ec_ndata + 1
+        fragment to achieve quorum. Where the number of data fragments (ec_ndata) is 10 then at
+        least 11 fragments must be saved for the object PUT to be successful. The 11 fragments must
+        be saved to different drives. To tolerate a single object server going down, say in a system
+        with 3 object servers, each object server must have at least 6 drives assigned to the
+        erasure coded storage policy. So with a single object server down, 12 drives are available
+        between the remaining object servers. This allows an object PUT to save 12 fragments, one
+        more than the minimum to achieve quorum.</p>
       <p>Unlike replication rings, none of the erasure coded parameters may be edited after the
         initial creation. Otherwise there is potential for permanent loss of access to the data.</p>
     </section>
