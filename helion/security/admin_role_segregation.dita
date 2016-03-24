@@ -76,13 +76,16 @@
       them:<codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project glance_admin</codeblock>
       Next, list role assignment for testuser.
       <codeblock>stack@localhost:~$ openstack role assignment list --user testuser</codeblock> Your
-      results should look like this:<codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+      results should look like
+      this:<codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | Role                             | User                             | Group | Project                          | Domain | Inherited |
 +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | 46ba80078bc64853b051c964db918816 | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
 +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>
-      <codeblock>stack@localhost:~$ openstack role list | grep 46ba80078bc64853b051c964db918816  
-        | 46ba80078bc64853b051c964db918816 | glance_admin  |</codeblock>To
+      Note that only the role ID is presented. To get the role name, execute the
+      following:<codeblock>stack@localhost:~$ openstack role list | grep 46ba80078bc64853b051c964db918816 </codeblock>
+      Here is the
+      output:<codeblock>| 46ba80078bc64853b051c964db918816 | glance_admin  |</codeblock>To
       demonstrate that the user testuser has glance admin privileges, use testuser to upload and
       then publicize an image. Only a user with an admin role or glance_admin can publicize an
       image. The following is a sample testuser.osrc. OS_AUTH_URL might vary from deployement to
@@ -139,7 +142,8 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>Source
 +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | 8cdb02bab38347f3b65753099f3ab73c | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
 +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>
-      Now<codeblock>stack@localhost:~$ openstack role list | grep 8cdb02bab38347f3b65753099f3ab73c
+      Now same as above note to me
+      <codeblock>stack@localhost:~$ openstack role list | grep 8cdb02bab38347f3b65753099f3ab73c
       | 8cdb02bab38347f3b65753099f3ab73c | nova_admin                |</codeblock>To
       demonstrate that the user called testuser has nova admin privileges, you can use testuser to
       delete a VM from a project other than test_proejct. Only a user with either the admin role or
@@ -191,7 +195,7 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>Source
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project neutron_admin</codeblock>For
       demonstration purposes, an exisintg Neutron network named mynet is used. Mynet is associated
       with admin project. <codeblock>stack@localhost:~$ source service.osrc
-      stack@localhost:~$ neutron net-show 0e560113-f578-4c16-b978-a02ab55a7d6e</codeblock>
+stack@localhost:~$ neutron net-show 0e560113-f578-4c16-b978-a02ab55a7d6e</codeblock>
       <codeblock>+---------------------------+--------------------------------------+
 | Field                     | Value                                |
 +---------------------------+--------------------------------------+
@@ -208,10 +212,10 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>Source
 | subnets                   |                                      |
 | tenant_id                 | dc0f8b0076d4403b83ad517021803d30     |
 +---------------------------+--------------------------------------+</codeblock>
-      <codeblock>stack@localhost:~$ source keystone.osrc 
-      stack@localhost:~$ openstack project list | grep dc0f8b0076d4403b83ad517021803d30
-      | dc0f8b0076d4403b83ad517021803d30 | admin</codeblock>Switch
-      to testuser <codeblock>stack@localhost:~$ source testuser.osrc
+      similar only id is
+      shown<codeblock>stack@localhost:~$ source keystone.osrc 
+stack@localhost:~$ openstack project list | grep dc0f8b0076d4403b83ad517021803d30</codeblock>
+      output<codeblock> | dc0f8b0076d4403b83ad517021803d30 | admin</codeblock>Switch to testuser <codeblock>stack@localhost:~$ source testuser.osrc
 stack@localhost:~$ neutron net-list</codeblock>
       <codeblock>+--------------------------------------+---------+------------------------------------------------------+
 | id                                   | name    | subnets                                              |
@@ -235,10 +239,12 @@ stack@localhost:~$ neutron net-list</codeblock>
       <codeblock>stack@localhost:~$ openstack role add --user testuser --project test_project cinder_admin</codeblock>Switch
       to testuser environment vairable
       <codeblock>stack@localhost:~$ source testuser.osrc</codeblock>For demonstration purposes,
-      project test_project does not have any cinder volumes. <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
+      project test_project does not have any cinder volumes.
+      <codeblock>stack@localhost:~$ set | grep OS_PROJECT_NAME
       OS_PROJECT_NAME=test_project
-      stack@localhost:~$ cinder list</codeblock>
-      <codeblock>+----+--------+------------------+------+------+-------------+----------+-------------+-------------+
+stack@localhost:~$ cinder list</codeblock>
+      See that there are no Cinder
+      volumes<codeblock>+----+--------+------------------+------+------+-------------+----------+-------------+-------------+
 | ID | Status | Migration Status | Name | Size | Volume Type | Bootable | Multiattach | Attached to |
 +----+--------+------------------+------+------+-------------+----------+-------------+-------------+
 +----+--------+------------------+------+------+-------------+----------+-------------+-------------+</codeblock>
@@ -265,14 +271,7 @@ stack@localhost:~$ neutron net-list</codeblock>
       read/write access to swift.
       <codeblock>stack@localhost:~$ Source keystone.osrc
 stack@localhost:~$ openstack role add --user testuser --project test_project swiftoperator</codeblock>
-      Now testuser can back up Cinder volume to Swift. <p><b>Customizing policy.json on the
-          deployer</b></p>why would you do this? One way to deploy policy.json for a service is by
-      going to each target node and making the changes there. This isn't necessary anymore. Policy
-      files can be edited on the deployer and then deployed to nodes. As you would when modifying a
-      conf file, you should exercise caution when modifying policy.json files. It is best to
-      validate the changes in a non-production environment before rolling out policy.json changes
-      into production. It is not recommended that you make policy.json changes without a way to
-      validate the desired resulting behavior. </section>
+      Now testuser can back up Cinder volume to Swift. <p><b/></p></section>
     
   </body>
 </topic>
