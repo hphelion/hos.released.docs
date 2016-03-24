@@ -11,57 +11,57 @@
         connect, what load balancers are to be deployed, which connections use TLS, and network
         routing. They also provide the data needed to map Neutron's network configuration to the
         physical networking.</p>
-    <codeblock>---
-        product:
-        version: 2
+        <codeblock>---
+  product:
+     version: 2
         
-        network-groups:
+  network-groups:
         
-        - name: EXTERNAL-API
-        hostname-suffix: extapi
+     - name: EXTERNAL-API
+       hostname-suffix: extapi
         
-        load-balancers:
-        - provider: ip-cluster
-        name: extlb
-        external-name:
+       load-balancers:
+         - provider: ip-cluster
+           name: extlb
+           external-name:
         
-        tls-components:
-        - default
-        roles:
-        - public
-        cert-file: my-public-cert
+           tls-components:
+             - default
+           roles:
+            - public
+           cert-file: my-public-cert
         
-        - name: EXTERNAL-VM
+      - name: EXTERNAL-VM
         tags:
-        - neutron.l3_agent.external_network_bridge
+          - neutron.l3_agent.external_network_bridge
         
-        - name: GUEST
+      - name: GUEST
         hostname-suffix: guest
         tags:
-        - neutron.networks.vxlan
+          - neutron.networks.vxlan
         
-        - name: MANAGEMENT
+      - name: MANAGEMENT
         hostname-suffix: mgmt
         hostname: true
         
         component-endpoints:
-        - default
+          - default
         
         routes:
-        - default
+          - default
         
         load-balancers:
-        - provider: ip-cluster
-        name: lb
-        components:
-        - default
-        roles:
-        - internal
-        - admin
+          - provider: ip-cluster
+            name: lb
+            components:
+              - default
+            roles:
+              - internal
+              - admin
         
         tags:
-        - neutron.networks.vlan:
-        provider-physical-network: physnet1</codeblock>
+          - neutron.networks.vlan:
+              provider-physical-network: physnet1</codeblock>
     <p>
         <table frame="all" rowsep="1" colsep="1" id="network_groups">
             <tgroup cols="2">

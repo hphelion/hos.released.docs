@@ -53,54 +53,54 @@
     <p><xref href="../../../../media/inputmodel/hphelionopenstack_networkroutevalidation_lg.png"
         scope="external" format="html">Download a high-res version</xref></p>
     <p>The corresponding entries in the <uicontrol>network-groups</uicontrol> are:</p>
-    <codeblock>
-        - name: INTERNAL-API  
-        hostname-suffix: intapi
+        <codeblock>
+  - name: INTERNAL-API  
+    hostname-suffix: intapi
         
-        load-balancers:
-        - provider: ip-cluster
-        name: lb
-        components:
-        - default
-        roles:
-        - internal
-        - admin
+    load-balancers:
+       - provider: ip-cluster
+         name: lb
+         components:
+           - default
+         roles:
+           - internal
+           - admin
         
-        - name: MANAGEMENT
-        hostname-suffix: mgmt
-        hostname: true
+       - name: MANAGEMENT
+         hostname-suffix: mgmt
+         hostname: true
         
-        component-endpoints:
-        - default
+         component-endpoints:
+           - default
         
-        routes:
-        - INTERNAL-API
-        - default
+         routes:
+           - INTERNAL-API
+           - default
         
-        - name: ISCSI
-        hostname-suffix: iscsi
-        
-        component-endpoints:
-        - vsa</codeblock>
+       - name: ISCSI
+         hostname-suffix: iscsi
+         
+         component-endpoints:
+            - vsa</codeblock>
     <p>And the <uicontrol>interface-model</uicontrol> for the compute server looks like this:</p>
-    <codeblock>
-        - name: INTERFACE_SET_COMPUTE
-        network-interfaces:
-        - name: BOND0
+        <codeblock>
+  - name: INTERFACE_SET_COMPUTE
+    network-interfaces:
+      - name: BOND0
         device:
-        name: bond0
+           name: bond0
         bond-data:
-        options:
-        mode: active-backup
-        miimon: 200
-        primary: hed5
-        provider: linux
-        devices:
-        - name: hed4
-        - name: hed5
+           options:
+              mode: active-backup
+              miimon: 200
+              primary: hed5
+           provider: linux
+           devices:
+              - name: hed4
+              - name: hed5
         network-groups:
-        - MANAGEMENT
-        - ISCSI</codeblock>
+          - MANAGEMENT
+          - ISCSI</codeblock>
     <p>When validating the route from nova-compute to the Neutron API, the configuration processor
         will detect that the target address is on a network in the INTERNAL-API network group, and
         that the MANAGEMENT network (which is connected to the compute server) provides a route to
@@ -114,60 +114,60 @@
         provides a "default" route and thus considers the route as valid (it is, of course, valid to
         route ISCSI traffic); however, because this is using the default route, a warning will be
         issued:</p>
-    <codeblock>#   route-generator-2.0       WRN: Default routing used between networks
-        The following networks are using a 'default' route rule. To remove this warning 
-        either add an explicit route in the source network group or force the network to 
-        attach in the interface model used by the servers.
-        MANAGEMENT-NET-RACK1 to ISCSI-NET
-        helion-ccp-comp0001
-        MANAGEMENT-NET-RACK 2 to ISCSI-NET
-        helion-ccp-comp0002
-        MANAGEMENT-NET-RACK 3 to SCSI-NET
-        helion-ccp-comp0003</codeblock>
+        <codeblock>#   route-generator-2.0       WRN: Default routing used between networks
+The following networks are using a 'default' route rule. To remove this warning 
+either add an explicit route in the source network group or force the network to 
+attach in the interface model used by the servers.
+  MANAGEMENT-NET-RACK1 to ISCSI-NET
+    helion-ccp-comp0001
+  MANAGEMENT-NET-RACK 2 to ISCSI-NET
+    helion-ccp-comp0002
+  MANAGEMENT-NET-RACK 3 to SCSI-NET
+    helion-ccp-comp0003</codeblock>
     <p>To remove this warning, you can either add ISCSI to the list of routes in the MANAGEMENT
         network group (routed ISCSI traffic is still a valid configuration) or force the compute
         server to attach to the ISCSI network-group by adding it as a forced-network-group in the
         interface-model, like this:</p>
-    <codeblock>
-        - name: INTERFACE_SET_COMPUTE
-        network-interfaces:
+        <codeblock>
+  - name: INTERFACE_SET_COMPUTE
+      network-interfaces:
         - name: BOND0
-        device:
-        name: bond0
-        bond-data:
-        options:
-        mode: active-backup
-        miimon: 200
-        primary: hed5
-        provider: linux
-        devices:
-        - name: hed4
-        - name: hed5
-        network-groups:
-        - MANAGEMENT
-        forced-network-groups:
-        - ISCSI</codeblock>
+          device:
+            name: bond0
+          bond-data:
+            options:
+               mode: active-backup
+               miimon: 200
+               primary: hed5
+            provider: linux
+            devices:
+               - name: hed4
+               - name: hed5
+          network-groups:
+             - MANAGEMENT
+          forced-network-groups:
+             - ISCSI</codeblock>
     <p>With the attachment to the ISCSI network group forced, the configuration processor will
         attach the compute server to a network in that group and validate the route as either being
         direct or between networks in the same network-group.</p>
     <p>The generated <codeph>route_info.yml</codeph> file will include entries such as the
         following, showing the routes that are still expected to be configured between networks in
         the MANAGEMENT network group and the INTERNAL-API network group.</p>
-    <codeblock>
-        MANAGEMENT-NET-RACK1:
-        INTERNAL-API-NET:
+        <codeblock>
+  MANAGEMENT-NET-RACK1:
+     INTERNAL-API-NET:
         default: false
         used_by:
-        nova-compute:
-        neutron-server:
-        - helion-ccp-comp0001
-        MANAGEMENT-NET-RACK2:
-        INTERNAL-API-NET:
+           nova-compute:
+              neutron-server:
+              - helion-ccp-comp0001
+   MANAGEMENT-NET-RACK2:
+     INTERNAL-API-NET:
         default: false
         used_by:
-        nova-compute:
-        neutron-server:
-        - helion-ccp-comp0003</codeblock>
+          nova-compute:
+            neutron-server:
+            - helion-ccp-comp0003</codeblock>
 
 
     </body>
