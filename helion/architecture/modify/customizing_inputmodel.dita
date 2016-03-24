@@ -53,28 +53,28 @@
                 to modify the <codeph>disk-models</codeph> parameter in the
                 <codeph>server_roles.yml</codeph> file, as shown below:</p>
             <codeblock>
-                server-roles:
-                
-                - name: CONTROLLER-ROLE
-                interface-model: CONTROLLER-INTERFACES
-                disk-model: CONTROLLER-1TB-DISKS</codeblock>
+    server-roles:
+        
+       - name: CONTROLLER-ROLE
+         interface-model: CONTROLLER-INTERFACES
+         disk-model: CONTROLLER-1TB-DISKS</codeblock>
             <p>To add additional disks to the root volume group, you need to modify the volume group
                 definition in whichever disk model you are using. The following example shows adding an
                 additional disk, <codeph>/dev/sdd</codeph> to the <codeph>disks_controller.yml</codeph>
                 file:</p>
             <codeblock>
-                disk-models:
-                - name: CONTROLLER-DISKS
-                
-                volume-groups:
-                - name: hlm-vg
-                physical-volumes:
-                
-                # NOTE: 'sda_root' is a templated value. This value is checked in
-                # os-config and replaced by the partition actually used on sda
-                #e.g. sda1 or sda5
-                - /dev/sda_root
-                <b>- /dev/sdd</b></codeblock>
+   disk-models:
+      - name: CONTROLLER-DISKS
+        
+        volume-groups:
+         - name: hlm-vg
+           physical-volumes:
+        
+              # NOTE: 'sda_root' is a templated value. This value is checked in
+              # os-config and replaced by the partition actually used on sda
+              #e.g. sda1 or sda5
+              - /dev/sda_root
+              <b>- /dev/sdd</b></codeblock>
         </section>
         
         <section id="swiftstorage"><title>Swift Storage</title>
@@ -82,21 +82,21 @@
                 allocated to specific rings. In the example, two disks are allocated to Swift to be shared
                 by the account, container, and object-0 rings.</p>
             <codeblock>
-                device-groups:
-                - name: swiftobj
-                devices:
-                - name: /dev/sdb
-                - name: /dev/sdc
-                # Add any additional disks for swift here
-                # -name: /dev/sdd
-                # -name: /dev/sde
-                consumer:
-                name: swift
-                attrs:
-                rings:
-                - account
-                - container
-                - object-0</codeblock>
+   device-groups:
+       - name: swiftobj
+         devices:
+            - name: /dev/sdb
+            - name: /dev/sdc
+            # Add any additional disks for swift here
+            # -name: /dev/sdd
+            # -name: /dev/sde
+         consumer:
+           name: swift
+           attrs:
+              rings:
+                 - account
+                 - container
+                       - object-0</codeblock>
             <p>For instruction to configure additional Swift storage, see <xref
                 href="../../administration/objectstorage/allocating_disk_drives.dita"/>.</p>
         </section>
@@ -110,19 +110,19 @@
                     href="../../installation/configure_vsa.dita#config_vsa/deploy-vsa-with-ao-without-ao">VSA with
                     AO or without AO</xref>.)</p>
             <codeblock>
-                device-groups:
-                - name: vsa-data
-                consumer:
-                name: vsa
-                usage: data
-                devices:
-                - name: /dev/sdc
-                - name: vsa-cache
-                consumer:
-                name: vsa
-                usage: adaptive-optimization
-                devices:
-                - name: /dev/sdb</codeblock>
+   device-groups:
+       - name: vsa-data
+         consumer:
+           name: vsa
+           usage: data
+         devices:
+           - name: /dev/sdc
+       - name: vsa-cache
+         consumer:
+           name: vsa
+           usage: adaptive-optimization
+         devices:
+            - name: /dev/sdb</codeblock>
             <p>Additional capacity can be added by adding more disks to the <codeph>vsa-data</codeph>
                 device group. Similarly, caching capacity can be increased by adding more high speed storage
                 devices to the <codeph>vsa-cache</codeph> device group.</p>
@@ -137,17 +137,17 @@
                 the addition of two more disks, <codeph>/dev/sdc</codeph> and <codeph>/dev/sdd</codeph>, to
                 the <codeph>disks_compute.yml</codeph> file:</p>
             <codeblock>
-                - name: vg-comp
-                physical-volumes:
-                - /dev/sdb
-                - /dev/sdc
-                - /dev/sdd
-                logical-volumes:
-                - name: compute
-                size: 95%
-                mount: /var/lib/nova
-                fstype: ext4
-                mkfs-opts: -O large_file</codeblock>
+   - name: vg-comp
+        physical-volumes:
+          - /dev/sdb
+          - /dev/sdc
+          - /dev/sdd
+        logical-volumes:
+          - name: compute
+            size: 95%
+            mount: /var/lib/nova
+            fstype: ext4
+                  mkfs-opts: -O large_file</codeblock>
         </section>
         
  

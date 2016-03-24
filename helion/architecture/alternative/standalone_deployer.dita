@@ -51,118 +51,120 @@
                 also have to remove the lifecycle manager component from the <codeph>cluster1</codeph> in
                 the examples:</p>
             <codeblock>
-                clusters:
-                - name: cluster0
-                cluster-prefix: c0
-                server-role: LIFECYCLE-MANAGER-ROLE
-                member-count: 1	
-                allocation-policy: strict
-                service-components:
-                - lifecycle-manager
-                - name: cluster1
-                cluster-prefix: c1
-                server-role: CONTROLLER-ROLE
-                member-count: 3
-                allocation-policy: strict
-                service-components:
-                - ntp-server</codeblock>
+  clusters:
+     - name: cluster0
+       cluster-prefix: c0
+       server-role: LIFECYCLE-MANAGER-ROLE
+       member-count: 1	
+       allocation-policy: strict
+       service-components:
+         - lifecycle-manager
+     - name: cluster1
+       cluster-prefix: c1
+       server-role: CONTROLLER-ROLE
+       member-count: 3
+       allocation-policy: strict
+       service-components:
+         - ntp-server</codeblock>
             <p>This specifies a single node of role <codeph>LIFECYCLE-MANAGER-ROLE</codeph> hosting the
                 lifecycle manager.</p>
         </section>
         <section id="server_roles_yml"><title>Server_roles.yml</title>
             <p>The snippet below shows the insertion of the new server roles definition:</p>
             <codeblock>
-                server-roles:
-                
-                - name: LIFECYCLE-MANAGER-ROLE
-                interface-model: LIFECYCLE-MANAGER-INTERFACES
-                disk-model: LIFECYCLE-MANAGER-DISKS	
-                
-                - name: CONTROLLER-ROLE</codeblock>
+   server-roles:
+      
+      - name: LIFECYCLE-MANAGER-ROLE
+        interface-model: LIFECYCLE-MANAGER-INTERFACES
+        disk-model: LIFECYCLE-MANAGER-DISKS	
+      
+      - name: CONTROLLER-ROLE</codeblock>
             <p>This defines a new server role which references a new interface-model and disk-model to be
                 used when configuring the server.</p>
         </section>
         <section id="net_interfaces_yml"><title>Net-interfaces.yml</title>
             <p>The snippet below shows the insertion of the network-interface info:</p>
             <codeblock>
-                - name: LIFECYCLE-MANAGER-INTERFACES
-                network-interfaces:
-                - name: BOND0
-                device:
-                name: bond0
-                bond-data:
-                options:
-                mode: active-backup
-                miimon: 200
-                primary: hed3
-                provider: linux
-                devices:
-                - name: hed3
-                - name: hed4
-                network-groups:
-                - MANAGEMENT</codeblock>
+    - name: LIFECYCLE-MANAGER-INTERFACES
+      network-interfaces:
+        - name: BOND0
+          device:
+             name: bond0
+          bond-data:
+             options:
+                 mode: active-backup
+                 miimon: 200
+                 primary: hed3
+             provider: linux
+             devices:
+                 - name: hed3
+                 - name: hed4
+          network-groups:
+             - MANAGEMENT</codeblock>
             <p>This assumes that the server uses the same physical networking layout as the other servers
                 in the example. For details on how to modify this to match your configuration, see <xref
                     keyref="localizing_inputmodel/netinterfaces"
-                    >Net_interfaces.yml</xref>.</p>
+                    >net_interfaces.yml</xref>.</p>
         </section>
         <section id="disks_lifecycle_manager_yml"><title>Disks_lifecycle_manager.yml</title>
             <p>In the examples, disk-models are provided as separate files (this is just a convention, not
                 a limitation) so the following should be added as a new file named
                 <codeph>disks_lifecycle_manager.yml</codeph>:</p>
             <codeblock>---
-                product:
-                version: 2
-                
-                disk-models:
-                - name: LIFECYCLE-MANAGER-DISKS
-                # Disk model to be used for Lifecycle Managers nodes
-                # /dev/sda_root is used as a volume group for /, /var/log and /var/crash
-                # sda_root is a templated value to align with whatever partition is really used
-                # This value is checked in os config and replaced by the partition actually used
-                # on sda e.g. sda1 or sda5
-                
-                volume-groups:
-                - name: hlm-vg
-                physical-volumes:
-                - /dev/sda_root
-                
-                logical-volumes:
-                # The policy is not to consume 100% of the space of each volume group.
-                # 5% should be left free for snapshots and to allow for some flexibility.
-                - name: root
-                size: 80%
-                fstype: ext4
-                mount: /
-                - name: crash
-                size: 15%
-                mount: /var/crash
-                fstype: ext4
-                mkfs-opts: -O large_file
-                consumer:
-                name: os</codeblock>
+   product:
+      version: 2
+        
+   disk-models:
+   - name: LIFECYCLE-MANAGER-DISKS
+     # Disk model to be used for Lifecycle Managers nodes
+     # /dev/sda_root is used as a volume group for /, /var/log and /var/crash
+     # sda_root is a templated value to align with whatever partition is really used
+     # This value is checked in os config and replaced by the partition actually used
+     # on sda e.g. sda1 or sda5
+        
+     volume-groups:
+       - name: hlm-vg
+         physical-volumes:
+           - /dev/sda_root
+        
+       logical-volumes:
+       # The policy is not to consume 100% of the space of each volume group.
+       # 5% should be left free for snapshots and to allow for some flexibility.
+          - name: root
+            size: 80%
+            fstype: ext4
+            mount: /
+          - name: crash
+            size: 15%
+            mount: /var/crash
+            fstype: ext4
+            mkfs-opts: -O large_file
+        consumer:
+              name: os</codeblock>
         </section>
         <section id="servers_yml"><title>Servers.yml</title>
             <p>The snippet below shows the insertion of an additional server used for hosting the
                 lifecycle manager. Provide the address information here for the server you are running on,
                 i.e., the node where you have installed the <keyword keyref="kw-hos"/> ISO.</p>
             <codeblock>
-                servers:
-                # NOTE: Addresses of servers need to be changed to match your environment.
-                #
-                #       Add additional servers as required
-                
-                #Lifecycle-manager
-                - id: lifecycle-manager
-                ip-addr: &#60;your IP address here>
-                role: LIFECYCLE-MANAGER-ROLE
-                server-group: RACK1
-                # ipmi information is not needed 
-                
-                # Controllers
-                - id: controller1
-                ip-addr: 192.168.10.3
-                role: CONTROLLER-ROLE</codeblock>
+  servers:
+     # NOTE: Addresses of servers need to be changed to match your environment.
+     #
+     #       Add additional servers as required
+        
+     #Lifecycle-manager
+     - id: lifecycle-manager
+       ip-addr: &#60;your IP address here>
+       role: LIFECYCLE-MANAGER-ROLE
+       server-group: RACK1
+       nic-mapping: HP-SL230-4PORT
+       mac-addr: 8c:dc:d4:b5:c9:e0
+       # ipmi information is not needed 
+          
+     # Controllers
+     - id: controller1
+       ip-addr: 192.168.10.3
+       role: CONTROLLER-ROLE</codeblock>
         </section>
         
         
