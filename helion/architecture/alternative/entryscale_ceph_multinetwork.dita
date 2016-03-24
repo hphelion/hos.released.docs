@@ -134,38 +134,38 @@
                 meet the server requirements.</p>
             <p>Here is an example with notes in-line:</p>
             <codeblock>nic-mappings:
-                
-                ## NIC specification for controller nodes.  A bonded interface is 
-                ## used for the management network.
-                - name: DL360p_4PORT
-                physical-ports:
-                - logical-name: hed1
-                type: simple-port
-                bus-address: "0000:07:00.0"
-                
-                - logical-name: hed2
-                type: simple-port
-                bus-address: "0000:08:00.0"
-                
-                - logical-name: hed3
-                type: simple-port
-                bus-address: "0000:09:00.0"
-                
-                - logical-name: hed4
-                type: simple-port
-                bus-address: "0000:0a:00.0"
-                
-                ## NIC specification for compute and OSD nodes should be
-                ## of this type.
-                - name: MY-2PORT-SERVER
-                physical-ports:
-                - logical-name: hed3
-                type: simple-port
-                bus-address: "0000:04:00.0"
-                
-                - logical-name: hed4
-                type: simple-port
-                bus-address: "0000:04:00.1"</codeblock>
+
+## NIC specification for controller nodes.  A bonded interface is 
+## used for the management network.
+  - name: DL360p_4PORT
+    physical-ports:
+      - logical-name: hed1
+        type: simple-port
+        bus-address: "0000:07:00.0"
+        
+      - logical-name: hed2
+        type: simple-port
+        bus-address: "0000:08:00.0"
+        
+      - logical-name: hed3
+        type: simple-port
+        bus-address: "0000:09:00.0"
+        
+      - logical-name: hed4
+        type: simple-port
+        bus-address: "0000:0a:00.0"
+
+## NIC specification for compute and OSD nodes should be
+## of this type.
+  - name: MY-2PORT-SERVER
+    physical-ports:
+      - logical-name: hed3
+        type: simple-port
+        bus-address: "0000:04:00.0"
+        
+      - logical-name: hed4
+        type: simple-port
+        bus-address: "0000:04:00.1"</codeblock>
         </section>
         <section id="ceph_netinterfaces"><title>Net_interfaces.yml</title>
             <p>Define a new interface set for your OSD interfaces in the
@@ -173,80 +173,80 @@
             <p>Ensure that the appropriate NIC is configured to both the Management and OSD network
                 groups, indicated below:</p>
             <codeblock>- name: OSD-INTERFACES
-                network-interfaces:
-                - name: ETH3
-                device:
-                name: hed3
-                network-groups:
-                - MANAGEMENT
-                - name: ETH4
-                device:
-                name: bed4
-                network-groups:
-                - OSD</codeblock>
+ network-interfaces:
+   - name: ETH3
+     device:
+        name: hed3
+     network-groups:
+        - MANAGEMENT
+   - name: ETH4
+     device:
+        name: bed4
+     network-groups:
+        - OSD</codeblock>
         </section>
         <section id="ceph_networksgroups"><title>Network_groups.yml</title>
             <p>Define the OSD network group in the
                 <codeph>~/helion/my_cloud/definition/data/network_groups.yml</codeph> file:</p>
             <codeblock>#
-                # OSD
-                #
-                # This is the network group that will be used for
-                # internal traffic of cluster among OSDs.
-                #
-                - name: OSD
-                hostname-suffix: osd
-                
-                component-endpoints:
-                - ceph-osd-internal</codeblock>
+# OSD
+#
+# This is the network group that will be used for
+# internal traffic of cluster among OSDs.
+#
+- name: OSD
+  hostname-suffix: osd
+
+  component-endpoints:
+    - ceph-osd-internal</codeblock>
         </section>
         <section id="ceph_networks"><title>Networks.yml</title>
             <p>Define the OSD VLAN in the <codeph>~/helion/my_cloud/definition/data/networks.yml</codeph>
                 file:</p>
             <codeblock>
-                - name: OSD-NET
-                vlanid: 112
-                tagged-vlan: false
-                cidr: 10.0.1.0/24
-                gateway-ip: 10.0.1.1
-                network-group: OSD</codeblock>
+- name: OSD-NET
+  vlanid: 112
+  tagged-vlan: false
+  cidr: 10.0.1.0/24
+  gateway-ip: 10.0.1.1
+  network-group: OSD</codeblock>
         </section>
         <section id="ceph_servergroups"><title>Server_groups.yml</title>
             <p>Add the OSD network to the server groups in the
                 <codeph>~/helion/my_cloud/definition/data/server_groups.yml</codeph> file, indicated by
                 the bold portion below:</p>
             <codeblock>- name: CLOUD
-                server-groups:
-                - AZ1
-                - AZ2
-                - AZ3
-                networks:
-                - EXTERNAL-API-NET
-                - EXTERNAL-VM-NET
-                - GUEST-NET
-                - MANAGEMENT-NET
-                <b>- OSD-NET</b></codeblock>
+ server-groups:
+   - AZ1
+   - AZ2
+   - AZ3
+ networks:
+   - EXTERNAL-API-NET
+   - EXTERNAL-VM-NET
+   - GUEST-NET
+   - MANAGEMENT-NET
+   <b>- OSD-NET</b></codeblock>
         </section>
         <section id="ceph_firewallrules"><title>Firewall_rules.yml</title>
             <p>Modify the firewall rules in the
                 <codeph>~/helion/my_cloud/definition/data/firewall_rules.yml</codeph> file to allow OSD
                 nodes to be pingable via the OSD network, indicated by the bold portion below:</p>
             <codeblock>
-                - name: PING
-                network-groups:
-                - MANAGEMENT
-                - GUEST
-                - EXTERNAL-API
-                <b>- OSD</b>
-                rules:
-                # open ICMP echo request (ping)
-                - type: allow
-                remote-ip-prefix:  0.0.0.0/0
-                # icmp type
-                port-range-min: 8
-                # icmp code
-                port-range-max: 0
-                protocol: icmp</codeblock>
+- name: PING
+  network-groups:
+  - MANAGEMENT
+  - GUEST
+  - EXTERNAL-API
+  <b>- OSD</b>
+  rules:
+  # open ICMP echo request (ping)
+  - type: allow
+    remote-ip-prefix:  0.0.0.0/0
+    # icmp type
+    port-range-min: 8
+    # icmp code
+    port-range-max: 0
+    protocol: icmp</codeblock>
         </section>
         <section id="ceph_readme"><title>Edit the README.html and README.md Files</title>
             <p>You can edit the <codeph>~/helion/my_cloud/definition/README.html</codeph> and
