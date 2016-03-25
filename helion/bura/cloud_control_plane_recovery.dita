@@ -16,8 +16,8 @@
         <li>Point-in-time Swift rings recovery</li>
         <li>Point-in-time lifecycle manager recovery</li>
         <li>One or two controller loss disaster recovery</li>
-        <li>Three control plane node loss  disaster recovery</li>
-        <li>Deployer/lifecycle manager disaster recovery</li>
+        <li>Three control plane node loss disaster recovery</li>
+        <li>Dedicated lifecycle manager disaster recovery</li>
         <li>Full disaster recovery</li>
         <li>Swift Rings Recovery</li>
 
@@ -176,12 +176,12 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
             job "HLM Default: Deployer restore from SSH."</li>
         </ol></sectiondiv>
     </section>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <section id="onecontroller"><title outputclass="headerH">One or Two Control Plane Node Disaster
         Recovery</title>
       <sectiondiv outputclass="insideSection">
@@ -218,11 +218,16 @@ ansible-playbook -i hosts/verb_hosts site.yml --limit padawan-ccp-c1-m1-mgmt,pad
 ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
           </ol>
         </p></sectiondiv></section>
-    <section outputclass="pageTarget1" id="nolifecycle_target"><title outputclass="headerH">Deployer
-        Disaster Recovery</title>
+    <section outputclass="pageTarget1" id="nolifecycle_target"><title outputclass="headerH"
+        >Dedicated Lifecycle Manager Disaster Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>In this scenario everything is still running (control plane nodes and compute nodes) but
-          you've lost the lifecycle manager.</p>
+          you've lost the dedicated lifecycle manager.</p>
+        <p>Ensuring that you use the same version of HPE Helion OpenStack that you previously had
+          loaded on your lifecycle manager, you will need to download and install the lifecycle
+          management software using the instructions from the <xref
+            href="../installation/install_entryscale_kvm.dita#install_kvm/setup_deployer"
+            >installation guide</xref> before proceeding further.</p>
         <b>Restore from a Swift backup</b>
         <ol>
           <li>On the lifecycle manager, install the freezer-agent, as follows:<codeblock>cd ~/helion/hos/ansible/
@@ -240,7 +245,7 @@ ansible-playbook -i hosts/localhost _deployer_restore_helper.yml -e '{ "old_depl
             <codeblock>source /opt/stack/service/freezer-agent/etc/backup.osrc</codeblock>Change the
             hostname of the server so it points to the hostname for the server that was your
             lifecycle manager: <!-- DOCS-2588 -->
-              <codeblock>sudo hostname &lt;hostname of the server that was your lifecycle manager></codeblock><p>Edit
+            <codeblock>sudo hostname &lt;hostname of the server that was your lifecycle manager></codeblock><p>Edit
               the <codeph>/etc/hosts</codeph> file and replace the default hLinux install name (hlm)
               with the old lifecycle manager name which you modified in the previous step.</p>List
             the jobs <codeblock>freezer-scheduler -c &lt;hostname> job-list</codeblock>Get the id of
@@ -283,8 +288,8 @@ ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
       <sectiondiv outputclass="insideSection">
         <p>In this disaster scenario, you've lost everything in the cloud, including
           Swift.</p><b>Restore from a Swift backup:</b><p>Restoring from a Swift backup is not
-          possible because Swift is gone.</p><b>Restore from an SSH backup: </b><ol
-          id="ol_jyz_qyh_1v">
+          possible because Swift is gone.</p>
+        <b>Restore from an SSH backup: </b><ol id="ol_jyz_qyh_1v">
           <li>On the lifecycle manager, edit the following file so it contains the same information
             as it had previously:
             <codeblock>~/helion/my_cloud/config/freezer/ssh_credentials.yml file</codeblock></li>
@@ -308,7 +313,7 @@ ansible-playbook -i hosts/verb_hosts site.yml -e '{ "freezer_backup_jobs_upload"
 ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
         </ol>
       </sectiondiv>
-      </section>
+    </section>
     <section><title outputclass="headerH">Swift rings recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>To recover your Swift rings in the event of a disaster, follow the procedure that applies
@@ -355,21 +360,22 @@ EOF</codeblock>
             Edit the file and repave all &lt;tags&gt; with the right information.
             <codeblock>vim ./restore_config.ini</codeblock>You will also need to put the SSH key
             used to do the backups in /etc/freezer/ssh_key and remember to set the right
-            permissions: 600. <p/>Execute the restore job:<codeblock>freezer-agent --config ./restore_config.ini</codeblock>
-            You now have the Swift rings in /tmp/hlm_builder_dir_restore/<p/></li>
+            permissions: 600. <p/>Execute the restore
+            job:<codeblock>freezer-agent --config ./restore_config.ini</codeblock> You now have the
+            Swift rings in /tmp/hlm_builder_dir_restore/<p/></li>
           <li>If the SWF-PRX[0] is already deployed, copy the contents of the restored directory
             (/tmp/hlm_builder_dir_restore/) to /etc/swiftlm/builder_dir/ on the SWF-PRX[0] Then from
-            the deployer run:
+            the lifecycle manager run:
               <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock><p>If
-              the SWF-PRX[0] is<b> not </b>deployed, from the deployer
+              the SWF-PRX[0] is<b> not </b>deployed, from the lifecycle manager
               run<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts guard-deployment.yml
 ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;SWF-PRX[0]-hostname&gt;</codeblock>
               Copy the contents of the restored directory (/tmp/hlm_builder_dir_restore/) to
               /etc/swiftlm/builder_dir/ on the SWF-PRX[0] You will have to create the directories :
               /etc/swiftlm/builder_dir/ </p></li>
-          <li>From the deployer run hlm-deploy.yml:
+          <li>From the lifecycle manager run hlm-deploy.yml:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-deploy.yml</codeblock></li>
         </ol></sectiondiv></section>
