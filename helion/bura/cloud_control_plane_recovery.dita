@@ -16,8 +16,8 @@
         <li>Point-in-time Swift rings recovery</li>
         <li>Point-in-time lifecycle manager recovery</li>
         <li>One or two controller loss disaster recovery</li>
-        <li>Three control plane node loss  disaster recovery</li>
-        <li>Deployer/lifecycle manager disaster recovery</li>
+        <li>Three control plane node loss disaster recovery</li>
+        <li>Dedicated lifecycle manager disaster recovery</li>
         <li>Full disaster recovery</li>
         <li>Swift Rings Recovery</li>
 
@@ -158,8 +158,8 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
     <section id="pointlifecycle"><title outputclass="headerH">Point-in-time Lifecycle Manager
         Recovery</title>
       <sectiondiv outputclass="insideSection">
-        <p>In this scenario, everything is still running (lifecycle manager, control plane nodes,
-          and compute nodes) but you want to restore the lifecycle manager to a previous state.</p>
+        <p>In this scenario, everything is still running (lifecycle manager, controller nodes, and
+          compute nodes) but you want to restore the lifecycle manager to a previous state.</p>
         <b>Restore from a Swift backup</b>
         <ol>
           <li>On the lifecycle manager, follow these steps. <p/>Become root:
@@ -176,12 +176,12 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
             job "HLM Default: Deployer restore from SSH."</li>
         </ol></sectiondiv>
     </section>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <section id="onecontroller"><title outputclass="headerH">One or Two Control Plane Node Disaster
         Recovery</title>
       <sectiondiv outputclass="insideSection">
@@ -218,11 +218,16 @@ ansible-playbook -i hosts/verb_hosts site.yml --limit padawan-ccp-c1-m1-mgmt,pad
 ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
           </ol>
         </p></sectiondiv></section>
-    <section outputclass="pageTarget1" id="nolifecycle_target"><title outputclass="headerH">Deployer
-        Disaster Recovery</title>
+    <section outputclass="pageTarget1" id="nolifecycle_target"><title outputclass="headerH"
+        >Dedicated Lifecycle Manager Disaster Recovery</title>
       <sectiondiv outputclass="insideSection" id="deployer">
-        <p>In this scenario everything is still running (control plane nodes and compute nodes) but
-          you've lost the lifecycle manager.</p>
+        <p>In this scenario everything is still running (controller nodes and compute nodes) but
+          you've lost the dedicated lifecycle manager.</p>
+        <p>Ensuring that you use the same version of HPE Helion OpenStack that you previously had
+          loaded on your lifecycle manager, you will need to download and install the lifecycle
+          management software using the instructions from the <xref
+            href="../installation/install_entryscale_kvm.dita#install_kvm/setup_deployer"
+            >installation guide</xref> before proceeding further.</p>
         <b>Restore from a Swift backup</b>
         <ol>
           <li>On the lifecycle manager, install the freezer-agent, as follows:<codeblock>cd ~/helion/hos/ansible/
@@ -235,7 +240,7 @@ ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
               manager.</p>
             <p>You must then retrieve the /etc/hosts file from any compute or controller node and
               replace the one found on the lifecycle manager with the one retrieved. Be sure to edit
-              the  127.0.0.1 line so it points to hlinux like
+              the 127.0.0.1 line so it points to hlinux like
             so:</p><codeblock>127.0.0.1       localhost
 ::1             localhost ip6-localhost ip6-loopback
 ff02::1         ip6-allnodes
@@ -309,7 +314,7 @@ ansible-playbook -i hosts/verb_hosts site.yml -e '{ "freezer_backup_jobs_upload"
 ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
         </ol>
       </sectiondiv>
-      </section>
+    </section>
     <section><title outputclass="headerH">Swift Rings Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>To recover your Swift rings in the event of a disaster, follow the procedure that applies
