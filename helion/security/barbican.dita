@@ -49,12 +49,8 @@
             <li>Barbican with KMIP and PKCS11 and external KMS (certified with HPE Atalla ESKM) </li>
             <li>3PAR StoreServ Data-At-Rest Encryption </li>
           </ul></li>
-      <li>Encrypting container and objects n the server side. </li><li>Storage and Retrieval of secrets (passwords)
-      </li><li>Certificate management for Load Balancer as a Service V2 (Neutron-LBaaS earlier) 
-      </li><li>Ability to define and manage access policy for key material.
-      </li><li>Administration functionality, ability to control lifecycle of key material. </li><li>Well-defined auditing capability in OpenStack services around key access and lifecycle events. </li><li>Key Management as Service for PaaS application(s) deployed on OpenStack cloud.
-      </li><li>Ability to effectively scale up Key Management and can be made highly available (handle
-          failover).</li></ul>
+      <li>Encrypting container and objects on the server side </li><li>Storage and retrieval of secrets (passwords) </li><li>Certificate management for Load Balancer as a Service V2 (previously known as Neutron-LBaaS) </li><li>Ability to define and manage access policy for key material</li><li>Administrative functionality, ability to control the lifecycle of key material </li><li>Well-defined auditing capability in OpenStack services around key access and lifecycle events </li><li>Key management as mervice for PaaS application(s) deployed on OpenStack cloud</li><li>Ability to effectively scale up key management and be made highly available (handle
+          failover)</li></ul>
     </section>
     <section id="installation"><title>Installation</title>
       <p>Barbican is an essential service in <keyword keyref="kw-hos"/> and is installed
@@ -68,24 +64,24 @@
         log level can be changed from INFO to DEBUG and vice-versa. If needed, this change can be
         restricted to a set of nodes via the playbook's host limit option. </p>
       <p><b>Secret store back ends</b></p><p>Barbican currently supports database and KMIP as its
-        secret store back ends. In OpenStack upstream, there are additional backends available e.g.
-        PKCS11 plugin, dogtag plugin which are currently not tested and supported by HOS Barbican
-        engineering team. </p><p><b>Database plug-in for secret store</b></p><p> In Helion Openstack
-        distribution, by default Barbican is configured to use database as secret (keys) storage
-        backend. This backend encrypts Barbican managed keys with a project level key (kek , key
-        encryption key) before storing it in database. And project-level keys are encrypted using a
-        master key. As part of the Initial Barbican configuration, customer must generate and
+        secret store back ends. In OpenStack upstream, there are additional back ends available,
+        such as the PKCS11 plugin and dogtag plugin which are currently not tested or supported by
+        HPE Helion OpenStack. </p><p><b>Database plug-in for secret store</b></p><p>In HPE Helion
+        Openstack, by default Barbican is configured to use a database as secret (keys) storage back
+        end. This back end encrypts Barbican managed keys with a project level key (kek , key
+        encryption key) before storing it in the database. And project-level keys are encrypted
+        using a master key. As part of the initial Barbican configuration, you must generate and
         configure this master key.</p>
       <ol>
-        <li>Generate master key using the provided python *generate_kek* script on the lifecycle
-          manager node
-          <codeblock> python  ~/helion/hos/ansible/roles/KEYMGR-API/templates/generate_kek</codeblock>The
-          master key is generated at stdout from previous command</li>
-        <li>Set above master key in file
+        <li>Generate the master key using the provided python *generate_kek* script on the lifecycle
+          manager node:
+          <codeblock>python  ~/helion/hos/ansible/roles/KEYMGR-API/templates/generate_kek</codeblock>The
+          master key is generated at stdout from the command above.</li>
+        <li>Set above master key in file:
           <codeblock>~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock></li>
         <li>Replace existing *barbican_customer_master_key* value with above generated master key if
-          there</li>
-        <li>Commit the change in git repository.
+          present.</li>
+        <li>Commit the change to the git repository:
           <codeblock>cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/
 cd ~/helion
 git add -A
@@ -93,15 +89,16 @@ git commit -m "My config"</codeblock></li>
         <li>Next, run ready-deloyment:
           <codeblock>cd ~/helion/hos/ansible/
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-        <li> Once the master key is set, continue with cloud deployment.</li>
+        <li>Once the master key is set, continue with your cloud deployment.</li>
       </ol>
       <note>For a Barbican deployment with a database back end, the master key needs to be generated
         and configured before Barbican is deployed for the first time. Once the master key is set,
         it must not be modified.</note>
-      <note>Changing master key can result in read error for existing secrets as those secrets are
-        stored in DB and are encrypted using previous master key. Once new master key is used,
-        Barbican would not be able to read those secrets. Also it would not be able to create new
-        secrets within that project as project kek is encrypted using previous master key.</note>
+      <note>Changing the master key can result in read errors for existing secrets as those secrets
+        are stored in the database and are encrypted using the previous master key. Once a new
+        master key is used, Barbican will not be able to read those secrets. Also it will not be
+        able to create new secrets within that project as the project key is encrypted using
+        previous master key.</note>
       <p id="kmip"><b>KMIP plug-in support</b></p><p>Barbican has a KMIP plug-in to store encryption
         keys (called secrets in Barbican service terminology) in an HSM device using KMIP protocol.
         In HOS, we tested this plug-in against Atalla ESKM with KMIP server. To enable its support,

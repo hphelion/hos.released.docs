@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="barbicanBootstrapping">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Bootstrapping the Barbican Service</title>
+  <body>
+
+
+    <section> <title>Barbican bootstrap data</title>
+      
+      <p>When the Barbican service is installed, some of the Keystone-related initial data is
+        bootstrapped as part of its initial deployment. The data added is primarily around Barbican
+        user, roles, service and endpoint definitions and Barbican role assignments. </p>
+      <p><b>User, Roles And Service/ Endpoint Definitions</b></p>
+      <table frame="all">
+        <tgroup cols="4">
+          <colspec/>
+          <thead>
+            <row>
+              <entry>Type</entry>
+              <entry>Name or key-value pair</entry>
+              <entry>Purpose</entry>
+              <entry>Comments</entry>
+            </row>
+
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <p>Keystone User Account</p>
+              </entry>
+              <entry>
+                <p>barbican</p>
+              </entry>
+              <entry>
+                <p>Barbican user account associated with administrative privileges.</p>
+              </entry>
+              <entry>
+                <p>Password is randomly generated and made available in barbican client environment
+                  setup script, <i>barbican.osrc,</i> on deployer node.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone User Account</p>
+              </entry>
+              <entry>
+                <p>barbican_service</p>
+              </entry>
+              <entry>
+                <p>Service account used for keystone token validation by barbican service</p>
+              </entry>
+              <entry>
+                <p>Password is randomly generated and stored in barbican paste configuration i.e.
+                    <i>barbican-api-paste.ini</i>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:creator</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has privilege to create/modify/list keys,
+                  certificates. Creator role does not allow modifications (update/delete) in
+                  container's consumer, modifications in transport keys, modification in certificate
+                  authorities (CA), assignment and management of per project CA. User with
+                    <i>admin</i> role can do this.</p>
+              </entry>
+              <entry>
+                <p>This role has exact same privileges as defined for '<i>creator</i>' role in
+                  upstream barbican. Referred in service policy config file, <i>policy.json</i></p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:admin</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has administrative privileges</p>
+              </entry>
+              <entry>
+                <p>This role has exact same privileges as defined for '<i>admin</i>' role in
+                  upstream barbican. Referred in service policy config file, <i>policy.json</i></p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:observer</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has privileges limited to read/list of keys,
+                  certificates</p>
+              </entry>
+              <entry>
+                <p>This role has exact same privileges as defined for '<i>observer</i>' role in
+                  upstream barbican. Referred in service policy config file, <i>policy.json</i></p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:auditor</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has privileges limited to reading metadata of keys,
+                  certificates. This role does not allow reading and listing of actual keys and
+                  certificates.</p>
+              </entry>
+              <entry>
+                <p>This role has exact same privileges as defined for '<i>auditor</i>' role in
+                  upstream barbican. Referred in service policy config file, <i>policy.json</i></p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:service-admin</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has privilege to modify global preferred CA and
+                  modify default project quotas.</p>
+              </entry>
+              <entry>
+                <p>This role has exact same privileges as defined for
+                    '<i>key-manager:service-admin</i>' role in upstream barbican. Referred in
+                  service policy config file, <i>policy.json</i></p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Service</p>
+              </entry>
+              <entry>
+                <p> name: barbican type: key-manager</p>
+              </entry>
+              <entry>
+                <p>Barbican service definition. Service type is <i>key-manager</i>.</p>
+              </entry>
+              <entry>
+                <p> </p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Endpoint</p>
+              </entry>
+              <entry>
+                <p> interface: internal region: region1</p>
+              </entry>
+              <entry>
+                <p>Barbican internal endpoint. This is load-balanced endpoint exposed for internal
+                  service usage.</p>
+              </entry>
+              <entry>
+                <p> </p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Endpoint</p>
+              </entry>
+              <entry>
+                <p> interface: public region: region1</p>
+              </entry>
+              <entry>
+                <p>Barbican public endpoint. This is load-balanced endpoint exposed for
+                  external/public service usage.</p>
+              </entry>
+              <entry>
+                <p> </p>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section>
+      <table frame="all">
+        <tgroup cols="4">
+          <colspec/>
+          <thead>
+            <row>
+              <entry>User name</entry>
+              <entry>Project name</entry>
+              <entry>Role name</entry>
+              <entry>Purpose</entry>
+            </row>
+            
+          </thead>
+          <tbody>
+            <row>
+              <entry>barbican</entry>
+              <entry>admin</entry>
+              <entry>key-manager:admin</entry>
+              <entry>User is assigned barbican administration privileges on keystone defined
+                  <i>admin</i> project. This allows user to manage barbican resources associated
+                with that project using barbican CLI setup.</entry>
+            </row>
+            <row>
+              <entry>barbican</entry>
+              <entry>admin</entry>
+              <entry>key-manager:service-admin </entry>
+              <entry>User is assigned barbican service administration privileges on keystone defined
+                  <i>admin</i> project. This role and above role allows user to have full barbican
+                related administration capabilities</entry>
+            </row>
+            <row>
+              <entry>barbican</entry>
+              <entry>admin</entry>
+              <entry>admin</entry>
+              <entry>User assigned keystone defined administrative role on its <i>admin</i> project.
+                This way customer can continue to use barbican CLI and openstack CLI without need to
+                switch when testing or verifying data.</entry>
+            </row>
+            <row>
+              <entry>admin</entry>
+              <entry>admin</entry>
+              <entry>key-manager:admin</entry>
+              <entry> Keystone defined <i>admin</i> user is given barbican related administrative
+                privileges on keystone defined <i>admin</i> project.</entry>
+            </row>
+            <row>
+              <entry>admin</entry>
+              <entry>admin</entry>
+              <entry>key-manager:service-admin</entry>
+              <entry>In lines of above role assignment, barbican specific service admin role is
+                assigned to allow global preferred CA and quotas modifications.</entry>
+            </row>
+            <row>
+              <entry>barbican_service</entry>
+              <entry>services</entry>
+              <entry>service</entry>
+              <entry>Barbican service account is given <i>service</i> role on <i>services</i>
+                project for token validation. API server uses this for creating scoped service token
+                and then includes it as<i> X-Service-Token</i> when requesting customer/client token
+                validation from keystone.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  </body>
+</topic>
