@@ -5,71 +5,173 @@
   
   <body>    <p conkeyref="HOS-conrefs/applies-to"/>
     
-    <section><title>The need for auditing</title>
     
-      <p>Enterprises need the capability to audit and monitor their workload and data in accordance
-        with their strict corporate, industry or regional policies and compliance requirements such
-        as FIPS-140-2, PCI-DSS, SOX, or ISO 27017. So as part of HPE Helion OpenStack, services need
-        to provide auditing support as a basic security feature which can be easily integrated with
-        an organization's Security Information and Event Management (SIEM) tools. Such auditing is
-        valuabel not only to demonstrate compliance but also for correlating threat forensics.</p>
+   
+    <section>
       
-      
-      <p>Existing OpenStack service logging is not built from auditing perspective and greatly
-        varies across services. Generally these log messages do not have details about who is
-        requesting the API, context-specific details about action performed and are not consistently
-        logged across various service APIs. In addition, the logged data format is not consistent
-        across services so it can be difficult to integrate it with existing common audit tools and
-        processes.</p>
-      
-      
- 
-    
-    
-    </section>
-    
-    <section><title>Introducing middleware auditing</title>
-      <p>Audit Middleware is a python middleware logic which is added in service request processing pipeline via paste deploy filters. Audit middleware 
-        constructs audit event data in CADF format. The CADF model can answer critical questions about activity or event happening on rest resources
-        in a normative manner using CADF's seven W's of auditing (What, When, Who, On What, Where, From Where, To Where) .  With this option, 
-        the changes are only configuration related and does not require changes in service existing code base.</p>
-      
-      <p>Audit middleware supports delivery of CADF audit events via Oslo messaging notifier capability. Based on 'notification_driver' 
-        configuration, audit events can be routed to messaging infrastructure (notification_driver = messagingv2)  or can be routed to a log
-        file (notification_driver = log) . From queue or log files, messages are sent to logstash for potential transformation and then pushed to elastic search.</p>
-      
-      <p><b>Centralized Auditing Configuration</b></p>
-        
-  <p> Each service gets two audit-related configuration variables via the configuration processor.
-        Its configuration is centrally managed in cloudConfig.yml within audit-settings.</p>
-      
-    <p> The available audit attributes are:</p>
-        <dl>
-          
-          <dlentry>
-            <dt> &lt;service-mnemonic>.audit.enabled </dt>
-            <dd> indicates whether audit is currently enabled or disabled for the service. As an
-            example, for <xref href="barbican.dita#barbican">Barbican, the key management
-              service</xref> this variable is KEYMGR.audit.enabled . (Barbican mnemonic here).</dd>
-          </dlentry>
-          
-          <dlentry>
-            <dt>&lt;service-mnemonic>.audit.dir</dt>
-            <dd> indicates what is the base directory for audit logs. Base directory is expected to
-            be same for all services e.g. for barbican audit file path
-            /var/audit/barbican/barbican-audit.log, the base directory variable will have /var/audit
-            as the value. </dd>
-          </dlentry>
-        </dl>
-        
-        
-    <p> Further details on auditing centralized configuration and steps to make changes are listed
-        below (link : here) .</p>
 
-      <!-- https://wiki.hpcloud.net/pages/viewpage.action?pageId=51809406 -->
-<p></p>
-    
-    </section>
-    <p></p>
+      
+      <title>The need for auditing</title>
+      
+      Enterprises need the capability to audit and monitor their workload and data in accordance with their strict corporate, industry or regional policies and compliance 
+      requirements such as FIPS-140-2, PCI-DSS, SOX, or ISO 27017. So as part of HPE Helion OpenStack, services need to provide auditing support as a basic security 
+      feature which can be easily integrated with an organization's Security Information and Event Management (SIEM) tools. Such auditing is valuable not only to demonstrate 
+      compliance but also for correlating threat forensics.
+      
+      Existing OpenStack service logging is not built from auditing perspective and greatly varies across services. Generally these log messages do not have details about who
+      is requesting the API, context-specific details about action performed and are not consistently logged across various service APIs. In addition, the logged data format is not 
+      consistent across services so it can be difficult to integrate it with existing common audit tools and processes.  </section>  <section>
+        
+
+        
+        <title>Introducing middleware auditing </title>
+      
+      
+      
+      Audit Middleware is a python middleware logic which is added in service request processing pipeline via paste deploy filters. Audit middleware constructs audit event data in
+      CADF format. The CADF model can answer critical questions about activity or event happening on rest resources in a normative manner using CADF's seven W's of auditing 
+      (What, When, Who, On What, Where, From Where, To Where) .  With this approach, the changes are only configuration related and does not require changes in service existing code base.
+      
+    <p>  Audit middleware supports delivery of CADF audit events via Oslo messaging notifier capability. Each service is configured to route audit events to a audit specific log file. </p>
+      
+      Following are key aspects of Auditing support in this version:
+      <ul>
+      <li>Auditing is a new experimental feature in HOS 3.0 and is not enabled by default.
+     </li><li>Auditing support is added to 8 HOS services ( nova, cinder, glance, keystone, neutron, heat, barbican, ceilometer ). 
+     </li><li>Auditing is added for interactions where REST API calls are invoked. 
+     </li><li>All audit events are added to service specific audit log file.
+     </li><li>Auditing configuration is centrally managed and can indicate which services are currently disabled or enabled from auditing perspective.
+     </li><li>HOS provides mechanism to selectively enable or disable auditing for a specific service.
+     </li><li>Support for centralized delivery of audit events to logstash for potential transformation, then to elastic search and ability to analyze audit events is going to be added in future release(s).
+     </li><li>If a deployment wants to checkout auditing support in HOS 3.0, there are set of pre-requistie steps to be followed ( Link here). Steps are needed to make sure that necessary disk space for audit logs is allocated and its maintenance procedure is defined. 
+     </li></ul></section>
+ <section>
+      <title>Centralized Auditing Configuration</title> In HOS, all of auditing configuration is
+      centrally managed and controlled via input model settings. These settings are defined on
+      deployer node in file ~/helion/my_cloud/definition/cloudConfig.yml. All audit related
+      configuration is defined under a new audit-settings section. <table id="table_vpc_m2t_lv">
+        <tgroup cols="6">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <colspec colnum="5" colname="col5"/>
+          <colspec colnum="6" colname="col6"/>
+          <thead>
+            <row>
+              <entry>Key</entry>
+              <entry>Default ( Value Type )</entry>
+              <entry>Value Type</entry>
+              <entry>Description</entry>
+              <entry>Expected value(s)</entry>
+              <entry>Comments</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>audit-dir</entry>
+              <entry>/var/audit</entry>
+              <entry>String (directory path)</entry>
+              <entry>The base directory path for all service audit logs.Each service will write
+                audit log under {{ audit-dir }}/ {{ service_name}}/{{ service_name}}-audit.log </entry>
+              <entry> </entry>
+              <entry>Before enabling auditing, deployment needs to allocate appropriate partition
+                for audit logs, preferably for <i>/var/audit</i> path.</entry>
+            </row>
+            <row>
+              <entry>default</entry>
+              <entry>disabled</entry>
+              <entry>String</entry>
+              <entry>Deployment level flag to enable or disable auditing for all supporting
+                services</entry>
+              <entry><i>disabled</i> / <i>enabled</i></entry>
+              <entry>If specific service name is not within <b><i>enabled-servies</i></b> and
+                    <b><i>disabled-services</i></b> list, then its auditing behavior is determined
+                via <b><i>default</i></b> key value.</entry>
+            </row>
+            <row>
+              <entry>enabled-services</entry>
+              <entry>[] (empty list)</entry>
+              <entry>yaml list</entry>
+              <entry>List of service names which has enabled auditing regardless of "default"
+                deployment flag behavior.</entry>
+              <entry>Supported service names are:<i>nova, cinder, glance, keystone, neutron, heat,
+                  barbican, ceilometer </i></entry>
+              <entry>
+                <p>To enable a specific service, either add service name in <i>enabled-services</i>
+                  list when <i>default</i> is <i>disabled</i> or remove from
+                    <i>disabled-services</i> list when default is <i>enabled</i>. </p>
+                <p>Names present in <i>enabled-services</i> list takes precedence. In case a service
+                  name is present in both <i>enabled-services</i> and <i>disabled-services</i> list,
+                  then auditing is marked <i>enabled</i> for that service. </p>
+              </entry>
+            </row>
+            <row>
+              <entry>disabled-services</entry>
+              <entry>nova, barbican, keystone, cinder, ceilometer, neutron</entry>
+              <entry>yaml list</entry>
+              <entry>List of service names which has selectively disabled audting regardless of
+                "default" deployment flag behavior.</entry>
+              <entry>Supported service names are:<i>nova, cinder, glance, keystone,neutron, heat,
+                  barbican, ceilometer </i></entry>
+              <entry>To disable a specific service, either add service name in
+                  <i>disabled-services</i> list when default is <i>enabled</i> or remove from
+                  <i>enabled-services</i> list when default is <i>disabled</i>.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></section>
+<section> Audit settings with default disabled and services selectively enabled
+      <codeblock>product:
+    version: 2
+    cloud:
+    ....
+    ....
+    # Disc space needs to be allocated to the audit directory before enabling
+    # auditing.
+    # keystone and nova has auditing enabled
+    # cinder, ceilometer, glance, neutron, heat, barbican has auditing disabled
+    audit-settings:
+    audit-dir: /var/audit
+    default: disabled
+    enabled-services:
+    - keystone
+    - nova
+    disabled-services:
+    - cinder
+    - ceilometer</codeblock>
+      Audit setting with default enabled and services selectively disabled <codeblock>product:
+    version: 2
+    cloud:
+    ....
+    ....
+    # Disc space needs to be allocated to the audit directory before enabling
+    # auditing.
+    # keystone, nova, glance, neutron, heat, barbican has auditing enabled
+    # cinder, ceilometer has auditing disabled
+    audit-settings:
+    audit-dir: /var/audit
+    default: enabled
+    enabled-services:
+    - keystone
+    - nova
+    disabled-services:
+    - cinder
+    - ceilometer</codeblock>
+      <p>Auditing by default is disabled in HOS v3.0. You will need to follow the steps below to
+        enable it if they want to experiment or deploy the capability for their security
+        compliance.</p><ul id="ul_udn_cft_lv">
+        <li>Step 1. <xref
+            href="https://wiki.hpcloud.net/display/core/Steps+to+setup+Audit+Logging+for+HOS+3.0"
+            format="html" scope="external">Configure disk space for auditing logs</xref></li>
+        <li>
+          <p>Step 2. <xref href="https://wiki.hpcloud.net/display/iaas/Enable+or+Disable+HOS+Audit"
+              format="html" scope="external">Enable Auditing</xref>
+          </p>
+        </li>
+        <li>Step 3. <xref
+            href="https://wiki.hpcloud.net/display/iaas/Middleware+Based+Audit+Support#MiddlewareBasedAuditSupport-BackupandRestore"
+            format="html" scope="external">Backup/restore audit logs</xref></li>
+      </ul></section>
   </body>
 </topic>

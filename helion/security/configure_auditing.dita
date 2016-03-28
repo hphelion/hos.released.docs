@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_esg_pft_lv">
+  <title>Configuring Auditing</title>
+  <body>
+    
+    <section> Audit logging is disabled by default. Before enabling it, please ensure that all
+      management controller nodes have disks setup for audit logging. Please use one of the
+      following tables as a guidance to arrive at the target disk size for the /var/audit partition
+      for the desired retention period. <table id="table_yxd_vft_lv">
+        <tgroup cols="9">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <colspec colnum="5" colname="col5"/>
+          <colspec colnum="6" colname="col6"/>
+          <colspec colnum="7" colname="col7"/>
+          <colspec colnum="8" colname="col8"/>
+          <colspec colnum="9" colname="col9"/>
+          <tbody>
+            <row>
+              <entry morerows="1">Service Name</entry>
+              <entry morerows="1">
+                <p>Peak size of audit logs per day in MB</p>
+                <p>(for 100 nodes)</p>
+              </entry>
+              <entry namest="col3" nameend="col9">Estimated size for on-disk retention (in
+                GB)</entry>
+            </row>
+            <row>
+              <entry>1 week</entry>
+              <entry>2 weeks</entry>
+              <entry>1 month</entry>
+              <entry>45 days</entry>
+              <entry>6 months</entry>
+              <entry>1 year</entry>
+              <entry>Comments</entry>
+            </row>
+            <row>
+              <entry>Keystone</entry>
+              <entry>95</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry morerows="9">
+                <p><b>Assumptions:</b></p>
+                <ul id="ul_ayd_vft_lv">
+                  <li>Compression ratio: 80%</li>
+                  <li>Rotated once daily</li>
+                  <li>Estimated size calculation: Peak_Size +
+                    (Peak_Size*Compression_Percent*Num_Of_Days)</li>
+                </ul>
+                <p><b>Note:</b> It is recommended to have an <b>additional</b>
+                  <b>25%</b> of the Total to allow some room for growth</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Barbican</entry>
+              <entry>2.6</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Nova</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Cinder</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Neutron</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Glance</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Heat</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Ironic</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>USAN</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry><b>Total</b></entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table> nnnnnnnnnnnnnnnn <table id="table_ant_yft_lv">
+        <tgroup cols="9">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <colspec colnum="5" colname="col5"/>
+          <colspec colnum="6" colname="col6"/>
+          <colspec colnum="7" colname="col7"/>
+          <colspec colnum="8" colname="col8"/>
+          <colspec colnum="9" colname="col9"/>
+          <tbody>
+            <row>
+              <entry morerows="1">Service Name</entry>
+              <entry morerows="1">
+                <p>Peak size of audit logs per day in MB</p>
+                <p>(for 300 nodes)</p>
+              </entry>
+              <entry namest="col3" nameend="col9">Estimated size for on-disk retention (in
+                GB)</entry>
+            </row>
+            <row>
+              <entry>1 week</entry>
+              <entry>2 weeks</entry>
+              <entry>1 month</entry>
+              <entry>45 days</entry>
+              <entry>6 months</entry>
+              <entry>1 year</entry>
+              <entry>Comments</entry>
+            </row>
+            <row>
+              <entry>Keystone</entry>
+              <entry>285</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry morerows="9">
+                <p><b>Assumptions:</b></p>
+                <ul id="ul_bnt_yft_lv">
+                  <li>Compression ratio: 80%</li>
+                  <li>Rotated once daily</li>
+                  <li>Estimated size calculation: Peak_Size +
+                    (Peak_Size*Compression_Percent*Num_Of_Days)</li>
+                </ul>
+                <p> </p>
+                <p> </p>
+                <p> </p>
+                <p> </p>
+                <p> </p>
+                <p><b>Note:</b> It is recommended to have an <b>additional</b>
+                  <b>25%</b> of the Total to allow some room for growth</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Barbican</entry>
+              <entry>4.2</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Nova</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Cinder</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Neutron</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Glance</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Heat</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Ironic</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>USAN</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry><b>Total</b></entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table> vvvvvvvvvvvvvvvvvvvvvvvv<table id="table_krl_1gt_lv">
+        <tgroup cols="9">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <colspec colnum="5" colname="col5"/>
+          <colspec colnum="6" colname="col6"/>
+          <colspec colnum="7" colname="col7"/>
+          <colspec colnum="8" colname="col8"/>
+          <colspec colnum="9" colname="col9"/>
+          <tbody>
+            <row>
+              <entry morerows="1">Service Name</entry>
+              <entry morerows="1">
+                <p>Peak size of audit logs per day in MB</p>
+                <p>(for 500 nodes)</p>
+              </entry>
+              <entry namest="col3" nameend="col9">Estimated size for on-disk retention (in
+                GB)</entry>
+            </row>
+            <row>
+              <entry>1 week</entry>
+              <entry>2 weeks</entry>
+              <entry>1 month</entry>
+              <entry>45 days</entry>
+              <entry>6 months</entry>
+              <entry>1 year</entry>
+              <entry>Comments</entry>
+            </row>
+            <row>
+              <entry>Keystone</entry>
+              <entry>475</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry morerows="9">
+                <p><b>Assumptions:</b></p>
+                <ul id="ul_lrl_1gt_lv">
+                  <li>Compression ratio: 80%</li>
+                  <li>Rotated once daily</li>
+                  <li>Estimated size calculation: Peak_Size +
+                    (Peak_Size*Compression_Percent*Num_Of_Days)</li>
+                </ul>
+                <p> </p>
+                <p> </p>
+                <p> </p>
+                <p> </p>
+                <p> </p>
+                <p><b>Note:</b> It is recommended to have an <b>additional</b>
+                  <b>25%</b> of the Total to allow some room for growth</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Barbican</entry>
+              <entry>5.6</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Nova</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Cinder</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Neutron</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Glance</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Heat</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>Ironic</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>USAN</entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry><b>Total</b></entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+              <entry> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  </body>
+</topic>
