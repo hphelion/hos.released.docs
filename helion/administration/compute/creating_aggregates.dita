@@ -16,11 +16,39 @@
         format="html">Filter Scheduler</xref>.</p>
     <p>This document is going to show you how to set up both a Nova aggregate and configure the
       filter scheduler to allow you to specify which compute hos </p>
-    <ol>
-      <li>Log in to the lifecycle manager.</li>
-      <li>Source the administrative creds: <codeblock>source ~/service.osrc</codeblock></li>
-      <li>List your current Nova aggregates: <codeblock>nova aggregate-list</codeblock></li>
-      <li>Create a new Nova aggregate: <codeblock>nova aggregate-create RHEL</codeblock></li>
-    </ol>
+
+
+    <section id="create_agg"><title>Creating a Nova Aggregate</title>
+      <p>These steps will show you how to create a Nova aggregate and how to add a compute host to
+        it. You can run these steps on any machine that contains the NovaClient that also has
+        network access to your cloud environment. These requirements are met by the lifecycle
+        manager.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Source the administrative creds: <codeblock>source ~/service.osrc</codeblock></li>
+        <li>List your current Nova aggregates: <codeblock>nova aggregate-list</codeblock></li>
+        <li>Create a new Nova aggregate with this syntax:<codeblock>nova aggregate-create &lt;aggregate-name></codeblock>
+          <p>If you wish to have the aggregate appear as an availability zone, then specify an
+            availability zone with this syntax:</p>
+          <codeblock>nova aggregate-create &lt;aggregate-name> &lt;availability-zone-name></codeblock>
+          <p>So, for example, if you wish to create a new aggregate for your RHEL compute hosts, you
+            could use this command:</p>
+          <codeblock>nova aggregate-create RHEL RHEL</codeblock>
+          <p>This would produce an output similar to this:</p>
+          <codeblock>+----+------+-------------------+-------+--------------------------+
+| Id | Name | Availability Zone | Hosts | Metadata                 |
++----+------+-------------------+-------+--------------------------+
+| 12 | RHEL | RHEL              |       | 'availability_zone=RHEL' |
++----+------+-------------------+-------+--------------------------+</codeblock></li>
+        <li>Next, you need to add compute hosts to this aggregate so you can start by listing your
+          current hosts. You will want to limit the output of this command to only the hosts running
+          the <codeph>compute</codeph> service, like
+          this:<codeblock>nova host-list | grep compute</codeblock></li>
+        <li>You can then add host(s) to your aggregate with this
+          syntax:<codeblock>nova aggregate-add-host &lt;aggregate-name> &lt;host></codeblock></li>
+        <li>Then you can confirm that this has been completed by listing the details of your
+          aggregate: <codeblock>nova aggregate-details &lt;aggregate-name></codeblock></li>
+      </ol>
+    </section>
   </body>
 </topic>
