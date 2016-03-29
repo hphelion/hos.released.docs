@@ -9,8 +9,7 @@
     <p>In the CloudConfig file, service names defined under enabled-services or disabled-services override the default setting.</p> 
     
     <p>The following is an example of your audit-settings section:</p>
-    <codeblock>
-      audit-settings:
+    <codeblock>audit-settings:
       audit-dir: /var/audit
       default: disabled
       enabled-services:
@@ -21,8 +20,161 @@
       #  - barbican
       #  - keystone
       - cinder
-      - ceilometer
-    </codeblock>
+      - ceilometer</codeblock>
+    
     <p>In this example, although the default setting for all services is set to <b>disabled</b>, keystone and barbicon have been explicitly set as enabled and this setting overrides the default.</p>
+
+<section id="audit_edit_config">
+  <title>To edit the configuration file:</title>
+  <ol>
+    <li>To securely log in to lifecycle manager (deployer node), run:
+<codeblock>$ ssh &lt;lifecycle-manager&gt;</codeblock>
+    </li>
+    <li>To change to the cloud definition folder, run:
+      <codeblock>$ cd ~/helion/my_cloud/definition</codeblock>
+    </li>
+    <li>To edit the auditing settings, in a text editor, open the following file:
+      <codeblock>CloudConfig.yml</codeblock>
+    </li>
+    <li>To enable audit logging, remove all of the “#” comment markers in the following places:
+      <ul>
+        <li>“enable-service:” </li>
+        <li>any service you want to enable for audit logging.</li>
+      </ul>
+      For example, Keystone has been enabled in the following text:
+      <table frame="all" rowsep="1" colsep="1" id="table_audit_econfig1">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="3.88*"/>
+          <thead>
+            <row>
+              <entry>Default CloudConfig.yml file</entry>
+              <entry>Enabling Keystone audit logging</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><codeblock>audit-settings:
+audit-dir: /var/audit
+default: disabled
+enabled-services:
+#  - keystone</codeblock></entry>
+              <entry><codeblock>audit-settings:
+audit-dir: /var/audit
+default: disabled
+enabled-services:
+  - keystone</codeblock></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </li>
+    <li>To move the services you want to enable, comment out the service in the disabled section and add it to the enabled section.
+      For example, Barbican has been enabled in the following text:
+      <table frame="all" rowsep="1" colsep="1" id="table_audit_econfig2">
+        <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="2.19*"/>
+              <thead>
+                <row>
+                  <entry>CloudConfig.yml file</entry>
+                  <entry>Enabling Barbican audit logging</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry><codeblock>audit-settings:
+audit-dir: /var/audit 
+default: disabled 
+enabled-services: 
+  - keystone 
+disabled-services: 
+   - nova 
+   # - keystone 
+   - barbican 
+   - cinder</codeblock></entry>
+                  <entry><codeblock>audit-settings: 
+audit-dir: /var/audit 
+default: disabled 
+enabled-services: 
+ - keystone 
+ - barbican 
+disabled-services: 
+ - nova 
+ # - barbican 
+ # - keystone 
+ - cinder</codeblock></entry>
+                </row>
+              </tbody>
+            </tgroup>
+      </table>
+    </li>
+  </ol>
+</section>
+
+    <section id="audit_save_config2">
+      <title>To save your changes and run the configuration processor:</title>
+      <ol>
+        <li>To change to the helion directory, run:
+          <codeblock>$ cd ~/helion</codeblock>
+        </li>
+        <li>To add the new and updated files, run:
+          <codeblock>$ git add -A</codeblock>
+        </li>
+        <li>To verify the files are added, run:
+          <codeblock>$ git status</codeblock>
+        </li>
+        <li>To commit your changes, run:
+          <codeblock>$ git commit -m “Enable audit logging”</codeblock>
+        </li>
+        <li>To change to the directory with the ansible playbooks, run:
+          <codeblock>$ cd ~/hellion/hos/ansible</codeblock>
+        </li>
+        <li>To rerun the configuration processor, run:
+          <codeblock>$ ansible-playbook -i hosts/localhost config-processor-run.yml
+            $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+        </li>
+      </ol>
+    </section>
+    
+    <section id="audit_create_vgroup">
+      <title>To create the volume group:</title>
+      <ol>
+        <li>To change to the directory containing the osconfig playbook, run:
+          <codeblock>$ cd ~/scratch/ansible/next/hos/ansible</codeblock>
+        </li>
+        <li>To activate the ansible virtual environment to run the ad-hoc command, run:
+          <codeblock>$ source /opt/stack/venv/ansible-hos-3.0.0/bin/activate</codeblock>
+        </li>
+        <li>To remove the stub file that osconfig uses to decide if the disks are already configured, run:
+         <codeblock>$ ansible -I hosts/verb_hosts KEY-API -a ‘sudo rm -f /etc/hos/osconfig-ran’</codeblock>
+          <note type="important">The osconfig playbook uses the stub file to mark already configured disks as “idempotent.” To stop osconfig from identifying your new disk as already configured, you must remove the stub file /etc/hos/osconfig-ran before re-running the osconfig playbook.</note>
+       </li>
+        <li>To run the playbook that enables auditing for a service, run:
+          <codeblock>$ ansible -playbook -i hosts/verb_hosts osconfig-run.yml –limit KEY-API</codeblock>
+          <note type="important"> The variable KEY-API is used as an example to cover the management controller cluster. To enable auditing for a service that is not run on the same cluster, add the service to the –limit flag in the above command. For example: 
+            <codeblock>$ ansible -playbook -i hosts/verb_hosts osconfig-run.yml –limit KEY-API:MON-API</codeblock></note>
+        </li>
+      </ol>
+    </section>
+    
+    <section id="audit_reconfig_services">
+      <title>To Reconfigure services for audit logging:</title>
+      <ol>
+        <li>To change to the directory containing the service playbooks, run:
+          <codeblock>$ cd ~/scratch/ansible/next/hos/ansible</codeblock>
+        </li>
+        <li>To run the playbook that reconfigures a service for audit logging, run:
+          <codeblock>$ ansible -playbook -i hosts/verb_hosts &lt;service-name&gt;-reconfigure.yml</codeblock>
+          For example, to reconfigure Keystone for audit logging, run:
+          <codeblock>$ ansible -playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
+        </li>
+        <li>Repeat steps 1 and 2 for each service you need to reconfigure.
+          <note type="important">You must reconfigure each service that you changed to be enabled or disabled in the CloudConfig.yml file.</note>
+        </li>
+      </ol>
+    </section>
+    
+    
   </body>
 </topic>
