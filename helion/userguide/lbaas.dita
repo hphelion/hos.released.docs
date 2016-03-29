@@ -158,7 +158,7 @@ barbican container create --name='tls_container2' --type='certificate' --secret=
                 <codeph>lbaas-listener-create</codeph> command and giving the listener the name of
                 the load balancer, the protocol, the protocol port, the name for the listener, the default 
                 TLS container and the SNI container.
-                <codeblock>neutron lbaas-listener-create --loadbalancer lb1 --protocol-port 444 --protocol TERMINATED_HTTPS --name sni_listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}') --sni-container-refs $(barbican container list | awk '/ tls_container2 / {print $2}')</codeblock>              
+                <codeblock>neutron lbaas-listener-create --loadbalancer lb1 --protocol-port 444 --protocol TERMINATED_HTTPS --name sni_listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}') --sni-container-refs $(barbican container list | awk '/ tls_container2 / {print $2}’</codeblock>              
               </li>
             </ol>
           </li>
@@ -244,13 +244,13 @@ $ ./webserv.sh</codeblock></li>
             services.<codeblock>$ export no_proxy=$no_proxy,10.1.0.7
               
 ## Curl the VIP
-$ curl -k 10.1.0.7
+$ curl 10.1.0.7
 Welcome to 10.1.0.4
              
-$ curl -k 10.1.0.7
+$ curl 10.1.0.7
 Welcome to 10.1.0.5
               
-$ curl -k 10.1.0.7
+$ curl 10.1.0.7
 Welcome to 10.1.0.4</codeblock></li>
         </ol>
       </sectiondiv>
@@ -259,7 +259,7 @@ Welcome to 10.1.0.4</codeblock></li>
         <p><b>Verify SNI</b></p>
         <p>You can verify SNI by running the following command from a node with access to the private network.
           You can get the VIP from the neutron <codeph>lbaas-loadbalancer-list</codeph> for LBaaS v2.</p>
-        <codeblock>openssl s_client -servername test2@stacme.com -connect &lt;vip of lb&gt;:44</codeblock>
+        <codeblock>openssl s_client -servername test2@stacme.com -connect &lt;vip of lb&gt;:444</codeblock>
         <p>Certificate information will print to the screen. You should verify that the CN matches
           the CN you passed to <codeph>-servername</codeph>. In the example below the CN matches the
           servername passed from above.
