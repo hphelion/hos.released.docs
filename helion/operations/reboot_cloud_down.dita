@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="stop_restart">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Bringing Down Your Entire Cloud</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Bringing Down Your Cloud: Services Down
+    Method</title>
   <body>
-    <!-- ONLY WORKS in HOS 2.1.2 and LATER -->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <p>When you need to bring back your cloud and restart services, whether because you
-      intentionally powered down or because you lost power, follow the steps here to safely restart
-      your cloud. If you also lost data, config, or everything, visit the backup and restore pages
-      first at <xref href="../bura/bura_overview.dita#bura_overview">Backing up and Restoring Your
-        Data</xref>.</p>
-    <p>
+    <section id="about">
+      <p>If you have a planned maintenance and need to bring down your entire cloud and restart
+        services, follow the steps here to safely restart your cloud. Be mindful that this method
+        will bring down all of your services. If you wish to use a method utilizing rolling reboots
+        where your cloud services will continue running then see <xref href="reboot_cloud_rolling.dita"
+        />.</p>
+      <p>If you wish to do any backups prior to these steps, visit the backup and restore pages
+        first at <xref href="../bura/bura_overview.dita"/>.</p>
+    </section>
+    <section id="steps"><title>Restarting Your Cloud Environment</title>
+      <p>You will do the following steps from your lifecycle manager.</p>
       <ol>
-        <li> If you are shutting down the cluster, in scratch/ansible/next/hos/ansible run hlm-stop
+        <li>If you are shutting down the cluster, run the hlm-stop playbook:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-stop.yml</codeblock>
-        </li>
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml</codeblock></li>
         <li>If necessary, power up your
           nodes<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts bm-power-up.yml </codeblock></li>
+ansible-playbook -i hosts/verb_hosts bm-power-up.yml</codeblock></li>
         <li>Next, run hlm-start
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml </codeblock>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml</codeblock>
         </li>
         <li> If RabbitMQ fails, run
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -38,8 +42,8 @@ ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml </codeblock>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
         </li>
-        <li>If any services did not start properly, see <xref
-            href="start_stop_services.dita#stopStartSvcs">Starting and Stopping Services</xref></li>
+        <li>If any services did not start properly, see <xref href="start_stop_services.dita"
+            >Starting and Stopping Services</xref></li>
         <li>If any nodes fail, see the node maintenance documents: <xref
             href="recovering_nodes.dita"/></li>
         <li>If necessary, run hlm-start again
@@ -52,6 +56,6 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
         </li>
         <li>Repeat any steps as necessary.</li>
       </ol>
-    </p>
+    </section>
   </body>
 </topic>
