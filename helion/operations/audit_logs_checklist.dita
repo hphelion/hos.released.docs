@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_enable_audit_logs">
+  <title>Audit Logging Checklist</title>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <p>Before enabling audit logging, make sure you understand how much disk space you will need, and configure the disks that will store the logging data. Use the following table to complete these tasks:</p>
+    
+    <section id="audit_log_checklist">
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="table_ckx_rd4_ht">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="25pt"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>&#9744;</entry>
+                <entry>Item</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_FAQ">Read the FAQ</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_disk_reqs">Calculate disk requirements</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_add_disks">Add disks to the controller nodes</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_update_disks">Update the disk templates</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_save_update_disks">Save your changes</xref></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+    </section>
+    
+    <p>Click on an item in the checklist for more information on how to complete the task.</p>
+    
+    <section id="audit_FAQ">
+     <title>Frequently Asked Questions</title>
+      <dl>
+        <dlentry>
+          <dt>How are audit logs generated?</dt>
+          <dd>The audit logs are created by services running in the cloud management controller nodes. The events that create auditing entries are formatted using a structure that is complaint with Cloud Auditing Data Federation (CADF) policies. The formatted audit entries are then saved to disk files. For more information, see the Cloud Auditing Data Federation Website.</dd>
+        </dlentry>
+        <dlentry>
+          <dt>Where are audit logs stored?</dt>
+          <dd>The audit logs are stored on the management controller nodes in the following partition:
+            /var/audit
+            This is the default name for the audit partition. If this needs to be changed, you must edit the configuration file where this is set. 
+            The audit log for each service is stored in a file under the service’s directory. For example, all Nova audit logs are stored by default in the following file: /var/audit/nova/nova-audit.log </dd>
+        </dlentry>
+        <dlentry>
+          <dt>Are audit logs centrally stored?</dt>
+          <dd>No. Centralized logging is not enabled for audit logs because they are more sensitive than service logs. All auditing log files should be stored in separate indices with access controls enabled.</dd>
+        </dlentry>
+        <dlentry>
+          <dt>How long are audit log files retained?</dt>
+          <dd>Audit logs are retained as long as there is available space in the audit partition, for example in /var/audit. Due to security compliance regulations, audit log files typically have longer retention periods. For this reason, audit logs are not included in the default log rotate configuration. It is recommended that you do not configure audit log files to be rotated until after you ensure that sufficient retention or offline backup measures are in place.</dd>
+        </dlentry>
+        <dlentry>
+          <dt>Do I lose audit data if a management controller node goes down?</dt>
+          <dd>Yes. For this reason, it is strongly recommended that you back up the audit partition in each of the management controller nodes for protection against any data loss.</dd>
+        </dlentry>
+      </dl>
+    </section>
+    
+    
+    <section id="audit_disk_reqs">
+      <title>Calculate disk requirements</title>
+        <p>Due to security compliance regulations, audit log files typically have longer retention periods. For this reason, you need to ensure that there is enough available space in the audit partition to retain the audit logs for as long as compliance requires. By default, audit logs are stored in the /var/audit. To find the values for the disk calculation, fill out the following table with values from the services you use. Do not fill out the TOTAL3 column yet.</p>
+            <table frame="all" rowsep="1" colsep="1" id="table_calc_disk_size">
+              <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="1*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <colspec colname="c4" colnum="4" colwidth="1*"/>
+                <colspec colname="c5" colnum="5" colwidth="1*"/>
+                <thead>
+                  <row>
+                    <entry>Service</entry>
+                    <entry>Peak Size</entry>
+                    <entry>Compression %</entry>
+                    <entry>Number of Days</entry>
+                    <entry>TOTAL 3</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>Cinder</entry>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                  </row>
+                  <row>
+                    <entry>Glance</entry>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                  </row>
+                  <row>
+                    <entry>Heat</entry>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                  </row>
+                  <row>
+                    <entry>Ironic</entry>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                  </row>
+                  <row>
+                    <entry>Neutron</entry>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                  </row>
+                  <row>
+                    <entry>Nova</entry>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                  </row>
+                  <row>
+                    <entry>USAN</entry>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                  </row>
+                </tbody>
+              </tgroup>
+          </table>
+          
+      <p>Calculating disk size uses the following formula:</p>
+<dl>
+  <dlentry>
+    <dt>Estimated size =</dt>
+    <dd>Peak size + (peak size * compression % * number of days)</dd>
+  </dlentry>
+</dl>
+ 
+ <p>To calculate your disk space needs:</p>
+          <ol>
+            <li>Fill in the blanks below and perform the calculation for one of the services you are using:
+            <table frame="all" rowsep="1" colsep="1" id="table_calc_1disk_size">
+              <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="1*"/>
+                <colspec colname="c2" colnum="2" colwidth="1*"/>
+                <colspec colname="c3" colnum="3" colwidth="1*"/>
+                <colspec colname="c4" colnum="4" colwidth="1*"/>
+                <colspec colname="c5" colnum="5" colwidth="1*"/>
+                <thead>
+                  <row>
+                    <entry>Peak Size +</entry>
+                    <entry>(Peak Size *</entry>
+                    <entry>Compression % *</entry>
+                    <entry>Number of Days)</entry>
+                    <entry>= TOTAL 1</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                    <entry/>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table>
+            </li>
+            <li>It is recommended that you add an additional 25% of the total disk space to allow for growth:
+            <codeblock>Total1 * .25 = Total2</codeblock>
+            </li>
+            <li>
+              To find the required space for this service, add TOTAL1 to TOTAL2.
+              <codeblock>TOTAL 3 = TOTAL1 + TOTAL2</codeblock>
+            </li>
+            <li>Record TOTAL 3 in the corresponding column of the above table.</li>
+            <li>Repeat these steps for each service in the table that you use and record the totals.</li>
+            <li>Add up all of the values in the TOTAL 3 column to find the disk requirement.</li>
+          </ol>
+        
+        <p>For example, using the following values:</p>
+          <table frame="all" rowsep="1" colsep="1" id="table_calc_ex">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <colspec colname="c3" colnum="3" colwidth="1*"/>
+              <colspec colname="c4" colnum="4" colwidth="1*"/>
+              <colspec colname="c5" colnum="5" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Service</entry>
+                  <entry>Peak Size</entry>
+                  <entry>Compression %</entry>
+                  <entry>Number of Days</entry>
+                  <entry>= TOTAL 3</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>Cinder</entry>
+                  <entry>18 MB</entry>
+                  <entry>97 %</entry>
+                  <entry>30 days</entry>
+                  <entry/>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        
+        <p>The estimated size total in this example is calculated as:</p>
+          <ol>
+            <li>For the Cinder service, using the values in the table:
+              <codeblock>18  +	(18  *	.97 *	30)</codeblock>	TOTAL 1 = 541.8 MB</li>
+            <li>Now add the recommended 25% :
+              <codeblock>(541.8 * .25)</codeblock> TOTAL 2 = 135.45 MB</li>
+            <li>Add TOTAL 1 to TOTAL 2: 
+              <codeblock>541.8 + 135.45</codeblock> TOTAL 3 = 677.25
+            </li>
+            <li>Now you can add TOTAL 3 to the table.</li>
+          </ol>
+          <table frame="all" rowsep="1" colsep="1" id="table_calc_ex2">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <colspec colname="c3" colnum="3" colwidth="1*"/>
+              <colspec colname="c4" colnum="4" colwidth="1*"/>
+              <colspec colname="c5" colnum="5" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Service</entry>
+                  <entry>Peak Size</entry>
+                  <entry>Compression %</entry>
+                  <entry>Number of Days</entry>
+                  <entry>= TOTAL 3</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>Cinder</entry>
+                  <entry>18 MB</entry>
+                  <entry>97 %</entry>
+                  <entry>30 days</entry>
+                  <entry>677.25 MB</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+    </section>
+  
+    <section id="audit_add_disks">
+      <title>Add disks to the controller nodes</title>
+        <p>You need to add disks for the audit log partition to store the data in a secure manner. The steps to complete this task will vary depending on the type of server you are running. Please refer to the manufacturer’s instructions on how to add disks for the type of server node used by the management controller cluster. If you already have extra disks in the controller node, you can identify and unused one and use it for the audit log partition.</p>
+    </section>
+    
+    <section id="audit_update_disks">
+      <title>Update the disk template for the controller nodes</title>
+      <p>To update the disk template you will need to copy templates from the examples folder to the definition folder and then edit the disk controller settings.</p> 
+      
+      <p>To update the disk controller template:</p>
+      <ol>
+        <li>To securely log in to lifecycle manager (deployer node), run:
+          <codeblock>$ ssh &lt;lifecycle-manager&gt;</codeblock></li>
+        <li>To copy the example templates folder, run:
+          <codeblock>$ cp -r ~/helion/examples/entry-scale-esx/*  ~/helion/my_cloud/definition/</codeblock>
+          <note type="important">If you have already the required templates in the definition folder, you can skip this step.</note>
+        </li>
+        <li>
+          To change to the data folder, run:
+          <codeblock>$ cd ~/helion/my_cloud/definition/</codeblock>
+        </li>
+        <li>To edit the disks controller settings, open the following file in a text editor:
+          <codeblock>Disks_controller.yml</codeblock>
+          <note type="caution">If you have copied the template files from the mid-scale template folder, you must instead edit: Disks_control_common.yml</note>
+        </li>
+        <li>To update the settings, edit the file to include the following changes:</li>
+      </ol>
+      <table frame="all" rowsep="1" colsep="1" id="table_sett_chg">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="3.88*"/>
+          <thead>
+            <row>
+              <entry>Setting</entry>
+              <entry>Change</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>-name: audit-vg</entry>
+              <entry>Remove the comments markered with a #</entry>
+            </row>
+            <row>
+              <entry>/dev/sdz</entry>
+              <entry>This is the default for the physical volume esttings. Change this to match the
+                disk you added.</entry>
+            </row>
+            <row>
+              <entry>Logical-volumes</entry>
+              <entry>These are preset to optimal defaults. Review the settings to ensure they will
+                work in your environment.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  
+    <section id="audit_save_update_disks">
+      <title>Save your changes</title>
+        <p>To save your changes you will use the GIT repository to add the setup disk files.</p>
+      <p>To save your changes:</p>
+      <ol>
+        <li>To change to the hellion directory, run:
+          <codeblock>$ cd ~/helion</codeblock>
+        </li>
+        <li>To check out a copy of the site, run:
+          <codeblock>$ git checkout site</codeblock>
+        </li>
+        <li>To add the new and updated files, run:
+          <codeblock>$ git add -A</codeblock>
+        </li>
+        <li>To verify the files are added, run:
+          <codeblock>$ git status</codeblock>
+        </li>
+        <li>To commit your changes, run:
+          <codeblock>$ git commit -m “Setup disks for audit logging”</codeblock>
+        </li>
+      </ol>
+    </section>
+  </body>
+</topic>
