@@ -6,340 +6,223 @@
   <body>    <p conkeyref="HOS-conrefs/applies-to"/>
     
 
-<section><title>
-
-Keystone2Keystone Federation Service Setup Instructions</title>
-
-This document is to show step-by-step configuration for setting up Keystone as an Identity Provider (IDP) and anther Keystone as a Service Provider (SP). If 
-you are looking for instructions for the downstream Capstone, please visit this link -
-
-
-K2K Federation Service Setup for Capstone Instructions</section>
+<section><title> Keystone to Keystone federation service setup</title> This document explains the
+      configuration required to set up one Keystone instance as an identity provider (IdP) and
+      another as a service provider (SP). </section>
 <section><title>Requirements</title>
 <ul><li>Apache 2.4.7
       </li><li>Shibboleth 2.5.2
       </li><li>Keystone Juno release
-      </li><li>Assuming IDP is setup on the IP 16.103.149.35, referred to as KEYSTONE_IDP_HOST below
-      </li><li>Assuming SP is setup on the IP 16.103.150.129, referred to as KEYSTONE_SP_HOST below
-  </li></ul>
+      </li><li>Assuming the IdP is set up on the IP 16.103.149.35, referred to as KEYSTONE_IDP_HOST below </li><li>Assuming the service provider is set up on the IP 16.103.150.129, referred to as
+          KEYSTONE_SP_HOST below </li></ul>
 </section>
 
-<section><title>Configure Keystone for Federation as SP</title>
-<p><b>Run Keystone under Apache</b></p>
-<ol>
-    <li>Copy 
-      &lt;path_to_keystone>/keystone/httpd/wsgi-keystone.conf to /etc/apache2/sites-available
-    </li><li>Create a directory /var/www/cgi-bin/keystone and create a "main" and "admin" softlinks of keystone.py in this directory: 
-         ln -s &lt;path_to_keystone>/keystone/httpd/keystone.py main
-         ln -s &lt;path_to_keystone>/keystone/httpd/keystone.py admin
-    </li><li>Make sure keystone.db has ‘write’ privilege as well as it’s parent directory. ("chmod 666 keystone.db")</li></ol>
-
-<p><b>Configure Shibboleth</b></p>
-<ol><li>Create a directory /etc/apache2/ssl
-      </li><li>Generate a keypair named apache.key,
-        “openssl genrsa -out apache.key 2048”
-      </li><li>Generate a certificate request named apache.csr,
-        “openssl req -new -key apache.key -out apache.csr”
-      </li><li>Make sure to input as Common Name the IP of the SP server
-      </li><li>Generate a self signed certificate named apache.cer  
-        “openssl x509 -req -days 3650 -in apache.csr -signkey apache.key -out apache.cer”
-      </li><li>Edit /etc/shibboleth/shibboleth2.xml to use SP’s IP and IDP’s IP and point to the location where the key and certificate are. 
-    Look at the attached shibboleth2.xml as an example. And the following are the sample changes need to be made in the file –
-
-     
-
-    <codeblock>&lt;ApplicationDefaults entityID="https://KEYSTONE_SP_HOST/shibboleth">
-
+<section><title>Configure Keystone for federation as a service provider</title>
+      <p><b>Run Keystone under Apache</b></p>
+      <ol>
+        <li>Copy &lt;path_to_keystone>/keystone/httpd/wsgi-keystone.conf to
+          /etc/apache2/sites-available </li>
+        <li>Create a directory /var/www/cgi-bin/keystone and create a "main" and "admin" softlinks
+          of keystone.py in this directory:
+          <codeblock>ln -s &lt;path_to_keystone>/keystone/httpd/keystone.py
+          main ln -s &lt;path_to_keystone>/keystone/httpd/keystone.py admin</codeblock>
+        </li>
+        <li>Make sure keystone.db and its parent directory have write privileges
+          <codeblock>chmod 666  keystone.db</codeblock></li>
+      </ol>
+      <p><b>Configure Shibboleth</b></p>
+      <ol>
+        <li>Create a directory called ssl here: /etc/apache2/ssl </li>
+        <li>Generate a keypair named apache.key of length
+          2048<codeblock>openssl genrsa -out apache.key 2048</codeblock>
+        </li>
+        <li>Generate a certificate request named apache.csr
+          <codeblock>openssl req -new -key apache.key -out apache.csr</codeblock>
+        </li>
+        <li>Make sure to input as Common Name the IP of the service provider server </li>
+        <li>Generate a self signed certificate named apache.cer
+          <codeblock>openssl x509 -req -days 3650 -in apache.csr -signkey apache.key -out apache.cer</codeblock>
+        </li>
+        <li>Edit /etc/shibboleth/shibboleth2.xml to use the service provider’s IP and the IdP’s IP
+          and point to the location where the key and certificate are. See the example below for the
+          sample changes needed:
+          <codeblock>&lt;ApplicationDefaults entityID="https://KEYSTONE_SP_HOST/shibboleth">
     &lt;SSO entityID="https://KEYSTONE_IDP_HOST/v3/OS-FEDERATION/saml2/idp" ECP="true">
-
         SAML2 SAML1
-
     &lt;/SSO>
-
     &lt;MetadataProvider type="XML" file="/etc/keystone/saml2_idp_metadata.xml"/>
-
     &lt;CredentialResolver type="File" key="/etc/apache2/ssl/apache.key" certificate="/etc/apache2/ssl/apache.cer"/>  </codeblock>
-
-     
-
-     
-
-      </li><li>Setup the mapping in /etc/shibboleth/attribute-map.xml and add the following –
-
-    <codeblock>&lt;Attribute name="openstack_user" id="openstack_user"/> 
-
-    &lt;Attribute name="openstack_roles" id="openstack_roles"/> 
-
-    &lt;Attribute name="openstack_project" id="openstack_project"/>  </codeblock>
-      </li><li>Enable debug log to show Assertions, edit /etc/shibboleth/shibd.logger
-
-        <ol><li>Add a line
-        <codeblock>log4j.category.Shibboleth.SSO.SAML2=DEBUG, shibd_log</codeblock> 
-
-          </li><li>Uncomment the following 2 lines
-
-        <codeblock>log4j.category.OpenSAML.MessageDecoder=DEBUG
-
-        log4j.category.OpenSAML.MessageEncoder=DEBUG</codeblock>  </li></ol>
-
-     
-      </li><li>Restart Shibboleth, <codeblock>service shibd restart</codeblock>
-
-      </li><li>Restart Apache, <codeblock>service apache2 restart</codeblock>  </li></ol>
-
-<p><b>Configure Apache HTTPD for mod_shibboleth</b></p>
-
-    <ol><li>Install Shibboleth, “apt-get install libapache2-mod-shib2”
-
-      </li><li>Add the following to wsgi-keystone.conf
-
-    <codeblock>WSGIScriptAliasMatch ^(/v3/OS-FEDERATION/identity_providers/.*?/protocols/.*?/auth)$ /var/www/keystone/main/$1
+        </li>
+        <li>Set up the mapping in /etc/shibboleth/attribute-map.xml and add the following:
+          <codeblock>&lt;Attribute name="openstack_user" id="openstack_user"/> 
+&lt;Attribute name="openstack_roles" id="openstack_roles"/> 
+&lt;Attribute name="openstack_project" id="openstack_project"/>  </codeblock>
+        </li>
+        <li>Enable the debug log to show Assertions by editing /etc/shibboleth/shibd.logger <ol>
+            <li>Add a line
+              <codeblock>log4j.category.Shibboleth.SSO.SAML2=DEBUG, shibd_log</codeblock>
+            </li>
+            <li>Uncomment the following two lines
+              <codeblock>log4j.category.OpenSAML.MessageDecoder=DEBUG
+log4j.category.OpenSAML.MessageEncoder=DEBUG</codeblock>
+            </li>
+          </ol>
+        </li>
+        <li>Restart Shibboleth<codeblock>service shibd restart</codeblock>
+        </li>
+        <li>Restart Apache<codeblock>service apache2 restart</codeblock>
+        </li>
+      </ol>
+      <p><b>Configure Apache HTTPD for mod_shibboleth</b></p>
+      <ol>
+        <li>Install Shibboleth <codeblock>apt-get install libapache2-mod-shib2</codeblock></li>
+        <li>Add the following to wsgi-keystone.conf
+          <codeblock>WSGIScriptAliasMatch ^(/v3/OS-FEDERATION/identity_providers/.*?/protocols/.*?/auth)$ /var/www/keystone/main/$1
 
     &lt;Location /Shibboleth.sso>
-
         SetHandler shib
-
     &lt;/Location>
 
     &lt;LocationMatch /v3/OS-FEDERATION/identity_providers/.*?/protocols/saml2/auth>
-
         ShibRequestSetting requireSession 1
-
         AuthType shibboleth
-
         ShibExportAssertion Off
-
         Require valid-user
-
     &lt;/LocationMatch></codeblock>
-
-     
-
-     
-      </li><li>Look at the attached wsgi-keystone_sf.conf as an example.
-      </li><li>Enable wsgi-keystone.conf, “a2ensite wsgi-keystone.conf"
-      </li><li>Enable ssl and shib2 modules, “a2enmod ssl” and “a2enmod shib2”
-
-      </li><li>Restart Apache, <codeblock>service apache2 restart</codeblock>  </li></ol>
-
-<p><b>Enable OS-FEDERATION extension</b></p>
-
-    Add the federation extension driver to the [federation] section in keystone.conf. For example:
-
-    <codeblock>[federation]
-
+        </li>
+        <li>Look at the attached wsgi-keystone_sf.conf as an example. </li>
+        <li>Enable wsgi-keystone.conf<codeblock>a2ensite wsgi-keystone.conf</codeblock>
+        </li>
+        <li>Enable the ssl and shib2 modules<codeblock>a2enmod ssl” and “a2enmod shib2</codeblock>
+        </li>
+        <li>Restart Apache<codeblock>service apache2 restart</codeblock>
+        </li>
+      </ol>
+      <p><b>Enable the OS-FEDERATION extension</b></p> Add the federation extension driver to the
+      [federation] section in keystone.conf. For example: <codeblock>[federation]
     driver = keystone.contrib.federation.backends.sql.Federation</codeblock>
-
-     
-
-     
-
-     <ol>
-
-    <li>Add the saml2 authentication method to the [auth] section in keystone.conf:
-
-    <codeblock>[auth]
-
+      <ol>
+        <li>Add the saml2 authentication method to the [auth] section in keystone.conf:
+          <codeblock>[auth]
     methods = external,password,token,saml2
-
     saml2 = keystone.auth.plugins.mapped.Mapped</codeblock>
-
-     
-
-     
-
-     
-
-      </li><li>Add the federation_extension middleware to the api_v3 pipeline in keystone-paste.ini. 
-    This must be added after json_body and before the last entry in the pipeline. For example:
-
-    <codeblock>[pipeline:api_v3]
-
+        </li>
+        <li>Add the federation_extension middleware to the api_v3 pipeline in keystone-paste.ini.
+          This must be added after json_body and before the last entry in the pipeline. For example:
+          <codeblock>[pipeline:api_v3]
     pipeline = sizelimit url_normalize build_auth_context token_auth admin_token_auth xml_body_v3 json_body ec2_extension_v3 s3_extension 
 simple_cert_extension revoke_extension federation_extension service_v3</codeblock>
-
-      </li><li>Create the federation extension tables if using the provided SQL backend. For example:
-
-     
-
-    <codeblock>./bin/keystone-manage db_sync --extension federation</codeblock></li></ol>
-
-<p><b>Create Trust between SP and IdP</b></p>
-
-    Copy saml2_idp_metadata.xml from IDP to SP at /etc/keystone and
-    References the location in /etc/shibboleth/shibboleth2.xml. Look at the attach example.
-    Run ‘sudo service shibd restart’
-</section>
-<section><title>Configure Keystone for Federation as IDP</title>
-
-<p><b>Run Keystone under Apache</b></p>
-
-    <ol><li>Copy &lt;path_to_keystone>/keystone/httpd/wsgi-keystone.conf to /etc/apache2/sites-available
-      </li><li>Create a directory /var/www/cgi-bin/keystone and create a "main" and "admin" softlink of keystone.py in this directory:
-        ln -s &lt;path_to_keystone>/keystone/httpd/keystone.py main
-        ln -s &lt;path_to_keystone>/keystone/httpd/keystone.py admin
-    Make sure keystone.db has ‘write’ privilege as well as it’s parent directory. ("chmod 666 keystone.db")  </li></ol>
-
-<p><b>Configure Apache Vhost</b></p>
-
-    <ol><li>Create a directory /etc/keystone/ssl
-       </li><li>Generate a keypair named idp.key,
-        “openssl genrsa -out idp.key 2048”
-     </li><li>Generate a certificate request named idp.csr,
-        “openssl req -new -key idp.key -out idp.csr”
-      </li><li>Make sure to input as Common Name the IP of the IDP server
-      </li><li>Generate a self signed certificate named idp.cer  
-        “openssl x509 -req -days 3650 -in idp.csr -signkey idp.key -out idp.cer”
-      </li><li>Open the Apache vhost file /etc/apache2/sites-available/wsgi-keystone.conf
-
-      </li><li>The file wsgi-keystone.conf should have the following -
-
-    (Make sure to point to the exact location of the key and certificate you just created)
-
-    <codeblock>&lt;VirtualHost *:443>
-
+        </li>
+        <li>Create the federation extension tables if using the provided SQL back end. For example:
+          <codeblock>./bin/keystone-manage db_sync --extension federation</codeblock></li>
+      </ol>
+      <p><b>Create Trust between the service provider and the IdP</b></p>Copy saml2_idp_metadata.xml
+      from the IdP to the service provider at /etc/keystone and References the location in
+      /etc/shibboleth/shibboleth2.xml. Look at the attach example. Run
+      <codeblock>sudo service shibd restart</codeblock>
+    </section>
+<section><title>Configure Keystone for federation as an IdP</title>
+      <p><b>Run Keystone under Apache</b></p>
+      <ol>
+        <li>Copy &lt;path_to_keystone>/keystone/httpd/wsgi-keystone.conf to
+          /etc/apache2/sites-available </li>
+        <li>Create a directory /var/www/cgi-bin/keystone and create a "main" and "admin" softlink of
+          keystone.py in this directory: ln -s &lt;path_to_keystone>/keystone/httpd/keystone.py main
+          ln -s &lt;path_to_keystone>/keystone/httpd/keystone.py admin Make sure keystone.db has
+          ‘write’ privilege as well as it’s parent directory. ("chmod 666 keystone.db") </li>
+      </ol>
+      <p><b>Configure Apache Vhost</b></p>
+      <ol>
+        <li>Create a directory /etc/keystone/ssl </li>
+        <li>Generate a keypair named idp.key
+          <codeblock>openssl genrsa -out idp.key 2048</codeblock></li>
+        <li>Generate a certificate request named idp.csr
+          <codeblock>openssl req -new -key idp.key -out
+          idp.csr</codeblock>
+        </li>
+        <li>Make sure to input the the IP of the IdP server as the Common Name </li>
+        <li>Generate a self signed certificate named idp.cer
+          <codeblock>openssl x509 -req -days 3650 -in
+          idp.csr -signkey idp.key -out idp.cer</codeblock>
+        </li>
+        <li>Open the Apache virtual hosts file /etc/apache2/sites-available/wsgi-keystone.conf </li>
+        <li>The file wsgi-keystone.conf should have the following. Make sure to point to the exact
+          location of the key and certificate you just
+          created:<codeblock>&lt;VirtualHost *:443>
         ServerAdmin root@localhost
-
         WSGIScriptAlias / /var/www/cgi-bin/keystone/main
-
         ErrorLog /var/log/apache2/keystone.log
-
         LogLevel debug
-
         CustomLog /var/log/apache2/access.log combined
-
         SSLEngine on
-
         SSLCertificateFile    /etc/keystone/ssl/idp.cer
-
         SSLCertificateKeyFile /etc/keystone/ssl/idp.key
-
         &lt;Location "/keystone">
-
             ##NSSRequireSSL
-
             Authtype none
-
         &lt;/Location>
-
-    &lt;/VirtualHost></codeblock>
-
-     
-
-     
-      </li><li>Look at the attached wsgi-keystone_idp.conf as an example.
-      </li><li>Enable wsgi-keystone.conf, “a2ensite wsgi-keystone.conf"
-      </li><li>Enable ssl and shib2 modules, “a2enmod ssl” and “a2enmod shib2”
-
-      </li><li>Restart Apache, <codeblock>service apache2 restart</codeblock></li></ol>
-
-<p><b>Enable OS-FEDERATION extension</b></p>
-
-      <ol><li>Add the federation extension driver to the [federation] section in keystone.conf. For example:
-
-    <codeblock>[federation]
-
+&lt;/VirtualHost></codeblock>
+        </li>
+        <li>Look at the attached wsgi-keystone_idp.conf as an example. </li>
+        <li>Enable wsgi-keystone.conf <codeblock>a2ensite wsgi-keystone.conf</codeblock>
+        </li>
+        <li>Enable ssl and shib2 modules, “a2enmod ssl” and “a2enmod shib2” </li>
+        <li>Restart Apache<codeblock>service apache2 restart</codeblock></li>
+      </ol>
+      <p><b>Enable the OS-FEDERATION extension</b></p>
+      <ol>
+        <li>Add the federation extension driver to the [federation] section in keystone.conf. For
+          example:
+          <codeblock>[federation]
     driver = keystone.contrib.federation.backends.sql.Federation</codeblock>
-
-     
-
-     
-
-      </li><li>Add the saml2 authentication method to the [auth] section in keystone.conf:
-
-    <codeblock>[auth]
-
+        </li>
+        <li>Add the saml2 authentication method to the [auth] section in keystone.conf:
+          <codeblock>[auth]
     methods = external,password,token,saml2
-
     saml2 = keystone.auth.plugins.mapped.Mapped</codeblock>
-
-     
-
-     
-
-     
-
-      </li><li>Add the federation_extension middleware to the api_v3 pipeline in keystone-paste.ini (if not already there). This must be added after 
-json_body and before the last entry in the pipeline. For example:
-
-    <codeblock>[pipeline:api_v3]
-
-    pipeline = sizelimit url_normalize build_auth_context token_auth admin_token_auth xml_body_v3 json_body ec2_extension_v3 s3_extension 
+        </li>
+        <li>Add the federation_extension middleware to the api_v3 pipeline in keystone-paste.ini (if
+          not already there). This must be added after json_body and before the last entry in the
+          pipeline. For example:
+          <codeblock>[pipeline:api_v3]
+pipeline = sizelimit url_normalize build_auth_context token_auth admin_token_auth xml_body_v3 json_body ec2_extension_v3 s3_extension 
 simple_cert_extension revoke_extension federation_extension service_v3</codeblock>
-
-     
-
-     
-
-     
-
-      </li><li>Create the federation extension tables if using the provided SQL backend. For example:
-
-    <codeblock>./bin/keystone-manage db_sync --extension federation</codeblock>
-
- 
-<p><b>Add Capabilities to Sign/Generate SAML Assertions</b></p>
-
-    Open /etc/keystone/keystone.conf
-
-    Add the following within the [saml] area –
-
-    <codeblock>[saml]
-
+        </li>
+        <li>Create the federation extension tables if using the provided SQL backend. For example: <codeblock>./bin/keystone-manage db_sync --extension federation</codeblock>
+          <p><b>Add the ability to sign and generate SAML assertions</b></p> Open
+          /etc/keystone/keystone.conf. Add the following within the [saml] area:
+          <codeblock>[saml]
     certfile=/etc/keystone/ssl/idp.cer
-
     keyfile=/etc/keystone/ssl/idp.key
-
     idp_entity_id=https://KEYSTONE_IDP_HOST/v3/OS-FEDERATION/saml2/idp
-
     idp_sso_endpoint=https://KEYSTONE_IDP_HOST/v3/OS-FEDERATION/saml2/sso
-
     idp_metadata_path=/etc/keystone/saml2_idp_metadata.xml</codeblock>
+        </li>
+        <li>The following is optional but is advisable to add:
+          <codeblock>idp_organization_name=HP
+idp_organization_display_name=HP Corp.
+idp_organization_url=www.hp.com
+idp_contact_company=HP
+idp_contact_name=Sam
+idp_contact_surname=Leong
+idp_contact_email=sam@hp.com
+idp_contact_telephone=555-55-5555
+idp_contact_type=technical</codeblock>
+        </li>
+      </ol>
+      <p><b>Generate metadata</b></p> In order to create a trust between the IdP and the service
+      provider, metadata must be exchanged.
+      <codeblock>keystone-manage saml_idp_metadata > /etc/keystone/saml2_idp_metadata.xml</codeblock>The
+      file location should match the value of the configuration option idp_metadata_path that was
+      assigned in the previous section. This file will be copied over to the service
+      provider.</section>
 
-       
-
-     
-
-      </li><li>The following is optional but is advised to add –
-
-    <codeblock>idp_organization_name=HP
-
-    idp_organization_display_name=HP Corp.
-
-    idp_organization_url=www.hp.com
-
-    idp_contact_company=HP
-
-    idp_contact_name=Sam
-
-    idp_contact_surname=Leong
-
-    idp_contact_email=sam@hp.com
-
-    idp_contact_telephone=555-55-5555
-
-    idp_contact_type=technical</codeblock> </li></ol>
-
-<p><b>Generate Metadata</b></p>
-
-In order to create a trust between the Id and SP, metadata must be exchanged.
-
-<codeblock>keystone-manage saml_idp_metadata > /etc/keystone/saml2_idp_metadata.xml</codeblock>
-
-The file location should match the value of the configuration option idp_metadata_path that was assigned in the previous section. And this file will be 
-copied over to the SP.</section>
-
-<section><title>Make Keystone IDP and SP Know Each Other</title>
-<p><b>Add a SP Region in IDP</b></p>
-     - for Juno release only. For Kilo and onwards see step below
-
-    <ol><li>URL: POST https://KEYSTONE_IDP_HOST/v3/regions
-
-     
-
-      </li><li>Body:
-
-    <codeblock>{
+<section><title>Tell the IdP and the service provider about each other</title>
+      <p><b>Add a service provider region in the IdP</b></p> - for Juno release only. For Kilo and
+      onwards see step below <ol>
+        <li>URL: POST https://KEYSTONE_IDP_HOST/v3/regions </li>
+        <li>Body:
+          <codeblock>{
 
         "region": {
 
@@ -357,19 +240,15 @@ copied over to the SP.</section>
 
         }
 
-    }</codeblock></li></ol>
-
-<p><b>Add a Service Providers in IDP</b></p>
-     - for Kilo release and onwards. For Juno release perform step above.
-
-    <ol><li>URL: PUT https://KEYSTONE_IDP_HOST/v3/OS-FEDERATION/service_providers/sam_sp, where sam_sp is the Service Provider's ID and keystone-idp in the 
-body of the request is the Identity Provider ID.
-
-     
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock></li>
+      </ol>
+      <p><b>Add a service provider in the IdP</b></p> - for Kilo release and onwards. For Juno
+      release perform step above. <ol>
+        <li>URL: PUT https://KEYSTONE_IDP_HOST/v3/OS-FEDERATION/service_providers/sam_sp, where
+          sam_sp is the Service Provider's ID and keystone-idp in the body of the request is the
+          Identity Provider ID. </li>
+        <li>Body:
+          <codeblock>{
 
         "service_provider": {
 
@@ -381,15 +260,14 @@ body of the request is the Identity Provider ID.
 
         }
 
-    }</codeblock>  </li></ol>
-
-<p><b>Add a Domain in IDP</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_IDP_HOST/v3/domains
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a domain in the IdP</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_IDP_HOST/v3/domains </li>
+        <li>Body:
+          <codeblock>{
 
         "domain": {
 
@@ -399,21 +277,14 @@ body of the request is the Identity Provider ID.
 
         }
 
-    }</codeblock>  </li></ol>
-
-     
-
-     
-
-<p><b>Add a Project in IDP</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_IDP_HOST/v3/projects
-
-     
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a project in the IdP</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_IDP_HOST/v3/projects </li>
+        <li>Body:
+          <codeblock>{
 
         "project": {
 
@@ -425,38 +296,28 @@ body of the request is the Identity Provider ID.
 
         }
 
-    }</codeblock>  </li></ol>
-
-     
-
-     
-
-<p><b>Add a Role in IDP</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_IDP_HOST/v3/roles
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a role in the IdP</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_IDP_HOST/v3/roles </li>
+        <li>Body:
+          <codeblock>{
 
         "role": {
 
             "name": "roleA"
 
         }
-    }</codeblock>  </li></ol>
-
-     
-
-     
-
-<p><b>Add an User in IDP</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_IDP_HOST/v3/users
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a user in the IdP</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_IDP_HOST/v3/users </li>
+        <li>Body:
+          <codeblock>{
 
         "user": {
 
@@ -482,30 +343,21 @@ body of the request is the Identity Provider ID.
 
         }
 
-    }</codeblock>  </li></ol>
-
-     
-
-     
-
-     
-
-     
-
-<p><b>Assign a User a Role on a Project</b></p>
-
-    <ol><li>URL: PUT https://KEYSTONE_IDP_HOST/v3/projects/&lt;projectA_id>/users/&lt;userA_id>/roles/&lt;roleA_id>
-
-      </li><li>Body:
-    <codeblock>None</codeblock>  </li></ol>
-
-<p><b>Add a Domain in SP</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_SP_HOST/v3/domains
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Assign a user a role on a project</b></p>
+      <ol>
+        <li>URL: PUT
+          https://KEYSTONE_IDP_HOST/v3/projects/&lt;projectA_id>/users/&lt;userA_id>/roles/&lt;roleA_id> </li>
+        <li>Body: <codeblock>None</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a domain in the service provider</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_SP_HOST/v3/domains </li>
+        <li>Body:
+          <codeblock>{
 
         "domain": {
 
@@ -515,15 +367,14 @@ body of the request is the Identity Provider ID.
 
         }
 
-    }</codeblock>  </li></ol>
-
-<p><b>Add a Project in SP</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_SP_HOST/v3/projects
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a project in the service provider</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_SP_HOST/v3/projects </li>
+        <li>Body:
+          <codeblock>{
 
         "project": {
 
@@ -535,15 +386,14 @@ body of the request is the Identity Provider ID.
 
         }
 
-    }</codeblock>  </li></ol>
-
-<p><b>Add a Role in SP</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_SP_HOST/v3/roles
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a role in the service provider</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_SP_HOST/v3/roles </li>
+        <li>Body:
+          <codeblock>{
 
         "role": {
 
@@ -551,15 +401,14 @@ body of the request is the Identity Provider ID.
 
         }
 
-    }</codeblock>  </li></ol>
-
-<p><b>Add a Group in SP</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_SP_HOST/v3/groups
-
-      </li><li>Body:
-
-   <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a group in the service provider</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_SP_HOST/v3/groups </li>
+        <li>Body:
+          <codeblock>{
 
         "group": {
 
@@ -571,24 +420,21 @@ body of the request is the Identity Provider ID.
 
         }
 
-    }</codeblock>  </li></ol>
-
-<p><b>Assign a Group with a Role on a Project</b></p>
-
-    <ol><li>URL: PUT 
-
-    https://KEYSTONE_SP_HOST/v3/projects/&lt;projectA_id>/groups/&lt;groupA_id>/roles/&lt;roleA_id>
-
-      </li><li>Body:
-    <codeblock>None</codeblock>  </li></ol>
-
-<p><b>Add a Mapping in SP</b></p>
-
-    <ol><li>URL: PUT https://KEYSTONE_SP_HOST/v3/OS-FEDERATION/mappings/keystone-idp-mapping
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Assign a group with a role on a project</b></p>
+      <ol>
+        <li>URL: PUT
+          https://KEYSTONE_SP_HOST/v3/projects/&lt;projectA_id>/groups/&lt;groupA_id>/roles/&lt;roleA_id> </li>
+        <li>Body: <codeblock>None</codeblock>
+        </li>
+      </ol>
+      <p><b>Add a mapping in the service provider</b></p>
+      <ol>
+        <li>URL: PUT https://KEYSTONE_SP_HOST/v3/OS-FEDERATION/mappings/keystone-idp-mapping </li>
+        <li>Body:
+          <codeblock>{
 
          "mapping": {
 
@@ -636,70 +482,52 @@ body of the request is the Identity Provider ID.
 
         }
     }</codeblock>
-
-     
-
-     
-
-      </li><li>The user who sends the assertions needs to be included in the mapping.  </li></ol>
-
-<p><b>Add an IDP in SP</b></p>
-
-    <ol><li>URL: PUT https://KEYSTONE_SP_HOST/v3/OS-FEDERATION/identity_providers/keystone-idp
-
-      </li><li>Body:
-
-    <codeblock>{
+        </li>
+        <li>The user who sends the assertions needs to be included in the mapping. </li>
+      </ol>
+      <p><b>Add an IdP in the service provider</b></p>
+      <ol>
+        <li>URL: PUT https://KEYSTONE_SP_HOST/v3/OS-FEDERATION/identity_providers/keystone-idp </li>
+        <li>Body:
+          <codeblock>{
     "identity_provider": {
     "description": "Stores keystone IDP identities.",
     "enabled": true
     }
-    }</codeblock>  </li></ol>
-
-     
-
-     
-
-<p><b>Register a SAML Protocol for the IDP in SP</b></p>
-
-    <ol><li>URL: PUT https://KEYSTONE_SP_HOST/v3/OS-FEDERATION/identity_providers/keystone-idp/protocols/saml2
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+      <p><b>Register a SAML protocol for the IdP in the service provider</b></p>
+      <ol>
+        <li>URL: PUT
+          https://KEYSTONE_SP_HOST/v3/OS-FEDERATION/identity_providers/keystone-idp/protocols/saml2 </li>
+        <li>Body:
+          <codeblock>{
     "protocol": {
     "mapping_id": "keystone-idp-mapping"
     }
-    }</codeblock>  </li></ol>
-
-</section><section><title>Test the Complete Setup</title>
-
-<p><b>Request an Unscoped Token</b></p>
-
-Run the attached python client k2kclient.py by changes the variables defined in __iniit__ and the variable ‘location’ defined in 
-_handle_http_302_ecp_redirect,
-
-an unscoped token will be printed out. 
-
-The python client basically does the following –
-<ol>
-    <li>Creates a client and authenticates to IDP.
-   </li><li>Requests a scoped token from IDP.
-      </li><li>Requests a SAML Assertion from IDP with the scoped token and region Id.
-      </li><li>Transforms the Asssertion into ECP.
-      </li><li>Gets the SP SAML URL from the region.
-      </li><li>Posts the Assertions to SP.
-      </li><li>Redirects the SP authentication URL for an unscoped token.
-      </li><li>Prints out the unscoped token.
-  </li></ol>
-
-<p><b>Request a Scoped Token</b></p>
-
-    <ol><li>URL: POST https://KEYSTONE_SP_HOST/v3/auth/tokens
-
-      </li><li>Body:
-
-    <codeblock>{
+    }</codeblock>
+        </li>
+      </ol>
+    </section><section><title>Test the complete setup</title>
+      <p><b>Request an Unscoped Token</b></p> Run the attached python client k2kclient.py by changes
+      the variables defined in __iniit__ and the variable ‘location’ defined in
+      _handle_http_302_ecp_redirect, an unscoped token will be printed out. The python client
+      basically does the following – <ol>
+        <li>Creates a client and authenticates to the IdP. </li>
+        <li>Requests a scoped token from the IdP. </li>
+        <li>Requests a SAML Assertion from the IdP with the scoped token and region Id. </li>
+        <li>Transforms the Asssertion into ECP. </li>
+        <li>Gets the service provider SAML URL from the region. </li>
+        <li>Posts the Assertions to the service provider. </li>
+        <li>Redirects the service provider authentication URL for an unscoped token. </li>
+        <li>Prints out the unscoped token. </li>
+      </ol>
+      <p><b>Request a scoped token</b></p>
+      <ol>
+        <li>URL: POST https://KEYSTONE_SP_HOST/v3/auth/tokens </li>
+        <li>Body:
+          <codeblock>{
 
        "auth": {
 
@@ -721,9 +549,10 @@ The python client basically does the following –
 
        }
 
-    }</codeblock>  </li></ol>
-
-</section>
+    }</codeblock>
+        </li>
+      </ol>
+    </section>
 
   </body>
 </topic>
