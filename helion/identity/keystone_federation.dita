@@ -161,7 +161,61 @@ keystone_sp_conf:
             # Generate a self-signed certificate named myidp.cer
             openssl x509 -req -days 3650 -in myidp.csr -signkey myidp.key -out myidp.cer</codeblock>
         </li>
+        <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable SP in Keystone -
+          'ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml'</li>
       </ol>
     </section>
+    <section><title>Test it out</title>
+      The attached script k2kclient.py can be used as an example for the end-to-end flows.
+      
+      To run k2kclient.py, please follow the instructions below.
+      <ol><li>There are few parameters need to be changed in the beginning of the script, like 
+      
+        <codeblock># IdP auth URL
+          self.auth_url = "http://idp_host:5000/v3/"
+          self.project_name = "my_project_name"
+          self.project_domain_name = "my_project_domain_name"
+          self.username = "test"
+          self.password = "mypass"
+          self.user_domain_name = "my_domain"
+          # identity provider Id that is defined in the SP config
+          self.idp_id = "my_idp_id"
+          # service provider Id that is defined in the IdP config
+          self.sp_id = "my_sp_id"</codeblock>
+      
+      
+      </li>
+       <li>Install python-keystoneclient with it's dependencies.</li>
+        <li>Run the script 'python k2kclient.py' and an unscoped token will be returned from the Service Provider.</li></ol>
+        
+        At this point, domain or project scope of the unscoped taken can be discovered by sending the following URLs -
+      <codeblock>curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint>:5000/v3/OS-FEDERATION/domains
+        curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint:5000/v3/OS-FEDERATION/projects</codeblock>
+      
+      
+
+    
+    
+    </section>
+    <section><title>Inside Keystone to Keystone Federation</title> K2K federation places a lot of
+      responsibilities, and therefore, control at the end user. The complexity is apparent from the
+      diagram below. <ul>
+        <li> End user must first authenticate to its "home" or local cloud, or local identity
+          provider Keystone to obtain a scoped token. </li>
+        <li>End user need to find out what service providers (or remote clouds) are available to him
+          by querying his local cloud. </li>
+        <li>For a given remote cloud, end user must find out which resources are available to him to
+          querying the remote cloud the "projects he can scope to". </li>
+        <li>In order to talk to the remote cloud, end user must first trade-in, with his local
+          cloud, his local scoped token for SAML2 assertion for the remote cloud. </li>
+        <li>End user presents the SAML2 assertion to the remote cloud. Remote cloud applies its
+          mapping for the incoming SAML2 assertion to map the user to a local ephemeral persona
+          (i.e. groups) and issue an unscoped token. </li>
+        <li>End user query the remote cloud for the list of project he have access to. </li>
+        <li>End user then re-scope its token to a given project. </li>
+        <li>End user have access to the resources own by the project.</li>
+      </ul>
+      <image href="../../media/keystone/Keystone-2-Keystone-Sequence-Generic.png"
+        id="image_ldf_njb_mv"/></section>
   </body>
 </topic>
