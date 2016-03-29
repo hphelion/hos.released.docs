@@ -110,6 +110,18 @@ scheduler_default_filters = AvailabilityZoneFilter,RetryFilter,ComputeFilter,Dis
             <p>If these are not added all image properties will be matched against any similarly
               named aggregate metadata.</p></li>
           <li>Add image properties to images that should be scheduled using the above filter</li>
+          <li>Commit the changes to git:
+            <codeblock>git add -A
+git commit -a -m "editing nova schedule filters"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Run the ready deployment playbook:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Run the Nova reconfigure playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
         </ol>
       </sectiondiv>
       <sectiondiv>
@@ -127,13 +139,25 @@ scheduler_default_filters = AvailabilityZoneFilter,RetryFilter,ComputeFilter,Dis
           <li>There is no additional configuration needed because the following is true: <ol>
               <li>The filter assumes <codeph>:</codeph> is a separator</li>
               <li>The filter will match all simple keys in extra_specs plus all keys with a
-                separator if the prefix is <codeph>aggregate_instance_extra_spec</codeph>s - e.g.
+                separator if the prefix is <codeph>aggregate_instance_extra_specs</codeph> - e.g.
                   <codeph>image_type=RHEL</codeph> and
                   <codeph>aggregate_instance_extra_specs:image_type=RHEL</codeph> will both be
                 matched against aggregate metadata <codeph>image_type=RHEL</codeph></li>
             </ol></li>
           <li>Add <codeph>extra_specs</codeph> to flavors that should be scheduled according to the
             above.</li>
+          <li>Commit the changes to git:
+            <codeblock>git add -A
+git commit -a -m "Editing nova scheduler filters"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Run the ready deployment playbook:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Run the Nova reconfigure playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
         </ol>
       </sectiondiv>
     </section>
