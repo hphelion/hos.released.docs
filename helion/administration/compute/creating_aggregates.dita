@@ -53,66 +53,85 @@
           <codeblock>nova availability-zone-list</codeblock></li>
       </ol>
     </section>
-    
+
     <section id="filters"><title>Using Nova Scheduler Filters</title>
-    
-    
+      <p>The Nova scheduler has two filters that can help with differentiating between different
+        compute hosts that we'll describe here.</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_fq2_jht_lv">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <thead>
+            <row>
+              <entry>Filter</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>AggregateImagePropertiesIsolation</entry>
+              <entry>Isolates compute hosts based on image properties and aggregate metadata. You
+                can use commas to specify multiple values for the same property. The filter will
+                then ensure at least one value matches.</entry>
+            </row>
+            <row>
+              <entry>AggregateInstanceExtraSpecsFilter</entry>
+              <entry>Checks that the aggregate metadata satisfies any extra specifications
+                associated with the instance type. This uses
+                  <codeph>aggregate_instance_extra_specs</codeph></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <sectiondiv>
+        <p><b>Using the AggregateImagePropertiesIsolation Filter</b></p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Edit the <codeph>~/helion/my_cloud/config/nova/nova.conf.j2</codeph> file and add
+              <codeph>AggregateImagePropertiesIsolation</codeph> to the scheduler_filters section.
+            Example below, in bold: <codeblock># Scheduler
+...
+scheduler_available_filters = nova.scheduler.filters.all_filters
+scheduler_default_filters = AvailabilityZoneFilter,RetryFilter,ComputeFilter,DiskFilter,RamFilter,ImagePropertiesFilter,ServerGroupAffinityFilter,ServerGroupAntiAffinityFilter,ComputeCapabilitiesFilter,NUMATopologyFilter,<b>AggregateImagePropertiesIsolation</b>
+...</codeblock>
+            <p>Optionally, you can also add these lines:</p>
+            <codeblock>aggregate_image_properties_isolation_namespace = &lt;a prefix string></codeblock>
+            <codeblock>aggregate_image_properties_isolation_separator = &lt;a separator character></codeblock>
+            (defaults to '.') <p>If these are added, the filter will only match image properties
+              starting with the name space and separator - e.g. setting to
+                <codeph>my_name_space</codeph> and <codeph>:</codeph> would mean the image property
+                <codeph>my_name_space:image_type=RHEL</codeph> matches metadata
+                <codeph>image_type=RHEL</codeph>, but an_<codeph>other=RHEL</codeph> would not be
+              inspected for a match at all.</p>
+            <p>If these are not added all image properties will be matched against any similarly
+              named aggregate metadata.</p></li>
+          <li>Add image properties to images that should be scheduled using the above filter</li>
+        </ol>
+      </sectiondiv>
+      <sectiondiv>
+        <p><b>Using the AggregateInstanceExtraSpecsFilter Filter</b></p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Edit the <codeph>~/helion/my_cloud/config/nova/nova.conf.j2</codeph> file and add
+              <codeph>AggregateInstanceExtraSpecsFilter</codeph> to the scheduler_filters section.
+            Example below, in bold:
+            <codeblock># Scheduler
+...
+scheduler_available_filters = nova.scheduler.filters.all_filters
+scheduler_default_filters = AvailabilityZoneFilter,RetryFilter,ComputeFilter,DiskFilter,RamFilter,ImagePropertiesFilter,ServerGroupAffinityFilter,ServerGroupAntiAffinityFilter,ComputeCapabilitiesFilter,NUMATopologyFilter,<b>AggregateInstanceExtraSpecsFilter</b>
+...</codeblock></li>
+          <li>There is no additional configuration needed because the following is true: <ol>
+              <li>The filter assumes <codeph>:</codeph> is a separator</li>
+              <li>The filter will match all simple keys in extra_specs plus all keys with a
+                separator if the prefix is <codeph>aggregate_instance_extra_spec</codeph>s - e.g.
+                  <codeph>image_type=RHEL</codeph> and
+                  <codeph>aggregate_instance_extra_specs:image_type=RHEL</codeph> will both be
+                matched against aggregate metadata <codeph>image_type=RHEL</codeph></li>
+            </ol></li>
+          <li>Add <codeph>extra_specs</codeph> to flavors that should be scheduled according to the
+            above.</li>
+        </ol>
+      </sectiondiv>
     </section>
-    <table frame="all" rowsep="1" colsep="1" id="table_fq2_jht_lv">
-      <tgroup cols="2">
-        <colspec colname="c1" colnum="1"/>
-        <colspec colname="c2" colnum="2"/>
-        <thead>
-          <row>
-            <entry>Filter</entry>
-            <entry>Description</entry>
-          </row>
-        </thead>
-        <tbody>
-          <row>
-            <entry>AggregateImagePropertiesIsolation</entry>
-            <entry>Isolates compute hosts based on image properties and aggregate metadata. You can
-              use commas to specify multiple values for the same property. The filter will then
-              ensure at least one value matches.</entry>
-          </row>
-          <row>
-            <entry>AggregateInstanceExtraSpecsFilter</entry>
-            <entry>Checks that the aggregate metadata satisfies any extra specifications associated
-              with the instance type. This uses
-              <codeph>aggregate_instance_extra_specs</codeph></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-    <p>Config for AggregateImagePropertiesIsolation :</p>
-    <ul id="ul_l12_zsw_lv">
-      <li>add AggregateImagePropertiesIsolation to scheduler_filters in nova.conf.j2</li>
-      <li>optionally add to nova.conf.j2:<ul id="ul_m12_zsw_lv">
-          <li>aggregate_image_properties_isolation_namespace = &lt;a prefix string></li>
-          <li>aggregate_image_properties_isolation_separator = &lt;a seperator character> (defaults
-            to '.')</li>
-          <li>if these are added the filter will only match image properties starting with the name
-            space and seperateor - e.g. setting to 'my_name_space' and ':' would mean the image
-            property 'my_name_space:image_type=RHEL' matches metadata image_type=RHEL, but
-            an_other=RHEL would not be inspected for a match at all.</li>
-          <li>if these are not added all image properties will be matched against any similarly
-            named aggregate metadata.</li>
-        </ul></li>
-      <li>add image properties to images that should be scheduled using the above filter</li>
-    </ul>
-    <p>Config for AggregateInstanceExtraSpecsFilter :</p>
-    <ul id="ul_n12_zsw_lv">
-      <li>Add AggregateInstanceExtraSpecsFilter to scheduler_filters in nova.conf.j2</li>
-      <li>there is no additional config:<ul id="ul_o12_zsw_lv">
-          <li>the filter assumes ':' is a seperator</li>
-          <li>the filter will match all simple keys in extra_specs + all keys with a sperator if the
-            prefix is 'aggregate_instance_extra_specs' - e.g. 'image_type=RHEL' and
-            'aggregate_instance_extra_specs:image_type=RHEL' will both be matched against aggregate
-            metadata 'image_type=RHEL'</li>
-        </ul></li>
-      <li>add extra_specs to flavors that should be scheduled according to the above</li>
-    </ul>
-    
-    
   </body>
 </topic>
