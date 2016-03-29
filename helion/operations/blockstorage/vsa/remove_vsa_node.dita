@@ -18,18 +18,21 @@
     </section>
     <section id="prereqs"><title outputclass="headerH">Prerequisites</title>
       <sectiondiv outputclass="insideSection">
-        <p>You must remove the VSA cluster from CMC before removing the VSA node. To remove the CMC
-          cluster, refer to <b>HPE StoreVirtual Storage Online help in CMC</b> for more details.</p>
-        <note type="important">You can remove a VSA node only if you have more than three nodes in a
-          cluster.</note>
+        <p>You must remove the VSA cluster from the CMC utility before removing the VSA node from
+          your cloud environment. To remove the CMC cluster, refer to <b>HPE StoreVirtual Storage
+            Online help in CMC</b> for more details.</p>
+        <p>You can only remove a VSA node if you have more than three nodes in a cluster. If you
+          attempt to remove a node which takes you below this threshold, the configuration processor
+          will throw an error similar to this:</p>
+        <codeblock>ERR: Couldn't allocate 3 servers with role ['VSA-ROLE'] for resource group vsa in control-plane-1</codeblock>
       </sectiondiv>
     </section>
     <section id="notes"><title outputclass="headerH">Notes</title>
       <sectiondiv outputclass="insideSection">
-        <p>While removing VSA storage system permanently, the operator needs to
-          ensure there is an odd number of managers running to avoid split brain syndrome. For
-          example, if there are five nodes and one node is getting removed the operator needs to
-          stop the manager running on any of the remaining four nodes.</p>
+        <p>While removing VSA storage system permanently, the operator needs to ensure there is an
+          odd number of managers running to avoid split brain syndrome. For example, if there are
+          five nodes and one node is getting removed the operator needs to stop the manager running
+          on any of the remaining four nodes.</p>
       </sectiondiv>
     </section>
     <section id="howto"><title outputclass="headerH">Removing a VSA Node</title>
@@ -38,79 +41,8 @@
           your cloud.</p>
         <ol>
           <li>Log in to the lifecycle manager.</li>
-          <li>Edit the definition of the server (usually in the
-              <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file), for example: <codeblock>- id: vsa1
-      ip-addr: 192.168.61.15
-      role: VSA-ROLE
-      server-group: RACK1
-      nic-mapping: HP-BL460c-4PORT
-      ilo-ip: 10.1.192.232
-      ilo-password: gone2far
-      ilo-user: Administrator
-      mac-addr: 5C:B9:01:78:8C:B0
-
-    - id: vsa2
-      ip-addr: 192.168.61.16
-      role: VSA-ROLE
-      server-group: RACK2
-      nic-mapping: HP-BL460c-4PORT
-      ilo-ip: 10.1.192.233
-      ilo-password: gone2far
-      ilo-user: Administrator
-      mac-addr: 5C:B9:01:78:0E:30
-
-    - id: vsa3
-      ip-addr: 192.168.61.17
-      role: VSA-ROLE
-      server-group: RACK3
-      nic-mapping: HP-BL460c-4PORT
-      ilo-ip: 10.1.192.234
-      ilo-password: gone2far
-      ilo-user: Administrator
-      mac-addr: 5C:B9:01:78:2D:00
-
-  - id: vsa4
-      ip-addr: 192.168.61.18
-      role: VSA-ROLE
-      server-group: RACK3
-      nic-mapping: HP-BL460c-4PORT
-      ilo-ip: 10.1.192.235
-      ilo-password: gone2far
-      ilo-user: Administrator
-      mac-addr: 5C:B9:01:78:2D:00</codeblock>
-            <p>The above example shows one cluster with four nodes. Since you have already removed
-              the VSA cluster from CMC, now you can remove one of the nodes associated with that
-              cluster. In the following example, <codeph>servers.yml</codeph> file <b>vsa2</b> has
-              been
-              removed:<codeblock>- id: vsa1
-      ip-addr: 192.168.61.15
-      role: VSA-ROLE
-      server-group: RACK1
-      nic-mapping: HP-BL460c-4PORT
-      ilo-ip: 10.1.192.232
-      ilo-password: gone2far
-      ilo-user: Administrator
-      mac-addr: 5C:B9:01:78:8C:B0
-
-    - id: vsa3
-      ip-addr: 192.168.61.17
-      role: VSA-ROLE
-      server-group: RACK3
-      nic-mapping: HP-BL460c-4PORT
-      ilo-ip: 10.1.192.234
-      ilo-password: gone2far
-      ilo-user: Administrator
-      mac-addr: 5C:B9:01:78:2D:00
-
-  - id: vsa4
-      ip-addr: 192.168.61.18
-      role: VSA-ROLE
-      server-group: RACK3
-      nic-mapping: HP-BL460c-4PORT
-      ilo-ip: 10.1.192.235
-      ilo-password: gone2far
-      ilo-user: Administrator
-      mac-addr: 5C:B9:01:78:2D:00</codeblock></p></li>
+          <li>Edit your <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file and
+            remove the reference to the VSA node you are removing.</li>
           <li>Commit your configuration to the <xref href="../../../installation/using_git.dita"
               >local git repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
