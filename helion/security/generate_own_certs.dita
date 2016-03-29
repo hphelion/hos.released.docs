@@ -5,47 +5,63 @@
   <body>
     
 
-<section><title>Objective</title>
-To provide an example where you want to use your own certificates in HOS, for internal and public VIPs. This page is meant to be self-contained, so please comment on anything that's missing.
-
-NB. The important point to remember is that your certificate name should not be named 'helion-internal-cert'. This is an internally generated certificate name.
-
- </section><section><title>Glossary</title>
-<dl><dlentry><dt>FQDN (Fully Qualified Domain Name) of the public VIP.</dt><dd>It's not mandatory to have this. It is perfectly valid to not have this and use IP addresses instead.</dd></dlentry>
-    <dlentry><dt>CA (Certificate Authority) certificate</dt><dd>Your certificates are going to be signed by a CA, possibly your internal IT. For this example we will use a self-signed CA.</dd></dlentry>
-    <dlentry><dt>Server Certificate</dt><dd>It is sometimes easy to get server certificates confused with CA certificates. Just remember that server certificates stay in the server and the CA certificates stay with the client. A server certificate simply affirms that the server that sent it out serves a set of IP addresses and domain names and set of services. CA certificate is used by the client to authenticate this claim.
-    </dd></dlentry>
-    <dlentry><dt>SAN (subject-alt-name)</dt><dd>The set of IP addresses and domain names in a server certificate
-    Certificate Request: A template for a server certificate. This would include SANs among other things.
-    </dd></dlentry>
-    <dlentry><dt>CSR (Certificate Signing Request)</dt><dd>A blob of data generated from a Certificate Request and sent to a CA, who would then sign it and produce a server certificate and send it back.
-    </dd></dlentry>
-    <dlentry><dt>External VIP</dt><dd>external VIP
-    </dd></dlentry>
-    <dlentry><dt>Internal VIP</dt><dd>internal VIP</dd></dlentry>
-    </dl>
-
- 
-
-NB. The major difference between an external VIP certificate and an internal VIP certificate is that the latter has about 40 odd domain names in the SAN. This is because each service has a different domain name in HOS. So it is unlikely that you can create an internal server certificate before running the Configuration Processor (CP). But after a CP run, a certificate request would be created for each of your cert-name by the CP.
-
- 
- </section><section><title>Example</title>
-
-    Let us say there's no FQDN for the external VIP and that we're going to use the default IP address provided by HOS. For the internal VIP we will use the defaults as well.
-    Let us call our CA example-CA. The CA certificate would then be called example-CA.crt and the key would be called example-CA.key.
-    Let us call our external VIP certificate as example-public-cert and the internal VIP certificate as example-internal-cert
-
-NB. HOS expects a CA cert to have a .crt extension or it will ignore it during deployment.
-
-NB. All input model references in this document are relative to ~/helion/my_cloud on a deployer.
-
- 
- </section><section><title>Input Model based on our example</title>
-
-Edit the load balancer configuration in definition/data/network_groups.yml
-
-<codeblock>load-balancers:
+<section><title/>In <keyword keyref="kw-hos-phrase-30"/>, you can provide your own certificate
+      authority and certificates for internal and public virtual IP addresses (VIPs). Below are
+      instructions on how to add your own certificates.</section><section><title>Requirements</title> Below are terms with which you should be familiar when
+      generating and installing certificates.<dl>
+        <dlentry>
+          <dt>Fully qualified domain name (FQDN) of the public VIP</dt>
+          <dd>The registered domain name. Not mandatory. It is perfectly valid to have no FQDN and
+            use IP addresses instead.</dd>
+        </dlentry>
+        <dlentry>
+          <dt>Certificate authority(CA) certificate</dt>
+          <dd>Your certificates are going to be signed by a CA, possibly your internal IT. For this
+            example we will use a self-signed CA.</dd>
+        </dlentry>
+        <dlentry>
+          <dt>Server certificate</dt>
+          <dd>It is easy to confuse server certificates and CA certificates. Server certificates
+            reside on the server and CA certificates reside on the client. A server certificate
+            affirms that the server that sent it serves a set of IP addresses and domain names and
+            set of services. CA certificate is used by the client to authenticate this claim. </dd>
+        </dlentry>
+        <dlentry>
+          <dt>SAN (subject-alt-name)</dt>
+          <dd>The set of IP addresses and domain names in a server certificate certificate request:
+            A template for a server certificate. This would include SANs among other things. </dd>
+        </dlentry>
+        <dlentry>
+          <dt>CSR (Certificate Signing Request)</dt>
+          <dd>A blob of data generated from a Certificate Request and sent to a CA, which would then
+            sign it, produce a server certificate, and send it back. </dd>
+        </dlentry>
+        <dlentry>
+          <dt>External VIP</dt>
+          <dd>external VIP </dd>
+        </dlentry>
+        <dlentry>
+          <dt>Internal VIP</dt>
+          <dd>internal VIP</dd>
+        </dlentry>
+      </dl>The major difference between an external VIP certificate and an internal VIP certificate
+      is that the internal VIP has about 40 domain names in the SAN. This is because each service
+      has a different domain name in <keyword keyref="kw-hos-phrase-30"/>. So it is unlikely that
+      you can create an internal server certificate before running the configuration processor (CP).
+      But after a configuration processor run, a certificate request would be created for each of
+      your cert-names. </section><section><title>Example</title>Let's say there's no FQDN for the external VIP and that you're going
+      to use the default IP address provided by <keyword keyref="kw-hos-phrase-30"/>. Let's also
+      assume that for the internal VIP you will use the defaults as well. If you were to call your
+      certificate authority "example-CA," the CA certificate would then be called example-CA.crt and
+      the key would be called example-CA.key. If you name your external VIP certificate
+      "example-public-cert" and the internal VIP certificate "example-internal-cert" note the
+      results below. <note>
+        <keyword keyref="kw-hos-phrase-30"/> expects a CA cert to have a .crt extension or it will
+        be ignored during deployment.</note><note>All input model references in this document are
+        relative to ~/helion/my_cloud on a deployer.</note>
+    </section><section><title>Required Input Model changes</title> Edit the load balancer configuration in
+      definition/data/network_groups.yml
+      <codeblock>load-balancers:
  - provider: ip-cluster
  name: lb
  tls-components:
@@ -68,42 +84,32 @@ Edit the load balancer configuration in definition/data/network_groups.yml
  roles:
  - public
  cert-file: example-public-cert #&lt;&lt;&lt;-------- Certificate name for the internal VIP</codeblock>
-
- 
-Running the Configuration Processor
-
-<codeblock>cd ~/helion
+      Commit your changes to the local git repository and run the configuration processor
+      <codeblock>cd ~/helion
 git add -A
 git commit -m "changed VIP certificates"
 cd ~/helion/hos/ansible/
-ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""</codeblock>
-
- 
-Check if the certificate requests have been generated by the configuration processor for the two certificate files in the input model.
-
-<codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~/helion/my_cloud$ ls info/cert_reqs/ 
+ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""</codeblock>Check
+      if the certificate requests have been generated by the configuration processor for the two
+      certificate files in the input model.
+      <codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~/helion/my_cloud$ ls info/cert_reqs/ 
 example-internal-cert example-public-cert</codeblock>
-
- 
- </section><section><title>Generate a self-signed CA</title> We will then use this CA to sign server
-      certificates. This CA can be thought of as a Company IT internal CA that is self-signed and
-      whose CA certificates are deployed on the company machines. This way the server certificate
-      becomes legitimate.
+    </section><section><title>Generate a self-signed CA</title> Next, use this CA to sign server certificates.
+      This CA can be thought of as your company's IT internal CA that is self-signed and whose CA
+      certificates are deployed on the company machines. This way the server certificate becomes
+      legitimate.
       <codeblock>export EXAMPLE_CA_KEY_FILE='example-CA.key'
 export EXAMPLE_CA_CERT_FILE='example-CA.crt'
 openssl req -x509 -batch -newkey rsa:2048 -nodes -out "${EXAMPLE_CA_CERT_FILE}" \
 -keyout "${EXAMPLE_CA_KEY_FILE}" \
 -subj "/C=UK/O=hp/CN=Autogenerated Helion Certificate Authority" \
 -days 365</codeblock>You
-      can tweak the subj and days above to your needs. For instance, if you want to test what
-      happens when a CA expires, you can keep 'days' to very low values. Grab the certificate
-      request generated by the Configuration Processor Grab the CP generated request files from
-      info/cert_reqs/ 
-   <codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~/helion/my_cloud$ cat info/cert_reqs/example-internal-cert</codeblock>
-      
-      Let's take a look at the internal cert request. Copy this file to your working
-      directory. Appended a .req extension to it. Expand the following headline to see the request
-      file: </section>
+      can tweak the subj and days settings above to meet your needs, or to test. For instance, if
+      you want to test what happens when a CA expires, you can set 'days' to a very low value.  Grab
+      the CP generated request files from info/cert_reqs/
+      <codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~/helion/my_cloud$ cat info/cert_reqs/example-internal-cert</codeblock>Then
+      copy this file to your working directory and appended a .req extension to it. Expand the
+      following headline to see the request file:  </section>
    <section id="privateMetadata"><title outputclass="headerH">Cert request file</title>
      <sectiondiv outputclass="insideSection">
         <codeblock outputclass="nomaxheight">
@@ -171,34 +177,25 @@ DNS.47 = "192.168.245.5"
 IP.1 = "192.168.245.5"
 
 =============end of certificate request file.</codeblock>
-        . </sectiondiv></section><section><title>Generate a CSR</title>
-
-Now that you have a CA and a certificate request file, it's time to generate a CSR.
-
-<codeblock>export EXAMPLE_SERVER_KEY_FILE='example-internal-cert.key'
+        . </sectiondiv></section><section><title>Generate a CSR</title> Now that you have a CA and a certificate request file, it's
+      time to generate a CSR.
+      <codeblock>export EXAMPLE_SERVER_KEY_FILE='example-internal-cert.key'
 export EXAMPLE_SERVER_CSR_FILE='example-internal-cert.csr'
-
-export EXAMPLE_SERVER_REQ_FILE='example-internal-cert.req'
-
-openssl req -newkey rsa:2048-nodes -keyout "$EXAMPLE_SERVER_KEY_FILE" -out "$EXAMPLE_SERVER_CSR_FILE" -extensions v3_req -config "$EXAMPLE_SERVER_REQ_FILE"</codeblock>
-
-NB. In production you would usually send the generated 
-
-example-internal-cert.csr
-
-file to your IT department. But in this example we are own CA, so let's proceed to sign and generate a server certificate.
-
- 
- </section><section><title>Generate a Server Certificate</title>
-
-A server certificate is essentially a signed public key, the signer being a CA and trusted by a client. When we install this CA's certificate on the client machine, we are telling the client it's okay to trust this CA, thus creating a trust anchor.
-CA configuration file
-
-When the CA signs it uses a configuration file that tells it to verify the CSR. It is in my TODO to get the gist out of this file and keep it simple but till then just use the default used in HOS. Note that, in a production scenario this is not your problem. The CA takes care of it. When we finally use Anchor in HOS, again it's not your problem, Anchor takes care of it.
-
-Create a file called openssl.cnf and add the following contents to it.
-
-<codeblock># Copyright 2010 United States Government as represented by the
+export EXAMPLE_SERVER_REQ_FILE='example-interna
+openssl req -newkey rsa:2048-nodes -keyout "$EXAMPLE_SERVER_KEY_FILE" -out "$EXAMPLE_SERVER_CSR_FILE" -extensions v3_req -config "$EXAMPLE_SERVER_REQ_FILE"</codeblock>Note
+      that in production you would usually send the generated example-internal-cert.csr file to your
+      IT department. But in this example you are your own CA, so sign and generate a server
+      certificate. </section><section><title>Generate a Server Certificate</title> A server certificate is essentially a signed
+      public key, the signer being a CA and trusted by a client. When we install this CA's
+      certificate on the client machine, we are telling the client it's okay to trust this CA, thus
+      creating a trust anchor. CA configuration file When the CA signs it uses a configuration file
+      that tells it to verify the CSR.
+      <!--It is in my TODO to get the gist out of this file and keep it simple but till then just use the default used
+in Helion.-->
+      Note that, in a production scenario the CA takes care of this for you. <!--When we finally use
+      Anchor in <keyword keyref="kw-hos-phrase-30"/>, again it's not your problem, Anchor takes care
+      of it. -->Create a file called openssl.cnf and add the following contents to it.
+      <codeblock># Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #
@@ -299,13 +296,9 @@ subjectKeyIdentifier = hash
 [ alt_names ]
 
 ######### end of openssl.cnf #########</codeblock>
-
- 
- </section><section><title>Sign and create a server certificate</title>
-
-Now you can sign the server certificate with your CA.
-
-<codeblock>export EXAMPLE_SERVER_CERT_FILE='example-internal-cert.crt'
+    </section><section><title>Sign and create a server certificate</title> Now you can sign the server certificate
+      with your CA.
+      <codeblock>export EXAMPLE_SERVER_CERT_FILE='example-internal-cert.crt'
 export EXAMPLE_SERVER_CSR_FILE='example-internal-cert.csr'
 export EXAMPLE_CA_KEY_FILE='example-CA.key'
 export EXAMPLE_CA_CERT_FILE='example-CA.crt'
@@ -318,35 +311,20 @@ openssl ca -batch -notext -md sha256 -in "$EXAMPLE_SERVER_CSR_FILE" \
 -keyfile "$EXAMPLE_CA_KEY_FILE" \
 -out "$EXAMPLE_SERVER_CERT_FILE" \
 -config openssl.cnf -extensions v3_req</codeblock>
-
- 
-
-Finally concatenate both the server key and certificate in preparation to upload to the deployer
-
-<codeblock>cat example-internal-cert.key example-internal-cert.crt > example-internal-cert</codeblock>
-
-NB. We only created the internal-cert in this example. Repeat the above sequence for example-public-cert. Make sure you use the appropriate certificate request generated by the CP.
-
-
- </section><section><title>Uploading to the deployer</title>
-
-The following two files created from the example run above will need to be uploaded to the deployer and copied under config/tls.
-<ul><li>
-example-internal-cert
-</li><li>
-example-CA.crt</li></ul>
-
-Once in the deployer copy to the following directories.
-
-<codeblock>cp example-internal-cert example-public-cert ~/helion/my_cloud/config/tls/certs/
-
+      Finally, concatenate both the server key and certificate in preparation for uploading to the
+      deployer.
+      <codeblock>cat example-internal-cert.key example-internal-cert.crt > example-internal-cert</codeblock>Note
+      that you have only created the internal-cert in this example. Repeat the above sequence for
+      example-public-cert. Make sure you use the appropriate certificate request generated by the
+      configuration processor. </section><section><title>Uploading to the deployer</title> The following two files created from the example
+      run above will need to be uploaded to the deployer and copied under config/tls. <ul>
+        <li> example-internal-cert </li>
+        <li> example-CA.crt</li>
+      </ul> Once on the deployer, execute the followig two copy commands to copy to the following
+      directories.
+      <codeblock>cp example-internal-cert example-public-cert ~/helion/my_cloud/config/tls/certs/
 cp example-CA.crt ~/helion/my_cloud/config/tls/cacerts/</codeblock>
-
- 
-Continue with the Deployment
-
-Now you can run ready-deployment and site.yml (or hlm-reconfigure if you were reconfiguring the certificates)
-
- </section>
+      Continue with the deployment. Now you can run ready-deployment and site.yml (or
+      hlm-reconfigure if you were reconfiguring the certificates) </section>
   </body>
 </topic>
