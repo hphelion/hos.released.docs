@@ -158,6 +158,48 @@ ironic node-update ea7246fd-e1d6-4637-9699-0b7c59c22e67 <b>add properties/cpu_ar
             
         </section>
         
+        
+        <section>
+            <title>Deployment to a node fails and in "ironic node-list" command, the power_state column for the node is shown as "None"</title>
+
+
+
+            <p><b>Possible cause: </b> The IPMI commands to the node take longer to change the power state of the server.</p>
+            
+            <p><b>Resolution: </b>
+            Check if the node power state can be changed using the following command  
+            <codeblock>ironic node-set-power-state $NODEUUID on</codeblock>
+            If the above command succeeds and the power_state column is updated correctly, then the following steps are required 
+            to increase the power sync interval time.</p>
+            
+            <p> On controller1, reconfigure Ironic to increase the power sync interval time. In the steps below, it is set to 120 seconds. 
+                This value may have to be tuned based on the setup.</p>
+            
+            <ol>
+                <li>
+                    Go to the <codeph>~/helion/my_cloud/config/ironic/</codeph> directory  and edit <codeph>ironic-conductor.conf.j2</codeph>
+                    to set the <codeph>sync_power_state_interval</codeph> value: 
+                    
+                    <codeblock>[conductor] sync_power_state_interval = 120</codeblock>                  
+                    
+                </li>
+                <li>
+                    Save the file and then run the following playbooks:
+ <codeblock>
+ansible-playbook -i hosts/localhost config-processor-run.yml ansible-playbook -i hosts/localhost ready-deployment.yml cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ironic-reconfigure.yml    
+ </codeblock>                   
+                    
+                </li>
+                
+            </ol>
+
+    
+            
+        </section>
+        
+        
+        
     </body>
 
 </topic> 
