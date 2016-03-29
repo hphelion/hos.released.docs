@@ -3,6 +3,124 @@
 <topic id="topic_yy5_bwz_lv">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Adding a RHEL Compute Node</title>
   <body>
-    <p></p>
+    <section id="prereqs"><title>Prerequisites</title>
+      <p>These steps assume </p>
+    </section>
+
+
+    <section id="inputmodel"><title>Input Model File Changes</title>
+      <p><b>net_interfaces.yml</b></p>
+      <p>
+        <codeblock>
+- name: RHEL-COMPUTE-INTERFACES
+  network-interfaces:
+     - name: BOND0
+       device:
+          name: bond0
+       bond-data:
+          options:
+             mode: active-backup
+             miimon: 200
+             primary: hed1
+          provider: linux
+          devices:
+             - name: hed1
+             - name: hed2
+       network-groups:
+         - EXTERNAL-VM
+         - GUEST
+         - MANAGEMENT</codeblock>
+      </p>
+      <p><b>servers.yml</b></p>
+      <codeblock>
+- id: compute1
+  ip-addr: 192.168.102.70
+  role: RHEL-COMPUTE-ROLE
+  server-group: RACK1
+  mac-addr: "e8:39:35:21:32:4e"
+  ilo-ip: 10.1.192.36
+  ilo-password: password
+  ilo-user: admin</codeblock>
+      <p><b>server_roles.yml</b></p>
+      <codeblock>
+- name: RHEL-COMPUTE-ROLE
+  interface-model: RHEL-COMPUTE-INTERFACES
+  disk-model: RHEL-COMPUTE-DISKS</codeblock>
+      <p><b>disks_compute.yml</b></p>
+      <codeblock>
+- name: RHEL-COMPUTE-DISKS
+  volume-groups:
+    - name: rhel
+      physical-volumes:
+        - /dev/sda2
+      logical-volumes:
+        - name: root
+          size: 55%
+          fstype: xfs
+          mount: /
+        - name: log
+          size: 35%
+          mount: /var/log
+          fstype: ext4
+          mkfs-opts: -O large_file
+    - name: vg-comp
+      physical-volumes:
+        - /dev/sdb
+      logical-volumes:
+        - name: compute
+          size: 95%
+          mount: /var/lib/nova
+          fstype: ext4
+          mkfs-opts: -O large_file</codeblock>
+      <p><b>control_plane.yml</b></p>
+      <codeblock>
+- name: rhel-compute
+  resource-prefix: rhel-comp
+  server-role: RHEL-COMPUTE-ROLE
+  allocation-policy: any
+  min-count: 0
+  service-components:
+     - ntp-client
+     - nova-compute
+     - nova-compute-kvm
+     - neutron-l3-agent
+     - neutron-metadata-agent
+     - neutron-openvswitch-agent
+     - neutron-lbaasv2-agent</codeblock>
+    </section>
+
+    <section id="steps"><title>Steps</title>
+      <p>After making the changes to your input model files for your new RHEL compute nodes, follow
+        these steps:</p>
+      <ol>
+        <li>Commit the changes to git:
+          <codeblock>git add -A
+git commit -a -m "Add node &lt;name>"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Run the ready deployment playbook:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Add the new node into Cobbler:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
+        <li>Then you can image the node: <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></codeblock>
+          <note>If you don't know the <codeph>&#60;node name></codeph> already, you can get it by
+            using <codeph>sudo cobbler system list</codeph></note>
+          <p>Before proceeding, you may want to take a look at <b>info/server_info.yml</b> to see if
+            the assignment of the node you have added is what you expect. It may not be, as nodes
+            will not be numbered consecutively if any have previously been removed. This is to
+            prevent loss of data; the config processor retains data about removed nodes and keeps
+            their ID numbers from being reallocated. See the Persisted Server Allocations section in
+              <xref keyref="persisteddata/persistedserverallocations">Input Model</xref> for
+            information on how this works.</p></li>
+        <li>Complete the RHEL compute deployment with this playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+            ansible-playbook -i hosts/verb_hosts site.yml --limit &#60;node name></codeblock>
+        </li>
+      </ol>
+    </section>
   </body>
 </topic>
