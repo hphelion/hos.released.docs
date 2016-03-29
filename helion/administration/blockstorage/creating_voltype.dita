@@ -90,7 +90,10 @@
             href="http://docs.openstack.org/liberty/config-reference/content/hp-lefthand-supported-ops-rest.html"
             format="html" scope="external">here</xref>.</p>
         <p>The following Cinder Volume Type extra-specs options enable control over the VSA storage
-          provisioning type (thin or full) and specify protection for your volume backend:</p>
+          provisioning type (thin or full) and specify protection for your volume backend. We
+          strongly recommend using r-10-2 as your RAID level for a production environment to avoid a
+          single point of failure. You can do this by using a <codeph>hplh:data_pl</codeph> value of
+            <codeph>r-10-2</codeph>.</p>
         <p><table frame="all" rowsep="1" colsep="1" id="table_ntq_swv_yt">
             <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
@@ -123,22 +126,12 @@
                     <p>The protection level options enable different data protection configurations.
                       Supported data protection options are:</p>
                     <ul>
-                      <li>r-0 (RAID 0) provides the best data capacity and processing performance,
-                        but offers no data protection (no fault tolerance) in the event of a
-                        failure.</li>
-                      <li>r-5 (RAID 5) consists of three or more physical disk drives in an array.
-                        Stores parity data across all drives. If one drive fails, the remaining
-                        drives use the parity data to allow the array to continue to operate until
-                        the failed drive is replaced. If more than one drive fails, the array
-                        fails.</li>
-                      <li>r-10-2 (RAID 10+2) stripes and mirrors data across four or more
-                        disks.</li>
-                      <li>r-10-3 (RAID 10+3) stripes and mirrors data across five or more
-                        disks.</li>
-                      <li>r-10-4 RAID 10+4) stripes and mirrors data across six or more disks.</li>
-                      <li>r-6 (RAID 6) is based on and extends RAID5. It requires a minimum of four
-                        drives and creates multiple parity sets such that the array can function
-                        with up to two drives failing at the same time.</li>
+                      <li>r-0, Network RAID-0 (None)</li>
+                      <li>r-5, Network RAID-5 (Single- Parity)</li>
+                      <li>r-10-2, Network RAID-10 (2-Way Mirror)</li>
+                      <li>r-10-3, Network RAID-10 (3-Way Mirror)</li>
+                      <li>r-10-4, Network RAID-10 (4-Way Mirror)</li>
+                      <li>r-6, Network RAID-6 (Dual Parity)</li>
                     </ul>
                   </entry>
                 </row>
