@@ -139,41 +139,206 @@ keystone_sp_conf:
           id: ADFS_GROUP
         -
           name: urn:oid:1.3.6.1.4.1.5923.1.1.1.6
-          id: ADFS_LOGIN</codeblock>
+          id: ADFS_LOGIN</codeblock>A
+      sample config file like this exists in
+      roles/KEY-API/files/samples/websso/keystone_configure_adfs_sample.yml. Here are some detailed
+      descriptions for each of the config options: <dl>
+        <dlentry>
+          <dt>keystone_trusted_idp</dt>
+          <dd>A flag to indicate if this configuration is used for WebSSO or K2K. The value can be
+            either 'adfs' or 'k2k'.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> keystone_sp_conf</dt>
+          <dd/>
+        </dlentry>
+        <dlentry>
+          <dt>shib_sso_idp_entity_id</dt>
+          <dd>The ADFS URI used as an entity Id to identity the IdP.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> shib_sso_application_entity_id</dt>
+          <dd>The Service Provider URI used as a entity Id. It can be any URI here for Websso as
+            long as it is unique to the SP.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> target_domain</dt>
+          <dd>A domain where the group will be created from.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> name</dt>
+          <dd>Any domain name. If it does not exist, it will be created or be updated.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> description</dt>
+          <dd>Any description.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> target_project</dt>
+          <dd>A project scope that the group has.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> name</dt>
+          <dd>Any project name. If it does not exist, it will be created or be updated.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> description</dt>
+          <dd>Any description.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> target_group</dt>
+          <dd>A group will be created from 'target_domain'.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> name</dt>
+          <dd>Any group name. If it does not exist, it will be created or be updated.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> description</dt>
+          <dd>Any description.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> role</dt>
+          <dd>A role will be assigned on 'target_project'. This role impacts the idp user scoped
+            token permission at sp side.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> name</dt>
+          <dd>It has to be an existing role.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> idp_metadata_file</dt>
+          <dd>A reference to the ADFS metadata file that validates the SAML2 assertion.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> identity_provider</dt>
+          <dd>An ADFS IdP</dd>
+        </dlentry>
+        <dlentry>
+          <dt> id</dt>
+          <dd>Any Id. If it does not exist, it will be created or be updated. This Id needs to be
+            shared with the client so that the right mapping will be selected.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> description</dt>
+          <dd>Any description.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> mapping</dt>
+          <dd>A mapping in json format that maps a federated user to a corresponding group.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> id</dt>
+          <dd>Any Id. If it does not exist, it will be created or be updated.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> rules_file</dt>
+          <dd>A reference to the file that has the mapping in json.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> protocol</dt>
+          <dd>The supported federation protocol.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> id</dt>
+          <dd>'saml2' is the only supported protocol for Websso.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> attribute_map</dt>
+          <dd>A shibboleth mapping defined additional attributes to map the attributes from the
+            SAML2 assertion to the Websso mapping that SP understands.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> name</dt>
+          <dd>An attribute name from the SAML2 assertion.</dd>
+        </dlentry>
+        <dlentry>
+          <dt> id</dt>
+          <dd>An Id that the above name will be mapped to.</dd>
+        </dlentry>
+      </dl>
+      <ol><li>In the above config file /tmp/adfs_config.yml make sure the idp_metadata_file references the previously generated ADFS metadata file. In our case:
+        
+        
+        <codeblock>idp_metadata_file: /tmp/adfs_metadata.xml</codeblock> 
+        
+      </li><li>Create a mapping file that is referenced from the above config file, for example
+          /tmp/adfs_sp_mapping.json. rules_file : /tmp/adfs_sp_mapping.json The following is an
+          example of mapping file, existing in
+          roles/KEY-API/files/samples/websso/adfs_sp_mapping.json:
+          <codeblock>[
+             {
+               "local": [{
+                     "user": {
+                         "name": "{0}"
+                     }
+                 }],
+                 "remote": [{
+                     "type": "ADFS_LOGIN"
+                 }]
+              },
+              {
+                "local": [{
+                    "group": {
+                        "id": "GROUP_ID"
+                    }
+                }],
+                "remote": [{
+                    "type": "ADFS_GROUP",
+                "any_one_of": [
+                    "Domain Users"
+                    ]
+                }]
+              }
+ ]        </codeblock>
+          More details of how the Websso mapping works can be found here -
+          https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst.
+          Also see section 'Mapping Rules' for more info. </li><li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable WebSSO in Keystone:
+        
+        <codeblock>ansible-playbook  -i hosts/verb_hosts keystone-reconfigure.yml  -e@/tmp/adfs_config.yml</codeblock>
+        
+        
+      </li><li>Enable WebSSO in Horizon by setting horizon_websso_enabled flag to True in roles/HZN-WEB/defaults/main.yml and then run:
+        <codeblock>ansible-playbook  -i hosts/verb_hosts horizon-reconfigure.yml</codeblock>
+        
+      </li></ol>
       
       
-      A sample config file like this exists in roles/KEY-API/files/samples/websso/keystone_configure_adfs_sample.yml
-      
-      Here are some detailed descriptions for each of the config options:
-      
-      <dl><dlentry><dt>keystone_trusted_idp</dt><dd>A flag to indicate if this configuration is used for WebSSO or K2K. The value can be either 'adfs' or 'k2k'.</dd></dlentry><dlentry><dt>
-        keystone_sp_conf</dt><dd></dd></dlentry>
-          <dlentry><dt>shib_sso_idp_entity_id</dt><dd>The ADFS URI used as an entity Id to identity the IdP.</dd></dlentry><dlentry><dt>
-            shib_sso_application_entity_id</dt><dd>The Service Provider URI used as a entity Id. It can be any URI here for Websso as long as it is unique to the SP.</dd></dlentry><dlentry><dt>
-              target_domain</dt><dd>A domain where the group will be created from.</dd></dlentry><dlentry><dt>
-                name</dt><dd>Any domain name. If it does not exist, it will be created or be updated.</dd></dlentry><dlentry><dt>
-                  description</dt><dd>Any description.</dd></dlentry><dlentry><dt>
-                    target_project</dt><dd>A project scope that the group has.</dd></dlentry><dlentry><dt>
-                      name</dt><dd>Any project name. If it does not exist, it will be created or be updated.</dd></dlentry><dlentry><dt>
-                        description</dt><dd>Any description.</dd></dlentry><dlentry><dt>
-                          target_group</dt><dd>A group will be created from 'target_domain'.</dd></dlentry><dlentry><dt>
-                            name</dt><dd>Any group name. If it does not exist, it will be created or be updated.</dd></dlentry><dlentry><dt>
-                              description</dt><dd>Any description.</dd></dlentry><dlentry><dt>
-                                role</dt><dd>A role will be assigned on 'target_project'. This role impacts the idp user scoped token permission at sp side.</dd></dlentry><dlentry><dt>
-                                  name</dt><dd>It has to be an existing role.</dd></dlentry><dlentry><dt>
-                                    idp_metadata_file</dt><dd>A reference to the ADFS metadata file that validates the SAML2 assertion.</dd></dlentry><dlentry><dt>
-                                      identity_provider</dt><dd>An ADFS IdP</dd></dlentry><dlentry><dt>
-                                        id</dt><dd>Any Id. If it does not exist, it will be created or be updated. This Id needs to be shared with the client so that the right mapping will be selected.</dd></dlentry><dlentry><dt>
-                                          description</dt><dd>Any description.</dd></dlentry><dlentry><dt>
-                                            mapping</dt><dd>A mapping in json format that maps a federated user to a corresponding group.</dd></dlentry><dlentry><dt>
-                                              id</dt><dd>Any Id. If it does not exist, it will be created or be updated.</dd></dlentry><dlentry><dt>
-                                                rules_file</dt><dd>A reference to the file that has the mapping in json.</dd></dlentry><dlentry><dt>
-                                                  protocol</dt><dd>The supported federation protocol.</dd></dlentry><dlentry><dt>
-                                                    id</dt><dd>'saml2' is the only supported protocol for Websso.</dd></dlentry><dlentry><dt>
-                                                      attribute_map</dt><dd>A shibboleth mapping defined additional attributes to map the attributes from the SAML2 assertion to the Websso mapping that SP understands.</dd></dlentry><dlentry><dt> name</dt><dd>An attribute name from the SAML2 assertion.</dd></dlentry><dlentry><dt>
-                                                          id</dt><dd>An Id that the above name will be mapped to.</dd></dlentry></dl>
       
     </section>
     
+    <section><title>Mapping rules</title>
+      One Idp-Sp has only one mapping; the last mapping that the customer configures will be the one used and will overwrite the old mapping setting.
+      
+      Therefore, if the example mapping adfs_sp_mapping.json is used, the following behavior is expected because it maps the federated user only to the one group configured in keystone_configure_adfs_sample.yml .
+      
+      <ul><li>configure domain1/project1/group1, mapping1; websso login horizon, see project1;
+      </li><li>then reconfigure: domain1/project2/group1. mapping1, websso login horizon, see project1 and project2;
+      </li><li>reconfigure: domain3/project3/group3; mapping1, websso login horizon, only see project3; - because now the IDP mapping maps the federated user to group3 which only has priviliges on project3</li></ul>
+      
+      <p>If a more complex mapping is needed, the customer can use a custom mapping file which needs to be specified in keystone_configure_adfs_sample.yml -> rules_file.
+        
+      </p><p>The customer can use different attributes of the ADFS user in order to map to different and/or multiple groups.
+        
+      </p><p>An example of a more complex mapping file is adfs_sp_mapping_multiple_groups.json in the attachment of the wiki, which must be ran together with keystone_configure_mutiple_groups_sample.yml which adds a new attribute for the Shibboleth mapping.</p>
+    
+    </section>
+  
+    <section><title>Setting up the ADFS server as the Identity Provider</title>
+  
+  <p>For ADFS to be able to communicate with Keystone we need to add Keystone as a trusted relying party for ADFS as well as specify the user 
+  attributes that we want to send over to Keystone when users authenticate via Websso.</p>
+  
+ <p>For direct Microsoft wiki reference, follow Microsoft ADFS wiki, section "Step 2: Configure AD FS 2.0 as the Identity Provider and Shibboleth as the Relying Party".</p>
+  
+  <p>For in-place reference, please see the below example instructions taken from the Microsoft wiki.</p>
+  
+  <p>Login to the  ADFS server.</p>
+      
+      
+      
+      
+  
+  </section>
   </body>
 </topic>
