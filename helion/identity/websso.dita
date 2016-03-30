@@ -337,6 +337,83 @@ keystone_sp_conf:
       
       
       
+      <b>Add a relying party using metadata</b>
+      <ol>
+        <li>From Server Manager Dashboard, click Tools on the upper right, then AD FS Management.
+        </li><li>Right click AD FS, select Add Relying Party Trust …,
+        </li><li>Click Start, leave selected Import data about the relying party published online or on a local network.
+        </li><li>In the Federation metadata address field, type &lt;keystone_publicEndpoint>/Shibboleth.sso/Metadata (your keystone Metadata endpoint), and then click Next. 
+          You can also "Import Metadata from a File". Create a file with the content of the result of command curl &lt;keystone_publicEndpoint>/Shibboleth.sso/Metadata and then choose this file for importing the metadata for the relying party.
+        </li><li>In the Specify Display Name page, choose a proper name to identify this trust, and then click Next.
+        </li><li>On the Choose Issuance Authorization Rules page, leave the default Permit all users to access the relying party selected, and then click Next.
+        </li><li>Click Next, and then click Close.</li></ol>
+      
+      <b>Edit Claim Rules for Relying Party Trust</b>
+      
+      <ol>
+        <li>The Edit Claim Rules dialog box should already be open. If not, In the AD FS center pane, 
+          under Relying Party Trusts, right-click your newly created trust, and then click Edit Claim Rules.
+        </li><li>On the Issuance Transform Rules tab, click Add Rule.
+        </li><li>On the Select Rule Template page, select Send LDAP Attributes as Claims, and then click Next.
+        </li><li>On the Configure Rule page, in the Claim rule name box, type Get Data.
+        </li><li>In the Attribute Store list, select Active Directory.
+          
+        </li><li>In the Mapping of LDAP attributes section, create the following mappings.
+          
+          
+          <table frame="all"
+            rowsep="1" colsep="1" id="table_kn3_mt3_mv" outputclass="width25">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1.0*"/>
+              <colspec colname="c2" colnum="2" colwidth="1.0*"/>
+              <thead>
+                <row>
+                  <entry>
+                    LDAP Attribute</entry>
+                  <entry>Outgoing Claim Type</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>Token-Groups – Unqualified Names</entry>
+                  <entry>Group</entry>
+                </row>
+                <row>
+                  <entry>User-Principal-Name</entry>
+                  <entry>UPN</entry>
+                </row>
+               
+              </tbody>
+            </tgroup>
+          </table>
+
+            Outgoing Claim Type Token-Groups – Unqualified Names Group </li><li>Click Finish.
+        </li><li>On the Issuance Transform Rules tab, click Add Rule.
+          
+        </li><li>On the Select Rule Template page, select Send Claims Using a Custom Rule, and then click Next.
+        </li><li>In the Configure Rule page, in the Claim rule name box, type Transform UPN to epPN.
+          
+        </li><li>In the Custom Rule window, type or copy and paste the following:
+          <codeblock>c:[Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"]
+=> issue(Type = "urn:oid:1.3.6.1.4.1.5923.1.1.1.6", Value = c.Value, Properties["http://schemas.xmlsoap.org/ws/2005/05/identity/claimproperties/attributename"] = "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");</codeblock>
+        </li><li>Click Finish.
+        </li><li>On the Issuance Transform Rules tab, click Add Rule.
+        </li><li>On the Select Rule Template page, select Send Claims Using a Custom Rule, and then click Next.
+        </li><li>On the Configure Rule page, in the Claim rule name box, type Transform Group to epSA.
+          
+        </li><li>In the Custom Rule window, type or copy and paste the following:
+          <codeblock>c:[Type == "http://schemas.xmlsoap.org/claims/Group", Value == "Domain Users"]
+=> issue(Type = "urn:oid:1.3.6.1.4.1.5923.1.1.1.9", Value = "member@contoso.com", Properties["http://schemas.xmlsoap.org/ws/2005/05/identity/claimproperties/attributename"] = "urn:oasis:names:tc:SAML:2.0:attrname-format:uri");</codeblock>
+        </li><li>Click Finish, and then click OK.</li></ol>
+      
+      This list of Claim Rules is just an example and can be modified/enhanced based on customer's necessities and ADFS setup specifics.
+      
+      
+      
+      
+      
+      
+      
       
   
   </section>
