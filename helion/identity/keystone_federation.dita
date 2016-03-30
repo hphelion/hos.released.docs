@@ -6,20 +6,20 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
       <title> </title>
-      <p>Keystone to Keystone(K2K) is supported in HOS 3.0. By running a playbook with the customer
-        provided configuration parameters, K2K will be enabled automatically. It's disabled by
-        default.</p>
-      <p>The mean of support for K2K is on the API level which customers will need to implement
-        their own client code by calling the supported APIs. Python-keystoneclient has supported
-        APIs to access the K2K APIs,</p>
-      <p>the attached file <i>k2kclient.py</i> is an example and the diagram in the end of this page
+      <p>Keystone to Keystone (K2K) is supported in<keyword keyref="kw-hos-phrase-30"/>. By running
+        a playbook with the customer provided configuration parameters, K2K will be enabled
+        automatically. It's disabled by default.</p>
+      <p>Support for Keystone to Keystone federation happens on the API level, and you must
+        implement it using your own client code by calling the supported APIs. Python-keystoneclient
+        has supported APIs to access the K2K APIs,</p>
+      <p>The attached file <i>k2kclient.py</i> is an example and the diagram in the end of this page
         shows how the flows a client will need to access.</p>
     </section>
     <section>
       <title><b>Set up a service provider (SP)</b></title>
     </section>
     <section>
-      <p>To setup a Keystone as a SP, please follow the instructions below.</p>
+      <p>To setup a Keystone as a service provider, follow the instructions below.</p>
       <ol id="ol_ug3_fdb_mv">
         <li>Create a config file <i>k2k.yml</i> with the following parameters and place it in any
           directory in your deployer, for example <i>/tmp</i>.
@@ -52,7 +52,7 @@ keystone_sp_conf:
 		  name: name1
 		  id: id1</codeblock>
           Here are some detailed descriptions for each of the attributes.
-          <codeblock>keystone_trusted_idp: A flag to indicate if this configuration is used for K2K or Websso. The value can be either 'k2k' or 'adfs'.
+         <!-- <codeblock>keystone_trusted_idp: A flag to indicate if this configuration is used for K2K or Websso. The value can be either 'k2k' or 'adfs'.
 keystone_sp_conf:
     shib_sso_idp_entity_id: The Identity Provider URI used as a entity Id to identity the IdP. It is suggested to use the following value -
                             &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp.
@@ -81,7 +81,128 @@ keystone_sp_conf:
                    K2K does not required any additional attribute mapping.
         -
           name: An attribute name from the SAML2 assertion.
-          id: An Id that the above name will be mapped to.</codeblock>
+          id: An Id that the above name will be mapped to.</codeblock>-->
+      
+          
+          <dl>
+            <dlentry>
+              <dt> keystone_trusted_idp</dt>
+              <dd>A flag to indicate if this configuration is used for K2K or Websso. The value can
+                be either 'k2k' or 'adfs'. </dd>
+            </dlentry>
+          </dl>
+          <b>keystone_sp_conf</b>
+          <dl>
+    
+            <dlentry>
+              <dt>shib_sso_idp_entity_id</dt>
+              <dd> The Identity Provider URI used as a entity Id to identity the IdP. It is
+                suggested to use the following value -
+                &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>shib_sso_application_entity_id</dt>
+              <dd>The Service Provider URI used as a entity Id. It can be any URI here for K2K.
+              </dd>
+            </dlentry>
+            <dlentry>
+              <dt>target_domain</dt>
+              <dd>A domain where the group will be created from. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>name</dt>
+              <dd>Any domain name. If it does not exist, it will be created or be updated. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>description</dt>
+              <dd>Any description. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>target_project</dt>
+              <dd>A project scope that the group has. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>name</dt>
+              <dd>Any project name. If it does not exist, it will be created or be updated. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>description</dt>
+              <dd>Any description. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>target_group</dt>
+              <dd>A group will be created from 'target_domain'. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>name</dt>
+              <dd>Any group name. If it does not exist, it will be created or be updated. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>description</dt>
+              <dd>Any description. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>role</dt>
+              <dd>A role will be assigned on 'target_project'. This role impacts the idp user scoped
+                token permission at sp side. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>name</dt>
+              <dd>It has to be an existing role. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>idp_metadata_file</dt>
+              <dd>A reference to the IdP metadata file that validates the SAML2 assertion. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>identity_provider</dt>
+              <dd>A supported IdP </dd>
+            </dlentry>
+            <dlentry>
+              <dt>id</dt>
+              <dd>Any Id. If it does not exist, it will be created or be updated. This Id needs to
+                be shared with the client so that the right mapping will be selected. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>description</dt>
+              <dd>Any description. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>mapping</dt>
+              <dd>A mapping in json format that mapps a federated user to a corresponding group.
+              </dd>
+            </dlentry>
+            <dlentry>
+              <dt>id</dt>
+              <dd>Any Id. If it does not exist, it will be created or be updated. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>rules_file</dt>
+              <dd>A reference to the file that has the mapping in json. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>protocol</dt>
+              <dd>The supported federation protocol. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>id</dt>
+              <dd>'saml2' is the only supported protocol for K2K. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>attribute_map</dt>
+              <dd>A shibboleth mapping defined additional attributes to map the attributes from the
+                SAML2 assertion to the K2K mapping that SP understands. K2K does not required any
+                additional attribute mapping. - </dd>
+            </dlentry>
+            <dlentry>
+              <dt>name</dt>
+              <dd>An attribute name from the SAML2 assertion. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>id</dt>
+              <dd>An Id that the above name will be mapped to.</dd>
+            </dlentry>
+          </dl>
         </li>
         <li>Create a metadata file that is referenced from the above config file, for example
             <i>/tmp/idp_metadata.xml</i>. The content of the metadata file is from the IdP and can
@@ -127,7 +248,7 @@ keystone_sp_conf:
       </ol>
       <p><b><b>Set up an identity provider (IdP)</b></b></p>
       <p>To setup a Keystone as a SP, please follow the instructions below.</p>
-      <ol> 
+      <ol>
         <li>Create a config file <i>k2k.yml</i> with the following parameters and place it in any
           directory in your deployer, for example <i>/tmp</i>.
           <codeblock outputclass="width66">keystone_k2k_idp_conf:
@@ -161,17 +282,15 @@ keystone_sp_conf:
             # Generate a self-signed certificate named myidp.cer
             openssl x509 -req -days 3650 -in myidp.csr -signkey myidp.key -out myidp.cer</codeblock>
         </li>
-        <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable SP in Keystone -
-          'ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml'</li>
+        <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable SP in
+          Keystone - 'ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml
+          -e@/tmp/k2k.yml'</li>
       </ol>
     </section>
-    <section><title>Test it out</title>
-      The attached script k2kclient.py can be used as an example for the end-to-end flows.
-      
-      To run k2kclient.py, please follow the instructions below.
-      <ol><li>There are few parameters need to be changed in the beginning of the script, like 
-      
-        <codeblock># IdP auth URL
+    <section><title>Test it out</title> The attached script k2kclient.py can be used as an example
+      for the end-to-end flows. To run k2kclient.py, please follow the instructions below. <ol>
+        <li>There are few parameters need to be changed in the beginning of the script, like
+          <codeblock># IdP auth URL
           self.auth_url = "http://idp_host:5000/v3/"
           self.project_name = "my_project_name"
           self.project_domain_name = "my_project_domain_name"
@@ -182,20 +301,14 @@ keystone_sp_conf:
           self.idp_id = "my_idp_id"
           # service provider Id that is defined in the IdP config
           self.sp_id = "my_sp_id"</codeblock>
-      
-      
-      </li>
-       <li>Install python-keystoneclient with it's dependencies.</li>
-        <li>Run the script 'python k2kclient.py' and an unscoped token will be returned from the Service Provider.</li></ol>
-        
-        At this point, domain or project scope of the unscoped taken can be discovered by sending the following URLs -
+        </li>
+        <li>Install python-keystoneclient with it's dependencies.</li>
+        <li>Run the script 'python k2kclient.py' and an unscoped token will be returned from the
+          Service Provider.</li>
+      </ol> At this point, domain or project scope of the unscoped taken can be discovered by
+      sending the following URLs -
       <codeblock>curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint>:5000/v3/OS-FEDERATION/domains
         curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint:5000/v3/OS-FEDERATION/projects</codeblock>
-      
-      
-
-    
-    
     </section>
     <section><title>Inside Keystone to Keystone Federation</title> K2K federation places a lot of
       responsibilities, and therefore, control at the end user. The complexity is apparent from the
