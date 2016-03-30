@@ -322,14 +322,14 @@ keystone_sp_conf:
 curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint:5000/v3/OS-FEDERATION/projects</codeblock>
     </section>
     <section><title>Inside Keystone to Keystone Federation</title> K2K federation places a lot of
-      responsibility with the end user. The complexity is apparent from the diagram below. <ul>
-        <li>End user must first authenticate to its "home" or local cloud, or local identity
+      responsibility with the end user. The complexity is apparent from the diagram below. <ol>
+        <li>The end user must first authenticate to his home or local cloud, or local identity
           provider Keystone instance to obtain a scoped token. </li>
-        <li>End user must discover what service providers (or remote clouds) are available to him by
-          querying his local cloud. </li>
+        <li>The end user must discover what service providers (or remote clouds) are available to
+          him by querying his local cloud. </li>
         <li>For a given remote cloud, the end user must discover which resources are available to
           him to querying the remote cloud for the projects he can scope to. </li>
-        <li>In order to talk to the remote cloud, the end user must first trade-in, with his local
+        <li>In order to talk to the remote cloud, the end user must first trade, with his local
           cloud, his local scoped token for SAML2 assertion for the remote cloud. </li>
         <li>The end user then presents the SAML2 assertion to the remote cloud. The remote cloud
           applies its mapping for the incoming SAML2 assertion to map the user to a local ephemeral
@@ -337,7 +337,7 @@ curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endp
         <li>The end user queries the remote cloud for the list of projects he has access to. </li>
         <li>The end user then re-scopes his token to a given project. </li>
         <li>The end user now has access to the resources owned by the project.</li>
-      </ul> As depicted below, WebSSO is accomplished via a series of HTTP redirects.<note>Horizon
+      </ol> As depicted below, WebSSO is accomplished via a series of HTTP redirects.<note>Horizon
         never talks directly to Keystone until the end of the sequence, after the federated unscoped
         token negotiation has completed. The browser interacts with Horizon, Keystone, and ADFS on
         their respective public endpoints.</note>
@@ -369,7 +369,7 @@ curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endp
           by one. </li>
       </ul></section>
 
-    <section><title>Testing scenarios</title>
+    <section><title>Additional testing scenarios</title>
       <p>The following tests assume one identity provider and one service provider. </p><b>Test Case
         1: Any federated user in the identity provider maps to a single designated group in the
         service provider</b>
@@ -470,8 +470,7 @@ group_domain_name=domain2
           above. openstack_user openstack_user_domain openstack_roles openstack_project
           openstack_project_domain The attribute openstack_user does not make much sense for testing
           as it is only mapped to a specific username. The attributes openstack_user_domain,
-          openstack_roles and openstack_project have already been covered by the above test cases.
-        </li>
+          openstack_roles and openstack_project have already been covered by the above test cases.  </li>
       </ol>
     </section>
   </body>
