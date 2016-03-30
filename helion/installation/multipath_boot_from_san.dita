@@ -92,8 +92,8 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
 		</ol>
 
 		<p>
-			In addition to the configuration options above you also need to specify the FCoE interfaces for boot install and for os configuration.
-			To configure for the os install phase specify the fcoe interfaces for each node as:
+			In addition to the configuration options above, you also need to specify the FCoE interfaces for boot install and for os configuration.
+			To configure for the os install phase, specify the FCoE interfaces for each node as:
 		</p>
 		
 <codeblock>
@@ -107,6 +107,9 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
       ilo-password: password
       ilo-user: admin
       boot-from-san: true
+      fcoe-interfaces:
+      -	eth2
+      -	eth3
 </codeblock>
 
 		<p>For the osconfig phase you will need to specify the <codeph>fcoe-interfaces</codeph> at the same level as the <codeph>network-interfaces</codeph>:</p>
@@ -117,8 +120,8 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
       fcoe-interfaces:
         - name: FCOE-INTERFACE
           devices:
-            - eth0
-            - eth1
+            - eth2
+            - eth3
  
      network-interfaces:
         - name: BOND0
@@ -141,6 +144,93 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
 </codeblock>
 
         </section>
+        
+
+        
     </body>
+    
+    <topic id="install_boot_from_san">
+        <title>Installing the <keyword keyref="kw-hos-phrase"/> iso on a node that supports Boot from SAN</title>
+        
+        
+        
+        <body>
+
+            <section>
+                <p>This sections describes how to install the iso with the following configurations:</p>
+                <sl>
+                    <sli><xref href="#install_boot_from_san/uefi"/></sli>
+                    <sli><xref href="#install_boot_from_san/uefi_fcoe"/></sli>
+                    <sli><xref href="#install_boot_from_san/bios"/></sli>
+                    <sli><xref href="#install_boot_from_san/bios_fcoe"/></sli>
+                </sl>
+                    
+                    
+            </section>
+            
+            <section id="uefi">
+                <title>UEFI Boot Mode</title>
+                
+                <p></p>
+                
+                
+                
+            </section>      
+ 
+             <section id="uefi_fcoe">
+                <title>UEFI Boot Mode with FCoE</title>
+                
+                <p></p>
+                
+                
+                
+            </section>    
+            
+            <section id="bios">
+                <title>Legacy BIOS Boot Mode</title>
+                
+                <p>On the installer boot menu, navigate (using the Down Arrow) to the <codeph>Advanced options</codeph> entry and then press Enter </p>
+                <image keyref="installer_boot_options"/>
+               
+               <p>This will bring up the Advanced options menu:</p>
+               <image keyref="installer_advanced_options"/>
+               
+               <p>Navigate to the <codeph>Multipath install</codeph> entry and press Enter to start the installation.</p>              
+            </section>
+ 
+           <section id="bios_fcoe">
+                <title>Legacy BIOS Boot Mode with FCoE</title>
+                
+                <p>On the installer boot menu, navigate (using the Down Arrow) to the <codeph>Advanced options</codeph> entry and then press Enter </p>
+                <image keyref="installer_boot_options"/>
+               
+               <p>This will bring up the Advanced options menu:</p>
+               <image keyref="installer_advanced_options"/>
+               
+               <p>Navigate to the <codeph>Multipath install</codeph> entry and press TAB to edit the entry details.
+               Notice that the kernel command line is now displayed at the bottom of the screen and that 
+                <codeph>multipath=true</codeph> is already specified.</p>
+               
+               <image keyref="multipath_install_edit"/>
+               
+               <p>Edit the kernel command line to add the FCoE network interfaces before the <codeph>---</codeph>. 
+                   In the example below, the interfaces are specified as:
+               
+<codeblock>
+partman-fcoe/interfaces=eth2,eth3
+</codeblock>
+           
+           <image keyref="multipath_install_edit_argument"/>
+           
+               </p>
+               
+               <p>Now press Enter to start the installation.</p>
+                
+                
+            </section>  
+        </body>
+    </topic>
+    
+    
 </topic>
 
