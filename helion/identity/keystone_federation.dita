@@ -8,7 +8,7 @@
       <title>What is Keystone to Keystone Federation?</title>
       <p>In a typical OpenStack cloud implementation that does not use federation, users
         authenticate with each service's API using the Keystone identity service. However, using
-        Keystone to Keystone (K2K) federation, the user, or requestor can have one identity to be
+        Keystone to Keystone (K2K) federation, the user, or requester can have one identity to be
         used across services.</p>
       <p>In HPE Helion OpenStack, the service provider is the OpenStack cloud. Using Keystone to
         Keystone federation, a number of different identity providers, such as Active Directory
@@ -459,30 +459,7 @@ curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endp
       <image href="../../media/keystone/Keystone-2-Keystone-Sequence-Generic.png"
         id="image_ldf_njb_mv"/></section>
 
-    <section><title>Known Issues and limitations</title> Keep in mind the following points: <ul>
-        <li>When a user is disabled in the IdP, the issued federated token from the service provider
-          still remains valid until the token's expiration.</li>
-        <li>An already issued federated token will retain its scope till its expiration. Any changes
-          in the mapping on the service provider will not impact the scope of an already issued
-          federated token. For example, if an already issued federated token was mapped to goup1
-          that has scope on project1, and mapping is changed to group2 that has scope on project2,
-          the prevously issued federated token still has scope on project1. </li>
-        <li>Scoping the federated user to a domain is not supported by default in the playbook.
-          Please follow these steps to support it. <ol>
-            <li>On the IdP side: hostname=myidp.com, username=user1 </li>
-            <li>On the service provider side, set: group=group1, group_domain_name=domain1, 'group1'
-              scopes to 'project1' </li>
-            <li>Mapping used: testcase1_1.json </li>
-            <li>Expected result: The federated user will scope to 'project1' User CLI/Curl to assign
-              any existing role to 'group1' on 'domain1' User CLI/Curl to remove 'project1' scope
-              from 'group1' </li>
-            <li>Result: The federated user will scope to 'domain1' </li>
-          </ol>
-        </li>
-        <li>K2K and WebSSO cannot be configured by putting both sets of config attributes in the
-          same config file; they will overwrite each other. So they will need to be configured one
-          by one. </li>
-      </ul></section>
+    
 
     <section><title>Additional testing scenarios</title>
       <p>The following tests assume one identity provider and one service provider. </p><b>Test Case
@@ -597,5 +574,29 @@ group_domain_name=domain2
           openstack_roles and openstack_project have already been covered by the above test cases.  </li>
       </ol>
     </section>
+    <section><title>Known Issues and limitations</title> Keep in mind the following points: <ul>
+      <li>When a user is disabled in the IdP, the issued federated token from the service provider
+        still remains valid until the token's expiration.</li>
+      <li>An already issued federated token will retain its scope till its expiration. Any changes
+        in the mapping on the service provider will not impact the scope of an already issued
+        federated token. For example, if an already issued federated token was mapped to goup1
+        that has scope on project1, and mapping is changed to group2 that has scope on project2,
+        the prevously issued federated token still has scope on project1. </li>
+      <li>Scoping the federated user to a domain is not supported by default in the playbook.
+        Please follow these steps to support it. <ol>
+          <li>On the IdP side: hostname=myidp.com, username=user1 </li>
+          <li>On the service provider side, set: group=group1, group_domain_name=domain1, 'group1'
+            scopes to 'project1' </li>
+          <li>Mapping used: testcase1_1.json </li>
+          <li>Expected result: The federated user will scope to 'project1' User CLI/Curl to assign
+            any existing role to 'group1' on 'domain1' User CLI/Curl to remove 'project1' scope
+            from 'group1' </li>
+          <li>Result: The federated user will scope to 'domain1' </li>
+        </ol>
+      </li>
+      <li>K2K and WebSSO cannot be configured by putting both sets of config attributes in the
+        same config file; they will overwrite each other. So they will need to be configured one
+        by one. </li>
+    </ul></section>
   </body>
 </topic>
