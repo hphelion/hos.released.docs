@@ -61,20 +61,6 @@ nova boot --flavor 1 --image &lt;image&gt; --nic net-id=$(neutron net-list | awk
 ## start vm2
 nova boot --flavor 1 --image &lt;image&gt; --nic net-id=$(neutron net-list | awk '/private/ {print $2}') vm2</codeblock></li>
           <li>Check if the VMs are active. <codeblock>nova list</codeblock></li>
-          <li>You will need to assign floating IP's to the VM's so you can access them from the
-            external network. Get the port id's of the vm1 and vm2 instances.
-            <codeblock>fixedip_vm1=$(nova list | awk '/vm1/ {print $12}' | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
-fixedip_vm2=$(nova list | awk '/vm2/ {print $12}' | awk -F '=' '{print $2}' | awk -F ',' '{print $1}')
-            
-portuuid_vm1=$(neutron port-list | grep $fixedip_vm1 | awk '{print $2}')
-portuuid_vm2=$(neutron port-list | grep $fixedip_vm2 | awk '{print $2}')</codeblock></li>
-          <li>Create the associated floating IP addresses to the vm1 and vm2 instances.
-            <codeblock>neutron floatingip-create ext-net --port-id $portuuid_vm1
-neutron floatingip-create ext-net --port-id $portuuid_vm2</codeblock></li>
-          <li>Verify if the floating ip is assigned to the instance. Executing the following
-            commands should show the assigned floating ips.
-            <codeblock>nova show vm1
-nova show vm2</codeblock></li>
         </ol>
       </sectiondiv>
       
@@ -142,47 +128,50 @@ barbican container create --name='tls_container2' --type='certificate' --secret=
               Balancer requires a tenant network and not an external network. </note>
             <codeblock>neutron lbaas-loadbalancer-create --name lb sub</codeblock></li>
           <li>Create a new listener. If you are enabling TLS, use the second example, if you are
-            enabling TLS and SNI, use the third example.<ol>
+            enabling TLS and SNI, use the third example.
+            <note>Use unique port numbers for each listener. This example uses 80, 443 and 444.</note>
+            <ol>
               <li>Create a new listener for the load balancer without TLS using the
                   <codeph>lbaas-listener-create</codeph> command and giving the listener the name of
                 the load balancer, the protocol, the protocol port and a name for the listener.
-                <codeblock>neutron lbaas-listener-create --loadbalancer lb --protocol HTTP --protocol-port=&lt;port> --name listener</codeblock>
+                <codeblock>neutron lbaas-listener-create --loadbalancer lb --protocol HTTP --protocol-port 80 --name listener</codeblock>
               </li>
               <li>Create a new listener for the load balancer with TLS and no SNI using the
                   <codeph>lbaas-listener-create</codeph> command and giving the listener the name of
                 the load balancer, the protocol, the protocol port, the name for the listener and
                 the default TLS container.
-                <codeblock>neutron lbaas-listener-create --loadbalancer lb --protocol-port 443 --protocol TERMINATED_HTTPS --name tis_listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}')</codeblock>
+                <codeblock>neutron lbaas-listener-create --loadbalancer lb --protocol-port 443 --protocol TERMINATED_HTTPS --name tls_listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}')</codeblock>
               </li>
               <li>Create a new listener for the load balancer with TLS and SNI using the
-                <codeph>lbaas-listener-create</codeph> command and giving the listener the name of
-                the load balancer, the protocol, the protocol port, the name for the listener, the default 
-                TLS container and the SNI container.
-                <codeblock>neutron lbaas-listener-create --loadbalancer lb1 --protocol-port 444 --protocol TERMINATED_HTTPS --name sni_listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}') --sni-container-refs $(barbican container list | awk '/ tls_container2 / {print $2}’</codeblock>              
+                  <codeph>lbaas-listener-create</codeph> command and giving the listener the name of
+                the load balancer, the protocol, the protocol port, the name for the listener, the
+                default TLS container and the SNI container.
+                <codeblock>neutron lbaas-listener-create --loadbalancer lb --protocol-port 444 --protocol TERMINATED_HTTPS --name sni_listener --default-tls-container-ref=$(barbican container list | awk '/ tls_container / {print $2}') --sni-container-refs $(barbican container list | awk '/ tls_container2 / {print $2}’</codeblock>
               </li>
             </ol>
           </li>
-          <li>For each listener, create a new pool for the load balancer using the <codeph>lbaas-pool-create</codeph>
-            command. Creating a new pool requires the load balancing algorithm, the name of the
-            listener, the protocol and a name for the pool.  In the example below we show the command for the listener 
-            named <codeph>listener</codeph>. You need to repeat that for the tis_listener and sni_listener as well. 
-            Make sure to specify different names for each pool.
-            <codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener listener --protocol HTTP --name pool</codeblock></li>
+          <li>For each listener, create a new pool for the load balancer using the
+              <codeph>lbaas-pool-create</codeph> command. Creating a new pool requires the load
+            balancing algorithm, the name of the listener, the protocol and a name for the pool. In
+            the example below we show the command for the listener named <codeph>listener</codeph>.
+            You need to repeat that for the tls_listener and sni_listener as well. Make sure to
+            specify different names for each pool.
+            <codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener listener --protocol HTTP --name &lt;pool name></codeblock></li>
           <li>You can add members to the load balancer pool by running the
               <codeph>lbaas-member-create</codeph> command. The command requires the subnet, IP
             address, protocol port and the name of the pool for each virtual machine you'd like to
-            include into the load balancer pool.  It is important to note that this will need to be repeated for each pool
-            created above. 
-            <codeblock>neutron lbaas-member-create --subnet sub --address &lt;ip address vm1> --protocol-port &lt;port> pool
-neutron lbaas-member-create --subnet sub --address &lt;ip address vm2> --protocol-port &lt;port> pool</codeblock></li>
+            include into the load balancer pool. It is important to note that this will need to be
+            repeated for each pool created above.
+            <codeblock>neutron lbaas-member-create --subnet sub --address &lt;ip address vm1> --protocol-port &lt;port> &lt;pool name>
+neutron lbaas-member-create --subnet sub --address &lt;ip address vm2> --protocol-port &lt;port> &lt;pool name></codeblock></li>
           <li>Display the current state of the load balancer and values with
               <codeph>lbaas-loadbalancer-show</codeph>.
             <codeblock>neutron lbaas-loadbalancer-show lb</codeblock></li>
-          <li>You need to assign the floating IP to lbaas VIP so it could be accessed from external
-            network.
+          <li>You need to assign the floating IP to lbaas VIP so it can be accessed from the
+            external network.
             <codeblock>fixedip_vip=$(neutron lbaas-loadbalancer-list | awk '/lb/ {print $6}')
 portuuid_vip=$(neutron port-list | grep $fixedip_vip | awk '{print $2}')</codeblock></li>
-          <li>Create and associate floating IP address to lbaas VIP address.
+          <li>Create and associate the floating IP address to lbaas VIP address.
             <codeblock>neutron floatingip-create ext-net --port-id $portuuid_vip</codeblock></li>
         </ol>
       </sectiondiv>
@@ -218,14 +207,15 @@ pass: &lt;password&gt;</codeblock></li>
             <codeblock>ssh cirros@&lt;ip address vm2>
 pass: &lt;password&gt;</codeblock></li>
           <li>Start running web servers on both of the virtual machines.</li>
-          <li>Create a webserv.sh script with below contents. In this example, the port is
-            80.<codeblock>$ vi webserv.sh
+          <li>Create a webserv.sh script with below contents. Use the &lt;port> from the member
+            creation
+            step.<codeblock>$ vi webserv.sh
               
 #!/bin/bash
               
 MYIP=$(/sbin/ifconfig eth0|grep 'inet addr'|awk -F: '{print $2}'| awk '{print $1}');
 while true; do
-    echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $MYIP" | sudo nc -l -p 80
+    echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $MYIP" | sudo nc -l -p &lt;port>
 done
               
 ## Give it Exec rights

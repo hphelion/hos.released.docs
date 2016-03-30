@@ -72,8 +72,8 @@
         information. 
     </p>
     <p>Octavia uses two-way SSL encryption to communicate with the amphora. There are demo
-        Certificate Authority (CA) certificates include with <keyword keyref="kw-hos-phrase-30"/> in
-          <codeph>/home/stack/scratch/ansible/next/hos/ansible/roles/octavia-common/files</codeph>
+        Certificate Authority (CA) certificates included with <keyword keyref="kw-hos-phrase-30"/>
+        in <codeph>/home/stack/scratch/ansible/next/hos/ansible/roles/octavia-common/files</codeph>
         on the lifecycle manager. For additional security in production deployments, all certificate
         authorities should be replaced with ones you generated yourself by running the following
         commands:
@@ -87,8 +87,8 @@ openssl req -x509 -passin pass:foobar -new -nodes -key cakey.pem -out serverca_0
           amphora.  The Amphora's will need to be failed over so they can utilize the new
           certificate. If you change the CA password for the server certificate you need to change
           that in the Octavia configuration files as well. See the <xref
-            href="../networking/octavia_admin.dita#OctaviaAdmin/Tuning"> Octavia Installation
-            guide</xref> for more information.</note>
+            href="../networking/octavia_admin.dita#OctaviaAdmin/Tuning"> Octavia Administration</xref> 
+        guide for more information.</note>
       </p>
    
     <p><b>Installing the Amphora Image</b></p>
@@ -107,9 +107,9 @@ openssl req -x509 -passin pass:foobar -new -nodes -key cakey.pem -out serverca_0
 $ ansible-playbook -i hosts/verb_hosts -e service_package=&lt;image path/name&gt; service-guest-image.yml</codeblock></li>
       <li>Source the service user (this can be done on a different computer)
         <codeblock>$ . service.osrc</codeblock></li>
-      <li>Verify if the image got uploaded and registered (this van be done on a computer 
-        with access to the glance CLI client)
-      <codeblock>$ glance image-list
+      <li>Verify if the image got uploaded and registered (this can be done on a computer with
+          access to the glance CLI client)
+          <codeblock>$ glance image-list
 +--------------------------------------+---------------------------------------+
 | ID                                   | Name                                  |
 +--------------------------------------+---------------------------------------+
@@ -124,8 +124,8 @@ $ ansible-playbook -i hosts/verb_hosts -e service_package=&lt;image path/name&gt
     <p>Please be aware that if you have already created load balancer they won't receive the new
         image. Only load balancers created after the image has been successfully installed will use
         the new image. If existing load balancers need to be switched to the new image please follow
-        the instructions in the admin guide.</p>
-    <!-- Need link here to point to the Octavia admin guide when it's created. -->
+        the instructions in the  <xref
+          href="../networking/octavia_admin.dita#OctaviaAdmin/Tuning"> Octavia Administration</xref> guide.</p>
  
   </section>
     
@@ -160,23 +160,24 @@ $ chmod 755 webserv.sh
           
 ## Start webserver
 $ ./webserv.sh</codeblock></li>
-      <li>Open a separate window. From the respective source node in external network (in case
-        of accessing LBaaS VIP thorough its FIP) or in private network (in case of no FIP), add
-        the respective IP address to the no_proxy env variable, if required. You can get the
-        <i>VIP</i> from the <codeph>neutron lbaas-loadbalancer-list</codeph> for LBaaS v2 and
-        <codeph>neutron lb-vip-list</codeph> for LBaaS v1.</li>
-      <li>Run the following commands to test load balancing. In this example, the VIP IP address
-        is 10.1.0.7 and when executing curl against the VIP, the responses are returned from the
-        load balanced services.<codeblock>$ export no_proxy=$no_proxy,10.1.0.7
+      <li>Open a separate window. From the respective source node in external network (in case of
+          accessing LBaaS VIP thorough its FIP) or in private network (in case of no FIP), add the
+          respective VIP address to the no_proxy env variable, if required. You can get the
+            <i>VIP</i> from the <codeph>neutron lbaas-loadbalancer-list</codeph> for LBaaS v2 and
+            <codeph>neutron lb-vip-list</codeph> for LBaaS v1.</li>
+      <li>Run the following commands to test load balancing from a node with access to the private 
+        network. . In this example, the VIP IP address is 10.1.0.7 and when executing curl against the 
+        VIP, the responses are returned from the load balanced services.
+        <codeblock>$ export no_proxy=$no_proxy,10.1.0.7
           
 ## Curl the VIP
-$ curl -k 10.1.0.7
+$ curl 10.1.0.7
 Welcome to 10.1.0.4
          
-$ curl -k 10.1.0.7
+$ curl 10.1.0.7
 Welcome to 10.1.0.5
           
-$ curl -k 10.1.0.7
+$ curl 10.1.0.7
 Welcome to 10.1.0.4</codeblock></li>
     </ol>
     
