@@ -3,56 +3,58 @@
 <topic xml:lang="en-us" id="knownissues30">
     <title>Known Issues in this Release</title>
     <body>
-        
-        <section>
-            <title>Fact cache entry isn't valid</title> 
-            <p><!--https://jira.hpcloud.net/browse/HLM-3357-->
-                If at the very start of an Ansible run you see a message like the following:
 
-<codeblock>
+        <section>
+            <title>Fact cache entry isn't valid</title>
+            <p><!--https://jira.hpcloud.net/browse/HLM-3357--> If at the very start of an Ansible
+                run you see a message like the following:
+                <codeblock>
 Fact cache entry for host COMPUTE-0002 isn't valid, deleting and failing
 Fact cache entry for host COMPUTE-0001 isn't valid, deleting and failing
 ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not otherwise contain valid JSON data. They have been removed, so you can re-run your command now.
-</codeblock>                
-                Then please just re-run your Ansible command.
-            </p>             
+</codeblock>
+                Then please just re-run your Ansible command. </p>
         </section>
-        
-        
+
+
         <section>
             <title>Compute (Nova)</title>
             <p><!-- DOCS-2653 --> The <codeph>policy.json</codeph> file for the Nova service has
                 been changed, although the location of the file remains the same:</p>
             <p>Old name/location: <codeph>~/helion/my_cloud/config/nova/policy.json</codeph></p>
-            <p>New name/location:
-                <codeph>~/helion/my_cloud/config/nova/policy.json.j2</codeph></p>
-            <p>If you have made changes to this file in your environment, you should recreate
-                these changes in the new file.</p>
+            <p>New name/location: <codeph>~/helion/my_cloud/config/nova/policy.json.j2</codeph></p>
+            <p>If you have made changes to this file in your environment, you should recreate these
+                changes in the new file.</p>
         </section>
-        
-        
+
+        <section>
+            <title>Block Storage (Cinder)</title>
+            <p><!-- DOCS-2878 --> Although <keyword keyref="kw-hos-version-30"/> supports encrypted
+                Block Storage volumes, the following limitations apply: <ul>
+                    <li>Creating encrypted volumes from an image is not supported.</li>
+                    <li>Creating encrypted volumes when using a Ceph backend is not supported. This
+                        bug can be seen <xref href="https://bugs.launchpad.net/nova/+bug/1463525"
+                            scope="external" format="html">here</xref>.</li>
+                </ul></p>
+        </section>
         <section>
             <title>Identity (Keystone)</title>
-            <p><!-- DOCS-2513 --> There will be performance degradation to a user's account in
-                your cloud environment if the number of roles assigned to that user goes above
-                ~1000. You are advised to use the user account functionality in an efficient way
-                so that this does not become an issue. This was reported in upstream OpenStack
-                <xref href="https://bugs.launchpad.net/keystone/+bug/1499555"
-                    scope="external" format="html">here</xref>.</p>
+            <p><!-- DOCS-2513 --> There will be performance degradation to a user's account in your
+                cloud environment if the number of roles assigned to that user goes above ~1000. You
+                are advised to use the user account functionality in an efficient way so that this
+                does not become an issue. This was reported in upstream OpenStack <xref
+                    href="https://bugs.launchpad.net/keystone/+bug/1499555" scope="external"
+                    format="html">here</xref>.</p>
         </section>
-        
+
         <section>
             <title>Bare Metal (Ironic)</title>
-            
-            <p>Multipath in not supported for the boot device. In case multiple paths exist 
-                use zoning so that only one path is available.
-               </p>
-            
-            <p> If there are multiple NICs that are connected to the Management network, and 
-                the first NIC does not have access, then deployment will fail. Ensure that the first 
-                NIC’s connection is UP.
-            </p>
+            <p>Multipath in not supported for the boot device. In case multiple paths exist use
+                zoning so that only one path is available. </p>
+            <p> If there are multiple NICs that are connected to the Management network, and the
+                first NIC does not have access, then deployment will fail. Ensure that the first
+                NIC’s connection is UP. </p>
         </section>
-        
+
     </body>
 </topic>
