@@ -5,13 +5,28 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
-      <title> </title>
+      <title>What is Keystone to Keystone Federation?</title>
+      
+     
+      <p>In a typical OpenStack cloud implementation that does not use federation, users
+        authenticate with each service's API using the Keystone identity service. However, using
+        Keystone to Keystone (K2K) federation, the user, or requestor can have one identity to be
+        used across services.</p>
+      
+        <p>In HPE Helion OpenStack, the service provider is the OpenStack cloud. Using Keystone to
+        Keystone federation, a number of different identity providers, such as ADFS or SAML2 can be
+        used to provide identity information and authentication. </p>
+      
+          <p>With K2K federation a Keystone service instance can be the identity provider and another can be the
+      service provider. </p>
+      
+      
       <p>Keystone to Keystone (K2K) is supported in<keyword keyref="kw-hos-phrase-30"/>. By running
-        a playbook with the customer provided configuration parameters, K2K will be enabled
-        automatically. It's disabled by default.</p>
+        a playbook with your configuration parameters, K2K will be enabled automatically. It's
+        disabled by default.</p>
       <p>Support for Keystone to Keystone federation happens on the API level, and you must
         implement it using your own client code by calling the supported APIs. Python-keystoneclient
-        has supported APIs to access the K2K APIs,</p>
+        has supported APIs to access the K2K APIs.</p>
       <p>The attached file <i>k2kclient.py</i> is an example and the diagram in the end of this page
         shows how the flows a client will need to access.</p>
     </section>
@@ -21,8 +36,8 @@
     <section>
       <p>To setup a Keystone as a service provider, follow the instructions below.</p>
       <ol id="ol_ug3_fdb_mv">
-        <li>Create a config file <i>k2k.yml</i> with the following parameters and place it in any
-          directory in your deployer, for example <i>/tmp</i>.
+        <li>Create a config file k2k.yml with the following parameters and place it in any directory
+          in your deployer, for example /tmp.
           <codeblock>keystone_trusted_idp: k2k
 keystone_sp_conf:
 	shib_sso_idp_entity_id: &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp
@@ -51,8 +66,7 @@ keystone_sp_conf:
 		-
 		  name: name1
 		  id: id1</codeblock>
-          Here are some detailed descriptions for each of the attributes.
-         <!-- <codeblock>keystone_trusted_idp: A flag to indicate if this configuration is used for K2K or Websso. The value can be either 'k2k' or 'adfs'.
+          Below are detailed descriptions for each of the attributes. <!-- <codeblock>keystone_trusted_idp: A flag to indicate if this configuration is used for K2K or Websso. The value can be either 'k2k' or 'adfs'.
 keystone_sp_conf:
     shib_sso_idp_entity_id: The Identity Provider URI used as a entity Id to identity the IdP. It is suggested to use the following value -
                             &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp.
@@ -82,36 +96,33 @@ keystone_sp_conf:
         -
           name: An attribute name from the SAML2 assertion.
           id: An Id that the above name will be mapped to.</codeblock>-->
-      
-          
           <dl>
             <dlentry>
-              <dt> keystone_trusted_idp</dt>
-              <dd>A flag to indicate if this configuration is used for K2K or Websso. The value can
-                be either 'k2k' or 'adfs'. </dd>
+              <dt>keystone_trusted_idp</dt>
+              <dd>A flag to indicate if this configuration is used for Keystone to Keystone or
+                WebSSO. The value can be either 'k2k' or 'adfs'. </dd>
             </dlentry>
           </dl>
           <b>keystone_sp_conf</b>
           <dl>
-    
             <dlentry>
               <dt>shib_sso_idp_entity_id</dt>
-              <dd> The Identity Provider URI used as a entity Id to identity the IdP. It is
-                suggested to use the following value -
+              <dd> The Identity Provider URI used as a entity Id to identity the IdP. You shoud use
+                the following value -
                 &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp. </dd>
             </dlentry>
             <dlentry>
               <dt>shib_sso_application_entity_id</dt>
-              <dd>The Service Provider URI used as a entity Id. It can be any URI here for K2K.
-              </dd>
+              <dd>The Service Provider URI used as an entity Id. It can be any URI here for Keystone
+                to Keystone. </dd>
             </dlentry>
             <dlentry>
               <dt>target_domain</dt>
-              <dd>A domain where the group will be created from. </dd>
+              <dd>A domain where the group will be created. </dd>
             </dlentry>
             <dlentry>
               <dt>name</dt>
-              <dd>Any domain name. If it does not exist, it will be created or be updated. </dd>
+              <dd>Any domain name. If it does not exist, it will be created or updated. </dd>
             </dlentry>
             <dlentry>
               <dt>description</dt>
@@ -119,11 +130,11 @@ keystone_sp_conf:
             </dlentry>
             <dlentry>
               <dt>target_project</dt>
-              <dd>A project scope that the group has. </dd>
+              <dd>A project scope of the group. </dd>
             </dlentry>
             <dlentry>
               <dt>name</dt>
-              <dd>Any project name. If it does not exist, it will be created or be updated. </dd>
+              <dd>Any project name. If it does not exist, it will be created or updated. </dd>
             </dlentry>
             <dlentry>
               <dt>description</dt>
@@ -135,7 +146,7 @@ keystone_sp_conf:
             </dlentry>
             <dlentry>
               <dt>name</dt>
-              <dd>Any group name. If it does not exist, it will be created or be updated. </dd>
+              <dd>Any group name. If it does not exist, it will be created or updated. </dd>
             </dlentry>
             <dlentry>
               <dt>description</dt>
@@ -143,12 +154,12 @@ keystone_sp_conf:
             </dlentry>
             <dlentry>
               <dt>role</dt>
-              <dd>A role will be assigned on 'target_project'. This role impacts the idp user scoped
-                token permission at sp side. </dd>
+              <dd>A role will be assigned on 'target_project'. This role impacts the IdP user scoped
+                token permission on the service provider side. </dd>
             </dlentry>
             <dlentry>
               <dt>name</dt>
-              <dd>It has to be an existing role. </dd>
+              <dd>Must be an existing role. </dd>
             </dlentry>
             <dlentry>
               <dt>idp_metadata_file</dt>
@@ -160,8 +171,8 @@ keystone_sp_conf:
             </dlentry>
             <dlentry>
               <dt>id</dt>
-              <dd>Any Id. If it does not exist, it will be created or be updated. This Id needs to
-                be shared with the client so that the right mapping will be selected. </dd>
+              <dd>Any Id. If it does not exist, it will be created or updated. This Id needs to be
+                shared with the client so that the right mapping will be selected. </dd>
             </dlentry>
             <dlentry>
               <dt>description</dt>
@@ -169,16 +180,16 @@ keystone_sp_conf:
             </dlentry>
             <dlentry>
               <dt>mapping</dt>
-              <dd>A mapping in json format that mapps a federated user to a corresponding group.
+              <dd>A mapping in JSON format that mapps a federated user to a corresponding group.
               </dd>
             </dlentry>
             <dlentry>
               <dt>id</dt>
-              <dd>Any Id. If it does not exist, it will be created or be updated. </dd>
+              <dd>Any Id. If it does not exist, it will be created or updated. </dd>
             </dlentry>
             <dlentry>
               <dt>rules_file</dt>
-              <dd>A reference to the file that has the mapping in json. </dd>
+              <dd>A reference to the file that has the mapping in JSON. </dd>
             </dlentry>
             <dlentry>
               <dt>protocol</dt>
@@ -191,8 +202,8 @@ keystone_sp_conf:
             <dlentry>
               <dt>attribute_map</dt>
               <dd>A shibboleth mapping defined additional attributes to map the attributes from the
-                SAML2 assertion to the K2K mapping that SP understands. K2K does not required any
-                additional attribute mapping. - </dd>
+                SAML2 assertion to the K2K mapping that the service provider understands. K2K does
+                not require any additional attribute mapping. </dd>
             </dlentry>
             <dlentry>
               <dt>name</dt>
@@ -243,14 +254,14 @@ keystone_sp_conf:
                     >https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst</xref></i></p></li>
           </ol></li>
         <li>Go to <i>/home/stack/scratch/ansible/next/hos/ansible </i>and run the following to
-          enable SP in Keystone -'<i>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml
-            -e@/tmp/k2k.yml</i>'</li>
+          enable SP in Keystone
+          <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
       <p><b><b>Set up an identity provider (IdP)</b></b></p>
-      <p>To setup a Keystone as a SP, please follow the instructions below.</p>
+      <p>To set up Keystone as a service provider, follow the instructions below.</p>
       <ol>
-        <li>Create a config file <i>k2k.yml</i> with the following parameters and place it in any
-          directory in your deployer, for example <i>/tmp</i>.
+        <li>Create a config file k2k.yml with the following parameters and place it in any directory
+          in your deployer, for example /tmp.
           <codeblock outputclass="width66">keystone_k2k_idp_conf:
             service_provider: 
             -
