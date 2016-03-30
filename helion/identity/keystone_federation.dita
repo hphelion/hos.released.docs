@@ -6,22 +6,16 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
       <title>What is Keystone to Keystone Federation?</title>
-      
-     
       <p>In a typical OpenStack cloud implementation that does not use federation, users
         authenticate with each service's API using the Keystone identity service. However, using
         Keystone to Keystone (K2K) federation, the user, or requestor can have one identity to be
         used across services.</p>
-      
-        <p>In HPE Helion OpenStack, the service provider is the OpenStack cloud. Using Keystone to
+      <p>In HPE Helion OpenStack, the service provider is the OpenStack cloud. Using Keystone to
         Keystone federation, a number of different identity providers, such as Active Directory
         Federation Services (ADFS) or SAML2 can be used to provide identity information and
         authentication. </p>
-      
-          <p>With K2K federation, a Keystone service instance can be the identity provider and
-        another can be the service provider. </p>
-      
-      
+      <p>With K2K federation, a Keystone service instance can be the identity provider and another
+        can be the service provider. </p>
       <p>Keystone to Keystone (K2K) is supported in<keyword keyref="kw-hos-phrase-30"/>. By running
         a playbook with your configuration parameters, K2K will be enabled automatically. It's
         disabled by default.</p>
@@ -168,8 +162,8 @@ keystone_sp_conf:
             </dlentry>
             <dlentry>
               <dt>id</dt>
-              <dd>Security Assertion Markup Language 2.0 (saml2) is the only supported protocol
-                for K2K. </dd>
+              <dd>Security Assertion Markup Language 2.0 (saml2) is the only supported protocol for
+                K2K. </dd>
             </dlentry>
             <dlentry>
               <dt>attribute_map</dt>
@@ -226,7 +220,7 @@ keystone_sp_conf:
                   >https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst</xref></p></li>
           </ol></li>
         <li>Go to <i>/home/stack/scratch/ansible/next/hos/ansible </i>and run the following to
-          enable SP in Keystone
+          enable the service provider in Keystone
           <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
       <p><b><b>Set up an identity provider (IdP)</b></b></p>
@@ -283,10 +277,10 @@ keystone_sp_conf:
               <dd>A private key that has key size 2048.</dd>
             </dlentry>
           </dl>
-        </li><li>
-          Create a private key and a self-signed certificate. The command-line tool, openssl, is required to generate the keys and certs.
-            If the system does not have it, you must install it.
-          <ol>
+        </li>
+        <li> Create a private key and a self-signed certificate. The command-line tool, openssl, is
+          required to generate the keys and certs. If the system does not have it, you must install
+          it. <ol>
             <li>Create a private key of size
               2048<codeblock>openssl genrsa -out myidp.key 2048</codeblock>
             </li>
@@ -298,8 +292,8 @@ keystone_sp_conf:
               <codeblock>openssl x509 -req -days 3650 -in myidp.csr -signkey myidp.key -out myidp.cer</codeblock></li>
           </ol>
         </li>
-        <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable SP in
-          Keystone
+        <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable the
+          service provider in Keystone
           <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
     </section>
@@ -349,16 +343,17 @@ curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endp
         their respective public endpoints.</note>
       <image href="../../media/keystone/Keystone-2-Keystone-Sequence-Generic.png"
         id="image_ldf_njb_mv"/></section>
-    
-    <section><title>Known Issues and limitations</title>
-    Keep in mind the following points:
-    <ul><li>When a user is disabled in the IdP, the issued federated token from the service provider still
-          remains valid until the token's expiration.</li><li>An already issued federated token will retain its scope till its expiration. Any changes in the
-          mapping on the service provider will not impact the scope of an already issued federated
-          token. For example, if an already issued federated token was mapped to goup1 that has
-          scope on project1, and  mapping is changed to group2 that has scope on project2, the
-          prevously issued federated token still has scope on project1. </li><li>Scoping the federated user to a domain is not supported by default in the playbook. Please
-          follow these steps to support it. <ol>
+
+    <section><title>Known Issues and limitations</title> Keep in mind the following points: <ul>
+        <li>When a user is disabled in the IdP, the issued federated token from the service provider
+          still remains valid until the token's expiration.</li>
+        <li>An already issued federated token will retain its scope till its expiration. Any changes
+          in the mapping on the service provider will not impact the scope of an already issued
+          federated token. For example, if an already issued federated token was mapped to goup1
+          that has scope on project1, and mapping is changed to group2 that has scope on project2,
+          the prevously issued federated token still has scope on project1. </li>
+        <li>Scoping the federated user to a domain is not supported by default in the playbook.
+          Please follow these steps to support it. <ol>
             <li>On the IdP side: hostname=myidp.com, username=user1 </li>
             <li>On the service provider side, set: group=group1, group_domain_name=domain1, 'group1'
               scopes to 'project1' </li>
@@ -368,7 +363,116 @@ curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endp
               from 'group1' </li>
             <li>Result: The federated user will scope to 'domain1' </li>
           </ol>
-        </li><li>K2K and WebSSO cannot be configured by putting both sets of config attributes in the same config
-          file; they will overwrite each other. So they will need to be configured one by one. </li></ul></section>
+        </li>
+        <li>K2K and WebSSO cannot be configured by putting both sets of config attributes in the
+          same config file; they will overwrite each other. So they will need to be configured one
+          by one. </li>
+      </ul></section>
+
+    <section><title>Testing scenarios</title>
+      <p>The following tests assume one identity provider and one service provider. </p><b>Test Case
+        1: Any federated user in the identity provider maps to a single designated group in the
+        service provider</b>
+      <ol>
+        <li>On the identity provider side: <codeblock>hostname=myidp.com, username=user1</codeblock>
+        </li>
+        <li>On the service provider side:
+          <codeblock>group=group1, group_domain_name=domain1, 'group1' scopes to 'project1'</codeblock>
+        </li>
+        <li>Mapping used: <codeblock>testcase1_1.json</codeblock>
+        </li>
+        <li>Expected result: The federated user will scope to 'project1' </li>
+      </ol>
+      <b>Test Case 2: A federated user in a specific domain in the identity provider maps to two
+        different groups in the service provider</b>
+      <ol>
+        <li> On the identity provider side:
+          <codeblock>hostname=myidp.com, username=user1, user_domain_name=Default</codeblock>
+        </li>
+        <li>On the service provider side:
+          <codeblock>group=group1
+group_domain_name=domain1
+'group1' scopes to 'project1' group=group2
+group_domain_name=domain2
+'group2' scopes to 'project2'</codeblock>
+        </li>
+        <li>Mapping used: <codeblock>testcase1_2.json</codeblock>
+        </li>
+        <li>Expected result: The federated user will scope to both 'project1' and 'project2' </li>
+      </ol>
+      <b>Test Case 3: A federated user with a specific project in the identity provider maps to a
+        specific group in the service provider</b>
+      <ol>
+        <li>On the identity provider side:
+          <codeblock>hostname=myidp.com, username=user4, user_project_name=test1</codeblock>
+        </li>
+        <li>On the service provider side:
+          <codeblock>group=group4, group_domain_name=domain4, 'group4' scopes to 'project4'</codeblock>
+        </li>
+        <li>Mapping used: <codeblock>testcase1_3.json</codeblock>
+        </li>
+        <li>Expected result: The federated user will scope to 'project4' </li>
+      </ol>
+      <b>Test Case 4: A federated user with a specific role in the identity provider maps to a
+        specific group in the service provider</b>
+      <ol>
+        <li>On the identity provider side:
+          <codeblock>hostname=myidp.com, username=user5, role_name=_member_</codeblock>
+        </li>
+        <li>On the service provider side:
+          <codeblock>group=group5, group_domain_name=domain5, 'group5' scopes to 'project5'</codeblock>
+        </li>
+        <li>Mapping used: <codeblock>testcase1_3.json</codeblock>
+        </li>
+        <li>Expected result: The federated user will scope to 'project5' </li>
+      </ol>
+      <b>Test Case 5: Retain the previous scope for a federated user</b>
+      <ol>
+        <li>On the identity provider side:
+          <codeblock>hostname=myidp.com, username=user1, user_domain_name=Default</codeblock>
+        </li>
+        <li>On the service provider side:
+          <codeblock>group=group1, group_domain_name=domain1, 'group1' scopes to 'project1'</codeblock>
+        </li>
+        <li>Mapping used: <codeblock>testcase1_1.json</codeblock>
+        </li>
+        <li>Expected result: The federated user will scope to 'project1' Later, we like to scope
+          federated users who has the Default domain in the identity provider to 'project2' in
+          addition to 'project1' </li>
+        <li>On the identity provider side:
+          <codeblock>hostname=myidp.com, username=user1, user_domain_name=Default</codeblock>
+        </li>
+        <li>On the service provider side:
+          <codeblock>group=group1
+group_domain_name=domain1
+'group1' scopes to 'project1' group=group2
+group_domain_name=domain2
+'group2' scopes to 'project2'</codeblock>
+        </li>
+        <li>Mapping used: <codeblock>testcase1_2.json</codeblock>
+        </li>
+        <li>Expected result: The federated user will scope to 'project1' and 'project2' </li>
+      </ol>
+      <b>Test Case 6: Scope a federated user to a domain </b><ol>
+        <li>On the identity provider side: <codeblock>hostname=myidp.com, username=user1</codeblock>
+        </li>
+        <li>On the service provider side:
+          <codeblock>group=group1, group_domain_name=domain1, 'group1' scopes to 'project1'</codeblock>
+        </li>
+        <li>Mapping used: <codeblock>testcase1_1.json</codeblock>
+        </li>
+        <li>Expected result: The federated user will scope to 'project1' User CLI/Curl to assign any
+          existing role to 'group1' on 'domain1' User CLI/Curl to remove 'project1' scope from
+          'group1' Finally result: The federated user will scope to 'domain1' </li>
+      </ol>
+      <b>Test Case 7: Test 5 remote attributes for mapping </b><ol>
+        <li>Test all the 5 different remote attributes as the following with similar test cases as
+          above. openstack_user openstack_user_domain openstack_roles openstack_project
+          openstack_project_domain The attribute openstack_user does not make much sense for testing
+          as it is only mapped to a specific username. The attributes openstack_user_domain,
+          openstack_roles and openstack_project have already been covered by the above test cases.
+        </li>
+      </ol>
+    </section>
   </body>
 </topic>
