@@ -67,5 +67,33 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
         </ol>
       </sectiondiv>
     </section>
+    
+    <section id="remove_monitoring"><title outputclass="headerH">Remove the VSA Node from
+      Monitoring</title><sectiondiv outputclass="insideSection">
+        <p>Once you have removed the VSA node from your cloud infrastructure, the Host Status alarm against it will trigger so there
+          are additional steps to take to resolve this issue.</p>
+        <p>You will want to SSH to each of the Monasca API servers and edit the
+            <codeph>/etc/monasca/agent/conf.d/host_alive.yaml</codeph> file to remove references to
+          the VSA node you removed. This will require <codeph>sudo</codeph> access. The entries will
+          look similar to the one below:</p>
+        <codeblock>- alive_test: ping
+  built_by: HostAlive  
+  host_name: helion-cp1-vsa0001-mgmt
+  name: helion-cp1-vsa0001-mgmt ping</codeblock>
+        <p>Once you have removed the references on each of your Monasca API servers you then need to
+          restart the Monasca Agent on each of those servers with this command:</p>
+        <codeblock>sudo service monasca-agent restart</codeblock>
+        <p>With the VSA node references removed and the Monasca Agent restarted, you can then delete
+          the corresponding alarm to finish this process. To do so we recommend using the Monasca
+          CLI which should be installed on each of your Monasca API servers by default:</p>
+        <codeblock>monasca alarm-list --metric-dimensions hostname=&#60;vsa node deleted></codeblock>
+        <p>For example, if your VSA node looked like the example above then you would use this
+          command to get the alarm ID:</p>
+        <codeblock>monasca alarm-list --metric-dimensions hostname=helion-cp1-vsa0001-mgmt</codeblock>
+        <p>You can then delete the alarm with this command:</p>
+        <codeblock>monasca alarm-delete &#60;alarm ID></codeblock>
+      </sectiondiv>
+    </section>
+    
   </body>
 </topic>
