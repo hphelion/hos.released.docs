@@ -52,45 +52,37 @@
       </ol>
     </section>
     
-    <section><title>ADFS Prerequisites</title>
-
-      
-      In order to enable the WebSSO feature, you will need to have an ADFS server already setup. This will be used as an Identity Provider to identify and authenticate the users.
-      
-      In order to create the trust between Keystone as the Service Provider and ADFS as the Identity Provider you will need to exchange metadata information between them.
-      
-      Therefore, you must export the ADFS Metadata information from the ADFS server.
-      
-    </section>
+    <section><title>ADFS prerequisites</title> In order to enable the WebSSO feature, you will need
+      to have an ADFS server already setup. This will be used as an Identity Provider to identify
+      and authenticate the users. In order to create the trust between Keystone as the Service
+      Provider and ADFS as the Identity Provider you will need to exchange metadata information
+      between them. Therefore, you must export the ADFS Metadata information from the ADFS server. </section>
     
-    <section><title>Create ADFS Metadata</title>
-    
-    For direct Microsoft wiki reference, follow Microsoft ADFS wiki, section "To create edited ADFS 2.0 metadata with an added scope element".
-    
-    For in-place reference, please see the below instructions taken from the Microsoft wiki.
-    
-      <ol><li>On the AD FS computer, use Internet Explorer to view https://&lt;adfs_server_hostname>/FederationMetadata/2007-06/FederationMetadata.xml.
-      </li><li>On the Page menu, click Save As, and then navigate to the Windows desktop and save the file with the name adfs_metadata.xml. Make sure to change the Save as type drop down box to All Files (*.*).
-      </li><li>Use Windows Explorer to navigate to the Windows desktop, right-click adfs_metadata.xml, and then click Edit.
-      </li><li>In Notepad, insert the following XML in the first element:
-        Note: before editing, the EntityDescriptor was:
-        <codeblock>&lt;EntityDescriptor ID="abc123" entityID=http://WIN-CAICP35LF2I.vlan44.domain/adfs/services/trust xmlns="urn:oasis:names:tc:SAML:2.0:metadata" ></codeblock>
-    
-    After editing, it should look like this:
-        <codeblock>&lt;EntityDescriptor ID="abc123" entityID="http://WIN-CAICP35LF2I.vlan44.domain/adfs/services/trust" xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0"></codeblock>
-      
-    
-    </li><li>In Notepad, on the Edit menu, click Find. In Find what, type IDPSSO, and then click Find Next.
-    
-    </li><li>Insert the following XML in this section:
-      Before editing, the IDPSSODescriptor was:
-      <codeblock>&lt;IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">&lt;KeyDescriptor use="encryption"></codeblock>
-    
-    After editing, it should look like this:
-    
-      <codeblock>&lt;IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">&lt;Extensions>&lt;shibmd:Scope regexp="false">vlan44.domain&lt;/shibmd:Scope>&lt;/Extensions>&lt;KeyDescriptor use="encryption"></codeblock>
-    </li><li>Delete the metadata document signature section of the file (bold text below), because we have
-          edited the document, which makes the signature invalid. Before editing
+    <section><title>Create ADFS metadata</title> For direct Microsoft wiki reference, follow
+      Microsoft ADFS wiki, section "To create edited ADFS 2.0 metadata with an added scope element".
+      For in-place reference, please see the below instructions taken from the Microsoft wiki. <ol>
+        <li>On the AD FS computer, use Internet Explorer to view
+          https://&lt;adfs_server_hostname>/FederationMetadata/2007-06/FederationMetadata.xml. </li>
+        <li>On the Page menu, click Save As, and then navigate to the Windows desktop and save the
+          file with the name adfs_metadata.xml. Make sure to change the Save as type drop down box
+          to All Files (*.*). </li>
+        <li>Use Windows Explorer to navigate to the Windows desktop, right-click adfs_metadata.xml,
+          and then click Edit. </li>
+        <li>In Notepad, insert the following XML in the first element: Note: before editing, the
+          EntityDescriptor was:
+          <codeblock>&lt;EntityDescriptor ID="abc123" entityID=http://WIN-CAICP35LF2I.vlan44.domain/adfs/services/trust xmlns="urn:oasis:names:tc:SAML:2.0:metadata" ></codeblock>
+          After editing, it should look like this:
+          <codeblock>&lt;EntityDescriptor ID="abc123" entityID="http://WIN-CAICP35LF2I.vlan44.domain/adfs/services/trust" xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0"></codeblock>
+        </li>
+        <li>In Notepad, on the Edit menu, click Find. In Find what, type IDPSSO, and then click Find
+          Next. </li>
+        <li>Insert the following XML in this section: Before editing, the IDPSSODescriptor was:
+          <codeblock>&lt;IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">&lt;KeyDescriptor use="encryption"></codeblock>
+          After editing, it should look like this:
+          <codeblock>&lt;IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">&lt;Extensions>&lt;shibmd:Scope regexp="false">vlan44.domain&lt;/shibmd:Scope>&lt;/Extensions>&lt;KeyDescriptor use="encryption"></codeblock>
+        </li>
+        <li>Delete the metadata document signature section of the file (bold text below), because we
+          have edited the document, which makes the signature invalid. Before editing
           <codeblock>&lt;EntityDescriptor ID="abc123" entityID="http://FSWEB.contoso.com/adfs/services/trust" xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0">
 &lt;ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
     SIGNATURE DATA
@@ -99,11 +91,11 @@
           After editing:
           <codeblock>&lt;EntityDescriptor ID="abc123" entityID="http://FSWEB.contoso.com/adfs/services/trust" xmlns="urn:oasis:names:tc:SAML:2.0:metadata" xmlns:shibmd="urn:mace:shibboleth:metadata:1.0">
 &lt;RoleDescriptor xsi:type=…></codeblock>
-        </li><li>
-      Save and close adfs_metadata.xml.
-    </li><li>
-      Copy adfs_metadata.xml to the deployer node under your preferred location. Let's assume /tmp.
-    </li></ol>
+        </li>
+        <li> Save and close adfs_metadata.xml. </li>
+        <li> Copy adfs_metadata.xml to the deployer node under your preferred location. Let's assume
+          /tmp. </li>
+      </ol>
     </section>
     
     <section><title>Set up WebSSO</title> To enable WebSSO for Keystone and Horizon follow the
@@ -324,7 +316,7 @@ keystone_sp_conf:
     
     </section>
   
-    <section><title>Setting up the ADFS server as the Identity Provider</title>
+    <section><title>Setting up the ADFS server as the identity provider</title>
       <p>For ADFS to be able to communicate with Keystone we need to add Keystone as a trusted
         relying party for ADFS as well as specify the user attributes that we want to send over to
         Keystone when users authenticate via Websso.</p>
@@ -350,7 +342,7 @@ keystone_sp_conf:
           access the relying party selected, and then click Next. </li>
         <li>Click Next, and then click Close.</li>
       </ol>
-      <b>Edit Claim Rules for Relying Party Trust</b>
+      <b>Edit claim rules for relying party trust</b>
       <ol>
         <li>The Edit Claim Rules dialog box should already be open. If not, In the AD FS center
           pane, under Relying Party Trusts, right-click your newly created trust, and then click
@@ -403,25 +395,16 @@ keystone_sp_conf:
         </li>
         <li>Click Finish, and then click OK.</li>
       </ol>This list of Claim Rules is just an example and can be modified/enhanced based on
-      customer's necessities and ADFS setup specifics. 
-    
-    
-    
-    
-    
-    
-    
-      <p><b>Create a sample user on the ADFS server</b></p>
-      
-      <ol><li>From Server Manager Dashboard, click Tools on the upper right, then Active Directory Users and Computer.
-      </li><li>Right click User->New->User
-      </li><li>Follow the screen instructions.
-      </li></ol>
-      
-      
-      <p><b>Test it all out</b></p>
-      
-      Test Horizon Login with ADFS. Open a browser at the Horizon URL and choose Authenticate using: ADFS Credentials. You should be redirected to the ADFS login page and be able to login into Horizon with your ADFS credentials.
-    </section>
+      customer's necessities and ADFS setup specifics. <p><b>Create a sample user on the ADFS
+          server</b></p>
+      <ol>
+        <li>From Server Manager Dashboard, click Tools on the upper right, then Active Directory
+          Users and Computer. </li>
+        <li>Right click User->New->User </li>
+        <li>Follow the screen instructions. </li>
+      </ol>
+      <p><b>Test it out</b></p> Test Horizon Login with ADFS. Open a browser at the Horizon URL and
+      choose Authenticate using: ADFS Credentials. You should be redirected to the ADFS login page
+      and be able to login into Horizon with your ADFS credentials. </section>
   </body>
 </topic>
