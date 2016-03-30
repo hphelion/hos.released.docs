@@ -14,11 +14,12 @@
         used across services.</p>
       
         <p>In HPE Helion OpenStack, the service provider is the OpenStack cloud. Using Keystone to
-        Keystone federation, a number of different identity providers, such as ADFS or SAML2 can be
-        used to provide identity information and authentication. </p>
+        Keystone federation, a number of different identity providers, such as Active Directory
+        Federation Services (ADFS) or SAML2 can be used to provide identity information and
+        authentication. </p>
       
-          <p>With K2K federation a Keystone service instance can be the identity provider and another can be the
-      service provider. </p>
+          <p>With K2K federation, a Keystone service instance can be the identity provider and
+        another can be the service provider. </p>
       
       
       <p>Keystone to Keystone (K2K) is supported in<keyword keyref="kw-hos-phrase-30"/>. By running
@@ -66,37 +67,7 @@ keystone_sp_conf:
 		-
 		  name: name1
 		  id: id1</codeblock>
-          Below are detailed descriptions for each of the attributes. <!-- <codeblock>keystone_trusted_idp: A flag to indicate if this configuration is used for K2K or Websso. The value can be either 'k2k' or 'adfs'.
-keystone_sp_conf:
-    shib_sso_idp_entity_id: The Identity Provider URI used as a entity Id to identity the IdP. It is suggested to use the following value -
-                            &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp.
-    shib_sso_application_entity_id: The Service Provider URI used as a entity Id. It can be any URI here for K2K.
-    target_domain: A domain where the group will be created from.
-        name: Any domain name. If it does not exist, it will be created or be updated.
-        description: Any description.
-    target_project: A project scope that the group has.
-        name: Any project name. If it does not exist, it will be created or be updated.
-        description: Any description.
-    target_group: A group will be created from 'target_domain'.
-        name: Any group name. If it does not exist, it will be created or be updated.
-        description: Any description.
-    role: A role will be assigned on 'target_project'. This role impacts the idp user scoped token permission at sp side.
-        name: It has to be an existing role.
-    idp_metadata_file: A reference to the IdP metadata file that validates the SAML2 assertion.
-    identity_provider: A supported IdP
-        id: Any Id. If it does not exist, it will be created or be updated. This Id needs to be shared with the client so that the right mapping will be selected.
-        description: Any description.
-    mapping: A mapping in json format that mapps a federated user to a corresponding group.
-        id: Any Id. If it does not exist, it will be created or be updated.
-        rules_file: A reference to the file that has the mapping in json.
-    protocol: The supported federation protocol.
-        id: 'saml2' is the only supported protocol for K2K.
-    attribute_map: A shibboleth mapping defined additional attributes to map the attributes from the SAML2 assertion to the K2K mapping that SP understands.
-                   K2K does not required any additional attribute mapping.
-        -
-          name: An attribute name from the SAML2 assertion.
-          id: An Id that the above name will be mapped to.</codeblock>-->
-          <dl>
+          Below are descriptions of each of the attributes. <dl>
             <dlentry>
               <dt>keystone_trusted_idp</dt>
               <dd>A flag to indicate if this configuration is used for Keystone to Keystone or
@@ -197,7 +168,8 @@ keystone_sp_conf:
             </dlentry>
             <dlentry>
               <dt>id</dt>
-              <dd>'saml2' is the only supported protocol for K2K. </dd>
+              <dd>Security Assertion Markup Language 2.0 (saml2) is the only supported protocol
+                for K2K. </dd>
             </dlentry>
             <dlentry>
               <dt>attribute_map</dt>
@@ -215,11 +187,11 @@ keystone_sp_conf:
             </dlentry>
           </dl>
         </li>
-        <li>Create a metadata file that is referenced from the above config file, for example
-            <i>/tmp/idp_metadata.xml</i>. The content of the metadata file is from the IdP and can
-          be found in <i>/etc/keystone/idp_metadata.xml</i>.<ol id="ol_myr_zgb_mv">
+        <li>Create a metadata file that is referenced from the above config file; for example,
+          /tmp/idp_metadata.xml. The content of the metadata file is from the IdP and can be found
+          in /etc/keystone/idp_metadata.xml.<ol id="ol_myr_zgb_mv">
             <li>Create a mapping file that is referenced from the above config file, for example
-                <i>/tmp/k2k_sp_mapping.json. </i>The following is an example of mapping file. <codeblock>[
+              /tmp/k2k_sp_mapping.json. The following is an example of mapping file. <codeblock>[
   {
     "local": [
       {
@@ -248,17 +220,17 @@ keystone_sp_conf:
     ]
    }
 ]           </codeblock>
-              <p>More details of how the K2K mapping works can be found here - <i><xref
-                    href="https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst"
-                    format="html" scope="external"
-                    >https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst</xref></i></p></li>
+              <p>More details of how the K2K mapping works can be found here - <xref
+                  href="https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst"
+                  format="html" scope="external"
+                  >https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst</xref></p></li>
           </ol></li>
         <li>Go to <i>/home/stack/scratch/ansible/next/hos/ansible </i>and run the following to
           enable SP in Keystone
           <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
       <p><b><b>Set up an identity provider (IdP)</b></b></p>
-      <p>To set up Keystone as a service provider, follow the instructions below.</p>
+      <p>To set up Keystone as an identity provider, follow these steps:</p>
       <ol>
         <li>Create a config file k2k.yml with the following parameters and place it in any directory
           in your deployer, for example /tmp.
@@ -270,38 +242,71 @@ keystone_sp_conf:
             sp_url: https://sp_host:5000
             auth_url: https://sp_host:5000/v3
             signer_cert: -----BEGIN CERTIFICATE-----\nMIIDmDCCAoACCQDS+ZDoUfrcIzANBgkqhkiG9w0BAQsFADCBjDELMAkGA1UEBhMC\nVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExEjAQBgNVBAcMCVN1bm55dmFsZTEMMAoG\nA1UECgwDSFBFMRQwEgYDVQQLDAtFbmdpbmVlcmluZzEQMA4GA1UEAwwHSzJLX0lk\nUDEeMBwGCSqGSIb3DQEJARYPazJrX2lkcEBocGUuY29tMCAXDTE1MTEyMDAxMjg1\nMFoYDzIxMTUxMDI3MDEyODUwWjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNh\nbGlmb3JuaWExEjAQBgNVBAcMCVN1bm55dmFsZTEMMAoGA1UECgwDSFBFMRQwEgYD\nVQQLDAtFbmdpbmVlcmluZzEQMA4GA1UEAwwHSzJLX0lkUDEeMBwGCSqGSIb3DQEJ\nARYPazJrX2lkcEBocGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\nAQEA1gRiHiwSO6L5PrtroHi/f17DQBOpJ1KMnS9FOHSm1mES2xlB46y/GebGIZp+\nivUbLvbJHdi0axcA0OuzCLPx6t338npJzEELXNHhlSJ2KHUuLtdpltsFGMISFjD5\nkuQgBi4bEUyhQFRWkcgqL3fK5lwTB/YaMRMnLA67QDvSPOFcJFZIOhICY0cVKsHJ\nxxRbi8XfNZOLE65+yq5onxZuWH+Kbg7bOGBl45YXXjncjSN/LjruoDYv+PrHuCuF\n8B9k7F7PtGaYBnqf4z79DErxdjQZvJ3rN7W/qj04gcdaeAxoHy0+cCp+2zejerEh\n00ax1NYYnPRrEhrcU8wbM47UvQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQDD99xf\nDw4+XRzU5ii1YuJpIsFWxbCfCqAfBtz6WaEV/UssKiEkcsasOseQvD7EUMVRhxlP\ne+7Al/vazn4xwSJzthv3NQq5g5rAMuY9Dsu5Smyok6ygY1mAAJcLGfF2VtaaSo8B\nUGj5SN8jjhOG+Yh2aNOBt6GVJlE36oFeHRVPGByq/UEGlozEWT4qAZHql8/nQlzD\nhup36JhXxtgeP/DMQOAn7HYeVJQ6+xoUWZIQhvrlvDdhWskasfOtPqI0c8/BLFoL\nCvX5vYvFSXZMyhNnMOOPyf7bTXEr+TBCVaO957FLowGv8VnW/nLVEL5tkTRWVy1A\nOpKEvhlMsl5I/tle\n-----END CERTIFICATE-----
-            signer_key: -----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA1gRiHiwSO6L5PrtroHi/f17DQBOpJ1KMnS9FOHSm1mES2xlB\n46y/GebGIZp+ivUbLvbJHdi0axcA0OuzCLPx6t338npJzEELXNHhlSJ2KHUuLtdp\nltsFGMISFjD5kuQgBi4bEUyhQFRWkcgqL3fK5lwTB/YaMRMnLA67QDvSPOFcJFZI\nOhICY0cVKsHJxxRbi8XfNZOLE65+yq5onxZuWH+Kbg7bOGBl45YXXjncjSN/Ljru\noDYv+PrHuCuF8B9k7F7PtGaYBnqf4z79DErxdjQZvJ3rN7W/qj04gcdaeAxoHy0+\ncCp+2zejerEh00ax1NYYnPRrEhrcU8wbM47UvQIDAQABAoIBADOcAv07q3nuJyTV\nlXKxK5zPgU4mb5gn8/jDuXGPz9vKtP1Y7ea1dbANUqIv22wvB0sgAAfOhlN8zJmU\n/SuQGTqGJJC4pKs41ECh7EBGey/uciChmbjjQCtkQXBQhx7BHGfhHm3hiNE2hVnK\nZ0HjJW6/rWcyFcbX045wTv+CbYR4cwGktQH+uzIkf4nxEzZ+v8ubx/JDLUet6eNz\nLPKLasIhiOU4YL2poX5wJ68up3SOTDHOOPlGvp26ml5ZhfhEiqnHZyR0x6vqTWi6\nwUrBOAwz6gnifmAdPLglso61b+S6VGfTCyyjCldj6Yrj8DMbPpO/gAXY2Xgs1Rpy\nAciL1wECgYEA82IDWOwNBhqnW4DzXaYRpHjx32ttPb60NKYtk4e33v9TW8IEXH5W\n4SVxFoDxor4Mmqp3k2CEKhmf6VRrxJNFYIqXRUqO5dBjh237zLVP4UCHhW3p3+uM\nKZl0bZ605jhd0WUGvzN2s0iP+1q+6m/++8hW008RB38LCKYsh6QHqjECgYEA4Rym\nq40ylLqqdCo3sYetR6eqidT7/8rZvN7EmaXHsvW1oCVhBxWd+X/7DCYztVGOOwM8\n7eKXZPtkEV3rWzgCE7NSP8X7AbOxej9Z9qYeM282KjYCHclJD/wkCwa1btX3qGGF\ngDbVw3/DcCmTkUWtq08zdz0HGfPC9fc+UTw95E0CgYA1BwrhqfSgetgx6KOdqNw5\nMJzKZ/aSOGW8/uP5O93E+W5pFJmsqV42idjc5VVAdxX58OBCvQmuvoyH4vvkBY5d\nHXUeBMOjsMausDjnfi2cT1n3qV4GiqSsP6INbEHP00IlqFRS/lyDbXDpe/kSzToK\nE7lPKu/z6Ss3RDV5jDSbUQKBgQCDJbMAPPmb5ohJtxLNTdMo7MiRFlFd+6sQuuPk\n8809OKMA0uYNP43SfroeoN79Iq9vN/q2SI2VGlR5PbNRaHblTVJ8rvYGTs71/pSF\n+s+bfY4b120yN0NmmanR9q2bDfMD2RTy1n+BLx0IamB7gRGlvTWpoRdTCk2qCMn4\nf9U6/QKBgB8g8Q9hc2WDRjk6K+xyfNZ3pCiHmjTHvCt305DhRDjEjenj0WuXW/QW\nfHvjOW+UrZXg5K56ZKNbew8i5W4McrUoxFhk5rZRisFgetD4gxSgPCuiY7fE/QDX\nScXlxGigdJBUDKkmsdO4q0H1EGXYudTYP8x14v0U8S1N</codeblock>
-          Here are some detailed descriptions for each of the attributes. <codeblock>keystone_k2k_idp_conf:
-            service_provider: One or more Service Provider can be defined. If it does not exist, it will be created or be updated.
-            -
-            id: Any Id. If it does not exist, it will be created or be updated. This Id needs to be shared with the client so that he knows where the Service Provider is.
-            description: Any description.
-            sp_url: Service Provider base URL.
-            auth_url: Service Provider Auth URL.
-            signer_cert: Content of self-signed certificate that is embedded in the metadata file. The validity is recommended to be valid for a longer period of time, for example 3650 days(10 years).
-            signer_key: A private key that has key size 2048.</codeblock>
-          <p>The following are some details on creating a private key and a self-signed
-            certificate.</p>
-          <codeblock>The command tool 'openssl' is required. If the system does not have it, install it.
-            
-            # Create a private key
-            openssl genrsa -out myidp.key 2048
-            
-            # Generate a certificate request named myidp.csr. When prompted, choose CommonName the server's hostname
-            openssl req -new -key myidp.key -out myidp.csr
-            
-            # Generate a self-signed certificate named myidp.cer
-            openssl x509 -req -days 3650 -in myidp.csr -signkey myidp.key -out myidp.cer</codeblock>
+            signer_key: -----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA1gRiHiwSO6L5PrtroHi/f17DQBOpJ1KMnS9FOHS
+            m1mES2xlB\n46y/GebGIZp+ivUbLvbJHdi0axcA0OuzCLPx6t338npJzEELXNHhlSJ2KHUuLtdp\nltsFGMISFjD5kuQgBi4bEUyhQFRWkcgqL3fK5lwTB/YaMRMnLA67QDvSPOFcJFZI\nOhICY0cVKsHJxxRbi8XfNZOLE65+yq5onxZuWH+Kbg7bOGBl45YXXjncjSN/Ljru\noDYv+PrHuCuF8B9k7F7PtGaYBnqf4z79DErxdjQZvJ3rN7W/qj04gcdaeAxoHy0+\ncCp+2zejerEh00ax1NYYnPRrEhrcU8wbM47UvQIDAQABAoIBADOcAv07q3nuJyTV\nlXKxK5zPgU4mb5gn8/jDuXGPz9vKtP1Y7ea1dbANUqIv22wvB0sgAAfOhlN8zJmU\n/SuQGTqGJJC4pKs41ECh7EBGey/uciChmbjjQCtkQXBQhx7BHGfhHm3hiNE2hVnK\nZ0HjJW6/rWcyFcbX045wTv+CbYR4cwGktQH+uzIkf4nxEzZ+v8ubx/JDLUet6eNz\nLPKLasIhiOU4YL2poX5wJ68up3SOTDHOOPlGvp26ml5ZhfhEiqnHZyR0x6vqTWi6\nwUrBOAwz6gnifmAdPLglso61b+S6VGfTCyyjCldj6Yrj8DMbPpO/gAXY2Xgs1Rpy\nAciL1wECgYEA82IDWOwNBhqnW4DzXaYRpHjx32ttPb60NKYtk4e33v9TW8IEXH5W\n4SVxFoDxor4Mmqp3k2CEKhmf6VRrxJNFYIqXRUqO5dBjh237zLVP4UCHhW3p3+uM\nKZl0bZ605jhd0WUGvzN2s0iP+1q+6m/++8hW008RB38LCKYsh6QHqjECgYEA4Rym\nq40ylLqqdCo3sYetR6eqidT7/8rZvN7EmaXHsvW1oCVhBxWd+X/7DCYztVGOOwM8\n7eKXZPtkEV3rWzgCE7NSP8X7AbOxej9Z9qYeM282KjYCHclJD/wkCwa1btX3qGGF\ngDbVw3/DcCmTkUWtq08zdz0HGfPC9fc+UTw95E0CgYA1BwrhqfSgetgx6KOdqNw5\nMJzKZ/aSOGW8/uP5O93E+W5pFJmsqV42idjc5VVAdxX58OBCvQmuvoyH4vvkBY5d\nHXUeBMOjsMausDjnfi2cT1n3qV4GiqSsP6INbEHP00IlqFRS/lyDbXDpe/kSzToK\nE7lPKu/z6Ss3RDV5jDSbUQKBgQCDJbMAPPmb5ohJtxLNTdMo7MiRFlFd+6sQuuPk\n8809OKMA0uYNP43SfroeoN79Iq9vN/q2SI2VGlR5PbNRaHblTVJ8rvYGTs71/pSF\n+s+bfY4b120yN0NmmanR9q2bDfMD2RTy1n+BLx0IamB7gRGlvTWpoRdTCk2qCMn4\nf9U6/QKBgB8g8Q9hc2WDRjk6K+xyfNZ3pCiHmjTHvCt305DhRDjEjenj0WuXW/QW\nfHvjOW+UrZXg5K56ZKNbew8i5W4McrUoxFhk5rZRisFgetD4gxSgPCuiY7fE/QDX\nScXlxGigdJBUDKkmsdO4q0H1EGXYudTYP8x14v0U8S1N
+          </codeblock>
+          Here are some detailed descriptions for each of the attributes. 
+          <dl>
+            <dlentry>
+              <dt>keystone_k2k_idp_conf</dt>
+              <dd> </dd>
+            </dlentry>
+            <dlentry>
+              <dt>service_provider</dt>
+              <dd>One or more Service Provider can be defined. If it does not exist, it will be
+                created or be updated. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>id</dt>
+              <dd>Any Id. If it does not exist, it will be created or be updated. This Id needs to
+                be shared with the client so that he knows where the Service Provider is. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>description</dt>
+              <dd>Any description. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>sp_url</dt>
+              <dd>Service Provider base URL. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>auth_url</dt>
+              <dd>Service Provider Auth URL. </dd>
+            </dlentry>
+            <dlentry>
+              <dt>signer_cert</dt>
+              <dd>Content of self-signed certificate that is embedded in the metadata file. The
+                validity is recommended to be valid for a longer period of time, for example 3650
+                days(10 years). </dd>
+            </dlentry>
+            <dlentry>
+              <dt>signer_key</dt>
+              <dd>A private key that has key size 2048.</dd>
+            </dlentry>
+          </dl>
+          <p>The following are some details on creating a private key and a self-signed certificate.
+            The command tool 'openssl' is required. If the system does not have it, you must install
+            it.</p>
+          <ol><li>Create a private key
+          <codeblock>openssl genrsa -out myidp.key 2048</codeblock>
+          </li>
+            <li>Generate a certificate request named myidp.csr. When prompted, choose CommonName the server's hostname
+            <codeblock>openssl req -new -key myidp.key -out myidp.csr</codeblock>
+            </li>
+            <li>Generate a self-signed certificate named myidp.cer
+            <codeblock>openssl x509 -req -days 3650 -in myidp.csr -signkey myidp.key -out myidp.cer</codeblock></li>
+          </ol>
         </li>
         <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable SP in
-          Keystone - 'ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml
-          -e@/tmp/k2k.yml'</li>
+          Keystone
+          <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
     </section>
     <section><title>Test it out</title> The attached script k2kclient.py can be used as an example
-      for the end-to-end flows. To run k2kclient.py, please follow the instructions below. <ol>
-        <li>There are few parameters need to be changed in the beginning of the script, like
-          <codeblock># IdP auth URL
+      for the end-to-end flows. To run k2kclient.py follow the instructions below. <ol>
+        <li>There are few parameters must be changed in the beginning of the script. For example,
+          enter your specific UR, project name, user name,
+          etc.<codeblock># IdP auth URL
           self.auth_url = "http://idp_host:5000/v3/"
           self.project_name = "my_project_name"
           self.project_domain_name = "my_project_domain_name"
@@ -313,33 +318,56 @@ keystone_sp_conf:
           # service provider Id that is defined in the IdP config
           self.sp_id = "my_sp_id"</codeblock>
         </li>
-        <li>Install python-keystoneclient with it's dependencies.</li>
-        <li>Run the script 'python k2kclient.py' and an unscoped token will be returned from the
-          Service Provider.</li>
-      </ol> At this point, domain or project scope of the unscoped taken can be discovered by
-      sending the following URLs -
-      <codeblock>curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint>:5000/v3/OS-FEDERATION/domains
-        curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint:5000/v3/OS-FEDERATION/projects</codeblock>
+        <li>Install python-keystoneclient along with its dependencies.</li>
+        <li>Run the script python k2kclient.py and an unscoped token will be returned from the
+          service provider.</li>
+      </ol> At this point, the domain or project scope of the unscoped taken can be discovered by
+      sending the following
+      URLs:<codeblock>curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint>:5000/v3/OS-FEDERATION/domains
+curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint:5000/v3/OS-FEDERATION/projects</codeblock>
     </section>
     <section><title>Inside Keystone to Keystone Federation</title> K2K federation places a lot of
-      responsibilities, and therefore, control at the end user. The complexity is apparent from the
-      diagram below. <ul>
+      responsibility with the end user. The complexity is apparent from the diagram below. <ul>
         <li>End user must first authenticate to its "home" or local cloud, or local identity
-          provider Keystone to obtain a scoped token. </li>
-        <li>End user need to find out what service providers (or remote clouds) are available to him
-          by querying his local cloud. </li>
-        <li>For a given remote cloud, end user must find out which resources are available to him to
-          querying the remote cloud the "projects he can scope to". </li>
-        <li>In order to talk to the remote cloud, end user must first trade-in, with his local
+          provider Keystone instance   to obtain a scoped token. </li>
+        <li>End user must discover what service providers (or remote clouds) are available to him by
+          querying his local cloud. </li>
+        <li>For a given remote cloud, the end user must discover which resources are available to
+          him to querying the remote cloud for the projects he can scope to. </li>
+        <li>In order to talk to the remote cloud, the end user must first trade-in, with his local
           cloud, his local scoped token for SAML2 assertion for the remote cloud. </li>
-        <li>End user presents the SAML2 assertion to the remote cloud. Remote cloud applies its
-          mapping for the incoming SAML2 assertion to map the user to a local ephemeral persona
-          (i.e. groups) and issue an unscoped token. </li>
-        <li>End user query the remote cloud for the list of project he have access to. </li>
-        <li>End user then re-scope its token to a given project. </li>
-        <li>End user have access to the resources own by the project.</li>
-      </ul>
+        <li>The end user then presents the SAML2 assertion to the remote cloud. The remote cloud
+          applies its mapping for the incoming SAML2 assertion to map the user to a local ephemeral
+          persona (i.e. groups) and issues an unscoped token. </li>
+        <li>The end user queries the remote cloud for the list of projects he has access to. </li>
+        <li>The end user then re-scopes his token to a given project. </li>
+        <li>The end user now has access to the resources owned by the project.</li>
+      </ul> As depicted below, WebSSO is accomplished via a series of HTTP redirects. <note>Horizon
+        never talks directly to Keystone until the end of the sequence, after the federated unscoped
+        token negotiation has completed. The browser interacts with Horizon, Keystone, and ADFS on
+        their respective public endpoints.</note>
       <image href="../../media/keystone/Keystone-2-Keystone-Sequence-Generic.png"
         id="image_ldf_njb_mv"/></section>
+    
+    <section><title>Known Issues and limitations</title>
+    Keep in mind the following points:
+    <ul><li>When a user is disabled in the IdP, the issued federated token from the service provider still
+          remains valid until the token's expiration.</li><li>An already issued federated token will retain its scope till its expiration. Any changes in the
+          mapping on the service provider will not impact the scope of an already issued federated
+          token. For example, if an already issued federated token was mapped to goup1 that has
+          scope on project1, and  mapping is changed to group2 that has scope on project2, the
+          prevously issued federated token still has scope on project1. </li><li>Scoping the federated user to a domain is not supported by default in the playbook. Please
+          follow these steps to support it. <ol>
+            <li>On the IdP side: hostname=myidp.com, username=user1 </li>
+            <li>On the service provider side, set: group=group1, group_domain_name=domain1, 'group1'
+              scopes to 'project1' </li>
+            <li>Mapping used: testcase1_1.json </li>
+            <li>Expected result: The federated user will scope to 'project1' User CLI/Curl to assign
+              any existing role to 'group1' on 'domain1' User CLI/Curl to remove 'project1' scope
+              from 'group1' </li>
+            <li>Result: The federated user will scope to 'domain1' </li>
+          </ol>
+        </li><li>K2K and WebSSO cannot be configured by putting both sets of config attributes in the same config
+          file; they will overwrite each other. So they will need to be configured one by one. </li></ul></section>
   </body>
 </topic>
