@@ -473,7 +473,49 @@ $ openstack --os-identity-api-version 3 \
     </section>
     
     
-    
+    <section><title>Update LDAP CA certificates</title>
+      Overview
+      
+      There are chances that LDAP CA certificates may expire or for some reason not work anymore. This document shows you the steps to update the LDAP CA certificates on the identity service side.
+      Detailed Instruction
+      
+      See the following for the detailed instruction:
+      
+      Follow the steps below to update LDAP CA certificates
+      <ol><li>
+        Locate the file keystone_configure_ldap_certs_sample.yml
+        <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_certs_sample.yml</codeblock>
+        
+        
+      </li><li>Save a copy of this file with a new name, for example:
+        <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_certs_all.yml</codeblock>
+        
+        
+      </li><li>Edit the file and specify the correct single file path name for the ldap certicicates. This file path name has to be consistent with the one defined in tls_cacertfile of the domain-specific configuration.
+        Edit the file and populate or update it with ldap CA certificates for all LDAP domains.
+        
+      </li><li>As suggested at Using Git for Configuration Management, commit the new file into local git repository, and rerun playbooks of configuration processor and deployment area preparation:
+        <codeblock># Commit the new file into local git repository
+          $ cd ~/helion
+          $ git checkout site
+          $ git add -A
+          # verify added files 
+          $ git status
+          $ git commit -m "Update LDAP CA certificates: more description here..."
+          
+          # Run configuration processor / deployment area preparation playbooks 
+          $ cd ~/helion/hos/ansible
+          $ ansible-playbook -i hosts/localhost config-processor-run.yml
+          $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+        
+      </li><li>Run reconfiguration playbook in deployment area:
+        $ cd ~/scratch/ansible/next/hos/ansible
+        $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_certs_all.yml
+      </li></ol>
+      
+      
+      
+    </section>
     
     
     
