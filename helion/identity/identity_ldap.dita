@@ -15,7 +15,7 @@
         identity service step by step.</p>
       <p>Integration with an external LDAP server is supported via the Keystone domain-specific
         configuration.</p>
-      <p><b>Set up domain-specific driver configuration - file store </b></p> See the following for
+      <p id="filestore"><b>Set up domain-specific driver configuration - file store </b></p> See the following for
       the detailed instruction to update configuration to a specific LDAP domain: <ol>
         <li> Ensure that the following configuration options in the main configuration file
           template: /home/stack/helion/my_cloud/config/keystone/keystone.conf.j2
@@ -36,7 +36,7 @@
             the full option list and description.</note>
           <p>Here is the sample YAML configuration for keystone LDAP certificate settings, optimized
             for Microsoft Active Directory server:</p>
-          <p outputclass="expandcode"><b>Expand the code</b></p>
+          <p outputclass="expandcode"><b>Open | Close </b> keystone_domainldap_conf</p>
           <p outputclass="hiddencode"><codeblock outputclass="nomaxheight" id="ldapcert">---
  
 keystone_domainldap_conf:
@@ -121,9 +121,9 @@ keystone_domainldap_conf:
         # It is also not python3 compliant.  </codeblock></p>
         </li>
         <li>As suggested in <xref href="../installation/using_git.dita#using_git">Using Git for
-            Configuration Management</xref>, commit the new file into local git repository, and
-          rerun playbooks for the configuration processor and ready deployment :
-          <codeblock>$ cd ~/helion
+            Configuration Management</xref>, commit the new file to the local git repository, and
+          rerun the configuration processor and ready deployment
+          playbooks:<codeblock>$ cd ~/helion
 $ git checkout site
 $ git add my_cloud/config/keystone/keystone_configure_ldap_my.yml
 $ git commit -m "Adding LDAP server integration config"
@@ -131,15 +131,15 @@ $ cd ~/helion/hos/ansible
 $ ansible-playbook -i hosts/localhost config-processor-run.yml
 $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
-        <li> Run reconfiguration playbook in a deployment area, passing a YAML file created at
-          previous step as command line option: <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
+        <li> Run the reconfiguration playbook in a deployment area, passing a YAML file created in
+          the previous step as a command-line option: <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
 $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_my.yml</codeblock>
           <!-- stopped here 552pm mar 30 -->
         </li>
         <li> Follow these same steps for each LDAP domain with which you are integrating Keystone,
-          creating a yaml file for each and running the reconfigure playbook once for each
+          creating a YAML file for each and running the reconfigure playbook once for each
           additional domain. </li>
-        <li>Ensure that a new domain was created for LDAP (Microsoft AD in this example):  Set
+        <li>Ensure that a new domain was created for LDAP (Microsoft AD in this example) and sSet
           environment variables for admin level access <codeblock>$ source keystone.osrc</codeblock>
           Get list of domains <codeblock>$ openstack domain list</codeblock>
           <codeblock>+----------------------------------+---------+---------+----------------------------------------------------------------------+
@@ -268,8 +268,10 @@ $ openstack group list - -domain ad
       steps are to deploy the Domain-Specific Driver Configuration - File Store first, as shown
       above. Then switch to the database store. Once switched, all of the domain-specific driver
       configuration files shall be ignored by the system. No domain mixture of file and database
-      stores is supported. Detailed Instruction It is assumed domain-specific driver configuration -
-      file store has been set up working properly. See the following instruction for the switch <ol>
+      stores is supported. Detailed Instruction It is assumed <xref
+        href="#topic_ifg_n33_bt/filestore" format="dita">domain-specific driver configuration - file
+        store</xref> has been set up and is working properly. See the following instruction for the
+      switch <ol>
         <li> Ensure that the following configuration options in the main configuration file template
           in the file:
           <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone.conf.j2
@@ -310,7 +312,7 @@ $ openstack group list - -domain ad
                 <li>Option 2: Upload individual domain-specific configuration files by specifying
                   the domain name one by one:
                   <codeblock>$ keystone-manage domain_config_upload --domain-name &lt;domain name></codeblock>
-                  for example,  keystone-manage domain_config_upload --domain-name ad Please be
+                  for example, keystone-manage domain_config_upload --domain-name ad Please be
                   advised that Keystone manager utility doesn't upload domain-specific driver
                   configuration file the second time for the same domain. For the management of the
                   domain-specific driver configuration in the database store, you may refer to
@@ -320,7 +322,7 @@ $ openstack group list - -domain ad
           </ol></li>
         <li>Verify that the switched domain driver configuration for LDAP (Microsoft AD in this
           example) in the database store works properly: Set environment variables for admin level
-          access <codeblock>$ source keystone.osrc</codeblock>  Get list of domain user <codeblock>$ openstack user list --domain ad</codeblock>
+          access <codeblock>$ source keystone.osrc</codeblock> Get list of domain user <codeblock>$ openstack user list --domain ad</codeblock>
           <codeblock>+------------------------------------------------------------------+------------+
             | ID                                                               | Name       |
             +------------------------------------------------------------------+------------+
@@ -348,7 +350,7 @@ $ openstack group list - -domain ad
       </ol>
     </section>
 
-    <section><title>Domain-specific driver configuration - switchig from database to file store</title>
+    <section><title>Domain-specific driver configuration - switching from database to file store</title>
       <p> Overview This document is to depict the steps for Keystone to switch domain-specific
         driver configuration from database store to file store. It is assumed</p>
       <ul>
