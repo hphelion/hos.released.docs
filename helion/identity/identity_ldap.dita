@@ -34,10 +34,12 @@
               href="http://docs.openstack.org/liberty/config-reference/content/keystone-configuration-file.html"
               scope="external" format="html">Keystone</xref> documentation for OpenStack Liberty for
             the full option list and description.</note>
-          <p>Here is the sample YAML configuration for keystone LDAP certificate settings, optimized
-            for Microsoft Active Directory server:</p>
+          <p>Below is the sample YAML configuration for keystone LDAP certificate settings,
+            optimized for Microsoft Active Directory server. Open the section below to view the
+            file.</p>
           <p outputclass="expandcode"><b>Open | Close </b> keystone_domainldap_conf</p>
-          <p outputclass="hiddencode"><codeblock outputclass="nomaxheight" id="ldapcert">---
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight" id="ldapcert">---
  
 keystone_domainldap_conf:
  
@@ -118,7 +120,8 @@ keystone_domainldap_conf:
         tls_cacertfile: /etc/keystone/ssl/certs/all_ldapdomains_ca.pem
         
         # The issue is in the underlying SSL library. Upstream is not investing in python-ldap package anymore. 
-        # It is also not python3 compliant.  </codeblock></p>
+        # It is also not python3 compliant.  </codeblock>
+          </p>
         </li>
         <li>As suggested in <xref href="../installation/using_git.dita#using_git">Using Git for
             Configuration Management</xref>, commit the new file to the local git repository, and
@@ -131,7 +134,7 @@ $ cd ~/helion/hos/ansible
 $ ansible-playbook -i hosts/localhost config-processor-run.yml
 $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
-        <li> Run the reconfiguration playbook in a deployment area, passing a YAML file created in
+        <li> Run the reconfiguration playbook in a deployment area, passing the YAML file created in
           the previous step as a command-line option: <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
 $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_my.yml</codeblock>
           <!-- stopped here 552pm mar 30 -->
@@ -139,10 +142,9 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/h
         <li> Follow these same steps for each LDAP domain with which you are integrating Keystone,
           creating a YAML file for each and running the reconfigure playbook once for each
           additional domain. </li>
-        <li>Ensure that a new domain was created for LDAP (Microsoft AD in this example) and sSet
+        <li>Ensure that a new domain was created for LDAP (Microsoft AD in this example) and set
           environment variables for admin level access <codeblock>$ source keystone.osrc</codeblock>
-          Get list of domains <codeblock>$ openstack domain list</codeblock>
-          <codeblock>+----------------------------------+---------+---------+----------------------------------------------------------------------+
+          Get a list of domains <codeblock>$ openstack domain list</codeblock> As output here:<codeblock>+----------------------------------+---------+---------+----------------------------------------------------------------------+
 | ID                               | Name    | Enabled | Description                                                          |
 +----------------------------------+---------+---------+----------------------------------------------------------------------+
 | 6740dbf7465a4108a36d6476fc967dbd | heat    | True    | Owns users and projects created by heat                              |
@@ -162,51 +164,57 @@ $ openstack group list - -domain ad
             records in it.</note>
         </li>
         <li> Once the LDAP user is granted the appropriate role, he can authenticate within the
-          specified domain:  Set environment variables for admin level access
-          <codeblock>$ source keystone.osrc</codeblock>  Get user record within ad domain <codeblock>$ openstack user show testuser1 --domain ad</codeblock>
-          <codeblock>+-----------+------------------------------------------------------------------+
+          specified domain. Set environment variables for admin-level access
+          <codeblock>$ source keystone.osrc</codeblock> Get user record within the (Active
+          Directory) ad domain <codeblock>$ openstack user show testuser1 --domain ad</codeblock>
+          Note the
+          output:<codeblock>+-----------+------------------------------------------------------------------+
 | Field     | Value                                                            |
 +-----------+------------------------------------------------------------------+
 | domain_id | 143af847018c4dc7bd35390402395886                                 |
 | id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
 | name      | testuser1                                                        |
 +-----------+------------------------------------------------------------------+</codeblock>
-          Get list of LDAP groups <codeblock>$ openstack group list --domain ad</codeblock>
-          <codeblock>+------------------------------------------------------------------+------------+
+          Now, get list of LDAP groups: <codeblock>$ openstack group list --domain ad</codeblock>
+          Here you see testgroup1 and
+          testgroup2:<codeblock>+------------------------------------------------------------------+------------+
 |  ID                                                              | Name       |
 +------------------------------------------------------------------+------------+
 |  03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6| testgroup1 |
 7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf   | testgroup2 |
 +------------------------------------------------------------------+------------+</codeblock>
-          Create a new role. Please note that role is not bound to the domain. <codeblock>$ openstack role create testrole1</codeblock>
-          <codeblock>+-------+----------------------------------+
+          Create a new role. Note that the role is not bound to the domain.
+          <codeblock>$ openstack role create testrole1</codeblock> Testrole1 has been
+          created:<codeblock>+-------+----------------------------------+
 | Field | Value                            |
 +-------+----------------------------------+
 | id    | 02251585319d459ab847409dea527dee |
 | name  | testrole1                        |
-+-------+----------------------------------+</codeblock>
-          Grant user a role within the domain. Please note that due to a current Openstack CLI
-          limitation, you have to use the  user ID rather then user name when working with a
-          non-default domain.
++-------+----------------------------------+</codeblock>Grant
+          the user a role within the domain by executing the code below. Note that due to a current
+          OpenStack CLI limitation, you must use the user ID rather than the user name when working
+          with a non-default domain.
           <codeblock>$ openstack role add testrole1 --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --domain ad</codeblock>
-          Verify that the role was successfully granted
+          Verify that the role was successfully granted, as shown here:
           <codeblock>$ openstack role assignment list --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --domain ad
 +----------------------------------+------------------------------------------------------------------+-------+---------+----------------------------------+
 | Role                             | User                                                             | Group | Project | Domain                           |
 +----------------------------------+------------------------------------------------------------------+-------+---------+----------------------------------+
 | 02251585319d459ab847409dea527dee | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |       |         | 143af847018c4dc7bd35390402395886 |
-+----------------------------------+------------------------------------------------------------------+-------+---------+----------------------------------+</codeblock>
-          Authenticate (get a domain-scoped token) as new user with a new role. The --os-*
-          command-line parameters specified below override respective OS_* environment  variables
-          set by the keystone.osrc script to provide admin access. To ensure that the command below
-          is executed in a clean environment, you may want log out from  the node and log in again. <codeblock>$ openstack --os-identity-api-version 3 \
++----------------------------------+------------------------------------------------------------------+-------+---------+----------------------------------+</codeblock>Authenticate
+          (get a domain-scoped token) as a new user with a new role. The --os-* command-line
+          parameters specified below override the respective OS_* environment variables set by the
+          keystone.osrc script to provide admin access. To ensure that the command below is executed
+          in a clean environment, you may want log out from the node and log in again.
+          <codeblock>$ openstack --os-identity-api-version 3 \
             --os-username testuser1 \
             --os-password testuser1_password \
             --os-auth-url http://10.0.0.6:35357/v3 \
             --os-domain-name ad \
             --os-user-domain-name ad \
             token issue</codeblock>
-          <codeblock>+-----------+------------------------------------------------------------------+
+          Here is the
+          result:<codeblock>+-----------+------------------------------------------------------------------+
 | Field     | Value                                                            |
 +-----------+------------------------------------------------------------------+
 | domain_id | 143af847018c4dc7bd35390402395886                                 |
@@ -215,10 +223,12 @@ $ openstack group list - -domain ad
 | user_id   | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
 +-----------+------------------------------------------------------------------+</codeblock>
         </li>
-        <li>Users can also have a project within the domain and get a project-scoped token:  Set
-          environment variables for admin level access <codeblock>$ source keystone.osrc</codeblock>
-          Create a new project within the domain <codeblock>$ openstack project create testproject1 --domain ad</codeblock>
-          <codeblock>+-------------+----------------------------------+
+        <li>Users can also have a project within the domain and get a project-scoped token. To
+          accompish this, set environment variables for admin level access:
+          <codeblock>$ source keystone.osrc</codeblock> Then create a new project within the domain:
+          <codeblock>$ openstack project create testproject1 --domain ad</codeblock> The result
+          shows that they have been
+          created:<codeblock>+-------------+----------------------------------+
 | Field       | Value                            |
 +-------------+----------------------------------+
 | description |                                  |
@@ -227,22 +237,24 @@ $ openstack group list - -domain ad
 | id          | d065394842d34abd87167ab12759f107 |
 | name        | testproject1                     |
 +-------------+----------------------------------+</codeblock>
-          Grant the user a role with a project, re-using a role created in the previous example.
-          Please note that due to a current Openstack CLI limitation, we have to use  user ID rather
-          then user name when working with a non-default domain.
+          Grant the user a role with a project, re-using the role created in the previous example.
+          Note that due to a current OpenStack CLI limitation, you must use user ID rather than user
+          name when working with a non-default domain.
           <codeblock>$ openstack role add testrole1 --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --project testproject1</codeblock>
-          Verify that the role was successfully granted <codeblock>$ openstack role assignment list --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --project testproject1</codeblock>
-          <codeblock>+----------------------------------+------------------------------------------------------------------+-------+----------------------------------+--------+
+          Verify that the role was successfully granted by generating a
+          list:<codeblock>$ openstack role assignment list --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --project testproject1</codeblock>
+          The output shows the
+          result:<codeblock>+----------------------------------+------------------------------------------------------------------+-------+----------------------------------+--------+
 | Role                             | User                                                             | Group | Project                          | Domain |
 +----------------------------------+------------------------------------------------------------------+-------+----------------------------------+--------+
 | 02251585319d459ab847409dea527dee | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |       | d065394842d34abd87167ab12759f107 |        |
-+----------------------------------+------------------------------------------------------------------+-------+----------------------------------+--------+</codeblock>
-          Authenticate (get a project-scoped token) as the new user with a new role. The --os-*
-          command line parameters specified below override respective OS_* environment  variables
-          set by keystone.osrc to provide admin access. To ensure that the command below is executed
-          in a clean environment, you may want log out from  the node and log in again. Please note
-          that both --os-project-domain-name and --os-project-user-name parameters are needed to
-          justify that both user and  project are not in the default domain. <codeblock>$ openstack --os-identity-api-version 3 \
++----------------------------------+------------------------------------------------------------------+-------+----------------------------------+--------+</codeblock>Authenticate
+          (get a project-scoped token) as the new user with a new role. The --os-* command line
+          parameters specified below override respective OS_* environment variables set by
+          keystone.osrc to provide admin access. To ensure that the command below is executed in a
+          clean environment, you may want log out from the node and log in again. Please note that
+          both --os-project-domain-name and --os-project-user-name parameters are needed to justify
+          that both user and project are not in the default domain. <codeblock>$ openstack --os-identity-api-version 3 \
             --os-username testuser1 \
             --os-password testuser1_password \
             --os-auth-url http://10.0.0.6:35357/v3 \
