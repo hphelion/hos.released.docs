@@ -236,10 +236,10 @@ $ openstack group list - -domain ad
 | enabled     | True                             |
 | id          | d065394842d34abd87167ab12759f107 |
 | name        | testproject1                     |
-+-------------+----------------------------------+</codeblock>
-          Grant the user a role with a project, re-using the role created in the previous example.
-          Note that due to a current OpenStack CLI limitation, you must use user ID rather than user
-          name when working with a non-default domain.
++-------------+----------------------------------+</codeblock>Grant
+          the user a role with a project, re-using the role created in the previous example. Note
+          that due to a current OpenStack CLI limitation, you must use user ID rather than user name
+          when working with a non-default domain.
           <codeblock>$ openstack role add testrole1 --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --project testproject1</codeblock>
           Verify that the role was successfully granted by generating a
           list:<codeblock>$ openstack role assignment list --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --project testproject1</codeblock>
@@ -250,18 +250,20 @@ $ openstack group list - -domain ad
 | 02251585319d459ab847409dea527dee | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |       | d065394842d34abd87167ab12759f107 |        |
 +----------------------------------+------------------------------------------------------------------+-------+----------------------------------+--------+</codeblock>Authenticate
           (get a project-scoped token) as the new user with a new role. The --os-* command line
-          parameters specified below override respective OS_* environment variables set by
+          parameters specified below override their respective OS_* environment variables set by
           keystone.osrc to provide admin access. To ensure that the command below is executed in a
-          clean environment, you may want log out from the node and log in again. Please note that
-          both --os-project-domain-name and --os-project-user-name parameters are needed to justify
-          that both user and project are not in the default domain. <codeblock>$ openstack --os-identity-api-version 3 \
+          clean environment, you may want log out from the node and log in again. Note that both the
+          --os-project-domain-name and --os-project-user-name parameters are needed to verify that
+          both user and project are not in the default domain.
+          <codeblock>$ openstack --os-identity-api-version 3 \
             --os-username testuser1 \
             --os-password testuser1_password \
             --os-auth-url http://10.0.0.6:35357/v3 \
             --os-project-name testproject1 \
             --os-project-domain-name ad \
             --os-user-domain-name ad \
-            token issue</codeblock>
+            token issue</codeblock>Below
+          is the resut:
           <codeblock>+------------+------------------------------------------------------------------+
 | Field      | Value                                                            |
 +------------+------------------------------------------------------------------+
@@ -275,166 +277,171 @@ $ openstack group list - -domain ad
     </section>
 
 
-    <section><title>Set up or switch to domain-specific driver configuration - database
-        store</title> Overview To set up Domain-Specific Driver Configuration - Database Store, the
-      steps are to deploy the Domain-Specific Driver Configuration - File Store first, as shown
-      above. Then switch to the database store. Once switched, all of the domain-specific driver
-      configuration files shall be ignored by the system. No domain mixture of file and database
-      stores is supported. Detailed Instruction It is assumed <xref
+    <section><title>Set up or switch to domain-specific driver configuration using a database
+        store</title>To set up domain-specific driver configuration using a database store, you will
+      first need to execute the steps to create the domain-specific driver configuration using a
+      file store, as shown above. Then switch to the database store. Once switched, all of the
+      domain-specific driver configuration files willll be ignored by the system. No mix of file and
+      database stores is supported for a domain. </section>
+    <section>To make the switch, execute the steps below. Remember, you must have already set up the
+      configuration for a file store as explained in the section on <xref
         href="#topic_ifg_n33_bt/filestore" format="dita">domain-specific driver configuration - file
-        store</xref> has been set up and is working properly. See the following instruction for the
-      switch <ol>
-        <li> Ensure that the following configuration options in the main configuration file template
-          in the file:
-          <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone.conf.j2
-          [identity]
-          domain_specific_drivers_enabled = True
-          domain_configurations_from_database = True
-          
-          [domain_config]
-          driver = sql</codeblock>
+        store</xref>, and it must be working properly. <ol id="ol_sff_px4_mv">
+        <li> Ensure that the following configuration options are set in the main configuration file,
+          /home/stack/helion/my_cloud/config/keystone/keystone.conf.j2:
+          <codeblock>[identity]
+domain_specific_drivers_enabled = True
+domain_configurations_from_database = True
+      
+[domain_config]
+driver = sql</codeblock>
         </li>
         <li>Once the template is modified, commit the change to the local git repository, and rerun
           the configuration processor / deployment area preparation playbooks (as suggested at Using
           Git for Configuration Management):
           <codeblock>$ cd ~/helion
-            $ git checkout site
-            $ git add -A
-            # verify added files 
-            $ git status
-            $ git commit -m "Use Domain-Specific Driver Configuration - Database Store: more description here..."
-            $ cd ~/helion/hos/ansible
-            $ ansible-playbook -i hosts/localhost config-processor-run.yml
-            $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+$ git checkout site
+$ git add -A</codeblock> Verify that the
+          files have been added using git status: <codeblock>$ git status</codeblock> Then commit
+          the changes:
+          <codeblock>$ git commit -m "Use Domain-Specific Driver Configuration - Database Store: more description here..."</codeblock>
+          Next, run the configuration processor and ready deployment playbooks:
+          <codeblock>$ cd ~/helion/hos/ansible
+$ ansible-playbook -i hosts/localhost config-processor-run.yml
+$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
-        <li>Run reconfiguration playbook in a deployment area:
+        <li>Run the reconfiguration playbook in a deployment area:
           <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
-            $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
+$ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
         </li>
-        <li>Upload the domain-specific config files to the database if they has not been loaded. If
-          they have already loaded and just like to switch back to database store mode, then skip
-          this upload step and move on to step 5 <ol>
-            <li> Go to either one of control nodes Keystone deployed. </li>
-            <li>Verify domain-specific driver configuration files are located under the directory
-              (default /etc/keystone/domains) with the format: keystone.&lt;domain name>.conf Use
-              Keystone manager utility to load domain-specific config files to the database <ol>
+        <li>Upload the domain-specific config files to the database if they have not been loaded. If
+          they have already been loaded and you want to switch back to database store mode, then
+          skip this upload step and move on to step 5. <ol id="ol_tff_px4_mv">
+            <li> Go to one of the controller nodes where Keystone is deployed. </li>
+            <li>Verify that domain-specific driver configuration files are located under the
+              directory (default /etc/keystone/domains) with the format: keystone.&lt;domain
+              name>.conf Use the Keystone manager utility to load domain-specific config files to
+              the database. There are two options for uploading the files:<ol id="ol_uff_px4_mv">
                 <li>Option 1: Upload all configuration files to the SQL database:
                   <codeblock>$ keystone-manage domain_config_upload --all</codeblock>
                 </li>
                 <li>Option 2: Upload individual domain-specific configuration files by specifying
                   the domain name one by one:
-                  <codeblock>$ keystone-manage domain_config_upload --domain-name &lt;domain name></codeblock>
-                  for example, keystone-manage domain_config_upload --domain-name ad Please be
-                  advised that Keystone manager utility doesn't upload domain-specific driver
-                  configuration file the second time for the same domain. For the management of the
+                  <codeblock>$ keystone-manage domain_config_upload --domain-name &lt;domain name></codeblock>Here
+                  is an
+                  example:<codeblock>keystone-manage domain_config_upload --domain-name ad </codeblock>Note
+                  that the Keystone manager utility doesn't upload the domain-specific driver
+                  configuration file the second time for the same domain.
+                  <!--For the management of the
                   domain-specific driver configuration in the database store, you may refer to
                   Domain-Specific Driver Configuration - Database Store Management via Identity API
-                  - Draft Release Document.</li>
+                  - Draft Release Document.--></li>
               </ol></li>
           </ol></li>
         <li>Verify that the switched domain driver configuration for LDAP (Microsoft AD in this
-          example) in the database store works properly: Set environment variables for admin level
-          access <codeblock>$ source keystone.osrc</codeblock> Get list of domain user <codeblock>$ openstack user list --domain ad</codeblock>
-          <codeblock>+------------------------------------------------------------------+------------+
-            | ID                                                               | Name       |
-            +------------------------------------------------------------------+------------+
-            | e7dbec51ecaf07906bd743debcb49157a0e8af557b860a7c1dadd454bdab03fe | testuser1  |
-            | 8a09630fde3180c685e0cd663427e8638151b534a8a7ccebfcf244751d6f09bd | testuser2  |
-            | ea463d778dadcefdcfd5b532ee122a70dce7e790786678961420ae007560f35e | testuser3  |
-            +------------------------------------------------------------------+------------+</codeblock>
-          Get user record within ad domain <codeblock> $ openstack user show testuser1 --domain ad</codeblock>
-          <codeblock>+-----------+------------------------------------------------------------------+
+          example) in the database store works properly. Then set the environment variables for
+          admin level access: <codeblock>$ source keystone.osrc</codeblock> Get a list of domain
+          users:<codeblock>$ openstack user list --domain ad</codeblock> Note the three users
+          returned:<codeblock>+------------------------------------------------------------------+------------+
+| ID                                                               | Name       |
++------------------------------------------------------------------+------------+
+| e7dbec51ecaf07906bd743debcb49157a0e8af557b860a7c1dadd454bdab03fe | testuser1  |
+| 8a09630fde3180c685e0cd663427e8638151b534a8a7ccebfcf244751d6f09bd | testuser2  |
+| ea463d778dadcefdcfd5b532ee122a70dce7e790786678961420ae007560f35e | testuser3  |
++------------------------------------------------------------------+------------+</codeblock>
+          Get user records within the ad domain:
+          <codeblock> $ openstack user show testuser1 --domain ad</codeblock> Here testuser1 is
+          returned:<codeblock>+-----------+------------------------------------------------------------------+
             | Field     | Value                                                            |
             +-----------+------------------------------------------------------------------+
             | domain_id | 143af847018c4dc7bd35390402395886                                 |
             | id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
             | name      | testuser1                                                        |
             +-----------+------------------------------------------------------------------+</codeblock>
-          Get list of LDAP groups <codeblock>$ openstack group list --domain ad</codeblock>
-          <codeblock>+------------------------------------------------------------------+------------+
-            | ID                                                               | Name       |
-            +------------------------------------------------------------------+------------+
-            | 03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6 | testgroup1 |
-            | 7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf | testgroup2 |
-            +------------------------------------------------------------------+------------+</codeblock>
+          Get a list of LDAP groups: <codeblock>$ openstack group list --domain ad</codeblock> Note
+          that testgroup1 and testgroup2 are returned:<codeblock>+------------------------------------------------------------------+------------+
+| ID                                                               | Name       |
++------------------------------------------------------------------+------------+
+| 03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6 | testgroup1 |
+| 7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf | testgroup2 |
++------------------------------------------------------------------+------------+</codeblock>
           <note>LDAP domain is read-only. This means that you can not create new user or group
             record in it.</note></li>
       </ol>
     </section>
 
-    <section><title>Domain-specific driver configuration - switching from database to file store</title>
-      <p> Overview This document is to depict the steps for Keystone to switch domain-specific
-        driver configuration from database store to file store. It is assumed</p>
+    <section><title>Domain-specific driver configuration. Switching from a database to a file store</title>
+      <p> Following is the procedure  to switch a domain-specific driver configuration from a
+        database store to a file store. It is assumed that:</p>
       <ul>
-        <li>Domain-specific driver configuration - database store has been set up working properly. </li>
+        <li>The domain-specific driver configuration with a database store has been set up and is
+          working properly. </li>
         <li>Domain-specific driver configuration files with the format: keystone.&lt;domain
-          name>.conf have already located and verified in the specific directory (by default,
-          /etc/keystone/domains/) in all of the control nodes.</li>
+          name>.conf have already been located and verified in the specific directory (by default,
+          /etc/keystone/domains/) on all of the controller nodes.</li>
       </ul>
       <ol>
-        <li> Ensure that the following configuration options in the main configuration file template
-          in the file:
-          <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone.conf.j2
-          [identity]
-          domain_specific_drivers_enabled = True
-          domain_configurations_from_database = False
+        <li> Ensure that the following configuration options are set in the main configuration file
+          template in /home/stack/helion/my_cloud/config/keystone/keystone.conf.j2:
+          <codeblock>[identity]
+ domain_specific_drivers_enabled = True
+ domain_configurations_from_database = False
           
-          [domain_config]
-          # driver = sql</codeblock>
+[domain_config]
+# driver = sql</codeblock>
         </li>
         <li>Once the template is modified, commit the change to the local git repository, and rerun
           the configuration processor / deployment area preparation playbooks (as suggested at Using
           Git for Configuration Management):
           <codeblock>$ cd ~/helion
-          $ git checkout site
-          $ git add -A
-          # verify added files 
-          $ git status
-          $ git commit -m "Domain-Specific Driver Configuration - Switch From Database Store to File Store: more description here..."
-          
-          $ cd ~/helion/hos/ansible
-          $ ansible-playbook -i hosts/localhost config-processor-run.yml
-          $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+$ git checkout site
+$ git add -A</codeblock> Verify that the
+          files have been added using git status, then commit the changes:
+          <codeblock>$ git status
+$ git commit -m "Domain-Specific Driver Configuration - Switch From Database Store to File Store: more description here..."</codeblock>
+          Then run the configuration processor and ready deployment
+          playbooks:<codeblock>$ cd ~/helion/hos/ansible
+$ ansible-playbook -i hosts/localhost config-processor-run.yml
+$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
         <li>Run reconfiguration playbook in a deployment area:
           <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
-          $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
+$ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
         </li>
         <li>Verify that the switched domain driver configuration for LDAP (Microsoft AD in this
-          example) using file store works properly:  Set environment variables for admin level
-          access <codeblock>$ source keystone.osrc</codeblock>  Get list of domain user <codeblock>$ openstack user list --domain ad</codeblock>
+          example) using file store works properly: Set environment variables for admin level access
+          <codeblock>$ source keystone.osrc</codeblock> Get list of domain user <codeblock>$ openstack user list --domain ad</codeblock>
           <codeblock>+------------------------------------------------------------------+------------+
-          | ID                                                               | Name       |
-          +------------------------------------------------------------------+------------+
-          | e7dbec51ecaf07906bd743debcb49157a0e8af557b860a7c1dadd454bdab03fe | testuser1  |
-          | 8a09630fde3180c685e0cd663427e8638151b534a8a7ccebfcf244751d6f09bd | testuser2  |
-          | ea463d778dadcefdcfd5b532ee122a70dce7e790786678961420ae007560f35e | testuser3  |
-          +------------------------------------------------------------------+------------+</codeblock>
+| ID                                                               | Name       |
++------------------------------------------------------------------+------------+
+| e7dbec51ecaf07906bd743debcb49157a0e8af557b860a7c1dadd454bdab03fe | testuser1  |
+| 8a09630fde3180c685e0cd663427e8638151b534a8a7ccebfcf244751d6f09bd | testuser2  |
+| ea463d778dadcefdcfd5b532ee122a70dce7e790786678961420ae007560f35e | testuser3  |
++------------------------------------------------------------------+------------+</codeblock>
           Get user record within ad domain <codeblock>$ openstack user show testuser1 --domain ad</codeblock>
           <codeblock>+-----------+------------------------------------------------------------------+
-          | Field     | Value                                                            |
-          +-----------+------------------------------------------------------------------+
-          | domain_id | 143af847018c4dc7bd35390402395886                                 |
-          | id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
-          | name      | testuser1                                                        |
-          +-----------+------------------------------------------------------------------+</codeblock>
+| Field     | Value                                                            |
++-----------+------------------------------------------------------------------+
+| domain_id | 143af847018c4dc7bd35390402395886                                 |
+| id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
+| name      | testuser1                                                        |
++-----------+------------------------------------------------------------------+</codeblock>
           Get list of LDAP groups <codeblock>$ openstack group list --domain ad</codeblock>
           <codeblock>+------------------------------------------------------------------+------------+
-          | ID                                                               | Name       |
-          +------------------------------------------------------------------+------------+
-          | 03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6 | testgroup1 |
-          | 7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf | testgroup2 |
-          +------------------------------------------------------------------+------------+</codeblock>
+| ID                                                               | Name       |
++------------------------------------------------------------------+------------+
+| 03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6 | testgroup1 |
+| 7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf | testgroup2 |
++------------------------------------------------------------------+------------+</codeblock>
           Note: Note: LDAP domain is read-only. This means that you can not create new user or group
           record in it. </li>
       </ol>
     </section>
 
 
-    <section><title>Update LDAP CA certificates</title> Overview There are chances that LDAP CA
-      certificates may expire or for some reason not work anymore. This document shows you the steps
-      to update the LDAP CA certificates on the identity service side. Detailed Instruction See the
-      following for the detailed instruction: Follow the steps below to update LDAP CA certificates <ol>
+    <section><title>Update LDAP CA certificates</title>There is a chance that LDAP CA certificates
+      may expire or for some reason not work anymore. Below are steps to update the LDAP CA
+      certificates on the identity service side. Follow the steps below to make the updates.<ol>
         <li> Locate the file keystone_configure_ldap_certs_sample.yml
           <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_certs_sample.yml</codeblock>
         </li>
@@ -443,27 +450,25 @@ $ openstack group list - -domain ad
         </li>
         <li>Edit the file and specify the correct single file path name for the ldap certificates.
           This file path name has to be consistent with the one defined in tls_cacertfile of the
-          domain-specific configuration. Edit the file and populate or update it with ldap CA
+          domain-specific configuration. Edit the file and populate or update it with LDAP CA
           certificates for all LDAP domains. </li>
-        <li>As suggested at Using Git for Configuration Management, commit the new file into local
-          git repository, and rerun playbooks of configuration processor and deployment area
-          preparation:
-          <codeblock># Commit the new file into local git repository
-          $ cd ~/helion
-          $ git checkout site
-          $ git add -A</codeblock>
-          verify added files
-          <codeblock>$ git status
-            $ git commit -m "Update LDAP CA certificates: more description here..."</codeblock>
-          Run configuration processor / deployment area preparation playbooks
+        <li>As suggested in <xref href="../installation/using_git.dita#using_git">Using Git for
+            Configuration Management</xref>, commit the new file to the local git
+          repository:<codeblock># Commit the new file into local git repository
+$ cd ~/helion
+$ git checkout site
+$ git add -A</codeblock>
+          Verify tht the files have been added using git
+          status:<codeblock>$ git status
+$ git commit -m "Update LDAP CA certificates: more description here..."</codeblock>
+          Then run the configuration processor and ready deployment playbooks:
           <codeblock>$ cd ~/helion/hos/ansible
-          $ ansible-playbook -i hosts/localhost config-processor-run.yml
-          $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+$ ansible-playbook -i hosts/localhost config-processor-run.yml
+$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li>
-        <li>Run reconfiguration playbook in deployment area: 
+        <li>Run the reconfiguration playbook in the deployment area:
           <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
-          $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml
-          -e@/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_certs_all.yml </codeblock></li>
+$ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_certs_all.yml </codeblock></li>
       </ol>
     </section>
 
