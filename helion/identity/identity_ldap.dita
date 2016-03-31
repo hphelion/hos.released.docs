@@ -34,7 +34,7 @@
               href="http://docs.openstack.org/liberty/config-reference/content/keystone-configuration-file.html"
               scope="external" format="html">Keystone</xref> documentation for OpenStack Liberty for
             the full option list and description.</note>
-          <p>Below is the sample YAML configuration for keystone LDAP certificate settings,
+          <p>Below is the sample YAML configuration for Keystone LDAP certificate settings,
             optimized for Microsoft Active Directory server. Open the section below to view the
             file.</p>
           <p outputclass="expandcode"><b>Open | Close </b> keystone_domainldap_conf</p>
@@ -263,7 +263,7 @@ $ openstack group list - -domain ad
             --os-project-domain-name ad \
             --os-user-domain-name ad \
             token issue</codeblock>Below
-          is the resut:
+          is the result:
           <codeblock>+------------+------------------------------------------------------------------+
 | Field      | Value                                                            |
 +------------+------------------------------------------------------------------+
@@ -281,7 +281,7 @@ $ openstack group list - -domain ad
         store</title>To set up domain-specific driver configuration using a database store, you will
       first need to execute the steps to create the domain-specific driver configuration using a
       file store, as shown above. Then switch to the database store. Once switched, all of the
-      domain-specific driver configuration files willll be ignored by the system. No mix of file and
+      domain-specific driver configuration files will be ignored by the system. No mix of file and
       database stores is supported for a domain. </section>
     <section>To make the switch, execute the steps below. Remember, you must have already set up the
       configuration for a file store as explained in the section on <xref
@@ -410,24 +410,27 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
         </li>
         <li>Verify that the switched domain driver configuration for LDAP (Microsoft AD in this
           example) using file store works properly: Set environment variables for admin level access
-          <codeblock>$ source keystone.osrc</codeblock> Get list of domain user <codeblock>$ openstack user list --domain ad</codeblock>
-          <codeblock>+------------------------------------------------------------------+------------+
+          <codeblock>$ source keystone.osrc</codeblock> Get list of domain users:
+          <codeblock>$ openstack user list --domain ad</codeblock> Here you see the three
+          users:<codeblock>+------------------------------------------------------------------+------------+
 | ID                                                               | Name       |
 +------------------------------------------------------------------+------------+
 | e7dbec51ecaf07906bd743debcb49157a0e8af557b860a7c1dadd454bdab03fe | testuser1  |
 | 8a09630fde3180c685e0cd663427e8638151b534a8a7ccebfcf244751d6f09bd | testuser2  |
 | ea463d778dadcefdcfd5b532ee122a70dce7e790786678961420ae007560f35e | testuser3  |
 +------------------------------------------------------------------+------------+</codeblock>
-          Get user record within ad domain <codeblock>$ openstack user show testuser1 --domain ad</codeblock>
-          <codeblock>+-----------+------------------------------------------------------------------+
+          Get user records within the ad domain:
+          <codeblock>$ openstack user show testuser1 --domain ad</codeblock> Here is the
+          result:<codeblock>+-----------+------------------------------------------------------------------+
 | Field     | Value                                                            |
 +-----------+------------------------------------------------------------------+
 | domain_id | 143af847018c4dc7bd35390402395886                                 |
 | id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
 | name      | testuser1                                                        |
 +-----------+------------------------------------------------------------------+</codeblock>
-          Get list of LDAP groups <codeblock>$ openstack group list --domain ad</codeblock>
-          <codeblock>+------------------------------------------------------------------+------------+
+          Get a list of LDAP groups: <codeblock>$ openstack group list --domain ad</codeblock> Here
+          are the groups
+          returned:<codeblock>+------------------------------------------------------------------+------------+
 | ID                                                               | Name       |
 +------------------------------------------------------------------+------------+
 | 03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6 | testgroup1 |
@@ -453,13 +456,12 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
           domain-specific configuration. Edit the file and populate or update it with LDAP CA
           certificates for all LDAP domains. </li>
         <li>As suggested in <xref href="../installation/using_git.dita#using_git">Using Git for
-            Configuration Management</xref>, commit the new file to the local git
-          repository:<codeblock># Commit the new file into local git repository
-$ cd ~/helion
+            Configuration Management</xref>, add the new file to the local git
+          repository:<codeblock>$ cd ~/helion
 $ git checkout site
-$ git add -A</codeblock>
-          Verify tht the files have been added using git
-          status:<codeblock>$ git status
+$ git add -A</codeblock> Verify
+          that the files have been added using git status and commit the
+          file:<codeblock>$ git status
 $ git commit -m "Update LDAP CA certificates: more description here..."</codeblock>
           Then run the configuration processor and ready deployment playbooks:
           <codeblock>$ cd ~/helion/hos/ansible
@@ -475,7 +477,7 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/h
 
     <section><title>Limitations</title>
       <keyword keyref="kw-hos-phrase-30"/> domain-specific configuration: <ul>
-        <li>Read-only LDAP backends. </li>
+        <li>Read-only LDAP back ends. </li>
         <li>No Global User Listing: Once domain-specific driver configuration is enabled, the
           operations of listing all users and listing all groups are not supported. Those calls will
           need either a domain filter to be specified or usage of a domain scoped token. </li>
