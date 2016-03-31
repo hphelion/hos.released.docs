@@ -164,7 +164,7 @@ $ openstack domain list
 | default                          | Default | True    | Owns users and tenants (i.e. projects) available on Identity API v2. |
 | b2aac984a52e49259a2bbf74b7c4108b | ad      | True    | Dedicated domain for users managed by Microsoft AD server            |
 +----------------------------------+---------+---------+----------------------------------------------------------------------+</codeblock>
- <!--
+          <!--
 # Get list of LDAP groups
 $ openstack group list - -domain ad
 +______________________________________+___________+
@@ -173,11 +173,11 @@ $ openstack group list - -domain ad
 | 03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6 | testgroup1 |
 | 7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf | testgroup2 |
 +______________________________________+___________+ -->
-          <note>LDAP domain is read-only. This means that you can not create new user or group
-            record in it.</note>
+          <note>LDAP domain is read-only. This means that you cannot create new user or group
+            records in it.</note>
         </li>
-        <li> Once LDAP user is granted appropriate role, it can authenticate within specified
-          domain:
+        <li> Once the LDAP user is granted the appropriate role, he can authenticate within the
+          specified domain:
           <codeblock># Set environment variables for admin level access
 $ source keystone.osrc
  
@@ -190,8 +190,15 @@ $ openstack user show testuser1 --domain ad
 | id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
 | name      | testuser1                                                        |
 +-----------+------------------------------------------------------------------+
- 
-# Create a new role. Please note that role is not bound to domain.
+ # Get list of LDAP groups
+$ openstack group list --domain ad
++------------------------------------------------------------------+------------+
+|  ID                                                              | Name       |
++------------------------------------------------------------------+------------+
+|  03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6| testgroup1 |
+7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf   | testgroup2 |
++------------------------------------------------------------------+------------+
+# Create a new role. Please note that role is not bound to the domain.
 $ openstack role create testrole1
 +-------+----------------------------------+
 | Field | Value                            |
@@ -200,11 +207,11 @@ $ openstack role create testrole1
 | name  | testrole1                        |
 +-------+----------------------------------+
  
-# Grant user a role within domain. Please note that due to current Openstack CLI limitation, we have to use user ID rather then user name
-# when working with non-default domain.
+# Grant user a role within the domain. Please note that due to a current Openstack CLI limitation, you have to use the
+# user ID rather then user name when working with a non-default domain.
 $ openstack role add testrole1 --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --domain ad
  
-# Verify if role was successfully granted
+# Verify that the role was successfully granted
 $ openstack role assignment list --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --domain ad
 +----------------------------------+------------------------------------------------------------------+-------+---------+----------------------------------+
 | Role                             | User                                                             | Group | Project | Domain                           |
@@ -212,8 +219,8 @@ $ openstack role assignment list --user e6d8c90abdc4510621271b73cc4dda8bc6009f26
 | 02251585319d459ab847409dea527dee | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |       |         | 143af847018c4dc7bd35390402395886 |
 +----------------------------------+------------------------------------------------------------------+-------+---------+----------------------------------+
  
-# Authenticate (get a domain-scoped token) as new user with a new role. The --os-* command line parameters specified below override respective OS_* environment
-# variables set by keystone.osrc script to provide admin access. To ensure that command below is executed in clean environment, you may want log out from
+# Authenticate (get a domain-scoped token) as new user with a new role. The --os-* command-line parameters specified below override respective OS_* environment
+# variables set by the keystone.osrc script to provide admin access. To ensure that the command below is executed in a clean environment, you may want log out from
 # the node and log in again. 
 $ openstack --os-identity-api-version 3 \
             --os-username testuser1 \
@@ -232,11 +239,11 @@ $ openstack --os-identity-api-version 3 \
 +-----------+------------------------------------------------------------------+</codeblock>
         </li>
         
-        <li>Users can also have a project within domain and get a project-scoped token:
+        <li>Users can also have a project within the domain and get a project-scoped token:
           <codeblock># Set environment variables for admin level access
 $ source keystone.osrc
  
-# Create a new project within domain
+# Create a new project within the domain
 $ openstack project create testproject1 --domain ad
 +-------------+----------------------------------+
 | Field       | Value                            |
@@ -248,11 +255,11 @@ $ openstack project create testproject1 --domain ad
 | name        | testproject1                     |
 +-------------+----------------------------------+
  
-# Grant user a role with a project, re-using a role created in previous example.  Please note that due to current Openstack CLI limitation, we have to use
-# user ID rather then user name when working with non-default domain.
+# Grant the user a role with a project, re-using a role created in the previous example.  Please note that due to a current Openstack CLI limitation, we have to use
+# user ID rather then user name when working with a non-default domain.
 $ openstack role add testrole1 --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --project testproject1
  
-# Verify if role was successfully granted
+# Verify that the role was successfully granted
 $ openstack role assignment list --user e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 --project testproject1
 +----------------------------------+------------------------------------------------------------------+-------+----------------------------------+--------+
 | Role                             | User                                                             | Group | Project                          | Domain |
@@ -260,10 +267,10 @@ $ openstack role assignment list --user e6d8c90abdc4510621271b73cc4dda8bc6009f26
 | 02251585319d459ab847409dea527dee | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |       | d065394842d34abd87167ab12759f107 |        |
 +----------------------------------+------------------------------------------------------------------+-------+----------------------------------+--------+
  
-# Authenticate (get a project-scoped token) as new user with a new role. The --os-* command line parameters specified below override respective OS_* environment
-# variables set by keystone.osrc script to provide admin access. To ensure that command below is executed in clean environment, you may want log out from
+# Authenticate (get a project-scoped token) as the new user with a new role. The --os-* command line parameters specified below override respective OS_* environment
+# variables set by keystone.osrc to provide admin access. To ensure that the command below is executed in a clean environment, you may want log out from
 # the node and log in again. Please note that both --os-project-domain-name and --os-project-user-name parameters are needed to justify that both user and
-# project are not in default domain.
+# project are not in the default domain.
 $ openstack --os-identity-api-version 3 \
             --os-username testuser1 \
             --os-password testuser1_password \
@@ -286,7 +293,205 @@ $ openstack --os-identity-api-version 3 \
         
       </ol>
     </section>
-    <section id="encrypt"><title>Transport Layer Security (TLS) Support</title>
+    
+    
+    <section><title>Set up or Switch to Domain-Specific Driver Configuration - Database Store</title>
+    
+    Overview
+    
+    To set up Domain-Specific Driver Configuration - Database Store, the steps are to deploy the  Domain-Specific Driver Configuration - File Store first, as shown above.  Then switch to the database store.
+    
+    Once switched, all of the domain-specific driver configuration files shall be ignored by the system. No domain mixture of file and database stores is supported.
+    Detailed Instruction
+    
+    
+    It is assumed domain-specific driver configuration - file store has been set up working properly.
+    
+    See the following instruction for the switch
+    
+    
+    
+      <ol><li>
+        
+        Ensure that the following configuration options in the main configuration file template in the file: <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone.conf.j2
+          [identity]
+          domain_specific_drivers_enabled = True
+          domain_configurations_from_database = True
+          
+          [domain_config]
+          driver = sql</codeblock>
+        
+        </li><li>Once the template is modified, commit the change to the local git repository, and rerun the configuration processor / deployment area preparation playbooks (as suggested at Using Git for Configuration Management):
+          <codeblock>$ cd ~/helion
+            $ git checkout site
+            $ git add -A
+            # verify added files 
+            $ git status
+            $ git commit -m "Use Domain-Specific Driver Configuration - Database Store: more description here..."
+            $ cd ~/helion/hos/ansible
+            $ ansible-playbook -i hosts/localhost config-processor-run.yml
+            $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+          
+        </li><li>Run reconfiguration playbook in a deployment area:
+          <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
+            $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
+        </li><li>Upload the domain-specific config files to the database if they has not been loaded. If they have already loaded and just like to switch back to database store mode, then skip this upload step and move on to step 5
+          <ol><li>
+            Go to either one of control nodes Keystone deployed.
+          </li><li>Verify domain-specific driver configuration files are located under the directory (default /etc/keystone/domains) with the format: keystone.&lt;domain name>.conf
+            Use Keystone manager utility to load domain-specific config files to the database
+            
+            <ol><li>Option 1: Upload all configuration files to the SQL database:
+              <codeblock>$ keystone-manage domain_config_upload --all</codeblock>
+              
+            </li><li>Option 2: Upload individual domain-specific configuration files by specifying the domain name one by one:
+              <codeblock>$ keystone-manage domain_config_upload --domain-name &lt;domain name>
+                # for example,
+                # keystone-manage domain_config_upload --domain-name ad</codeblock>
+              
+              
+              
+              Please be advised that Keystone manager utility doesn't upload domain-specific driver configuration file the second time for the same domain. For the management of the domain-specific driver configuration in the database store, you may refer to Domain-Specific Driver Configuration - Database Store Management via Identity API - Draft Release Document.</li></ol></li></ol></li>
+        
+        <li>Verify that the switched domain driver configuration for LDAP (Microsoft AD in this
+          example) in the database store works properly:
+          <codeblock># Set environment variables for admin level access
+            $ source keystone.osrc
+            
+            # Get list of domain user
+            $ openstack user list --domain ad
+            +------------------------------------------------------------------+------------+
+            | ID                                                               | Name       |
+            +------------------------------------------------------------------+------------+
+            | e7dbec51ecaf07906bd743debcb49157a0e8af557b860a7c1dadd454bdab03fe | testuser1  |
+            | 8a09630fde3180c685e0cd663427e8638151b534a8a7ccebfcf244751d6f09bd | testuser2  |
+            | ea463d778dadcefdcfd5b532ee122a70dce7e790786678961420ae007560f35e | testuser3  |
+            +------------------------------------------------------------------+------------+
+            
+            # Get user record within ad domain
+            $ openstack user show testuser1 --domain ad
+            +-----------+------------------------------------------------------------------+
+            | Field     | Value                                                            |
+            +-----------+------------------------------------------------------------------+
+            | domain_id | 143af847018c4dc7bd35390402395886                                 |
+            | id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
+            | name      | testuser1                                                        |
+            +-----------+------------------------------------------------------------------+
+            
+            # Get list of LDAP groups
+            $ openstack group list --domain ad
+            +------------------------------------------------------------------+------------+
+            | ID                                                               | Name       |
+            +------------------------------------------------------------------+------------+
+            | 03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6 | testgroup1 |
+            | 7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf | testgroup2 |
+            +------------------------------------------------------------------+------------+</codeblock>
+          <note>LDAP domain is read-only. This means that you can not create new user or group
+          record in it.</note></li></ol>
+    
+    
+    </section>
+    
+    <section><title>Domain-Specific Driver Configuration - Switch From Database Store to File Store</title>
+      
+      <p>
+        Overview
+        
+        This document is to depict the steps for Keystone to switch domain-specific driver configuration from database store to file store.
+        It is assumed</p>
+      <ul><li>Domain-specific driver configuration - database store has been set up working properly.
+      </li><li>Domain-specific driver configuration files with the format: keystone.&lt;domain name>.conf have already located and verified in the specific directory (by default, /etc/keystone/domains/) 
+        in all of the control nodes.</li></ul>
+      
+      
+      <ol><li>
+        Ensure that the following configuration options in the main configuration file template in the file: <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone.conf.j2
+          [identity]
+          domain_specific_drivers_enabled = True
+          domain_configurations_from_database = False
+          
+          [domain_config]
+          # driver = sql</codeblock>
+        
+      </li><li>Once the template is modified, commit the change to the local git repository, and rerun the configuration processor / deployment area preparation playbooks (as suggested at Using Git for Configuration Management):
+        <codeblock>$ cd ~/helion
+          $ git checkout site
+          $ git add -A
+          # verify added files 
+          $ git status
+          $ git commit -m "Domain-Specific Driver Configuration - Switch From Database Store to File Store: more description here..."
+          
+          $ cd ~/helion/hos/ansible
+          $ ansible-playbook -i hosts/localhost config-processor-run.yml
+          $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+        
+      </li><li>Run reconfiguration playbook in a deployment area:
+        <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
+          $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
+        
+      </li><li>Verify that the switched domain driver configuration for LDAP (Microsoft AD in this example) using file store works properly:
+        <codeblock># Set environment variables for admin level access
+          $ source keystone.osrc
+          
+          # Get list of domain user
+          $ openstack user list --domain ad
+          +------------------------------------------------------------------+------------+
+          | ID                                                               | Name       |
+          +------------------------------------------------------------------+------------+
+          | e7dbec51ecaf07906bd743debcb49157a0e8af557b860a7c1dadd454bdab03fe | testuser1  |
+          | 8a09630fde3180c685e0cd663427e8638151b534a8a7ccebfcf244751d6f09bd | testuser2  |
+          | ea463d778dadcefdcfd5b532ee122a70dce7e790786678961420ae007560f35e | testuser3  |
+          +------------------------------------------------------------------+------------+
+          
+          # Get user record within ad domain
+          $ openstack user show testuser1 --domain ad
+          +-----------+------------------------------------------------------------------+
+          | Field     | Value                                                            |
+          +-----------+------------------------------------------------------------------+
+          | domain_id | 143af847018c4dc7bd35390402395886                                 |
+          | id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
+          | name      | testuser1                                                        |
+          +-----------+------------------------------------------------------------------+
+          
+          # Get list of LDAP groups
+          $ openstack group list --domain ad
+          +------------------------------------------------------------------+------------+
+          | ID                                                               | Name       |
+          +------------------------------------------------------------------+------------+
+          | 03976b0ea6f54a8e4c0032e8f756ad581f26915c7e77500c8d4aaf0e83afcdc6 | testgroup1 |
+          | 7ba52ee1c5829d9837d740c08dffa07ad118ea1db2d70e0dc7fa7853e0b79fcf | testgroup2 |
+          +------------------------------------------------------------------+------------+</codeblock>
+        
+        Note: Note: LDAP domain is read-only. This means that you can not create new user or group record in it.    </li></ol>
+      
+      
+      
+      
+      
+      
+      
+    </section>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <!--<section id="encrypt"><title>Transport Layer Security (TLS) Support</title>
       <p> The Identity service supports various encryption options when an external LDAP or
         Microsoft Active Directory is configured for external authentication including: </p>
       <ul>
@@ -295,7 +500,7 @@ $ openstack --os-identity-api-version 3 \
         <li>STARTTLS</li>
         
       </ul>
-    </section>
+    </section>-->
     
     <!-- <section><title>Support and Troubleshooting</title>
     
