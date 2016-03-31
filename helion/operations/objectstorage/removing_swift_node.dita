@@ -26,9 +26,9 @@
           <li>Add the pass-through definition to your input model, specifying the server ID (as
             opposed to the server name). It is easiest to include in your
               <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file since your server
-            IDs are already listed in that file. See <xref
-              keyref="passthrough">Input Model - Passthrough</xref>
-            for more details on how pass-through works. <p>Here is the general format:</p>
+            IDs are already listed in that file. See <xref keyref="passthrough">Input Model -
+              Passthrough</xref> for more details on how pass-through works. <p>Here is the general
+              format:</p>
             <codeblock>
 pass-through:
   servers:
@@ -53,8 +53,8 @@ pass-through:
               weight-step attribute as described in the previous step. This process is known as
               "draining", where you remove the Swift data from the node in preparation for removing
               the node.</p></li>
-          <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local git
-              repo</xref>, as follows:
+          <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local
+              git repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
@@ -109,8 +109,8 @@ Devices:    id  region  zone      ip address  port  replication ip  replication 
         data:
           swift:
             <b>remove: yes</b></codeblock></li>
-          <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local git
-              repo</xref>, as follows:
+          <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local
+              git repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
@@ -168,8 +168,8 @@ ansible-playbook -i hosts/verb_hosts swift-stop.yml --limit <b>helion-cp1-swobj0
             <li>If this was a SWPAC node, reduce the member-count attribute by 1 in the
                 <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file. For SWOBJ
               nodes, no such action is needed.</li>
-            <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local
-                git repo</xref>, as follows:
+            <li>Commit your configuration to the <xref href="../../installation/using_git.dita"
+                >local git repo</xref>, as follows:
               <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
@@ -177,9 +177,8 @@ git commit -m "My config or other commit message"</codeblock></li>
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
               <p>You may want to use the <codeph>remove_deleted_servers</codeph> and
                   <codeph>free_unused_addresses</codeph> switches to free up the resources when
-                running the configuration processor. See <xref
-                  keyref="persisteddata">Persisted Data</xref> for
-                more details.</p>
+                running the configuration processor. See <xref keyref="persisteddata">Persisted
+                  Data</xref> for more details.</p>
               <codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml -e remove_deleted_servers="y" -e free_unused_addresses="y"</codeblock></li>
             <li>Update your deployment
               directory:<codeblock>cd ~/helion/hos/ansible
@@ -215,5 +214,23 @@ ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock>
           </ol></p>
       </sectiondiv>
     </section>
+
+    <section id="remove_monitoring"><title>Remove the Swift Node from Monitoring</title>
+      <p>Once you have removed the Swift node(s), the alarms against them will trigger so there are
+        additional steps to take to resolve this issue.</p>
+      <p>You will want to SSH to each of the Monasca API servers and edit the
+          <codeph>/etc/monasca/agent/conf.d/host_alive.yaml</codeph> file to remove references to
+        the Swift node(s) you removed. This will require <codeph>sudo</codeph> access.</p>
+      <p>Once you have removed the references on each of your Monasca API servers you then need to
+        restart the monasca-agent on each of those servers with this command:</p>
+      <codeblock>sudo service monasca-agent restart</codeblock>
+      <p>With the Swift node references removed and the monasca-agent restarted, you can then delete
+        the corresponding alarm to finish this process. To do so we recommend using the Monasca CLI
+        which should be installed on each of your Monasca API servers by default:</p>
+      <codeblock>monasca alarm-list --metric-dimensions hostname=&#60;swift node deleted></codeblock>
+      <p>You can then delete the alarm with this command:</p>
+      <codeblock>monasca alarm-delete &#60;alarm ID></codeblock>
+    </section>
+
   </body>
 </topic>
