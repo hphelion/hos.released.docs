@@ -79,5 +79,25 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
                             <codeph>/etc/fstab</codeph> file.</li>
                 </ol></p>
         </section>
+
+        <section id="remove_monitoring"><title>Remove the Ceph OSD Node from Monitoring</title>
+            <p>Once you have removed the Ceph OSD node(s), the alarms against them will trigger so
+                there are additional steps to take to resolve this issue.</p>
+            <p>You will want to SSH to each of the Monasca API servers and edit the
+                    <codeph>/etc/monasca/agent/conf.d/host_alive.yaml</codeph> file to remove
+                references to the Ceph OSD node(s) you removed. This will require
+                    <codeph>sudo</codeph> access.</p>
+            <p>Once you have removed the references on each of your Monasca API servers you then
+                need to restart the monasca-agent on each of those servers with this command:</p>
+            <codeblock>sudo service monasca-agent restart</codeblock>
+            <p>With the Ceph OSD node references removed and the monasca-agent restarted, you can
+                then delete the corresponding alarm to finish this process. To do so we recommend
+                using the Monasca CLI which should be installed on each of your Monasca API servers
+                by default:</p>
+            <codeblock>monasca alarm-list --metric-dimensions hostname=&#60;ceph osd node deleted></codeblock>
+            <p>You can then delete the alarm with this command:</p>
+            <codeblock>monasca alarm-delete &#60;alarm ID></codeblock>
+        </section>
+
     </body>
 </topic>
