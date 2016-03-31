@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ipam">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Using the Internal IPAM Driver in Neutron</title>
+  <body>
+<section>
+  
+  <p>THIS DOCUMENT IS A POUR OF THE WIKI PAGE AND IS COMPLETELY UNDER CONSTRUCTION</p>
+  
+  There are no IPAM internal-driver specific parameters other than "ipam_driver" How to use
+      the Internal IPAM Driver There will be commented lines in the neutron.conf.j2 template. When
+      these lines are uncommented and committed, After following the standard steps to deploy
+      neutron, neutron will be configured to run using the "internal" ipam driver: File
+      neutron.conf.j2 on the deployer in the directory ~stack/helion/my_cloud/config/neutron
+      <codeblock>[DEFAULT]
+  ...
+  l3_ha_net_cidr = 169.254.192.0/18
+  
+  # Uncomment the line below if the Reference Pluggable IPAM driver is to be used
+  # ipam_driver = internal
+  ...</codeblock>
+      After uncommenting the line "ipam_driver = internal", commit the file using git commit, and
+      then follow the steps to deploy neutron:
+      <codeblock>stack@localhost:~$ cd ~/helion/hos/ansible
+  stack@localhost:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost ready-deployment.yml
+  stack@localhost:~/helion/hos/ansible$ cd ~/scratch/ansible/next/hos/ansible
+  stack@localhost:~/scratch/ansible/next/hos/ansible$ ansible-playbook -i hosts/verb_hosts site.yml
+  ...</codeblock>
+      IMPORTANT: Currently there is no migration path from the default ipam_driver setting to a
+      pluggable ipam driver setting. Changes are needed to database tables. Neutron currently can't
+      make the changes. So reconfiguration of neutron using the default ipam driver setting to
+      "ipam_driver = internal" is not supported. </section>
+    
+    <section>
+      
+      Infoblox-ipam-agent / Neutron DB interface
+      
+      The infoblox-ipam-agent receives notification from the neutron api server.  Its notification handler imports neutron's NeutronManager.  The agent gets a handle to NeutronManager's plugin. The notification handler's methods makes callto the get_ methods in the plugin (get_subnets, get_ports, get_network, etc).  These get_* calls goes into the neutron DB and gets the subnet, ports, network, etc information.  Thus, the infoblox-ipam-agent needs have the mysql credentials to access the database.
+      
+      This is a snippet of the infoblox-ipam-agent's notification handler (file networking_infoblox/neutron/common/notification_handler.py)
+      
+      <codeblock>import netaddr
+      from oslo_log import log as logging
+      import oslo_messaging
+      from oslo_utils import encodeutils
+      from sqlalchemy import exc as sql_exc
+      from infoblox_client import objects as ib_objects
+      from neutron import manager
+      from networking_infoblox.neutron.common import constants as const
+      from networking_infoblox.neutron.common import context
+      from networking_infoblox.neutron.common import dns
+      from networking_infoblox.neutron.common import grid
+      from networking_infoblox.neutron.common import ipam
+      from networking_infoblox.neutron.common import keystone_manager
+      from networking_infoblox.neutron.common import utils
+      from networking_infoblox.neutron.db import infoblox_db as dbi
+      ...
+      class IpamEventHandler(object):
+      def __init__(self, neutron_context, plugin=None, grid_manager=None):
+      ... 
+      self.plugin = plugin if plugin else manager.NeutronManager.get_plugin()
+      ...
+      def _get_instance_name_from_fip(self, floatingip):
+      """Get instance name from fip associated with an instance
+      Get instance name using the following info. in floatingip:
+      1. port_id - this is the port id for the instance
+      2. fixed_ip_address - this is the fixed ip for the instance
+      Using the above, construct InfobloxContext and query NIOS
+      for FixedAddress/HostRecord for instance. From the result,
+      extract instance name from the "VM Name" EA
+      """
+      ...
+      port = self.plugin.get_port(self.context, port_id)
+      if not port:
+      LOG.warning("No port found for port_id: %s" % port_id)
+      return None
+      subnet_ids = [ip['subnet_id'] for ip in port['fixed_ips']
+      if ip['ip_address'] == fixed_ip]
+      if not subnet_ids:
+      LOG.warning("No subnet_ids found for port: %s, fixed_ip: " %
+      (port, fixed_ip))
+      return None
+      subnet = self.plugin.get_subnet(self.context, subnet_ids[0])
+      if not subnet:
+      LOG.warning("No subnet was found for subnet_id: %s" %
+      subnet_ids[0])
+      return
+      ...</codeblock>
+      
+      
+      
+      The Infoblox-ipam-agent subscribes to the following neutron notifications (see file networking_infoblox/common/notification.py):
+      
+      <codeblock>class NotificationEndpoint(object):
+      event_subscription_list = [
+      # pre-committed ipam events
+      'network.create.start',
+      'subnet.create.start',
+      # post-committed ipam events
+      'network.create.end',
+      'network.update.end',
+      'network.delete.end',
+      'subnet.create.end',
+      'subnet.update.end',
+      'subnet.delete.end',
+      'port.create.end',
+      'port.update.end',
+      'port.delete.end',
+      'floatingip.create.end',
+      'floatingip.update.end',
+      'floatingip.delete.end',
+      # nova instance event
+      'compute.instance.create.end',
+      'compute.instance.delete.end']</codeblock>
+      
+      
+      
+      
+    </section>
+    
+    <section><title>Configuration for Networking-Infoblox</title> Changes to Existing Parameters in
+      Nova: The diagram above shows the nova computes also send notification to the
+      infoblox-ipam-agent. Changes needed are into the notification parameters in nova.conf: <table
+        id="table_rzp_xwp_mv">
+        <tgroup cols="5">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <colspec colnum="5" colname="col5"/>
+          <thead>
+            <row>
+              <entry>Parameter Name</entry>
+              <entry>Section in nova.conf</entry>
+              <entry>Default Value</entry>
+              <entry>Current Value in HOS</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>notify_on_state_change</entry>
+              <entry>DEFAULT</entry>
+              <entry>None</entry>
+              <entry>vm_and_task_state</entry>
+              <entry>
+                <p>Send compute.instance.update notifications on instance state changes.</p>
+                <p>Vm_and_task_state means notify on vm and task state changes.</p>
+                <p>Infoblox requires the value to be vm_state (notify on vm state change). </p>
+                <p><b> Thus NO CHANGE is needed for infoblox</b></p>
+              </entry>
+            </row>
+            <row>
+              <entry>notification_topics</entry>
+              <entry>DEFAULT</entry>
+              <entry>empty list</entry>
+              <entry>notifications</entry>
+              <entry>
+                <p><b>NO CHANGE is needed for infoblox.</b></p>
+                <p>The infoblox installation guide requires the notifications to be
+                  "notifications"</p>
+              </entry>
+            </row>
+            <row>
+              <entry>notification_driver</entry>
+              <entry>DEFAULT</entry>
+              <entry>None</entry>
+              <entry>messaging</entry>
+              <entry>
+                <p><b>Change needed.</b></p>
+                <p>The infoblox installation guide requires the notification driver to be
+                  "messagingv2".</p>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>... Changes to Existing Parameters In Neutron: <table id="table_lvb_bxp_mv">
+        <tgroup cols="5">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <colspec colnum="5" colname="col5"/>
+          <thead>
+            <row>
+              <entry>Parameter Name</entry>
+              <entry>Section in neutron.conf</entry>
+              <entry>Default Value</entry>
+              <entry>Current Value in HOS</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>ipam_driver</entry>
+              <entry>DEFAULT</entry>
+              <entry>None</entry>
+              <entry>
+                <p>None</p>
+                <p>(param is undeclared in neutron.conf)</p>
+              </entry>
+              <entry>
+                <p>Pluggable IPAM driver to be used by neutron api server.</p>
+                <p>For infoblox, the value is "networking_infoblox.ipam.driver.InfobloxPool"</p>
+              </entry>
+            </row>
+            <row>
+              <entry>notification_driver</entry>
+              <entry>DEFAULT</entry>
+              <entry>empty list</entry>
+              <entry>messaging</entry>
+              <entry>
+                <p>The driver used to send notifications from the neutron api server to the neutron
+                  agents.</p>
+                <p>The installation guilde for networking-infoblox calls for the notification_driver
+                  to be "messagingv2"</p>
+              </entry>
+            </row>
+            <row>
+              <entry>notification_topics</entry>
+              <entry>DEFAULT</entry>
+              <entry>None</entry>
+              <entry>notifications</entry>
+              <entry>
+                <p><b>No change needed for HOS</b>.</p>
+                <p>The row is here show the changes in the neutron parameters described in the
+                  installation guilde for networking-infoblox</p>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table> Parameters Specific to the Networking Infoblox Driver All the params for the
+      networking-infoblox driver have to be defined in the neutron.conf.<table id="table_gzw_dxp_mv">
+        <tgroup cols="4">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <thead>
+            <row>
+              <entry>Parameter Name</entry>
+              <entry>Section in neutron.conf</entry>
+              <entry>Default Value</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>cloud_data_center_id</entry>
+              <entry>infoblox</entry>
+              <entry>0</entry>
+              <entry>ID for selecting a particular grid from one or more grids to serve networks in
+                the Infoblox backend</entry>
+            </row>
+            <row>
+              <entry>ipam_agent_workers</entry>
+              <entry>infoblox</entry>
+              <entry>1</entry>
+              <entry>Number of Infoblox IPAM agent works to run</entry>
+            </row>
+            <row>
+              <entry>grid_master_host</entry>
+              <entry>infoblox-dc.&lt;cloud_data_center_id></entry>
+              <entry>empty string</entry>
+              <entry>IP address of the grid master. WAPI requests are sent to the
+                grid_master_host</entry>
+            </row>
+            <row>
+              <entry>ssl_verify</entry>
+              <entry>infoblox-dc.&lt;cloud_data_center_id></entry>
+              <entry>False</entry>
+              <entry>Ensure whether WAPI requests sent over HTTPS require SSL verification</entry>
+            </row>
+            <row>
+              <entry>WAPI Version</entry>
+              <entry>infoblox-dc.&lt;cloud_data_center_id></entry>
+              <entry>1.4</entry>
+              <entry>The WAPI version. Value should be 2.2.</entry>
+            </row>
+            <row>
+              <entry>admin_user_name</entry>
+              <entry>infoblox-dc.&lt;cloud_data_center_id></entry>
+              <entry>empty string</entry>
+              <entry>Admin user name to access the grid master or cloud platform appliance</entry>
+            </row>
+            <row>
+              <entry>admin_password</entry>
+              <entry>infoblox-dc.&lt;cloud_data_center_id></entry>
+              <entry>empty string</entry>
+              <entry>Admin user password</entry>
+            </row>
+            <row>
+              <entry>http_pool_connections</entry>
+              <entry>infoblox-dc.&lt;cloud_data_center_id></entry>
+              <entry>100</entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>http_pool_maxsize</entry>
+              <entry>infoblox-dc.&lt;cloud_data_center_id></entry>
+              <entry>100</entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>http_request_timeout</entry>
+              <entry>infoblox-dc.&lt;cloud_data_center_id></entry>
+              <entry>120</entry>
+              <entry> </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      
+    </section>
+    <section><title>Configuration Steps</title>
+      
+      
+      <ol><li>Create a service component for the infoblox-ipam-agent.  To use the infoblox appliance for IPAM, the agent AND the infoblox IPAM driver are required.
+      </li><li>Add the infoblox-ipam-agent as a service component:
+        mneumonic: NEU-IFBLXA
+        component name: infoblox-ipam-agent
+        
+      </li><li>The user needs to change the control plane definition to add infoblox-ipam-agent as a service in the controller node cluster.
+      </li><li>A new role for the infoblox configuration to be added to neutron-ansible. Name is "neutron-infoblox-ipam-agt".  It handles the configuration, installation, starting and stopping the neutron-ipam-agent as well as configuring the logging for the agent.
+      </li><li>The infoblox ipam agent will be started with be started with configuration files neutron.conf, ml2_conf.ini, and infoblox-ipam-agent.ini.  Infoblox-ipam-agent.ini sets up the json logging file infoblox-ipam-agent-json.log.
+      </li><li>The infoblox-ipam-agent generated logs will have incorporated into logrotation and centralized logging
+      </li><li>The infoblox-ipam-agent needs to be monitored by monasca.
+        
+      </li><li>Neutron.conf.j2: The user needs to modify the neutron.conf.j2 file to comment and uncomment some lines for enabling it to use it with the infoblox appliance:
+        
+        <codeblock>[DEFAULT]
+          ...
+          l3_ha_net_cidr = 169.254.192.0/18
+          
+          
+          # Uncomment the line below if the Reference Pluggable IPAM driver is to be used
+          # ipam_driver = internal
+          
+          
+          # Comment out the line below if the Infoblox IPAM Driver is to be used
+          # notification_driver = messaging
+          
+          # Uncomment the lines below if the Infoblox IPAM driver is to be used
+          ipam_driver = networking_infoblox.ipam.driver.InfobloxPool
+          notification_driver = messagingv2
+          
+          
+          # Modify the infoblox sections below to suit your cloud environment
+          
+          [infoblox]
+          cloud_data_center_id = 1
+          # This name of this section is formed by "infoblox-dc:&lt;infoblox.cloud_data_center_id>"
+            # If cloud_data_center_id is 1, then the section name is "infoblox-dc:1"
+            
+            [infoblox-dc:0]
+            http_request_timeout = 120
+            http_pool_maxsize = 100
+            http_pool_connections = 100
+            ssl_verify = False
+            wapi_version = 2.2
+            admin_user_name = admin
+            admin_password = infoblox
+            grid_master_host = 1.2.3.4
+            
+            
+            [QUOTAS]
+            ...</codeblock>
+      </li><li>Change nova.conf.j2 to replace the notification driver "messaging" to "messagingv2"
+        <codeblock> ...
+          
+          # Oslo messaging 
+          notification_driver = log
+          
+          #  Note: 
+          #  If the infoblox-ipam-agent is to be deployed in the cloud, change the 
+          #  notification_driver settting from "messaging" to "messagingv2". 
+          notification_driver = messagingv2
+          notification_topics = notifications
+          
+          # Policy 
+          ...</codeblock>
+      </li></ol>
+        
+    </section>
+  </body>
+</topic>
