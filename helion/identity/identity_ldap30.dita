@@ -491,10 +491,10 @@ $ openstack --os-identity-api-version 3 \
         <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_certs_all.yml</codeblock>
         
         
-      </li><li>Edit the file and specify the correct single file path name for the ldap certicicates. This file path name has to be consistent with the one defined in tls_cacertfile of the domain-specific configuration.
-        Edit the file and populate or update it with ldap CA certificates for all LDAP domains.
-        
-      </li><li>As suggested at Using Git for Configuration Management, commit the new file into local git repository, and rerun playbooks of configuration processor and deployment area preparation:
+      </li><li>Edit the file and specify the correct single file path name for the ldap certificates. This file
+          path name has to be consistent with the one defined in tls_cacertfile of the
+          domain-specific configuration. Edit the file and populate or update it with ldap CA
+          certificates for all LDAP domains. </li><li>As suggested at Using Git for Configuration Management, commit the new file into local git repository, and rerun playbooks of configuration processor and deployment area preparation:
         <codeblock># Commit the new file into local git repository
           $ cd ~/helion
           $ git checkout site
@@ -518,7 +518,28 @@ $ openstack --os-identity-api-version 3 \
     </section>
     
     
-    
+    <section><title>Limitations</title>
+      
+      Limitations for <keyword keyref="kw-hos-phrase-30"/> Domain Specific Configuration:
+      <ul><li>
+        Read-only LDAP backends.
+      </li><li>No Global User Listing: Once domain-specific driver configuration is enabled, the operations of listing all users and listing all groups are not supported.
+        Those calls will need either a domain filter to be specified or usage of a domain scoped token.
+      </li><li>No mixture of domain-specific driver configuration file store and database store in a single Keystone instance. Once database store enabled within the Keystone instance, file store shall be ignored and vice versa.
+      </li><li>List limit of identity data records can only apply for all-domain level but not per-domain level on Keystone side. 
+      </li></ul>
+      
+      
+      Limitations for <keyword keyref="kw-hos-phrase-30"/> API-Based Domain-Specific Configuration Management
+      <ul><li>
+        No GUI dashboard for domain-specific driver configuration management
+      </li><li>API-based Domain specific config does not check for type of option.
+      </li><li>API-based Domain specific config does not check for option values supported.
+      </li><li>API-based Domain config method does not provide retrieval of default values of domain-specific configuration options.
+      </li><li>Status: Domain-specific driver configuration database store is a preview feature for <keyword keyref="kw-hos-phrase-30"/>.
+      </li></ul>
+      
+    </section>
     
     
     
