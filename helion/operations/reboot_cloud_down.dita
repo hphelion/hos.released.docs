@@ -9,8 +9,8 @@
       <p>If you have a planned maintenance and need to bring down your entire cloud and restart
         services, follow the steps here to safely restart your cloud. Be mindful that this method
         will bring down all of your services. If you wish to use a method utilizing rolling reboots
-        where your cloud services will continue running then see <xref href="reboot_cloud_rolling.dita"
-        />.</p>
+        where your cloud services will continue running then see <xref
+          href="reboot_cloud_rolling.dita"/>.</p>
       <p>If you wish to do any backups prior to these steps, visit the backup and restore pages
         first at <xref href="../bura/bura_overview.dita"/>.</p>
     </section>
@@ -23,37 +23,34 @@ ansible-playbook -i hosts/verb_hosts hlm-stop.yml</codeblock></li>
         <li>If necessary, power up your
           nodes<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts bm-power-up.yml</codeblock></li>
+        <li>Bring the databases back up:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml</codeblock></li>
         <li>Next, run hlm-start
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml</codeblock>
-        </li>
-        <li> If RabbitMQ fails, run
+ansible-playbook -i hosts/verb_hosts hlm-start.yml</codeblock></li>
+        <li>You can run this playbook to get a status of individual services:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock></li>
+        <li>If any services did not start properly, you can run playbooks for specific services
+          against specific nodes having issues. <p>For example:</p>
+          <p>If RabbitMQ fails, run:</p>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts rabbitmq-disaster-recovery.yml</codeblock>
-        </li>
-        <li>You can check the status of
-          RabbitMQ<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts rabbitmq-status.yml</codeblock></li>
-        <li>If the recovery had failed, you can run
+          <p>You can check the status of RabbitMQ afterwards with this:</p>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml </codeblock>
-        </li>
-        <li>Next, you can check the status of other HPE Helion OpenStack services:
+ansible-playbook -i hosts/verb_hosts rabbitmq-status.yml</codeblock>
+          <p>If the recovery had failed, you can run:</p>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
-        </li>
-        <li>If any services did not start properly, see <xref href="start_stop_services.dita"
-            >Starting and Stopping Services</xref></li>
-        <li>If any nodes fail, see the node maintenance documents: <xref
-            href="recovering_nodes.dita"/></li>
-        <li>If necessary, run hlm-start again
+ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml</codeblock>
+          <p>Each of the other services have playbooks in the
+              <codeph>~/scratch/ansible/next/hos/ansible</codeph> directory in the format of
+              <codeph>&lt;service>-start.yml</codeph> that you can run. One example, for the compute
+            service, is <codeph>nova-start.yml.</codeph></p></li>
+        <li>Continue checking the status of other HPE Helion OpenStack services until you get an
+          all-clear message:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml</codeblock>
-        </li>
-        <li>You may then check the status of all
-          services:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
-        </li>
+ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock></li>
         <li>Repeat any steps as necessary.</li>
       </ol>
     </section>
