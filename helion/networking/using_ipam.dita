@@ -25,7 +25,7 @@
   # ipam_driver = internal
   ...</codeblock>After
       uncommenting the line "ipam_driver = internal", commit the file using git commit, and then
-      follow the steps to deploy neutron:
+      follow the steps to deploy Neutron:
         <codeblock>stack@localhost:~$ cd ~/helion/hos/ansible
   stack@localhost:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost ready-deployment.yml
   stack@localhost:~/helion/hos/ansible$ cd ~/scratch/ansible/next/hos/ansible
@@ -38,10 +38,10 @@
       </note></section>
     
     <section> Infoblox-ipam-agent / Neutron DB interface The infoblox-ipam-agent receives
-      notification from the neutron api server. Its notification handler imports neutron's
+      notification from the Neutron api server. Its notification handler imports Neutron's
       NeutronManager. The agent gets a handle to NeutronManager's plugin. The notification handler's
       methods makes call to the get_ methods in the plugin (get_subnets, get_ports, get_network,
-      etc). These get_* calls goes into the neutron DB and gets the subnet, ports, network, etc
+      etc). These get_* calls goes into the Neutron DB and gets the subnet, ports, network, etc
       information. Thus, the infoblox-ipam-agent needs have the mysql credentials to access the
       database. This is a snippet of the infoblox-ipam-agent's notification handler (file
       networking_infoblox/neutron/common/notification_handler.py)
@@ -92,7 +92,7 @@
       subnet_ids[0])
       return
       ...</codeblock>The
-      Infoblox-ipam-agent subscribes to the following neutron notifications (see file
+      Infoblox-ipam-agent subscribes to the following Neutron notifications (see file
       networking_infoblox/common/notification.py):
       <codeblock>class NotificationEndpoint(object):
       event_subscription_list = [
@@ -199,7 +199,7 @@
                 <p>(param is undeclared in neutron.conf)</p>
               </entry>
               <entry>
-                <p>Pluggable IPAM driver to be used by neutron api server.</p>
+                <p>Pluggable IPAM driver to be used by Neutron api server.</p>
                 <p>For infoblox, the value is "networking_infoblox.ipam.driver.InfobloxPool"</p>
               </entry>
             </row>
@@ -209,7 +209,7 @@
               <entry>empty list</entry>
               <entry>messaging</entry>
               <entry>
-                <p>The driver used to send notifications from the neutron api server to the neutron
+                <p>The driver used to send notifications from the Neutron api server to the Neutron
                   agents.</p>
                 <p>The installation guilde for networking-infoblox calls for the notification_driver
                   to be "messagingv2"</p>
@@ -222,7 +222,7 @@
               <entry>notifications</entry>
               <entry>
                 <p><b>No change needed for HOS</b>.</p>
-                <p>The row is here show the changes in the neutron parameters described in the
+                <p>The row is here show the changes in the Neutron parameters described in the
                   installation guilde for networking-infoblox</p>
               </entry>
             </row>
