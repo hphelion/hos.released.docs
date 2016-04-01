@@ -12,5 +12,55 @@
           scope="external" format="html">OpenStack Swift - Container to Container
           Synchronization</xref>.</p>
     </section>
+    <section id="notes">
+      <p>The synchronization is done as a background action. When you put an object into the source
+        container, it will take some time before it becomes visible in the destination container.
+        Storage Services will not necessarily copy objects in any particular order. Specifically,
+        they may be transferred in a different order to which they were created.</p>
+        <p>Note: Segmented objects (objects larger than 5GB) will
+          not work seamlessly with Container Synchronization. If the manifest object is copied to
+          the destination container before the object segments, when you perform a GET operation on
+          the manifest object, the system may fail to find some or all of the object segments. If
+          your manifest and object segments are in different containers, don't forget that both
+          containers must be synchonized and that the container name of the object segments must be
+          the same on both source and destination.</p>
+      
+      <p>You may operate on the destination container just like any other container -- adding or
+        deleting objects -- including the objects that are in the destination container because they
+        were copied from the source container. To decide how to handle object creation, replacement
+        or deletion, the system uses timestamps to determine what to do. In general, the latest
+        timestamp "wins" i.e., if you create an object, replace it, delete it and the re-create it,
+        the destination container will eventually contain the most recently created object. However,
+        if you also create and delete objects in the destination container, you get some subtle
+        behaviours as follows:</p>
+      <ul id="ul_t1p_cyv_mv">
+        <li>If an object is copied to the destination container and then deleted, it remains deleted
+          in the destination even though there is still a copy in the source container. Of course,
+          if you modify the object (replace or change its metadata) in the source container, it will
+          reappear in the destination again.</li>
+        <li>The same applies to a replacement or metadata modification of an object in the
+          destination container -- the object will remain as-is unless there is a replacement or
+          modification in the source container.</li>
+        <li>If you replace or modify metadata of an object in the destination container and then
+          delete it in the source container, it is <i>not</i> deleted from the destination. This is
+          because your modified object has a later timestamp than the object you deleted at
+          source.</li>
+        <li>If you create an object in the source container and before the system has a chance to
+          copy it to the destination, you also create an object of the same name in the destination,
+          then the object in the destination is <i>not</i>overwritten by the source container's
+          object.</li>
+      </ul>
+      <p>So far, the discussion has been about synchronizing between a source and destination
+        container. What happens if you make the "destination" a "source" for another container?
+        There are three situations:</p>
+      <ul id="ul_u1p_cyv_mv">
+        <li>The new destination is yet another container. i.e., there is a chain of three
+          containers</li>
+        <li>The new destination is actually the original source container. This is two-way
+          synchronization. In effect, objects placed into either container will be copied to the
+          other container.</li>
+        <li>Two or more source containers could copy data to a single destination</li>
+      </ul>
+    </section>
   </body>
 </topic>
