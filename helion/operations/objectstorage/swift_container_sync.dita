@@ -95,6 +95,28 @@ openstack endpoint list | grep swift</codeblock>
             endpoints for them.</li>
         </ol>
       </sectiondiv>
+      <sectiondiv><p><b>Validate Connectivity Between Both Systems</b></p>
+        <p>The Swift nodes running the <codeph>swift-container</codeph> service must be able to
+          connect to the public API endpoints of each other for the container sync to work. You can
+          validate connectivity on each system using these steps.</p>
+        <p>For the sake of the examples, we will use the terms <i>source</i> and <i>destination</i>
+          to notate the nodes doing the synchronization.</p>
+        <ol>
+          <li>Log in to a Swift node on the source system.</li>
+          <li>Verify the SSL certificates by running this command against the destination Swift
+            server: <codeblock>echo | openssl s_client -connect &lt;destination IP or hostname>:8080 -CAfile /etc/ssl/certs/ca-certificates.crt</codeblock>
+            <p>If the connection was successful you should see a return code of <codeph>0
+                (ok)</codeph> similar to this:</p>
+            <codeblock>...
+Timeout   : 300 (sec)
+Verify return code: 0 (ok)</codeblock></li>
+          <li>Also verify that the node can connect back to Swift using this command: <codeblock>curl -k &lt;source IP or hostname>:8080/healthcheck</codeblock>
+            <p>If the connection was successful, you should see a response of
+              <codeph>OK</codeph>.</p></li>
+          <li>Repeat these verification steps on any system involved in your container
+            synchronization setup.</li>
+        </ol>
+      </sectiondiv>
     </section>
   </body>
 </topic>
