@@ -37,14 +37,15 @@
         Neutron using the default IPAM driver setting to "ipam_driver = internal" is not supported.
       </note></section>
     
-    <section> Infoblox-ipam-agent / Neutron DB interface The infoblox-ipam-agent receives
-      notification from the Neutron API server. Its notification handler imports Neutron's
+    <section>
+      <title>Setting up Infoblox-ipam-agent / Neutron DB interface</title>The infoblox-ipam-agent
+      receives notification from the Neutron API server. Its notification handler imports Neutron's
       NeutronManager. The agent gets a handle to NeutronManager's plugin. The notification handler's
-      methods makes call to the get_ methods in the plugin (get_subnets, get_ports, get_network,
-      etc). These get_* calls goes into the Neutron DB and gets the subnet, ports, network, etc
-      information. Thus, the infoblox-ipam-agent needs have the mysql credentials to access the
-      database. This is a snippet of the infoblox-ipam-agent's notification handler (file
-      networking_infoblox/neutron/common/notification_handler.py)
+      methods makes a call to the get_ methods method in the plugin (get_subnets, get_ports,
+      get_network, etc). These get_* calls go into the Neutron database and get the subnet, ports,
+      network, etc. Thus, the infoblox-ipam-agent needs to have the MySQL credentials to access the
+      database. This is a snippet of the infoblox-ipam-agent's notification handler
+      (networking_infoblox/neutron/common/notification_handler.py)
       <codeblock outputclass="nomaxheight">import netaddr
       from oslo_log import log as logging
       import oslo_messaging
@@ -118,9 +119,11 @@
     </section>
     
     <section><title>Configuration for Networking-Infoblox</title> Changes to Existing Parameters in
-      Nova: The diagram above shows the nova computes also send notification to the
-      infoblox-ipam-agent. Changes needed are into the notification parameters in nova.conf: <table
-        id="table_rzp_xwp_mv">
+      Nova: </section>
+    <section>
+      <image href="../../media/networking/ipam.png" placement="break" id="image_ul5_vwv_mv"/>The
+      diagram above shows the Nova computes also send notification to the infoblox-ipam-agent.
+      Changes needed are into the notification parameters in nova.conf: <table id="table_rzp_xwp_mv">
         <tgroup cols="5">
           <colspec colnum="1" colname="col1"/>
           <colspec colnum="2" colname="col2"/>
@@ -309,7 +312,6 @@
           </tbody>
         </tgroup>
       </table>
-      
     </section>
     <section><title>Configuration steps</title>
       
