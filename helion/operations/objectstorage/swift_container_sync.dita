@@ -117,6 +117,54 @@ Verify return code: 0 (ok)</codeblock></li>
             synchronization setup.</li>
         </ol>
       </sectiondiv>
+      <sectiondiv>
+        <p><b>Configure Container to Container Synchronization</b></p>
+        <p>Both the source and destination Swift systems must be configured the same way, using sync
+          realms. For more details on how sync realms work, see <xref
+            href="http://docs.openstack.org/developer/swift/overview_container_sync.html#configuring-container-sync"
+            format="html" scope="external">OpenStack Swift - Configuring Container Sync</xref>.</p>
+        <p>To configure one of the systems, follow these steps:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Edit the <codeph>~/helion/my_cloud/config/swift/container-sync-realms.conf.j2</codeph>
+            file and uncomment the sync realm section. <p>Here is a sample showing this section in
+              the file:</p>
+            <codeblock>#Add sync realms here, for example:
+# [realm1]
+# key = realm1key
+# key2 = realm1key2
+# cluster_name1 = https://host1/v1/
+# cluster_name2 = https://host2/v1/</codeblock></li>
+          <li>Add in the details for your source and destination systems. Each realm you define is a
+            set of clusters that have agreed to allow container syncing between them. These values
+            are case sensitive. <p>Only one <codeph>key</codeph> is required. The second key is
+              optional and can be provided to allow an operator to rotate keys if desired. The
+              values for the clusters must contain the prefix <codeph>cluster_</codeph> and will be
+              populated with the public API endpoints for the systems.</p></li>
+          <li>Commit the changes to git:
+            <codeblock>git add -A
+git commit -a -m "Add node &lt;name>"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Update the deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Run the Swift reconfigure playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
+          <li>Run this command to validate that your container synchronization is configured: <codeblock>source ~/service.osrc
+swift capabilities</codeblock>
+            <p>Here is a snippet of the output showing the container sync information. This should
+              be populated with your cluster names:</p>
+            <codeblock>...
+Additional middleware: container_sync
+ Options:
+  realms: {u'INTRACLUSTER': {u'clusters': {u'THISCLUSTER': {}}}}</codeblock></li>
+          <li>Repeat these steps on any other Swift systems that will be involved in your sync
+            realms.</li>
+        </ol>
+      </sectiondiv>
     </section>
   </body>
 </topic>
