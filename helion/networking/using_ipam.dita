@@ -4,39 +4,47 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Using the Internal IPAM Driver in Neutron</title>
   <body>
 <section>
-      <p>THIS DOCUMENT IS A POUR OF THE WIKI PAGE AND IS COMPLETELY UNDER CONSTRUCTION</p>There are
-      no IPAM internal-driver specific parameters other than "ipam_driver" How to use the Internal
-      IPAM Driver There will be commented lines in the neutron.conf.j2 template. When these lines
-      are uncommented and committed, After following the standard steps to deploy neutron, neutron
-      will be configured to run using the "internal" ipam driver: File neutron.conf.j2 on the
-      deployer in the directory ~stack/helion/my_cloud/config/neutron
+      <p>THIS DOCUMENT IS A POUR OF THE WIKI PAGE AND IS COMPLETELY UNDER CONSTRUCTION</p>
+      <p>Starting with the Liberty release, OpenStack Networking includes a pluggable interface for
+        the IP Address Management (IPAM) function. This interface creates a driver framework for the
+        allocation and de-allocation of subnets and IP addresses, enabling the integration of
+        alternate IPAM implementations or third-party IP Address Management systems.</p><p>In HPE
+        Helion OpenStack 2.x, no IPAM driver is used (ipam_driver parameter is not specified in
+        neutron.conf or it is specified with the empty string). The result is the non-pluggable ipam
+        is used.</p>To indicate an IPAM driver, the only internal-driver specific parameter  is
+      "ipam_driver."  You can set it by looking for commented lines in the neutron.conf.j2 template,
+      uncommenting them, and committing the file. After following the standard steps to deploy
+      Neutron, Neutron will be configured to run using the "internal" ipam driver</section>
+    <section>The file you must edit is neutron.conf.j2 on the deployer in the directory
+      ~stack/helion/my_cloud/config/neutron
       <codeblock>[DEFAULT]
   ...
   l3_ha_net_cidr = 169.254.192.0/18
   
   # Uncomment the line below if the Reference Pluggable IPAM driver is to be used
   # ipam_driver = internal
-  ...</codeblock>
-      After uncommenting the line "ipam_driver = internal", commit the file using git commit, and
-      then follow the steps to deploy neutron:
-      <codeblock>stack@localhost:~$ cd ~/helion/hos/ansible
+  ...</codeblock>After
+      uncommenting the line "ipam_driver = internal", commit the file using git commit, and then
+      follow the steps to deploy neutron:
+        <codeblock>stack@localhost:~$ cd ~/helion/hos/ansible
   stack@localhost:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost ready-deployment.yml
   stack@localhost:~/helion/hos/ansible$ cd ~/scratch/ansible/next/hos/ansible
   stack@localhost:~/scratch/ansible/next/hos/ansible$ ansible-playbook -i hosts/verb_hosts site.yml
-  ...</codeblock>
-      IMPORTANT: Currently there is no migration path from the default ipam_driver setting to a
-      pluggable ipam driver setting. Changes are needed to database tables. Neutron currently can't
-      make the changes. So reconfiguration of neutron using the default ipam driver setting to
-      "ipam_driver = internal" is not supported. </section>
+  ...</codeblock><note>Currently
+        there is no migration path (from previous versions of HPE Helion OpenStack from the default
+        ipam_driver setting to a pluggable IPAM driver setting because changes are needed to
+        database tables and Neutron currently can't make those changes. So <i>reconfiguration </i>of
+        Neutron using the default IPAM driver setting to "ipam_driver = internal" is not supported.
+      </note></section>
     
-    <section>
-      
-      Infoblox-ipam-agent / Neutron DB interface
-      
-      The infoblox-ipam-agent receives notification from the neutron api server.  Its notification handler imports neutron's NeutronManager.  The agent gets a handle to NeutronManager's plugin. The notification handler's methods makes callto the get_ methods in the plugin (get_subnets, get_ports, get_network, etc).  These get_* calls goes into the neutron DB and gets the subnet, ports, network, etc information.  Thus, the infoblox-ipam-agent needs have the mysql credentials to access the database.
-      
-      This is a snippet of the infoblox-ipam-agent's notification handler (file networking_infoblox/neutron/common/notification_handler.py)
-      
+    <section> Infoblox-ipam-agent / Neutron DB interface The infoblox-ipam-agent receives
+      notification from the neutron api server. Its notification handler imports neutron's
+      NeutronManager. The agent gets a handle to NeutronManager's plugin. The notification handler's
+      methods makes call to the get_ methods in the plugin (get_subnets, get_ports, get_network,
+      etc). These get_* calls goes into the neutron DB and gets the subnet, ports, network, etc
+      information. Thus, the infoblox-ipam-agent needs have the mysql credentials to access the
+      database. This is a snippet of the infoblox-ipam-agent's notification handler (file
+      networking_infoblox/neutron/common/notification_handler.py)
       <codeblock outputclass="nomaxheight">import netaddr
       from oslo_log import log as logging
       import oslo_messaging
@@ -83,12 +91,9 @@
       LOG.warning("No subnet was found for subnet_id: %s" %
       subnet_ids[0])
       return
-      ...</codeblock>
-      
-      
-      
-      The Infoblox-ipam-agent subscribes to the following neutron notifications (see file networking_infoblox/common/notification.py):
-      
+      ...</codeblock>The
+      Infoblox-ipam-agent subscribes to the following neutron notifications (see file
+      networking_infoblox/common/notification.py):
       <codeblock>class NotificationEndpoint(object):
       event_subscription_list = [
       # pre-committed ipam events
@@ -110,10 +115,6 @@
       # nova instance event
       'compute.instance.create.end',
       'compute.instance.delete.end']</codeblock>
-      
-      
-      
-      
     </section>
     
     <section><title>Configuration for Networking-Infoblox</title> Changes to Existing Parameters in
@@ -310,7 +311,7 @@
       </table>
       
     </section>
-    <section><title>Configuration Steps</title>
+    <section><title>Configuration steps</title>
       
       
       <ol><li>Create a service component for the infoblox-ipam-agent.  To use the infoblox appliance for IPAM, the agent AND the infoblox IPAM driver are required.
