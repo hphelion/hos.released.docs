@@ -12,19 +12,17 @@
           scope="external" format="html">OpenStack Swift - Container to Container
           Synchronization</xref>.</p>
     </section>
-    <section id="notes">
+    <section id="notes"><title>Notes and Limitations</title>
       <p>The synchronization is done as a background action. When you put an object into the source
         container, it will take some time before it becomes visible in the destination container.
         Storage Services will not necessarily copy objects in any particular order. Specifically,
         they may be transferred in a different order to which they were created.</p>
-        <p>Note: Segmented objects (objects larger than 5GB) will
-          not work seamlessly with Container Synchronization. If the manifest object is copied to
-          the destination container before the object segments, when you perform a GET operation on
-          the manifest object, the system may fail to find some or all of the object segments. If
-          your manifest and object segments are in different containers, don't forget that both
-          containers must be synchonized and that the container name of the object segments must be
-          the same on both source and destination.</p>
-      
+      <p>Note: Segmented objects (objects larger than 5GB) will not work seamlessly with Container
+        Synchronization. If the manifest object is copied to the destination container before the
+        object segments, when you perform a GET operation on the manifest object, the system may
+        fail to find some or all of the object segments. If your manifest and object segments are in
+        different containers, don't forget that both containers must be synchonized and that the
+        container name of the object segments must be the same on both source and destination.</p>
       <p>You may operate on the destination container just like any other container -- adding or
         deleting objects -- including the objects that are in the destination container because they
         were copied from the source container. To decide how to handle object creation, replacement
@@ -61,6 +59,11 @@
           other container.</li>
         <li>Two or more source containers could copy data to a single destination</li>
       </ul>
+    </section>
+    <section id="prereqs"><title>Prerequisites</title>
+      <p>Container to container synchronization requires that SSL certificates are configured on
+        both the source and destination systems. For more information on how to implement SSL, see
+          <xref href="../../security/tls.dita"/></p>
     </section>
   </body>
 </topic>
