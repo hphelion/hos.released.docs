@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="HP2.0VPNaaS">
+<topic id="UsingVPNaaS">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Using VPN as a Service (VPNaaS)</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
@@ -9,11 +9,11 @@
       Virtual Private Network (VPN) as a Service module.</p>
     <p>
       <ul id="LBaaSlist">
-        <li><xref href="vpnaas.dita#HP2.0VPNaaS/Prerequisites">Prerequisites</xref></li>
-        <li><xref href="vpnaas.dita#HP2.0VPNaaS/Considerations">Considerations</xref></li>
-        <li><xref href="vpnaas.dita#HP2.0VPNaaS/Configuration">Configuration</xref></li>
-        <li><xref href="vpnaas.dita#HP2.0VPNaaS/Troubleshooting">Troubleshooting</xref></li>
-        <li><xref href="vpnaas.dita#HP2.0VPNaaS/MoreInfo">More Information</xref></li>
+        <li><xref href="vpnaas.dita#UsingVPNaaS/Prerequisites">Prerequisites</xref></li>
+        <li><xref href="vpnaas.dita#UsingVPNaaS/Considerations">Considerations</xref></li>
+        <li><xref href="vpnaas.dita#UsingVPNaaS/Configuration">Configuration</xref></li>
+        <li><xref href="vpnaas.dita#UsingVPNaaS/Troubleshooting">Troubleshooting</xref></li>
+        <li><xref href="vpnaas.dita#UsingVPNaaS/MoreInfo">More Information</xref></li>
       </ul>
     </p>
     <section id="Prerequisites">
@@ -22,7 +22,7 @@
         <li><keyword keyref="kw-hos"/> must be installed. </li>
         <li>Before setting up VPNaaS, you will need to have created an external network and a subnet
           with access to the internet. Information on how to create the external network and subnet
-          can be found in the <xref href="vpnaas.dita#HP2.0VPNaaS/MoreInfo"> More Information</xref>
+          can be found in the <xref href="vpnaas.dita#UsingVPNaaS/MoreInfo"> More Information</xref>
           section of this document.</li>
         <li>You should assume 172.16.0.0/16 as the ext-net CIDR in this document.</li>
       </ol>
@@ -31,7 +31,7 @@
     <section id="Considerations">
       <title>Considerations</title>
       <p>Using the Neutron plugin-based VPNaaS causes additional processes to be run on the Network
-        Service Nodes. One of these processes, the ipsec pluto process from OpenSwan, runs as root
+        Service Nodes. One of these processes, the ipsec charon process from StrongSwan, runs as root
         and listens on an external network. A vulnerability in that process can lead to remote root
         compromise of the Network Service Nodes. If this is a concern customers should consider
         using a VPN solution other than the Neutron plugin-based VPNaaS and/or deploying additional
@@ -52,7 +52,7 @@ sudo service neutron-vpn-agent restart</codeblock></note>
           using the <codeph>neutron</codeph> command line. The VPNaaS module enables the ability to
           extend access between private networks across two different <keyword keyref="kw-hos"/> clouds or
           between a <keyword keyref="kw-hos"/> cloud and a non-cloud network. VPNaaS is based on the open
-          source software application called OpenSwan. OpenSwan (more information available at<xref
+          source software application called StrongSwan. StrongSwan (more information available at<xref
             href="http://www.openswan.org/" format="html" scope="external"
             >http://www.openswan.org</xref>) is an IPsec implementation and provides basic VPN
           gateway functionality.</p>
@@ -150,7 +150,7 @@ neutron vpn-ipsecpolicy-create ipsecpolicy</codeblock></li>
         <ol>
           <li>Check the VPN connections. <note>vm1-ip and vm2-ip denotes private IP's for vm1 and
               vm2 respectively. The private IP's are obtained from step 4 under <xref
-                href="vpnaas.dita#HP2.0VPNaaS/StartVirtualMachines">Start Virtual Machines</xref>
+                href="vpnaas.dita#UsingVPNaaS/StartVirtualMachines">Start Virtual Machines</xref>
               section.  If you are unable to SSH to the private network due to a lack of direct
               access, the VM console can be accessed through Horizon.</note>
             <codeblock>ssh cirros@vm1-ip
@@ -201,26 +201,14 @@ ping ###.###.###.###</codeblock></li>
       </sectiondiv>
     </section>
 
+    <!-- Preserving the section in case we need to add Troubleshooting back in. 
     <section id="Troubleshooting">
       <title>Troubleshooting</title>
       <p>You can use the following information here for assistance with troubleshooting the VPNaaS service. </p>
-      <ul>
-        <li>When the VPN services and/or IPSEC site connections become hung in a
-            <i>PENDING_CREATE</i> status, the problem might be with PLUTO processes under the router
-          namespaces. Executing <codeph>ipsec verify</codeph> under the respective router namespace
-          will display <i>OK</i> for listening on ports 500 and 4500. If <codeph>ipsec
-            verify</codeph> does not display the <i>OK</i> status, follow the steps included below. <ol>
-            <li>Delete all <i>pluto.pid</i> and <i>pluto.ctl</i> files under
-                <codeph>/var/run/neutron/ipsec/&lt;router-id&gt;/var/run/</codeph></li>
-            <li>Restart <i>ipsec</i> service. <codeblock>sudo service ipsec restart</codeblock></li>
-            <li>Restart <i>neutron-vpn-agent</i>.
-              <codeblock>sudo service neutron-vpn-agent restart</codeblock></li>
-          </ol>
-          <p>Wait for a couple of minutes and run, <codeph>ipsec verify</codeph> again. The status
-            will be <i>OK</i> under router namespace for listening on ports 500 and 4500.</p></li>
-      </ul>
-    </section>
 
+    </section>
+    -->
+    
     <section id="MoreInfo">
       <title>More Information</title>
       <p>VPNaaS currently only supports Pre-shared Keys (PSK) security between VPN gateways. 
