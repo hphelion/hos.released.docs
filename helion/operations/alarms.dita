@@ -922,16 +922,18 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
         </tgroup>
       </table>
     </section>
-    <section id="nova">
+    <section id="compute">
       <title>Compute</title>
-      <table frame="all" rowsep="1" colsep="1" id="table_bv5_q2h_1t">
-        <tgroup cols="4">
-          <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-          <colspec colname="c3" colnum="2" colwidth="1.0*"/>
-          <colspec colname="c4" colnum="3" colwidth="1.0*"/>
-          <colspec colname="c5" colnum="4" colwidth="1.0*"/>
+      <table frame="all" rowsep="1" colsep="1" id="compute_alarms">
+        <tgroup cols="5">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
+          <colspec colname="c4" colnum="4"/>
+          <colspec colname="c5" colnum="5"/>
           <thead>
             <row>
+              <entry>Service</entry>
               <entry>Alarm Name</entry>
               <entry>Description</entry>
               <entry>Likely Cause</entry>
@@ -940,6 +942,7 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
           </thead>
           <tbody>
             <row>
+              <entry morerows="8">compute</entry>
               <entry>Process Check</entry>
               <entry>nova-api check</entry>
               <entry>Process crashed.</entry>
@@ -1034,20 +1037,56 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeb
               <entry>Stop all the processes and restart the nova-api process. Review the system and
                 nova-api logs.</entry>
             </row>
+
+
+            <row>
+              <entry morerows="2">image-service</entry>
+              <entry>HTTP Status</entry>
+              <entry>component=glance-api</entry>
+              <entry>API is unresponsive.</entry>
+              <entry>Restart the process on the affected node using these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Use the Glance start playbook against the affected node:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></codeblock></li>
+                </ol>
+                <p>Review the associated logs.</p></entry>
+            </row>
+            <row>
+              <entry>HTTP Status</entry>
+              <entry>component=glance-registry</entry>
+              <entry>Glance registry is unresponsive.</entry>
+              <entry>Restart the process on the affected node using these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Use the Glance start playbook against the affected node:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></codeblock></li>
+                </ol>
+                <p>Review the associated logs.</p></entry>
+            </row>
           </tbody>
         </tgroup>
       </table>
     </section>
-    <section id="opsconsole"><title>Ops Console</title>
+
+
+
+
+
+
+
+    <section id="console"><title>Console</title>
       <p>
-        <table frame="all" rowsep="1" colsep="1" id="table_fdn_hpd_3t">
-          <tgroup cols="4">
-            <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-            <colspec colname="c2" colnum="2" colwidth="1.0*"/>
-            <colspec colname="c3" colnum="3" colwidth="1.0*"/>
-            <colspec colname="c4" colnum="4" colwidth="1.0*"/>
+        <table frame="all" rowsep="1" colsep="1" id="console_alarms">
+          <tgroup cols="5">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <colspec colname="c4" colnum="4"/>
+            <colspec colname="c5" colnum="4"/>
             <thead>
               <row>
+                <entry>Service</entry>
                 <entry>Alarm Name</entry>
                 <entry>Description</entry>
                 <entry>Likely Cause</entry>
@@ -1056,6 +1095,7 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeb
             </thead>
             <tbody>
               <row>
+                <entry morerows="2">ops-console</entry>
                 <entry>HTTP Status</entry>
                 <entry>service=ops-console</entry>
                 <entry>The Operations Console is unresponsive</entry>
@@ -1081,7 +1121,11 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
             </tbody>
           </tgroup>
         </table>
-      </p></section>
+      </p>
+    </section>
+
+
+
     <section id="rabbitmq">
       <title>RabbitMQ</title>
       <table frame="all" rowsep="1" colsep="1" id="table_rsb_mp5_zs">
