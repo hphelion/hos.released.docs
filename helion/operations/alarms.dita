@@ -29,7 +29,7 @@
         <li><xref href="#alarmdefinitions/nova">Compute</xref></li>
         <li><xref href="#alarmdefinitions/opsconsole">Ops Console</xref></li>
         <li><xref href="#alarmdefinitions/rabbitmq">RabbitMQ</xref></li>
-        <li><xref href="#alarmdefinitions/objectstorage">Swift</xref></li>
+        <li><xref href="#alarmdefinitions/objectstorage">Storage</xref></li>
         <li><xref href="#alarmdefinitions/vsa">VSA</xref></li>
       </ul>
     </section>
@@ -299,11 +299,11 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               <entry>process_name=haproxy</entry>
               <entry>HA Proxy is not running on this machine.</entry>
               <entry>Restart the process on the affected node using these steps: <ol>
-                <li>Log in to the lifecycle manager.</li>
-                <li>Use this playbook against the affected node:
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Use this playbook against the affected node:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></codeblock></li>
-              </ol>
+                </ol>
                 <p>Review the associated logs.</p></entry>
             </row>
           </tbody>
@@ -1110,7 +1110,7 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
       </table>
     </section>
     <section id="objectstorage">
-      <title>Swift</title>
+      <title>Storage</title>
       <table frame="all" rowsep="1" colsep="1" id="table_zn3_2pb_bt">
         <tgroup cols="4">
           <colspec colname="c1" colnum="1" colwidth="1.0*"/>
@@ -1119,6 +1119,7 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
           <colspec colname="c4" colnum="4" colwidth="1.0*"/>
           <thead>
             <row>
+              <entry>Service</entry>
               <entry>Alarm Name</entry>
               <entry>Description</entry>
               <entry>Likely Cause</entry>
@@ -1127,6 +1128,7 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
           </thead>
           <tbody>
             <row>
+              <entry morerows="8">object-storage</entry>
               <entry>swiftlm-scan monitor</entry>
               <entry>Alarms if swiftlm-scan cannot execute a monitoring task.</entry>
               <entry>The swiftlm-scan program is used to monitor/measure a number of metrics. If it
@@ -1246,8 +1248,9 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>Alarms when the specified process is not running.</entry>
               <entry>If the <codeph>service</codeph> dimension is <codeph>object-store</codeph>, see
                 the description of the "Swift Services" alarm for possible causes.</entry>
-              <entry>If the <codeph>service</codeph> dimension is <codeph>object-store</codeph>, see
-                the description of the "Swift Services" alarm for possible mitigation tasks.</entry>
+              <entry>If the <codeph>service</codeph> dimension is <codeph>object-storage</codeph>,
+                see the description of the "Swift Services" alarm for possible mitigation
+                tasks.</entry>
             </row>
             <row>
               <entry>HTTP Status</entry>
@@ -1255,9 +1258,76 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>If the <codeph>service</codeph> dimension is <codeph>object-store</codeph>, see
                 the description of the "Swift host socket connect" alarm for possible
                 causes.</entry>
-              <entry>If the <codeph>service</codeph> dimension is <codeph>object-store</codeph>, see
-                the description of the "Swift host socket connect" alarm for possible mitigation
+              <entry>If the <codeph>service</codeph> dimension is <codeph>object-storage</codeph>,
+                see the description of the "Swift host socket connect" alarm for possible mitigation
                 tasks.</entry>
+            </row>
+            <row>
+              <entry morerows="6">block-storage</entry>
+              <entry>Process Check</entry>
+              <entry>process_name=cinder-api</entry>
+              <entry>Process crashed.</entry>
+              <entry>Restart the process on the affected node. Review the associated logs.</entry>
+            </row>
+            <row>
+              <entry>Process Check</entry>
+              <entry>process_name=cinder-backup</entry>
+              <entry>Process crashed.</entry>
+              <entry>Alert may be incorrect if the service has migrated. Validate that the service
+                is intended to be running on this node before restarting the service. Review the
+                associated logs.</entry>
+            </row>
+            <row>
+              <entry>Process Check</entry>
+              <entry>process_name=cinder-scheduler</entry>
+              <entry>Process crashed.</entry>
+              <entry>Restart the process on affected node. Review the associated logs.</entry>
+            </row>
+            <row>
+              <entry>Process Check</entry>
+              <entry>process_name=cinder-volume</entry>
+              <entry>Process crashed.</entry>
+              <entry>Alert may be incorrect if the service has migrated. Validate that the service
+                is intended to be running on this node before restarting the service. Review the
+                associated logs.</entry>
+            </row>
+            <row>
+              <entry>Cinder backup running &lt;HOSTNAME&gt; check</entry>
+              <entry>Cinder backup singleton check.</entry>
+              <entry>
+                <p>Backup process is either:</p>
+                <p>
+                  <ul>
+                    <li>running on a node it should not be on, or</li>
+                    <li>not running on a node it should be on</li>
+                  </ul>
+                </p>
+              </entry>
+              <entry>Run the cinder-migrate-volume playbook to migrate the volume and backup to the
+                correct node.</entry>
+            </row>
+            <row>
+              <entry>Cinder volume running &lt;HOSTNAME&gt; check</entry>
+              <entry>Cinder volume singleton check.</entry>
+              <entry>
+                <p>Volume process is either:</p>
+                <p>
+                  <ul>
+                    <li>running on a node it should not be on, or</li>
+                    <li>not running on a node it should be on</li>
+                  </ul>
+                </p>
+              </entry>
+              <entry>Run the cinder-migrate-volume playbook to migrate the volume and backup to
+                correct node.</entry>
+            </row>
+            <row>
+              <entry>Cinderlm diagnostics monitoring</entry>
+              <entry>Alarms if Cinder monitoring cannot execute a task</entry>
+              <entry>Cinder monitoring was unable to execute the cinder service check to determine
+                the number of executing Cinder processes</entry>
+              <entry>Review the monasca agent collector.log file on the affected node to determine
+                why the service check did not execute as expected. </entry>
             </row>
           </tbody>
         </tgroup>
