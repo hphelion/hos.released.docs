@@ -321,25 +321,12 @@ ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
           to your situation: either recover the rings from one Swift node if possible, or use the
           SSH backup that you have set up.</p>
         <b>Restore from the Swift deployment backup</b>
-        <p>As long as you have one Swift Proxy or one Swift object node still working, you can
-          recover the Swift rings from it. This is possible because rings are created at the
-          deployment step, backed up, and copied to all Swift nodes in the form of
-          /etc/swiftlm/swift-rings-tarball.tar.</p><p>To manage rings, make sure the content of that
-          tar file is in the directory /etc/swiftlm/builder_dir/ on the first Swift Proxy node
-          (SWF-PXR[0] role). Run swift-reconfigure if the rings were corrupted. <ol
-            id="ol_anj_ryh_1v">
-            <li>If only one node was lost, run swift-deploy on the lifecycle
-              manager:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
-            <li>If more than one node was lost, run swift-reconfigure.yml on the lifecycle
-              manager:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
-          </ol>
-        </p><b>Restore from the SSH Freezer backup</b><p>In the very specific use case where you
-          lost all system disks of all object nodes, and Swift proxy nodes are corrupted, you can
-          recover the rings because a copy of the Swift rings is stored in Freezer. This means that
-          Swift data is still there (the disks used by Swift needs to be still accessible).</p><ol
-          id="ol_p2p_ryh_1v">
+        <p>See <xref href="../troubleshooting/objectstorage/recovering_builder_file.dita"/>.</p>
+        <p><b>Restore from the SSH Freezer backup</b></p>
+        <p>In the very specific use case where you lost all system disks of all object nodes, and
+          Swift proxy nodes are corrupted, you can recover the rings because a copy of the Swift
+          rings is stored in Freezer. This means that Swift data is still there (the disks used by
+          Swift needs to be still accessible).</p><ol id="ol_p2p_ryh_1v">
           <li>Recover the rings as follows. Note, you will need a node with the freezer-agent
               installed.<p>Become root</p><codeblock>sudo su</codeblock>Create the temporary
             directory to restore your files to:
@@ -369,12 +356,12 @@ EOF</codeblock>
             the deployer run:
               <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock><p>If
-              the SWF-PRX[0] is<b> not </b>deployed, from the deployer
+              the SWF-ACC[0] is<b> not </b>deployed, from the deployer
               run<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts guard-deployment.yml
-ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;SWF-PRX[0]-hostname&gt;</codeblock>
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;SWF-ACC[0]-hostname&gt;</codeblock>
               Copy the contents of the restored directory (/tmp/hlm_builder_dir_restore/) to
-              /etc/swiftlm/builder_dir/ on the SWF-PRX[0] You will have to create the directories :
+              /etc/swiftlm/builder_dir/ on the SWF-ACC[0] You will have to create the directories :
               /etc/swiftlm/builder_dir/ </p></li>
           <li>From the deployer run hlm-deploy.yml:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
