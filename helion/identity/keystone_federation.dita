@@ -5,16 +5,16 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
-      <title>What is Keystone to Keystone Federation?</title>
+      <title>What is Identity Service federation?</title>
       <p>In a typical OpenStack cloud implementation that does not use federation, users
-        authenticate with each service's API using the Keystone identity service. However, using
-        Keystone to Keystone (K2K) federation, the user, or requester can have one identity to be
-        used across services.</p>
+        authenticate with each service's API using the identity service (based on OpenStack
+        Keystone). However, using Keystone to Keystone (K2K) federation, the user, or requester can
+        have one identity to be used across services.</p>
       <p>In HPE Helion OpenStack, the service provider is the OpenStack cloud. Using Keystone to
         Keystone federation, a number of different identity providers, such as Active Directory
         Federation Services (ADFS) or SAML2 can be used to provide identity information and
         authentication. </p>
-      <p>With K2K federation, a Keystone service instance can be the identity provider and another
+      <p>With K2K federation, an identity service instance can be the identity provider and another
         can be the service provider. </p>
       <p>Keystone to Keystone (K2K) is supported in <keyword keyref="kw-hos-phrase-30"/>. By running
         a playbook with your configuration parameters, K2K will be enabled automatically. It's
@@ -22,8 +22,9 @@
       <p>Support for Keystone to Keystone federation happens on the API level, and you must
         implement it using your own client code by calling the supported APIs. Python-keystoneclient
         has supported APIs to access the K2K APIs.</p>
-      <p>The file k2kclient.py, included below, is an example, and the diagram in the end of this page
-        shows how the flows a client will need to access. Expand the headline for k2kclient.py to see the code.</p>
+      <p>The file k2kclient.py, included below, is an example, and the diagram  the end of this page
+        shows how the flows a client will need to access. Expand the headline for k2kclient.py to
+        see the code.</p>
       
       
     </section>
@@ -144,10 +145,10 @@ if __name__ == "__main__":
       <title><b>Set up a service provider (SP)</b></title>
     </section>
     <section>
-      <p>To setup a Keystone as a service provider, follow the instructions below.</p>
+      <p>To set up Keystone as a service provider, follow the instructions below.</p>
       <ol id="ol_ug3_fdb_mv">
-        <li>Create a config file k2k.yml with the following parameters and place it in any directory
-          in your lifecycle manager, for example /tmp.
+        <li>Create a config file <codeph>k2k.yml</codeph> with the following parameters and place it
+          in any directory on your lifecycle manager, for example /tmp.
           <codeblock>keystone_trusted_idp: k2k
 keystone_sp_conf:
 	shib_sso_idp_entity_id: &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp
@@ -176,126 +177,8 @@ keystone_sp_conf:
 		-
 		  name: name1
 		  id: id1</codeblock>
-          Below are descriptions of each of the attributes. <!--<dl>
-            <dlentry>
-              <dt>keystone_trusted_idp</dt>
-              <dd>A flag to indicate if this configuration is used for Keystone to Keystone or
-                WebSSO. The value can be either 'k2k' or 'adfs'. </dd>
-            </dlentry>
-          </dl>
-          <b>keystone_sp_conf</b>
-          <dl>
-            <dlentry>
-              <dt>shib_sso_idp_entity_id</dt>
-              <dd> The Identity Provider URI used as a entity Id to identity the IdP. You shoud use
-                the following value -
-                &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>shib_sso_application_entity_id</dt>
-              <dd>The Service Provider URI used as an entity Id. It can be any URI here for Keystone
-                to Keystone. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>target_domain</dt>
-              <dd>A domain where the group will be created. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>name</dt>
-              <dd>Any domain name. If it does not exist, it will be created or updated. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>description</dt>
-              <dd>Any description. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>target_project</dt>
-              <dd>A project scope of the group. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>name</dt>
-              <dd>Any project name. If it does not exist, it will be created or updated. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>description</dt>
-              <dd>Any description. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>target_group</dt>
-              <dd>A group will be created from 'target_domain'. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>name</dt>
-              <dd>Any group name. If it does not exist, it will be created or updated. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>description</dt>
-              <dd>Any description. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>role</dt>
-              <dd>A role will be assigned on 'target_project'. This role impacts the IdP user scoped
-                token permission on the service provider side. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>name</dt>
-              <dd>Must be an existing role. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>idp_metadata_file</dt>
-              <dd>A reference to the IdP metadata file that validates the SAML2 assertion. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>identity_provider</dt>
-              <dd>A supported IdP </dd>
-            </dlentry>
-            <dlentry>
-              <dt>id</dt>
-              <dd>Any Id. If it does not exist, it will be created or updated. This Id needs to be
-                shared with the client so that the right mapping will be selected. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>description</dt>
-              <dd>Any description. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>mapping</dt>
-              <dd>A mapping in JSON format that mapps a federated user to a corresponding group.
-              </dd>
-            </dlentry>
-            <dlentry>
-              <dt>id</dt>
-              <dd>Any Id. If it does not exist, it will be created or updated. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>rules_file</dt>
-              <dd>A reference to the file that has the mapping in JSON. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>protocol</dt>
-              <dd>The supported federation protocol. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>id</dt>
-              <dd>Security Assertion Markup Language 2.0 (saml2) is the only supported protocol for
-                K2K. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>attribute_map</dt>
-              <dd>A shibboleth mapping defined additional attributes to map the attributes from the
-                SAML2 assertion to the K2K mapping that the service provider understands. K2K does
-                not require any additional attribute mapping. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>name</dt>
-              <dd>An attribute name from the SAML2 assertion. </dd>
-            </dlentry>
-            <dlentry>
-              <dt>id</dt>
-              <dd>An Id that the above name will be mapped to.</dd>
-            </dlentry>
-          </dl>-->
-          <table frame="all" rowsep="1" colsep="1" id="tv">
+          Below are descriptions of each of the attributes.                 <table frame="all"
+            rowsep="1" colsep="1" id="tv">
             <tgroup cols="2">
               <colspec colname="c1" colnum="1" colwidth="1.0*"/>
               <colspec colname="c2" colnum="2" colwidth="1.0*"/>
@@ -318,7 +201,7 @@ keystone_sp_conf:
                 </row>
                 <row>
                   <entry>shib_sso_idp_entity_id</entry>
-                  <entry> The Identity Provider URI used as a entity Id to identity the IdP. You
+                  <entry> The Identity Provider URI used as an entity Id to identity the IdP. You
                     shoud use the following value -
                     &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp. </entry>
                 </row>
@@ -439,10 +322,12 @@ keystone_sp_conf:
           </table>
         </li>
         <li>Create a metadata file that is referenced from the above config file; for example,
-          /tmp/idp_metadata.xml. The content of the metadata file is from the IdP and can be found
-          in /etc/keystone/idp_metadata.xml.<ol id="ol_myr_zgb_mv">
+            <codeph>/tmp/idp_metadata.xml</codeph>. The content of the metadata file is from the IdP
+          and can be found in <codeph> /etc/keystone/idp_metadata.xml</codeph>.<ol
+            id="ol_myr_zgb_mv">
             <li>Create a mapping file that is referenced from the above config file, for example
-              /tmp/k2k_sp_mapping.json. The following is an example of mapping file. <codeblock>[
+                <codeph>/tmp/k2k_sp_mapping.json.</codeph> The following is an example of the
+              mapping file. <codeblock>[
   {
     "local": [
       {
@@ -476,15 +361,15 @@ keystone_sp_conf:
                   format="html" scope="external"
                   >https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst</xref></p></li>
           </ol></li>
-        <li>Go to <i>/home/stack/scratch/ansible/next/hos/ansible </i>and run the following to
-          enable the service provider in Keystone
+        <li>Go to <codeph>/home/stack/scratch/ansible/next/hos/ansible</codeph> and run the
+          following to enable the service provider:
           <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
       <p><b><b>Set up an identity provider (IdP)</b></b></p>
       <p>To set up Keystone as an identity provider, follow these steps:</p>
       <ol>
-        <li>Create a config file k2k.yml with the following parameters and place it in any directory
-          in your lifecycle manager, for example /tmp.
+        <li>Create a config file <codeph>k2k.yml</codeph> with the following parameters and place it
+          in any directory in your lifecycle manager, for example <codeph>/tmp</codeph>.
           <codeblock outputclass="width66">keystone_k2k_idp_conf:
     service_provider: 
           -
@@ -549,8 +434,8 @@ keystone_sp_conf:
               <codeblock>openssl x509 -req -days 3650 -in myidp.csr -signkey myidp.key -out myidp.cer</codeblock></li>
           </ol>
         </li>
-        <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable the
-          service provider in Keystone
+        <li>Go to <codeph>/home/stack/scratch/ansible/next/hos/ansible</codeph> and run the
+          following to enable the service provider in Keystone
           <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
     </section>
@@ -571,8 +456,8 @@ keystone_sp_conf:
           self.sp_id = "my_sp_id"</codeblock>
         </li>
         <li>Install python-keystoneclient along with its dependencies.</li>
-        <li>Run the script python k2kclient.py and an unscoped token will be returned from the
-          service provider.</li>
+        <li>Run the script python <codeph>k2kclient.py</codeph> and an unscoped token will be
+          returned from the service provider.</li>
       </ol> At this point, the domain or project scope of the unscoped taken can be discovered by
       sending the following
       URLs:<codeblock>curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint>:5000/v3/OS-FEDERATION/domains
@@ -710,29 +595,30 @@ group_domain_name=domain2
       </ol>
       <b>Test case 7: Test 5 remote attributes for mapping </b><ol>
         <li>Test all the 5 different remote attributes as the following with similar test cases as
-          above. openstack_user openstack_user_domain openstack_roles openstack_project
-          openstack_project_domain The attribute openstack_user does not make much sense for testing
+          above.<ul><li>openstack_user </li><li>openstack_user_domain </li><li>openstack_roles </li><li>openstack_project
+          </li><li>openstack_project_domain</li></ul> The attribute openstack_user does not make much sense for testing
           as it is only mapped to a specific username. The attributes openstack_user_domain,
           openstack_roles and openstack_project have already been covered by the above test cases.
         </li>
       </ol>
     </section>
-    <section><title>Known issues and limitations</title> Keep in mind the following points: <ul>
+    <section><title>Known issues and limitations</title> Keep the following points in mind: <ul>
         <li>When a user is disabled in the IdP, the issued federated token from the service provider
           still remains valid until the token's expiration.</li>
-        <li>An already issued federated token will retain its scope till its expiration. Any changes
-          in the mapping on the service provider will not impact the scope of an already issued
-          federated token. For example, if an already issued federated token was mapped to goup1
-          that has scope on project1, and mapping is changed to group2 that has scope on project2,
-          the prevously issued federated token still has scope on project1. </li>
+        <li>An already issued federated token will retain its scope until its expiration. Any
+          changes in the mapping on the service provider will not impact the scope of an already
+          issued federated token. For example, if an already issued federated token was mapped to
+          goup1 that has scope on project1, and mapping is changed to group2 that has scope on
+          project2, the prevously issued federated token still has scope on project1. </li>
         <li>Scoping the federated user to a domain is not supported by default in the playbook.
           Please follow these steps to support it. <ol>
-            <li>On the IdP side: hostname=myidp.com, username=user1 </li>
+            <li>On the IdP side, set <codeph>hostname=myidp.com</codeph> and  <codeph>username=user1
+              </codeph></li>
             <li>On the service provider side, set: group=group1, group_domain_name=domain1, 'group1'
               scopes to 'project1' </li>
             <li>Mapping used: testcase1_1.json </li>
-            <li>Expected result: The federated user will scope to 'project1' User CLI/Curl to assign
-              any existing role to 'group1' on 'domain1' User CLI/Curl to remove 'project1' scope
+            <li>Expected result: The federated user will scope to 'project1' Use CLI/Curl to assign
+              any existing role to 'group1' on 'domain1' Use CLI/Curl to remove 'project1' scope
               from 'group1' </li>
             <li>Result: The federated user will scope to 'domain1' </li>
           </ol>
