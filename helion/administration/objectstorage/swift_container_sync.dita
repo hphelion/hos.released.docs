@@ -42,17 +42,6 @@
           then the object in the destination is <b>not</b> overwritten by the source container's
           object.</li>
       </ul>
-      <p>So far, the discussion has been about synchronizing between a source and destination
-        container. What happens if you make the "destination" a "source" for another container?
-        There are three situations:</p>
-      <ul>
-        <li>The new destination is yet another container. i.e., there is a chain of three
-          containers.</li>
-        <li>The new destination is actually the original source container. This is two-way
-          synchronization. In effect, objects placed into either container will be copied to the
-          other container.</li>
-        <li>Two or more source containers could copy data to a single destination.</li>
-      </ul>
       <sectiondiv><p><b>Segmented Objects</b></p>
         <p>Segmented objects (objects larger than 5GB) will not work seamlessly with container
           synchronization. If the manifest object is copied to the destination container before the
@@ -102,15 +91,19 @@ openstack endpoint list | grep swift</codeblock>
         <p>For the sake of the examples, we will use the terms <i>source</i> and <i>destination</i>
           to notate the nodes doing the synchronization.</p>
         <ol>
-          <li>Log in to a Swift node on the source system.</li>
+          <li>Log in to a Swift node running the <codeph>swift-container</codeph> service on the
+            source system. You can determine this by looking at the service list in your
+              <codeph>~/helion/my_cloud/info/service_info.yml</codeph> file for a list of the
+            servers containing this service.</li>
           <li>Verify the SSL certificates by running this command against the destination Swift
-            server: <codeblock>echo | openssl s_client -connect &lt;destination IP or hostname>:8080 -CAfile /etc/ssl/certs/ca-certificates.crt</codeblock>
+            server: <codeblock>echo | openssl s_client -connect &lt;public API endpoint>:8080 -CAfile /etc/ssl/certs/ca-certificates.crt</codeblock>
             <p>If the connection was successful you should see a return code of <codeph>0
                 (ok)</codeph> similar to this:</p>
             <codeblock>...
 Timeout   : 300 (sec)
 Verify return code: 0 (ok)</codeblock></li>
-          <li>Also verify that the node can connect back to Swift using this command: <codeblock>curl -k &lt;source IP or hostname>:8080/healthcheck</codeblock>
+          <li>Also verify that the source node can connect to the destination Swift system using
+            this command: <codeblock>curl -k &lt;destination IP or hostname>:8080/healthcheck</codeblock>
             <p>If the connection was successful, you should see a response of
               <codeph>OK</codeph>.</p></li>
           <li>Repeat these verification steps on any system involved in your container
