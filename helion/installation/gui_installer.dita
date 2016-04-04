@@ -58,16 +58,13 @@
             <li>PXE interfaces </li>
             <li>IPMI/iLO IP address, username, password </li>
           </ul></li>
-        <li>Choose your <xref keyref="example_configurations">cloud model/example</xref>
-          template. No action other than an understanding of your needs is necessary at this point.
-          You will indicate which model you wish to deploy in a GUI screen. Note, however, that the
-          only VSA options for the <i>Entry-scale KVM with VSA</i> model is to have 0 or 3 VSA
-          nodes. 
-          <!-- 0 or 3 VSA nodes  and dedicated node for deployer are these still true ??????????????????/ -->
-          
-          Note also that you cannot run the deployer/lifecycle manager on a dedicated node
-          using the GUI installer; it can only run in the control plane using the models exposed in
-          the GUI.</li>
+        <li>Choose your <xref keyref="example_configurations">cloud model/example</xref> template.
+          No action other than an understanding of your needs is necessary at this point. You will
+          indicate which model you wish to deploy in a GUI screen. Note, however, that the only VSA
+          options for the <i>Entry-scale KVM with VSA</i> model is to have 0 or 3 VSA nodes.
+          <!-- 0 or 3 VSA nodes  and dedicated node for lifecycle manager are these still true ??????????????????/ -->
+          Note also that you cannot run the lifecycle manager on a dedicated node using the GUI
+          installer; it can only run in the control plane using the models exposed in the GUI.</li>
         <li>Before you use the GUI to install your cloud, you may install the operating system,
           Linux for HPE Helion, on your nodes (servers) if you prefer. Otherwise, the installer will
           install it for you. <p>If you are installing the operating system on all your nodes
@@ -110,8 +107,8 @@
       <p>To create a secure tunnel/port forwarding into Apache from the lifecycle manager to be able
         to use the GUI in a browser, SSH tunnel into the lifecycle manager with the
         username/password set up when installing the lifecycle manager. The username and password
-        should be what was set in "Set up the Deployer" in the installation instructions. For
-        example:</p>
+        should be what was set in "Set up the lifecycle manager" in the installation instructions.
+        For example:</p>
       <codeblock>ssh -v -N -L 8080:&lt;lifecycle manager_IP>:79 &lt;Username>@&lt;lifecycle manager_IP></codeblock>
       <p>Then on your local machine, the one you are tunneling from, point your web browser to:
           <b>http://localhost:8080/dayzero</b></p> As you proceed through the GUI, you need only
@@ -122,10 +119,10 @@
     </section>
     <section>
       <title>Use the installer securely</title>
-      <p> The GUI installer is a web-based application that runs on the deployer/lifecycle manager
-        node and is implemented in node.js. Currently this application runs behind Apache 2.0 where
-        requests are proxied to the node.js Express Web Server. The node.js Express Server runs on
-        port 3000 and Apache runs on port 79. </p>
+      <p> The GUI installer is a web-based application that runs on the lifecycle manager node and
+        is implemented in node.js. Currently this application runs behind Apache 2.0 where requests
+        are proxied to the node.js Express Web Server. The node.js Express Server runs on port 3000
+        and Apache runs on port 79. </p>
       <p>You should access the installer through Apache and not directly from the Express server. An
         Example URL looks like this: http://&lt;lifecycle manager-host-ip>:79/dayzero When you
         finish installing, the Installer will be disabled via Ansible. It is also disabled once
