@@ -12,50 +12,54 @@
       
     </section>
     
-    <section><title> Enabling WebSSO</title> Horizon and Keystone now have an implementation of a
-      Web Single Sign On Portal.  Setting up WebSSO manually is complex, therefore an Ansible
-      playbook was implemented and is available in <keyword keyref="kw-hos-phrase-30"/> to simplify 
-      the process of enabling WebSSO authentication, which is disabled by
-      default. The currently supported Identity Provider for WebSSO is Active Directory Federation
-      Services (ADFS). <p>WebSSO is accomplished by a series of HTTP redirects, as shown in the
-        diagram below.</p><image
+    <section><title> Enabling WebSSO</title> the Horizon dashboard service and the Keystone identity
+      service now have an implementation of a Web Single Sign On Portal. Setting up WebSSO manually
+      is complex, therefore an Ansible playbook was implemented and is available in <keyword
+        keyref="kw-hos-phrase-30"/> to simplify the process of enabling WebSSO authentication, which
+      is disabled by default. The currently supported Identity Provider for WebSSO is Active
+      Directory Federation Services (ADFS). <p>WebSSO is accomplished by a series of HTTP redirects,
+        as shown in the diagram below.</p><image
         href="../../media/keystone/Keystone-ADFS-WebSSO-Authentication-Sequence.png"
         id="image_xc4_zfh_mv"/>
-      <p>Note that Horizon never talks directly to Keystone until the end of the sequence, after the
-        federated unscoped token negotiation has completed. The browser interacts with Horizon,
-        Keystone, and ADFS on their respective public endpoints.</p> The following sequence of
-      events is depicted in the diagram.<ol>
-        <li> The user's browser reaches Horizon's login page. The user selects ADFS login from the
-          drop-down menu. </li>
-        <li>Horizon issues an HTTP Redirect (301) to redirect the browser to Keystone's (public)
-          SAML2 Web SSO endpoint (/auth/OS-FEDERATION/websso/saml2). The endpoint is protected by
-          Apache mod_shib (Shibboleth). </li>
-        <li>The browser talks to Keystone. Since the user's browser does not have an active session
-          with ADFS, Keystone issues an HTTP Redirect (301) to the browser, along with the required
-          SAML2 request, to the ADFS endpoint. </li>
+      <p>Note that the Horizon dashboard service never talks directly to the Keystone identity
+        service until the end of the sequence, after the federated unscoped token negotiation has
+        completed. The browser interacts with the Horizon dashboard service, the Keystone identity
+        service, and ADFS on their respective public endpoints.</p> The following sequence of events
+      is depicted in the diagram.<ol>
+        <li> The user's browser reaches the Horizon dashboard service's login page. The user selects
+          ADFS login from the drop-down menu. </li>
+        <li>the Horizon dashboard service issues an HTTP Redirect (301) to redirect the browser to
+          the Keystone identity service's (public) SAML2 Web SSO endpoint
+          (/auth/OS-FEDERATION/websso/saml2). The endpoint is protected by Apache mod_shib
+          (Shibboleth). </li>
+        <li>The browser talks to the Keystone identity service. Since the user's browser does not
+          have an active session with ADFS, the Keystone identity service issues an HTTP Redirect
+          (301) to the browser, along with the required SAML2 request, to the ADFS endpoint. </li>
         <li>The browser talks to ADFS. ADFS returns a login form. The browser presents it to user. </li>
         <li>The user enters credentials (i.e. username and password) and submit the form to ADFS. </li>
         <li>Upon successful validation of the user's credentials, ADFS issues an HTTP Redirect (301)
-          to the browser, along with the SAML2 Assertion, to Keystone's (public) SAML2 endpoint
-          (/auth/OS-FEDERATION/websso/saml2). </li>
-        <li>The browser talks to Keystone. Keystone validates the SAML2 Assertion and issues a
-          federated unscoped token. Keystone returns JavaScript code to be executed by the browser,
-          along with the federated unscoped token in the headers. </li>
-        <li>Upon execution of the JavaScript code, the browser is redirected to Horizon with the
-          federated unscoped token in the header. </li>
-        <li>The browser talks to Horizon with the federated unscoped token. </li>
-        <li>With the unscoped token, Horizon talks to Keystone's (internal) endpoint to get a list
-          of projects the user has access to. </li>
-        <li>Horizon re-scopes the token to the first project in the list. At this point, the user is
-          successfully logged in.</li>
+          to the browser, along with the SAML2 Assertion, to the Keystone identity service's
+          (public) SAML2 endpoint (/auth/OS-FEDERATION/websso/saml2). </li>
+        <li>The browser talks to the Keystone identity service. the Keystone identity service
+          validates the SAML2 Assertion and issues a federated unscoped token. the Keystone identity
+          service returns JavaScript code to be executed by the browser, along with the federated
+          unscoped token in the headers. </li>
+        <li>Upon execution of the JavaScript code, the browser is redirected to the Horizon
+          dashboard service with the federated unscoped token in the header. </li>
+        <li>The browser talks to the Horizon dashboard service with the federated unscoped token. </li>
+        <li>With the unscoped token, the Horizon dashboard service talks to the Keystone identity
+          service's (internal) endpoint to get a list of projects the user has access to. </li>
+        <li>the Horizon dashboard service re-scopes the token to the first project in the list. At
+          this point, the user is successfully logged in.</li>
       </ol>
     </section>
     
     <section><title>ADFS prerequisites</title> In order to enable the WebSSO feature, you will need
       to have an ADFS server already set up. This will be used as an identity provider to identify
-      and authenticate users. In order to create the trust between Keystone as the service provider
-      and ADFS as the identity provider you will need to exchange metadata information between them.
-      Therefore, you must export the ADFS metadata information from the ADFS server. </section>
+      and authenticate users. In order to create the trust between the Keystone identity service as
+      the service provider and ADFS as the identity provider you will need to exchange metadata
+      information between them. Therefore, you must export the ADFS metadata information from the
+      ADFS server. </section>
     
     <section><title>Create ADFS metadata</title> For more information, see the <xref
         href="https://technet.microsoft.com/en-us/library/gg317734" format="html" scope="external"
@@ -99,8 +103,8 @@
       </ol>
     </section>
     
-    <section><title>Set up WebSSO</title> To enable WebSSO for Keystone and Horizon, follow the
-      instructions below: </section>
+    <section><title>Set up WebSSO</title> To enable WebSSO for the Keystone identity service and the
+      Horizon dashboard service, follow the instructions below: </section>
     <section>Create a config file adfs_config.yml with the following parameters and place it in any
       directory on your lifecycle manager, for example /tmp.
       <codeblock>keystone_trusted_idp: adfs
@@ -291,11 +295,12 @@ keystone_sp_conf:
           entitled <xref href="#websso/maprules" format="dita">Mapping Rules</xref> for more
           information. </li>
         <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable
-          WebSSO in Keystone:
+          WebSSO in the Keystone identity service:
           <codeblock>ansible-playbook  -i hosts/verb_hosts keystone-reconfigure.yml  -e@/tmp/adfs_config.yml</codeblock>
         </li>
-        <li>Enable WebSSO in Horizon by setting horizon_websso_enabled flag to True in
-          roles/HZN-WEB/defaults/main.yml and then run the horizon-reconfigure playbook:
+        <li>Enable WebSSO in the the Horizon dashboard service dashboard service by setting
+          horizon_websso_enabled flag to True in roles/HZN-WEB/defaults/main.yml and then run the
+          horizon-reconfigure playbook:
           <codeblock>ansible-playbook  -i hosts/verb_hosts horizon-reconfigure.yml</codeblock>
         </li>
       </ol>
@@ -447,9 +452,10 @@ keystone_sp_conf:
     </section>
   
     <section><title>Setting up the ADFS server as the identity provider</title>
-      <p>For ADFS to be able to communicate with Keystone we need to add Keystone as a trusted
-        relying party for ADFS as well as specify the user attributes that we want to send over to
-        Keystone when users authenticate via Websso.</p>
+      <p>For ADFS to be able to communicate with the Keystone identity service we need to add the
+        Keystone identity service as a trusted relying party for ADFS as well as specify the user
+        attributes that we want to send over to the Keystone identity service when users
+        authenticate via Websso.</p>
       <p>For more information, see the <xref
           href="https://technet.microsoft.com/en-us/library/gg317734" format="html" scope="external"
           >Microsoft ADFS wiki</xref>, section "Step 2: Configure AD FS 2.0 as the Identity Provider
@@ -464,10 +470,11 @@ keystone_sp_conf:
         <li>Click Start, leave selected Import data about the relying party published online or on a
           local network. </li>
         <li>In the Federation metadata address field, type
-          &lt;keystone_publicEndpoint>/Shibboleth.sso/Metadata (your keystone Metadata endpoint),
-          and then click Next. You can also "Import Metadata from a File". Create a file with the
-          content of the result of command curl &lt;keystone_publicEndpoint>/Shibboleth.sso/Metadata
-          and then choose this file for importing the metadata for the relying party. </li>
+          &lt;keystone_publicEndpoint>/Shibboleth.sso/Metadata (your Keystone identity service
+          Metadata endpoint), and then click Next. You can also "Import Metadata from a File".
+          Create a file with the content of the result of command curl
+          &lt;keystone_publicEndpoint>/Shibboleth.sso/Metadata and then choose this file for
+          importing the metadata for the relying party. </li>
         <li>In the Specify Display Name page, choose a proper name to identify this trust, and then
           click Next. </li>
         <li>On the Choose Issuance Authorization Rules page, leave the default Permit all users to
@@ -535,8 +542,9 @@ keystone_sp_conf:
         <li>Right click User->New->User </li>
         <li>Follow the screen instructions. </li>
       </ol>
-      <p><b>Test it out</b></p> Test Horizon Login with ADFS. Open a browser at the Horizon URL and
-      choose Authenticate using: ADFS Credentials. You should be redirected to the ADFS login page
-      and be able to login into Horizon with your ADFS credentials. </section>
+      <p><b>Test it out</b></p> Test the Horizon dashboard service Login with ADFS. Open a browser
+      at the Horizon dashboard service URL and choose Authenticate using: ADFS Credentials. You
+      should be redirected to the ADFS login page and be able to login into the Horizon dashboard
+      service with your ADFS credentials. </section>
   </body>
 </topic>
