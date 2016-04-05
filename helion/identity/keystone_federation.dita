@@ -29,7 +29,7 @@
       
     </section>
     
-    <section><title outputclass="headerH">k2kclient.py</title>
+    <section id="k2kclient"><title outputclass="headerH">k2kclient.py</title>
       <sectiondiv outputclass="insideSection">
       <codeblock outputclass="nomaxheight prettyprint">import json
 import os
@@ -147,8 +147,9 @@ if __name__ == "__main__":
     <section>
       <p>To set up Keystone as a service provider, follow the instructions below.</p>
       <ol id="ol_ug3_fdb_mv">
-        <li>Create a config file <codeph>k2k.yml</codeph> with the following parameters and place it
-          in any directory on your lifecycle manager, for example /tmp.
+        <li>Create a config file called <codeph>k2k.yml</codeph> as you see directly below with the
+          following parameters and place it in any directory on your lifecycle manager, for example
+          /tmp.
           <codeblock>keystone_trusted_idp: k2k
 keystone_sp_conf:
 	shib_sso_idp_entity_id: &lt;protocol>://&lt;idp_host>:&lt;port>/v3/OS-FEDERATION/saml2/idp
@@ -170,7 +171,7 @@ keystone_sp_conf:
 		description: This is the identity service provider.
 	mapping:
 		id: mapping1
-		rules_file: /tmp/k2k_sp_mapping.json
+		<b>rules_file: /tmp/k2k_sp_mapping.json</b>
 	protocol:
 		id: saml2
 	attribute_map:
@@ -321,13 +322,13 @@ keystone_sp_conf:
             </tgroup>
           </table>
         </li>
-        <li>Create a metadata file that is referenced from the above config file; for example,
-            <codeph>/tmp/idp_metadata.xml</codeph>. The content of the metadata file is from the IdP
-          and can be found in <codeph> /etc/keystone/idp_metadata.xml</codeph>.<ol
+        <li>Create a metadata file that is referenced from <codeph>k2k.yml</codeph>; for example,
+            <codeph>/tmp/idp_metadata.xml</codeph>.  The content of the metadata file is from the
+          IdP and can be found in <codeph> /etc/keystone/idp_metadata.xml</codeph>.<ol
             id="ol_myr_zgb_mv">
-            <li>Create a mapping file that is referenced from the above config file, for example
-                <codeph>/tmp/k2k_sp_mapping.json.</codeph> The following is an example of the
-              mapping file. <codeblock>[
+            <li>Create a mapping file that is referenced in k2k.yml, shown above. For example
+                <codeph>/tmp/k2k_sp_mapping.json</codeph>. You can see the reference in bold in the
+              k2k.yml example.  The following is an example of the mapping file. <codeblock>[
   {
     "local": [
       {
@@ -369,7 +370,7 @@ keystone_sp_conf:
       <p>To set up Keystone as an identity provider, follow these steps:</p>
       <ol>
         <li>Create a config file <codeph>k2k.yml</codeph> with the following parameters and place it
-          in any directory in your lifecycle manager, for example <codeph>/tmp</codeph>.
+          in any directory on your lifecycle manager, for example <codeph>/tmp</codeph>.
           <codeblock outputclass="width66">keystone_k2k_idp_conf:
     service_provider: 
           -
@@ -377,11 +378,56 @@ keystone_sp_conf:
             description: This is service provider.
             sp_url: https://sp_host:5000
             auth_url: https://sp_host:5000/v3
-    signer_cert: -----BEGIN CERTIFICATE-----\nMIIDmDCCAoACCQDS+ZDoUfrcIzANBgkqhkiG9w0BAQsFADCBjDELMAkGA1UEBhMC\nVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExEjAQBgNVBAcMCVN1bm55dmFsZTEMMAoG\nA1UECgwDSFBFMRQwEgYDVQQLDAtFbmdpbmVlcmluZzEQMA4GA1UEAwwHSzJLX0lk\nUDEeMBwGCSqGSIb3DQEJARYPazJrX2lkcEBocGUuY29tMCAXDTE1MTEyMDAxMjg1\nMFoYDzIxMTUxMDI3MDEyODUwWjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNh\nbGlmb3JuaWExEjAQBgNVBAcMCVN1bm55dmFsZTEMMAoGA1UECgwDSFBFMRQwEgYD\nVQQLDAtFbmdpbmVlcmluZzEQMA4GA1UEAwwHSzJLX0lkUDEeMBwGCSqGSIb3DQEJ\nARYPazJrX2lkcEBocGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\nAQEA1gRiHiwSO6L5PrtroHi/f17DQBOpJ1KMnS9FOHSm1mES2xlB46y/GebGIZp+\nivUbLvbJHdi0axcA0OuzCLPx6t338npJzEELXNHhlSJ2KHUuLtdpltsFGMISFjD5\nkuQgBi4bEUyhQFRWkcgqL3fK5lwTB/YaMRMnLA67QDvSPOFcJFZIOhICY0cVKsHJ\nxxRbi8XfNZOLE65+yq5onxZuWH+Kbg7bOGBl45YXXjncjSN/LjruoDYv+PrHuCuF\n8B9k7F7PtGaYBnqf4z79DErxdjQZvJ3rN7W/qj04gcdaeAxoHy0+cCp+2zejerEh\n00ax1NYYnPRrEhrcU8wbM47UvQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQDD99xf\nDw4+XRzU5ii1YuJpIsFWxbCfCqAfBtz6WaEV/UssKiEkcsasOseQvD7EUMVRhxlP\ne+7Al/vazn4xwSJzthv3NQq5g5rAMuY9Dsu5Smyok6ygY1mAAJcLGfF2VtaaSo8B\nUGj5SN8jjhOG+Yh2aNOBt6GVJlE36oFeHRVPGByq/UEGlozEWT4qAZHql8/nQlzD\nhup36JhXxtgeP/DMQOAn7HYeVJQ6+xoUWZIQhvrlvDdhWskasfOtPqI0c8/BLFoL\nCvX5vYvFSXZMyhNnMOOPyf7bTXEr+TBCVaO957FLowGv8VnW/nLVEL5tkTRWVy1A\nOpKEvhlMsl5I/tle\n-----END CERTIFICATE-----
+    signer_cert: -----BEGIN CERTIFICATE-----\nMIIDmDCCAoACCQDS+ZDoUfr
+    cIzANBgkqhkiG9w0BAQsFADCBjDELMAkGA1UEBhMC\ nVVMxEzARBgNVB
+    AgMCkNhbGlmb3JuaWExEjAQBgNVBAcMCVN1bm55dmFsZTEMMAoG\
+   <!-- nA1UECgwDSFBFMRQwEgYDVQQLDAtFbmdpbmVlcmluZzEQMA4GA1UEAwwHSzJLX0lk\
+    nUDEeMBwGCSqGSIb3DQEJARYPazJrX2lkcEBocGUuY29tMCAXDTE1MTEyMDAxMjg1\
+    nMFoYDzIxMTUxMDI3MDEyODUwWjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNh\
+    nbGlmb3JuaWExEjAQBgNVBAcMCVN1bm55dmFsZTEMMAoGA1UECgwDSFBFMRQwEgYD\
+    nVQQLDAtFbmdpbmVlcmluZzEQMA4GA1UEAwwHSzJLX0lkUDEeMBwGCSqGSIb3DQEJ\
+    nARYPazJrX2lkcEBocGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\
+    nAQEA1gRiHiwSO6L5PrtroHi/f17DQBOpJ1KMnS9FOHSm1mES2xlB46y/GebGIZp+\
+    nivUbLvbJHdi0axcA0OuzCLPx6t338npJzEELXNHhlSJ2KHUuLtdpltsFGMISFjD5\
+    nkuQgBi4bEUyhQFRWkcgqL3fK5lwTB/YaMRMnLA67QDvSPOFcJFZIOhICY0cVKsHJ\
+    nxxRbi8XfNZOLE65+yq5onxZuWH+Kbg7bOGBl45YXXjncjSN/LjruoDYv+PrHuCuF\
+    n8B9k7F7PtGaYBnqf4z79DErxdjQZvJ3rN7W/qj04gcdaeAxoHy0+cCp+2zejerEh\
+    n00ax1NYYnPRrEhrcU8wbM47UvQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQDD99xf\
+    nDw4+XRzU5ii1YuJpIsFWxbCfCqAfBtz6WaEV/UssKiEkcsasOseQvD7EUMVRhxlP\ne+7Al/
+    vazn4xwSJzthv3NQq5g5rAMuY9Dsu5Smyok6ygY1mAAJcLGfF2VtaaSo8B\
+    nUGj5SN8jjhOG+Yh2aNOBt6GVJlE36oFeHRVPGByq/UEGlozEWT4qAZHql8/nQlzD\
+    nhup36JhXxtgeP/DMQOAn7HYeVJQ6+xoUWZIQhvrlvDdhWskasfOtPqI0c8/BLFoL\
+    nCvX5vYvFSXZMyhNnMOOPyf7bTXEr+TBCVaO957FLowGv8VnW/nLVEL5tkTRWVy1A\-->
+            ...
+    nOpKEvhlMsl5I/tle\n-----END CERTIFICATE-----
     signer_key: -----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA1gRiHiwSO6L5PrtroHi/f17DQBOpJ1KMnS9FOHS
-            m1mES2xlB\n46y/GebGIZp+ivUbLvbJHdi0axcA0OuzCLPx6t338npJzEELXNHhlSJ2KHUuLtdp\nltsFGMISFjD5kuQgBi4bEUyhQFRWkcgqL3fK5lwTB/YaMRMnLA67QDvSPOFcJFZI\nOhICY0cVKsHJxxRbi8XfNZOLE65+yq5onxZuWH+Kbg7bOGBl45YXXjncjSN/Ljru\noDYv+PrHuCuF8B9k7F7PtGaYBnqf4z79DErxdjQZvJ3rN7W/qj04gcdaeAxoHy0+\ncCp+2zejerEh00ax1NYYnPRrEhrcU8wbM47UvQIDAQABAoIBADOcAv07q3nuJyTV\nlXKxK5zPgU4mb5gn8/jDuXGPz9vKtP1Y7ea1dbANUqIv22wvB0sgAAfOhlN8zJmU\n/SuQGTqGJJC4pKs41ECh7EBGey/uciChmbjjQCtkQXBQhx7BHGfhHm3hiNE2hVnK\nZ0HjJW6/rWcyFcbX045wTv+CbYR4cwGktQH+uzIkf4nxEzZ+v8ubx/JDLUet6eNz\nLPKLasIhiOU4YL2poX5wJ68up3SOTDHOOPlGvp26ml5ZhfhEiqnHZyR0x6vqTWi6\nwUrBOAwz6gnifmAdPLglso61b+S6VGfTCyyjCldj6Yrj8DMbPpO/gAXY2Xgs1Rpy\nAciL1wECgYEA82IDWOwNBhqnW4DzXaYRpHjx32ttPb60NKYtk4e33v9TW8IEXH5W\n4SVxFoDxor4Mmqp3k2CEKhmf6VRrxJNFYIqXRUqO5dBjh237zLVP4UCHhW3p3+uM\nKZl0bZ605jhd0WUGvzN2s0iP+1q+6m/++8hW008RB38LCKYsh6QHqjECgYEA4Rym\nq40ylLqqdCo3sYetR6eqidT7/8rZvN7EmaXHsvW1oCVhBxWd+X/7DCYztVGOOwM8\n7eKXZPtkEV3rWzgCE7NSP8X7AbOxej9Z9qYeM282KjYCHclJD/wkCwa1btX3qGGF\ngDbVw3/DcCmTkUWtq08zdz0HGfPC9fc+UTw95E0CgYA1BwrhqfSgetgx6KOdqNw5\nMJzKZ/aSOGW8/uP5O93E+W5pFJmsqV42idjc5VVAdxX58OBCvQmuvoyH4vvkBY5d\nHXUeBMOjsMausDjnfi2cT1n3qV4GiqSsP6INbEHP00IlqFRS/lyDbXDpe/kSzToK\nE7lPKu/z6Ss3RDV5jDSbUQKBgQCDJbMAPPmb5ohJtxLNTdMo7MiRFlFd+6sQuuPk\n8809OKMA0uYNP43SfroeoN79Iq9vN/q2SI2VGlR5PbNRaHblTVJ8rvYGTs71/pSF\n+s+bfY4b120yN0NmmanR9q2bDfMD2RTy1n+BLx0IamB7gRGlvTWpoRdTCk2qCMn4\nf9U6/QKBgB8g8Q9hc2WDRjk6K+xyfNZ3pCiHmjTHvCt305DhRDjEjenj0WuXW/QW\nfHvjOW+UrZXg5K56ZKNbew8i5W4McrUoxFhk5rZRisFgetD4gxSgPCuiY7fE/QDX\nScXlxGigdJBUDKkmsdO4q0H1EGXYudTYP8x14v0U8S1N
-          </codeblock>
-          The following are descriptions of each of the attributes. <dl>
+            <!--m1mES2xlB\n46y/GebGIZp+ivUbLvbJHdi0axcA0OuzCLPx6t338npJzEELXNHhlSJ2KHUuLtdp\
+            nltsFGMISFjD5kuQgBi4bEUyhQFRWkcgqL3fK5lwTB/YaMRMnLA67QDvSPOFcJFZI\
+            nOhICY0cVKsHJxxRbi8XfNZOLE65+yq5onxZuWH+Kbg7bOGBl45YXXjncjSN/Ljru\
+            noDYv+PrHuCuF8B9k7F7PtGaYBnqf4z79DErxdjQZvJ3rN7W/qj04gcdaeAxoHy0+\
+            ncCp+2zejerEh00ax1NYYnPRrEhrcU8wbM47UvQIDAQABAoIBADOcAv07q3nuJyTV\
+            nlXKxK5zPgU4mb5gn8/jDuXGPz9vKtP1Y7ea1dbANUqIv22wvB0sgAAfOhlN8zJmU\
+            n/SuQGTqGJJC4pKs41ECh7EBGey/uciChmbjjQCtkQXBQhx7BHGfhHm3hiNE2hVnK\
+            nZ0HjJW6/rWcyFcbX045wTv+CbYR4cwGktQH+uzIkf4nxEzZ+v8ubx/JDLUet6eNz\
+            nLPKLasIhiOU4YL2poX5wJ68up3SOTDHOOPlGvp26ml5ZhfhEiqnHZyR0x6vqTWi6\
+            nwUrBOAwz6gnifmAdPLglso61b+S6VGfTCyyjCldj6Yrj8DMbPpO/gAXY2Xgs1Rpy\
+            nAciL1wECgYEA82IDWOwNBhqnW4DzXaYRpHjx32ttPb60NKYtk4e33v9TW8IEXH5W\
+            n4SVxFoDxor4Mmqp3k2CEKhmf6VRrxJNFYIqXRUqO5dBjh237zLVP4UCHhW3p3+uM\
+            nKZl0bZ605jhd0WUGvzN2s0iP+1q+6m/++8hW008RB38LCKYsh6QHqjECgYEA4Rym\
+            nq40ylLqqdCo3sYetR6eqidT7/8rZvN7EmaXHsvW1oCVhBxWd+X/7DCYztVGOOwM8\
+            n7eKXZPtkEV3rWzgCE7NSP8X7AbOxej9Z9qYeM282KjYCHclJD/wkCwa1btX3qGGF\
+            ngDbVw3/DcCmTkUWtq08zdz0HGfPC9fc+UTw95E0CgYA1BwrhqfSgetgx6KOdqNw5\
+            nMJzKZ/aSOGW8/uP5O93E+W5pFJmsqV42idjc5VVAdxX58OBCvQmuvoyH4vvkBY5d\
+            nHXUeBMOjsMausDjnfi2cT1n3qV4GiqSsP6INbEHP00IlqFRS/lyDbXDpe/kSzToK\
+            nE7lPKu/z6Ss3RDV5jDSbUQKBgQCDJbMAPPmb5ohJtxLNTdMo7MiRFlFd+6sQuuPk\
+            n8809OKMA0uYNP43SfroeoN79Iq9vN/q2SI2VGlR5PbNRaHblTVJ8rvYGTs71/pSF\
+            n+s+bfY4b120yN0NmmanR9q2bDfMD2RTy1n+BLx0IamB7gRGlvTWpoRdTCk2qCMn4\
+            nf9U6/QKBgB8g8Q9hc2WDRjk6K+xyfNZ3pCiHmjTHvCt305DhRDjEjenj0WuXW/QW\
+            nfHvjOW+UrZXg5K56ZKNbew8i5W4McrUoxFhk5rZRisFgetD4gxSgPCuiY7fE/QDX\
+            nScXlxGigdJBUDKkmsdO4q0H1EGXYudTYP8x14v0U8S1N-->
+            ...
+          </codeblock>The
+          following are descriptions of each of the attributes. <dl>
             <dlentry>
               <dt>keystone_k2k_idp_conf</dt>
               <dd> </dd>
@@ -416,7 +462,7 @@ keystone_sp_conf:
             </dlentry>
             <dlentry>
               <dt>signer_key</dt>
-              <dd>A private key that has key size 2048.</dd>
+              <dd>A private key that has a key size of 2048 bits.</dd>
             </dlentry>
           </dl>
         </li>
@@ -427,23 +473,26 @@ keystone_sp_conf:
               2048<codeblock>openssl genrsa -out myidp.key 2048</codeblock>
             </li>
             <li>Generate a certificate request named myidp.csr. When prompted, choose CommonName the
-              server's hostname
+              server's hostname.
               <codeblock>openssl req -new -key myidp.key -out myidp.csr</codeblock>
             </li>
-            <li>Generate a self-signed certificate named myidp.cer
+            <li>Generate a self-signed certificate named myidp.cer:
               <codeblock>openssl x509 -req -days 3650 -in myidp.csr -signkey myidp.key -out myidp.cer</codeblock></li>
           </ol>
         </li>
         <li>Go to <codeph>/home/stack/scratch/ansible/next/hos/ansible</codeph> and run the
-          following to enable the service provider in Keystone
+          following to enable the service provider in Keystone:
           <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
     </section>
-    <section><title>Test it out</title> The attached script k2kclient.py can be used as an example
-      for the end-to-end flows. To run k2kclient.py follow the instructions below. <ol>
-        <li>There are few parameters must be changed in the beginning of the script. For example,
-          enter your specific UR, project name, user name,
-          etc.<codeblock># IdP auth URL
+    <section><title>Test it out</title> The script listed earlier, <codeph><xref
+          href="#k2kfed/k2kclient" format="dita">k2kclient.py</xref></codeph>, can be used as an
+      example for the end-to-end flows. To run <codeph>k2kclient.py</codeph>, follow the
+      instructions below. <ol>
+        <li>There are few parameters must be changed in the beginning of
+            <codeph>k2kclient.py</codeph>. For example, enter your specific URL, project name, user
+          name, etc., as shown
+          here:<codeblock># IdP auth URL
           self.auth_url = "http://idp_host:5000/v3/"
           self.project_name = "my_project_name"
           self.project_domain_name = "my_project_domain_name"
@@ -456,8 +505,8 @@ keystone_sp_conf:
           self.sp_id = "my_sp_id"</codeblock>
         </li>
         <li>Install python-keystoneclient along with its dependencies.</li>
-        <li>Run the script python <codeph>k2kclient.py</codeph> and an unscoped token will be
-          returned from the service provider.</li>
+        <li>Run the script <codeph>k2kclient.py</codeph> and an unscoped token will be returned from
+          the service provider.</li>
       </ol> At this point, the domain or project scope of the unscoped taken can be discovered by
       sending the following
       URLs:<codeblock>curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endpoint>:5000/v3/OS-FEDERATION/domains
@@ -594,12 +643,15 @@ group_domain_name=domain2
           'group1' Finally result: The federated user will scope to 'domain1' </li>
       </ol>
       <b>Test case 7: Test 5 remote attributes for mapping </b><ol>
-        <li>Test all the 5 different remote attributes as the following with similar test cases as
-          above.<ul><li>openstack_user </li><li>openstack_user_domain </li><li>openstack_roles </li><li>openstack_project
-          </li><li>openstack_project_domain</li></ul> The attribute openstack_user does not make much sense for testing
-          as it is only mapped to a specific username. The attributes openstack_user_domain,
-          openstack_roles and openstack_project have already been covered by the above test cases.
-        </li>
+        <li>Test all the 5 different remote attributes as the following with similar test cases as above.<ul>
+            <li>openstack_user </li>
+            <li>openstack_user_domain </li>
+            <li>openstack_roles </li>
+            <li>openstack_project </li>
+            <li>openstack_project_domain</li>
+          </ul>The attribute openstack_user does not make much sense for testing as it is only
+          mapped to a specific username. The attributes openstack_user_domain, openstack_roles and
+          openstack_project have already been covered by the above test cases. </li>
       </ol>
     </section>
     <section><title>Known issues and limitations</title> Keep the following points in mind: <ul>
@@ -612,20 +664,20 @@ group_domain_name=domain2
           project2, the prevously issued federated token still has scope on project1. </li>
         <li>Scoping the federated user to a domain is not supported by default in the playbook.
           Please follow these steps to support it. <ol>
-            <li>On the IdP side, set <codeph>hostname=myidp.com</codeph> and  <codeph>username=user1
-              </codeph></li>
-            <li>On the service provider side, set: group=group1, group_domain_name=domain1, 'group1'
-              scopes to 'project1' </li>
-            <li>Mapping used: testcase1_1.json </li>
-            <li>Expected result: The federated user will scope to 'project1' Use CLI/Curl to assign
-              any existing role to 'group1' on 'domain1' Use CLI/Curl to remove 'project1' scope
+            <li>On the IdP side, set <codeph>hostname=myidp.com</codeph> and
+                <codeph>username=user1</codeph>.</li>
+            <li>On the service provider side, set: <codeph>group=group1</codeph>,
+                <codeph>group_domain_name=domain1</codeph>, 'group1' scopes to 'project1.' </li>
+            <li>Mapping used: testcase1_1.json.</li>
+            <li>Expected result: The federated user will scope to 'project1.' Use CLI/Curl to assign
+              any existing role to 'group1' on 'domain1.' Use CLI/Curl to remove 'project1' scope
               from 'group1' </li>
-            <li>Result: The federated user will scope to 'domain1' </li>
+            <li>Result: The federated user will scope to 'domain1.' </li>
           </ol>
         </li>
         <li>K2K and WebSSO cannot be configured by putting both sets of config attributes in the
-          same config file; they will overwrite each other. So they will need to be configured one
-          by one. </li>
+          same config file; they will overwrite each other. So they will need to be configured
+          individually. </li>
       </ul></section>
    
   </body>
