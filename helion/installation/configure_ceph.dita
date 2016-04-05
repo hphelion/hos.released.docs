@@ -40,14 +40,30 @@
       </sectiondiv>
     </section>
     <section id="prereqs"><title outputclass="headerH">Prerequisites</title>
-      <sectiondiv outputclass="insideSection">
-        <p>Ensure that disks designated to be used for the OSD data and journal storage must meet
-          the conditions below. If they do not, Ceph configuration will fail:</p>
-        <ul id="ul_xsp_mfx_dv">
+      <sectiondiv outputclass="insideSection"><p>Ensure that disks designated to be used for the OSD
+          data and journal storage must meet the conditions below. If they do not, Ceph
+          configuration will fail:</p><ul id="ul_xsp_mfx_dv">
           <li>Any existing partitions must be deleted</li>
           <li>The disk should not be mounted</li>
           <li>The disk should not be in use or held by some other device</li>
         </ul>
+      </sectiondiv> 
+      <sectiondiv id="osd-journal">
+        <p><b>Concerning OSD journals:</b> HPE Helion OpenStack recommends storing the OSD journal
+        on an SSD and the OSD object data on a separate hard disk drive. Considering that SSD drives
+        are costly, you can use multiple partitions in a single SSD drive for multiple OSD journals.
+        We recommend no more than four or five OSD journals on each SSD disk as a reasonable balance
+        between cost and optimal performance. If you have too many OSD journals on a single SSD, and
+        the journal disk crashes, you might lose your data on those disks. Also, too many journals
+        in a single SSD might negatively affect performance. </p>
+      <p>Using an OSD journal as a partition on the data disk itself is supported. However, you
+          might see a significant decline in Ceph performance due the fact that each client request
+          to store an object is first written to the journal disk before sending an acknowledgement
+          to client.</p> 
+        <p>Ceph OSD journal size defaults to 5120MB (i.e. 5GB) in HPE Helion OpenStack. This value
+          can be changed, however, it does not apply to any existing journal partitions. It will be
+          effective on any new OSDs created after the journal size is changed (whether the journal
+          is on same disk or separate disk than the data disk).</p>
       </sectiondiv>
     </section>
     <section id="deployer"><title outputclass="headerH">Set Up the Lifecycle Manager as a Ceph
