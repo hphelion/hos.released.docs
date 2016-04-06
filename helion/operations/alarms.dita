@@ -201,14 +201,15 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
             </row>
             <row>
               <entry>Swift account replicator last completed in 12 hours</entry>
-              <entry>Alarms if an account-replicator process did not complete a replication cycle
-                within the last 12 hours</entry>
-              <entry>This can indicate that the account-replication process is stuck.</entry>
+              <entry>Alarms if an <codeph>account-replicator</codeph> process did not complete a
+                replication cycle within the last 12 hours.</entry>
+              <entry>This can indicate that the <codeph>account-replication</codeph> process is
+                stuck.</entry>
               <entry>
-                <p>Restart the process with
-                  <codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
+                <p>Restart the process on the affected host with this
+                  command:<codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
                 <p>Another cause of this problem is that a file system may be corrupt. Look for sign
-                  of this in the <codeph>/var/log/swift/swift.log</codeph> and
+                  of this in the logs located in <codeph>/var/log/swift/swift.log</codeph> and
                     <codeph>/var/log/kern.log</codeph>. The file system may need to be wiped and
                   reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
                   file system)</p>
@@ -246,22 +247,25 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
             </row>
             <row>
               <entry>Swift file ownership</entry>
-              <entry>Alarms if files/directories in /srv/node/ or /etc/swift are not owned by
-                Swift.</entry>
+              <entry>Alarms if files/directories in <codeph>/srv/node/</codeph> or
+                  <codeph>/etc/swift</codeph> are not owned by Swift.</entry>
               <entry>
-                <p>For files in /etc/swift, somebody may have manually edited or created a file.</p>
-                <p>For directories in /srv/node/*, it may happen that root partition was reimaged or
-                  reinstalled and the UID assigned to the Swift user changes. The directories and
-                  files are then not owned by the UID assigned to the Swift user.</p>
+                <p>For files in <codeph>/etc/swift</codeph>, somebody may have manually edited or
+                  created a file.</p>
+                <p>For directories in <codeph>/srv/node/*</codeph>, it may happen that the root
+                  partition was reimaged or reinstalled and the UID assigned to the Swift user
+                  changes. The directories and files are then not owned by the UID assigned to the
+                  Swift user.</p>
               </entry>
               <entry>
-                <p>For files in <codeph>/etc/swift</codeph>, use this command: <codeph>sudo chown
-                    swift.swift /etc/swift/, /etc/swift/*</codeph>.</p>
+                <p>For files in <codeph>/etc/swift</codeph>, use this command to change the file
+                  ownership:<codeblock>sudo chown swift.swift /etc/swift/, /etc/swift/*</codeblock></p>
                 <p>For directories and files in <codeph>/srv/node/*</codeph>, compare the swift UID
                   of this system and other systems and the UID of the owner of
                     <codeph>/srv/node/*</codeph>. If possible, make the UID of the Swift user match
                   the directories/files. Otherwise, change the ownership of all files and
-                  directories under the <codeph>/srv/node</codeph> path.</p>
+                  directories under the <codeph>/srv/node</codeph> path using a similar command as
+                  above.</p>
               </entry>
             </row>
             <row>
@@ -288,7 +292,7 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                   <li>Log in to the lifecycle manager.</li>
                   <li>Run the Swift reconfigure playbook, specifying the affected node:
                     <codeblock>cd ~/scratch/ansible/next/hos/ansible/
-ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;node name></codeblock></li>
+ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;hostname></codeblock></li>
                 </ol>
                 <p>It is safe to reformat drives containing Swift data because Swift maintains other
                   copies of the data (usually, Swift is configured to have three replicas of all
@@ -305,8 +309,14 @@ ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;node name
                 <p>Examine the <codeph>/var/log/swift/swift.log</codeph> file for possible error
                   messages related the Swift process. The process in question is listed in the alarm
                   dimensions in the <codeph>component</codeph> dimension.</p>
-                <p>Restart Swift processes by running the <codeph>swift-start.yml</codeph>
-                  playbook.</p>
+                <p>Restart Swift processes by running the <codeph>swift-start.yml</codeph> playbook,
+                  with these steps:</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift start playbook against the affected host:
+                  <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &#60;hostname></codeblock></li>
+                </ol>
               </entry>
             </row>
             <row>
@@ -328,7 +338,7 @@ ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;node name
             </row>
             <row>
               <entry>Swift rings checksum</entry>
-              <entry>Alarms if the swift rings checksums do not match on all hosts</entry>
+              <entry>Alarms if the swift rings checksums do not match on all hosts.</entry>
               <entry>
                 <p>The Swift ring files must be the same on every node. The files are located in
                     <codeph>/etc/swift/*.ring.gz</codeph></p>
@@ -338,20 +348,27 @@ ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;node name
               <entry>
                 <p>Use <codeph>sudo swift-recon --md5</codeph> to find which node has outdated
                   rings.</p>
-                <p> Run the <codeph>swift-configure.yml</codeph> playbook. This should deploy the
+                <p> Run the <codeph>swift-configure.yml</codeph> playbook, using the steps below. This should deploy the
                   same set of rings to every node.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift start playbook against the affected host:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-configure.yml</codeblock></li>
+                </ol>
               </entry>
             </row>
             <row>
               <entry>Swift host socket connect</entry>
-              <entry>Alarms if a socket cannot be opened to th eKeystone token validation
-                API.</entry>
-              <entry>The Keystone server may be down. Another possible cause is that the network
-                between the host reporting the problem and the Keystone server or that the haproxy
-                process is not forwarding requests to Keystone.</entry>
-              <entry>The <codeph>URL</codeph> dimension contains the name of the VIP. Use cURL or a
-                similar program to confirm that a connection can or cannot be made to the VIP. Check
-                that haproxy is running. Check that the Keystone service is working.</entry>
+              <entry>Alarms if a socket cannot be opened to the Identity service (Keystone) token
+                validation API.</entry>
+              <entry>The Identity service (Keystone) server may be down. Another possible cause is
+                that the network between the host reporting the problem and the Keystone server or
+                the <codeph>haproxy</codeph> process is not forwarding requests to Keystone.</entry>
+              <entry>The <codeph>URL</codeph> dimension contains the name of the virtual IP address.
+                Use cURL or a similar program to confirm that a connection can or cannot be made to
+                the virtual IP address. Check that <codeph>haproxy</codeph> is running. Check that
+                the Keystone service is working.</entry>
             </row>
             <row>
               <entry>Swift memcached connect</entry>
@@ -362,8 +379,14 @@ ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;node name
               <entry>
                 <p>If the server is down, restart it.</p>
                 <p>If memcached has stopped, you can restart it by using the
-                    <codeph>memcached-start.yml</codeph> playbook. if this fails, rebooting the node
-                  will restart the process.</p>
+                    <codeph>memcached-start.yml</codeph> playbook, using the steps below.  If this
+                  fails, rebooting the node will restart the process.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the memcached start playbook against the affected host:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts memcached-start.yml --limit &lt;hostname></codeblock></li>
+                </ol>
                 <p>If the server is running and memcached is running, there may be a network problem
                   blocking port 11211.</p>
                 <p>If you see sporadic alarms on different servers, the system may be running out of
@@ -374,46 +397,75 @@ ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;node name
               <entry>Swift individual disk usage exceeds 80%</entry>
               <entry>Alarms when a disk drive used by Swift exceeds 80% utilization.</entry>
               <entry>Generally all disk drives will fill roughly at the same rate. If an individual
-                disk drive becomes much fuller than other drives it can indicate a problem with the
-                replication process.</entry>
+                disk drive becomes filled faster than other drives it can indicate a problem with
+                the replication process.</entry>
               <entry>
-                <p>If many/most of your disk drives are 80% full you need to start adding more nodes
-                  to your system or delete existing objects.</p>
-                <p>Note: if you delete a project/account, the objects in that account are not
-                  removed until a week later (so this is not a good way of quickly freeing up
-                  space)</p>
+                <p>If many/most of your disk drives are 80% full you need to add more nodes to your
+                  system or delete existing objects.</p>
+                <p>If one disk drive is noticeably (more than 30%) more utilized than the average of
+                  other disk drives, you should check that Swift processes are working on the server
+                  (use the steps below and also look for alarms related to the host). Otherwise
+                  continue to monitor the situation.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift status:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-status.yml</codeblock></li>
+                </ol>
               </entry>
             </row>
             <row>
               <entry>Swift individual disk usage exceeds 90%</entry>
               <entry>Alarms when a disk drive used by Swift exceeds 90% utilization.</entry>
               <entry>Generally all disk drives will fill roughly at the same rate. If an individual
-                disk drive becomes much fuller than other drives it can indicate a problem with the
-                replication process.</entry>
+                disk drive becomes filled faster than other drives it can indicate a problem with
+                the replication process.</entry>
+              <entry>If one disk drive is noticeably fuller (more than 30%) more utilized than the
+                average of other disk drives, you should check that Swift processes are working on
+                the server (use swift-status.yml playbook and also look for alarms related to the
+                host). An individual disk drive filling can indicate a problem with the replication
+                process. Restart Swift on that host (swift-stop.yml/swift.yml playbooks using the
+                --limit argument to targer the host. It the utilization does not return to similar
+                values as other disk drives, you can reformat the disk drive. You should only do
+                this if the average utilization of all disk drives is less than 80%. To format a
+                disk drive contact HPE Support for instructions.</entry>
+            </row>
+            <row>
+              <entry>Swift total disk usage exceeds 80%</entry>
+              <entry>Alarms when the average disk utilization of Swift disk drives exceeds 80%
+                utilization.</entry>
+              <entry>The number and size of objects in your system is beginning to fill the
+                available disk space. Account and container storage is included in disk utilization.
+                However, this generally consumes 1-2% of space compared to objects, so object
+                storage is the dominate consumer of disk space.</entry>
               <entry>
-                <p>If many/most of your disk drives are 80% full you must immediately stop all
-                  applications that PUT new objects into the system. At that point you can either
-                  delete objects or add more servers.</p>
+                <p>You need to add more nodes to your system or delete existing objects to remain
+                  under 80% utilization.</p>
+                <p>Note: if you delete a project/account, the objects in that account are not
+                  removed until a week later (so this is not a good way of quickly freeing up
+                  space)</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift total disk usage exceeds 90%</entry>
+              <entry>Alarms when the average disk utilization of Swift disk drives exceeds 90%
+                utilization.</entry>
+              <entry>The number and size of objects in your system is beginning to fill the
+                available disk space. Account and container storage is included in disk utilization.
+                However, this generally consumes 1-2% of space compared to objects, so object
+                storage is the dominate consumer of disk space.</entry>
+              <entry>
+                <p>If your disk drives are 90% full you must immediately stop all applications that
+                  PUT new objects into the system. At that point you can either delete objects or
+                  add more servers.</p>
                 <p>You should also set the fallocate_reserve value (in account/container/object
-                  configuration files to a value higher than the currently available space on disk
+                  configuration files) to a value higher than the currently available space on disk
                   drives. This will prevent more objects being created.</p>
                 <p>If you allow your filesystems to become full, you will be unable to delete
                   objects or add more more nodes to the system. This is because the system needs
                   some free space to handle the replication process when adding nodes. With no free
                   space, the replication process cannot work.</p>
               </entry>
-            </row>
-            <row>
-              <entry>Swift total disk usage exceeds 80%</entry>
-              <entry/>
-              <entry/>
-              <entry/>
-            </row>
-            <row>
-              <entry>Swift total disk usage exceeds 90%</entry>
-              <entry/>
-              <entry/>
-              <entry/>
             </row>
             <row>
               <entry>Swift service per-minute availability</entry>
