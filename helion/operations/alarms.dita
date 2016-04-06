@@ -386,6 +386,32 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               <entry>Review the monasca agent collector.log file on the affected node to determine
                 why the service check did not execute as expected. </entry>
             </row>
+            <row>
+              <entry morerows="1">vsa</entry>
+              <entry>VSA VM Status</entry>
+              <entry>Raises alarm when vsa_vm_status is non zero (Not running)</entry>
+              <entry>Node reboot or VM in paused state due to disk errors.</entry>
+              <entry>Investigate the VSA VM status in the node.</entry>
+            </row>
+            <row>
+              <entry>VSA VM Network Status</entry>
+              <entry>Raises alarm when vsa_vm_net_status is non zero (Not running)</entry>
+              <entry>Network/Bridge issues</entry>
+              <entry>Investigate the VSA VM network status in the node.</entry>
+            </row>
+            <row>
+              <entry>ceph</entry>
+              <entry>Process Check</entry>
+              <entry>process_name=&lt;cluster_name>-osd.&lt;id></entry>
+              <entry>Process crashed.</entry>
+              <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
+            </row>
+            <row>
+              <entry>Process Check</entry>
+              <entry>process_name=&lt;cluster_name>-mon.&lt;id></entry>
+              <entry>Process crashed.</entry>
+              <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
+            </row>
           </tbody>
         </tgroup>
       </table>
@@ -870,13 +896,13 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry><p>component = zookeeper</p>Process not running.</entry>
+                <entry><p>service = zookeeper</p>Process not running.</entry>
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node. Review the associated logs.</entry>
               </row>
               <row>
                 <entry>Zookeeper Latency</entry>
-                <entry><p>component = zookpeeper</p>Zookeeper is experiencing high latency.</entry>
+                <entry><p>component = zookeeper</p>Zookeeper is experiencing high latency.</entry>
                 <entry>Heavy system load.</entry>
                 <entry>Check the individual system as well as activity across the entire
                   service.</entry>
@@ -1030,6 +1056,27 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>MySQL crashed.</entry>
               <entry>Restart MySQL on the affected node.</entry>
             </row>
+            <!-- HAPROXY -->
+            <row>
+              <entry>haproxy</entry>
+              <entry>Process Check</entry>
+              <entry><p>service=haproxy</p>process_name=haproxy</entry>
+              <entry>HA Proxy is not running on this machine.</entry>
+              <entry>Restart the process on the affected node using these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Use this playbook against the affected node:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></codeblock></li>
+                </ol>
+                <p>Review the associated logs.</p></entry>
+            </row>
+            <row>
+              <entry>rabbitmq</entry>
+              <entry>Process Check</entry>
+              <entry>rabbitmq-server process not running.</entry>
+              <entry>Process crashed.</entry>
+              <entry>Restart the process on the affected node. Review the associated logs.</entry>
+            </row>
           </tbody>
         </tgroup>
       </table>
@@ -1038,7 +1085,6 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
 
 
     <section><title>Alarms by Hostname</title></section>
-    <!-- NEED TO FIGURE OUT WHERE THESE ARE LOCATED -->
     <section id="hlinux">
       <title>Uncategorized Alarms</title>
       <p>These alarms show under the Uncategorized section and are setup per hostname, so one for
@@ -1122,140 +1168,5 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
 
 
 
-
-    <section id="rabbitmq">
-      <title>RabbitMQ</title>
-      <table frame="all" rowsep="1" colsep="1" id="table_rsb_mp5_zs">
-        <tgroup cols="4">
-          <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-          <colspec colname="c2" colnum="2" colwidth="1.0*"/>
-          <colspec colname="c3" colnum="3" colwidth="1.0*"/>
-          <colspec colname="c4" colnum="4" colwidth="1.0*"/>
-          <thead>
-            <row>
-              <entry>Alarm Name</entry>
-              <entry>Description</entry>
-              <entry>Likely Cause</entry>
-              <entry>Mitigation Tasks to Perform</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>Process Check</entry>
-              <entry>rabbitmq-server process not running.</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node. Review the associated logs.</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-    </section>
-
-
-
-    <section id="ceph"><title>Ceph</title>
-      <p><table frame="all" rowsep="1" colsep="1" id="ceph_table">
-          <tgroup cols="4">
-            <colspec colname="c1" colnum="1" colwidth="1*"/>
-            <colspec colname="c2" colnum="2" colwidth="2*"/>
-            <colspec colname="c3" colnum="3" colwidth="1*"/>
-            <colspec colname="c4" colnum="4" colwidth="2*"/>
-            <thead>
-              <row>
-                <entry>Alarm Name</entry>
-                <entry>Description</entry>
-                <entry>Likely Cause</entry>
-                <entry>Mitigation Tasks to Perform</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>Process Check</entry>
-                <entry>process_name=&lt;cluster_name>-osd.&lt;id></entry>
-                <entry>Process crashed.</entry>
-                <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry>process_name=&lt;cluster_name>-mon.&lt;id></entry>
-                <entry>Process crashed.</entry>
-                <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table></p>
-    </section>
-
-
-    <section id="haproxy">
-      <title>HAProxy</title>
-      <table frame="all" rowsep="1" colsep="1" id="table_flj_2tl_zs">
-        <tgroup cols="4" align="left">
-          <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-          <colspec colname="c2" colnum="2" colwidth="2.0*"/>
-          <colspec colname="c3" colnum="3" colwidth="1.0*"/>
-          <colspec colname="c4" colnum="4" colwidth="2.0*"/>
-          <thead>
-            <row>
-              <entry>Alarm Name</entry>
-              <entry>Description</entry>
-              <entry>Likely Cause</entry>
-              <entry>Mitigation Tasks to Perform</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>Process Check</entry>
-              <entry>process_name=haproxy</entry>
-              <entry>HA Proxy is not running on this machine.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use this playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-                    ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></codeblock></li>
-                </ol>
-                <p>Review the associated logs.</p></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-    </section>
-
-
-
-
-    <section id="vsa">
-      <title>VSA</title>
-      <table frame="all" rowsep="1" colsep="1" id="vsa_table">
-        <tgroup cols="4">
-          <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-          <colspec colname="c2" colnum="2" colwidth="1.0*"/>
-          <colspec colname="c3" colnum="3" colwidth="1.0*"/>
-          <colspec colname="c4" colnum="4" colwidth="1.0*"/>
-          <thead>
-            <row>
-              <entry>Alarm Name</entry>
-              <entry>Description</entry>
-              <entry>Likely Cause</entry>
-              <entry>Mitigation Tasks to Perform</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>VSA VM Status</entry>
-              <entry>Raises alarm when vsa_vm_status is non zero (Not running)</entry>
-              <entry>Node reboot or VM in paused state due to disk errors.</entry>
-              <entry>Investigate the VSA VM status in the node.</entry>
-            </row>
-            <row>
-              <entry>VSA VM Network Status</entry>
-              <entry>Raises alarm when vsa_vm_net_status is non zero (Not running)</entry>
-              <entry>Network/Bridge issues</entry>
-              <entry>Investigate the VSA VM network status in the node.</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-    </section>
   </body>
 </topic>
