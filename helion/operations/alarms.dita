@@ -11,7 +11,8 @@
       on how to use the logging user interface built into the Operations Console, see <xref
         href="centralized_logging.dita#centralized_logging/interface"/>.</p>
     <section id="services"><title>Alarms by Service</title>
-      <p>We have organized these alarm</p>
+      <p>We have organized these alarm by the dashboard card they are located under in the Ops
+        Console and by the service dimension specified in the alarm.</p>
     </section>
 
 
@@ -37,100 +38,46 @@
           </thead>
           <tbody>
             <row>
-              <entry morerows="8">compute</entry>
+              <entry morerows="2">compute</entry>
               <entry>Process Check</entry>
-              <entry>nova-api check</entry>
-              <entry>Process crashed.</entry>
+              <entry>Separate alarms for each of these Nova services, specified by the
+                  <codeph>component</codeph> dimension: <ul>
+                  <li>nova-api</li>
+                  <li>nova-cert</li>
+                  <li>nova-compute</li>
+                  <li>nova-consoleauth</li>
+                  <li>nova-conductor</li>
+                  <li>nova-scheduler</li>
+                  <li>nova-novncproxy</li>
+                </ul></entry>
+              <entry>Process specified by the <codeph>component</codeph> dimension has crashed on
+                the host specified by the <codeph>hostname</codeph> dimension.</entry>
               <entry>Restart the process on the affected node using these steps: <ol>
                   <li>Log in to the lifecycle manager.</li>
                   <li>Use the Nova start playbook against the affected node:
                     <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
                 </ol>
-                <p>Review the associated logs.</p></entry>
+                <p>Review the associated logs. The logs will be in the format of
+                    <codeph>&lt;service>.log</codeph>, such as <codeph>nova-compute.log</codeph> or
+                    <codeph>nova-scheduler.log</codeph>.</p></entry>
             </row>
             <row>
               <entry>HTTP Status</entry>
-              <entry>nova-api health check</entry>
+              <entry>This is a <codeph>nova-api</codeph> health check</entry>
               <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node. Review the nova-api log files. Try to
-                connect locally to the http port to see if the connection is accepted.</entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-cert check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol>
-                <p>Review the nova-cert.log files.</p></entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-compute check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol>
-                <p>Review the nova-compute.log files.</p></entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-conductor check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol> Review the nova-conductor.log files.</entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-consoleauth check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol> Review the nova-consoleauth log files.</entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-novncproxy check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Glance start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol> Review the nova-novncproxy log files.</entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-scheduler check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol> Review the nova-scheduler.log files.</entry>
+              <entry>Restart the <codeph>nova-api</codeph> process on the affected node. Review the
+                  <codeph>nova-api.log</codeph> files. Try to connect locally to the http port that
+                is found in the dimension field of the alarm to see if the connection is
+                accepted.</entry>
             </row>
             <row>
               <entry>Process Bound Check</entry>
-              <entry>process_name=nova-api. Check that the number of processes found is in a
-                predefined range</entry>
+              <entry><codeph>process_name=nova-api</codeph><p>This alarm checks that the number of
+                  processes found is in a predefined range</p></entry>
               <entry>Process crashed or too many processes running</entry>
-              <entry>Stop all the processes and restart the nova-api process. Review the system and
-                nova-api logs.</entry>
+              <entry>Stop all the processes and restart the nova-api process on the affected host.
+                Review the system and nova-api logs.</entry>
             </row>
             <row>
               <entry morerows="1">image-service</entry>
