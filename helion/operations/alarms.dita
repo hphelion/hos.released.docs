@@ -314,7 +314,7 @@ ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;hostname>
                 <ol>
                   <li>Log in to the lifecycle manager.</li>
                   <li>Run the Swift start playbook against the affected host:
-                  <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
 ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &#60;hostname></codeblock></li>
                 </ol>
               </entry>
@@ -348,8 +348,8 @@ ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &#60;hostname></cod
               <entry>
                 <p>Use <codeph>sudo swift-recon --md5</codeph> to find which node has outdated
                   rings.</p>
-                <p> Run the <codeph>swift-configure.yml</codeph> playbook, using the steps below. This should deploy the
-                  same set of rings to every node.</p>
+                <p> Run the <codeph>swift-configure.yml</codeph> playbook, using the steps below.
+                  This should deploy the same set of rings to every node.</p>
                 <ol>
                   <li>Log in to the lifecycle manager.</li>
                   <li>Run the Swift start playbook against the affected host:
@@ -379,7 +379,7 @@ ansible-playbook -i hosts/verb_hosts swift-configure.yml</codeblock></li>
               <entry>
                 <p>If the server is down, restart it.</p>
                 <p>If memcached has stopped, you can restart it by using the
-                    <codeph>memcached-start.yml</codeph> playbook, using the steps below.  If this
+                    <codeph>memcached-start.yml</codeph> playbook, using the steps below. If this
                   fails, rebooting the node will restart the process.</p>
                 <ol>
                   <li>Log in to the lifecycle manager.</li>
@@ -404,7 +404,7 @@ ansible-playbook -i hosts/verb_hosts memcached-start.yml --limit &lt;hostname></
                   system or delete existing objects.</p>
                 <p>If one disk drive is noticeably (more than 30%) more utilized than the average of
                   other disk drives, you should check that Swift processes are working on the server
-                  (use the steps below and also look for alarms related to the host). Otherwise
+                  (use the steps below) and also look for alarms related to the host. Otherwise
                   continue to monitor the situation.</p>
                 <ol>
                   <li>Log in to the lifecycle manager.</li>
@@ -420,15 +420,31 @@ ansible-playbook -i hosts/verb_hosts swift-status.yml</codeblock></li>
               <entry>Generally all disk drives will fill roughly at the same rate. If an individual
                 disk drive becomes filled faster than other drives it can indicate a problem with
                 the replication process.</entry>
-              <entry>If one disk drive is noticeably fuller (more than 30%) more utilized than the
-                average of other disk drives, you should check that Swift processes are working on
-                the server (use swift-status.yml playbook and also look for alarms related to the
-                host). An individual disk drive filling can indicate a problem with the replication
-                process. Restart Swift on that host (swift-stop.yml/swift.yml playbooks using the
-                --limit argument to targer the host. It the utilization does not return to similar
-                values as other disk drives, you can reformat the disk drive. You should only do
-                this if the average utilization of all disk drives is less than 80%. To format a
-                disk drive contact HPE Support for instructions.</entry>
+              <entry>If one disk drive is noticeably (more than 30%) more utilized than the average
+                of other disk drives, you should check that Swift processes are working on the
+                server, using these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift status:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-status.yml</codeblock></li>
+                </ol>
+                <p>Also look for alarms related to the host. An individual disk drive filling can
+                  indicate a problem with the replication process.</p>
+                <p>Restart Swift on that host using the <codeph>--limit</codeph> argument to target
+                  the host:</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Stop the Swift service:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-stop.yml --limit &lt;hostname></codeblock></li>
+                  <li>Start the Swift service back up:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &lt;hostname></codeblock></li>
+                </ol>
+                <p>If the utilization does not return to similar values as other disk drives, you
+                  can reformat the disk drive. You should only do this if the average utilization of
+                  all disk drives is less than 80%. To format a disk drive contact HPE Support for
+                  instructions.</p></entry>
             </row>
             <row>
               <entry>Swift total disk usage exceeds 80%</entry>
@@ -456,21 +472,21 @@ ansible-playbook -i hosts/verb_hosts swift-status.yml</codeblock></li>
                 storage is the dominate consumer of disk space.</entry>
               <entry>
                 <p>If your disk drives are 90% full you must immediately stop all applications that
-                  PUT new objects into the system. At that point you can either delete objects or
+                  put new objects into the system. At that point you can either delete objects or
                   add more servers.</p>
-                <p>You should also set the fallocate_reserve value (in account/container/object
-                  configuration files) to a value higher than the currently available space on disk
-                  drives. This will prevent more objects being created.</p>
-                <p>If you allow your filesystems to become full, you will be unable to delete
-                  objects or add more more nodes to the system. This is because the system needs
-                  some free space to handle the replication process when adding nodes. With no free
+                <p>You should also set the <codeph>fallocate_reserve</codeph> value (in the
+                  account/container/object configuration files) to a value higher than the currently
+                  available space on disk drives. This will prevent more objects being created.</p>
+                <p>If you allow your file systems to become full, you will be unable to delete
+                  objects or add more nodes to the system. This is because the system needs some
+                  free space to handle the replication process when adding nodes. With no free
                   space, the replication process cannot work.</p>
               </entry>
             </row>
             <row>
               <entry>Swift service per-minute availability</entry>
               <entry>Alarms if the swift service reports unavailable for the previous
-                minutes</entry>
+                minute.</entry>
               <entry>The <codeph>swiftlm-uptime-monitor</codeph> service runs on the first proxy
                 server. It monitors the Swift endpoint and reports latency data. If the endpoint
                 stops reporting, it generates this alarm.</entry>
@@ -486,22 +502,22 @@ ansible-playbook -i hosts/verb_hosts swift-status.yml</codeblock></li>
             <row>
               <entry>Swift rsync connect</entry>
               <entry>Alarms if a socket cannot be opened to the specified rsync server</entry>
-              <entry>The rsync deamon on the specified node cannot be contacted. The most probably
+              <entry>The rsync deamon on the specified node cannot be contacted. The most probable
                 cause is that the node is down. The rsync service might also have been stopped on
                 the node.</entry>
               <entry>
-                <p>Reboot server if it is down.</p>
-                <p>Attempt to restart rsync:
-                  <codeblock>systemctl restart rsync.service</codeblock></p>
+                <p>Reboot the server if it is down.</p>
+                <p>Attempt to restart rsync with this
+                  command:<codeblock>systemctl restart rsync.service</codeblock></p>
               </entry>
             </row>
             <row>
               <entry>Process Check</entry>
               <entry>Alarms when the specified process is not running.</entry>
               <entry>If the <codeph>service</codeph> dimension is <codeph>object-store</codeph>, see
-                the description of the "Swift Services" alarm for possible causes.</entry>
+                the description of the "Swift Service" alarm for possible causes.</entry>
               <entry>If the <codeph>service</codeph> dimension is <codeph>object-storage</codeph>,
-                see the description of the "Swift Services" alarm for possible mitigation
+                see the description of the "Swift Service" alarm for possible mitigation
                 tasks.</entry>
             </row>
             <row>
