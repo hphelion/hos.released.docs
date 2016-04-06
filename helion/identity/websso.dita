@@ -6,20 +6,35 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
       <title>What is WebSSO?</title>
-      
-      WebSSO provides the ability for a user to authenticate via a web browser with an external identity provider, through a Single Sign-On page.
-      
-      
+      <p>WebSSO, or Web Single Sign On, is a method for web browsers to receive current
+        authentication information from an Identity Provider system without requiring a user to
+        re-login to the application displayed by the browser. Users initially access the Identity
+        Provider web page and provide their credentials. If the user successfully authenticates with
+        the Identity Provider, the authentication credentials are then stored in the user’s web
+        browser and automatically provided to all web-based applications, like OpenStack Horizon. If
+        a user has not yet authenticated with an Identity Provider or their credentials have timed
+        out, they are automatically re-directed to the Identity Provider to renew their
+        credentials.</p>
     </section>
     
-    <section><title> Enabling WebSSO</title> the Horizon dashboard service and the Keystone identity
-      service now have an implementation of a Web Single Sign On Portal. Setting up WebSSO manually
-      is complex, therefore an Ansible playbook was implemented and is available in <keyword
-        keyref="kw-hos-phrase-30"/> to simplify the process of enabling WebSSO authentication, which
-      is disabled by default. The currently supported Identity Provider for WebSSO is Active
-      Directory Federation Services (ADFS). <p>WebSSO is accomplished by a series of HTTP redirects,
-        as shown in the diagram below.</p><image
-        href="../../media/keystone/Keystone-ADFS-WebSSO-Authentication-Sequence.png"
+    <section><title> Enabling WebSSO</title>
+      <keyword keyref="kw-hos-phrase-30"/> now provides WebSSO support for the Horizon web
+      interface. This support requires several configuration steps including editing the Horizon
+      configuration file as well as ensuring that the correct Keystone authentication configuration
+      is also enabled to receive the authentication assertions provided by the Identity Provider.
+        <p>The following is the workflow that depicts how Horizon and Keystone supports WebSSO if no
+        current authentication assertion is available. <ol id="ul_fcj_z4g_4v">
+          <li>Horizon redirects the web browser to the Keystone endpoint</li>
+          <li>Keystone automatically redirects the web browser to the correct Identity Provider
+            authentication web page based on the Keystone configuration file</li>
+          <li>The user authenticates with the Identity Provider</li>
+          <li>The Identity Provider automatically redirects the web browser back to the Keystone
+            endpoint</li>
+          <li>Keystone generates the required Javascript code to POST a token back to Horizon</li>
+          <li>Keystone automatically redirects the web browser back to Horizon and the user can then
+            access projects and resources assigned to the user</li>
+        </ol>The diagram below provides more details on the WebSSO authentication workflow.
+        </p><image href="../../media/keystone/Keystone-ADFS-WebSSO-Authentication-Sequence.png"
         id="image_xc4_zfh_mv"/>
       <p>Note that the Horizon dashboard service never talks directly to the Keystone identity
         service until the end of the sequence, after the federated unscoped token negotiation has
