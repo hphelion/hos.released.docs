@@ -6,15 +6,42 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section><title>Integrating with an external LDAP server</title>
-      <p>If your organization, like most, uses an LDAP directory service such as Active Directory,
-        you can integrate it with the identity service (Keystone) using domain-specific
-        configuration. There are two modes of domain-specific configuration. One is to use file
-        store and the other is to use database store for configuration. By default, domain-specific
-        driver configuration - file store is enabled but no domain is assigned to use the back end
-        driver. The following instructions explain how to get a specific domain to integrate LDAP
-        with the identity service.</p>
-      <p>Integration with an external LDAP server is supported via the Keystone domain-specific
-        configuration.</p>
+      <p/><p>The Keystone identity service provides two primary functions: user authentication and
+        access authorization. The user authentication function validates a user's identity. Keystone
+        has a very basic user management system that can be used to create and manage user login and
+        password credentials but this system is intended only for proof of concept deployments due
+        to the very limited password control functions. The internal identity service user
+        management system is also commonly used to store and authenticate OpenStack-specific service
+        account information.</p><p>The recommended source of authentication is external user
+        management systems such as LDAP directory services. The identity service can be configured
+        to connect to and use external systems as the source of user authentication. The identity
+        service domain construct is used to define different authentication sources based on domain
+        membership. For example, an HPE Helion OpenStack deployment could consist of as few as two
+        domains:</p>
+      <ul id="ul_msq_q3h_4v">
+        <li>The default domain that is pre-configured for the service account users that are
+          authenticated directly against the  identity service internal user management system</li>
+        <li>A customer-defined domain that contains all user projects and membership definitions.
+          This domain can then be configured to use an external LDAP directory such as Microsoft
+          Active Directory as the authentication source.</li>
+      </ul><p>Helion OpenStack can support multiple domains for deployments that support multiple
+        tenants. Multiple domains can be created with each domain configured to either the same or
+        different external authentication sources. This deployment model is known as a "per-domain"
+        model.</p><p>There are currently two ways to configure "per-domain" authentication
+        sources:</p><ul id="ul_nsq_q3h_4v">
+        <li>File store – each domain configuration is created and stored in separate text files.
+          This is the older and current default method for defining domain configurations. </li>
+        <li>Database store – each domain configuration can be created using either the  identity
+          service manager utility (recommenced) or a Domain Admin API (<xref
+            href="http://developer.openstack.org/api-ref-identity-v3.html#domains-config-v3"
+            format="html" scope="external"
+            >http://developer.openstack.org/api-ref-identity-v3.html#domains-config-v3</xref>) and
+          the results are stored in the  identity service MySQL database. This database store is a
+          new method introduced in the OpenStack Kilo release and now available in  <keyword
+            keyref="kw-hos-phrase-30"/>.</li>
+      </ul><p>Instructions for initially creating per-domain configuration files and then migrating
+        to the Database store method via the  identity service manager utility are provided as
+        follows.</p>
       <p id="filestore"><b>Set up domain-specific driver configuration - file store </b></p> To
       update configuration to a specific LDAP domain: <ol>
         <li> Ensure that the following configuration options are in the main configuration file
