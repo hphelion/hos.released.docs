@@ -326,7 +326,7 @@ keystone_sp_conf:
             id="ol_myr_zgb_mv">
             <li>Create a mapping file that is referenced in k2k.yml, shown above. For example
                 <codeph>/tmp/k2k_sp_mapping.json</codeph>. You can see the reference in bold in the
-              k2k.yml example.  The following is an example of the mapping file. <codeblock>[
+              k2k.yml example.  The following is an example of the mapping file. <codeblock outputclass="prettyprint">[
   {
     "local": [
       {
@@ -548,7 +548,7 @@ group_domain_name=domain1
         <li>Mapping used: <codeblock>testcase1_1.json</codeblock>
           <p outputclass="expandcode"><b>Open | Close </b>testcase1_1.json</p>
           <p outputclass="hiddencode">
-            <codeblock outputclass="nomaxheight">[
+            <codeblock outputclass="nomaxheight prettyprint">[
   {
     "local": [
       {
@@ -598,7 +598,7 @@ group_domain_name=domain2
         <li>Mapping used: <codeblock>testcase1_2.json</codeblock>
           <p outputclass="expandcode"><b>Open | Close </b>testcase1_2.json</p>
           <p outputclass="hiddencode">
-            <codeblock outputclass="nomaxheight">[
+            <codeblock outputclass="nomaxheight prettyprint">[
   {
     "local": [
       {
@@ -680,7 +680,7 @@ group_domain_name=domain4
         <li>Mapping used: <codeblock>testcase1_3.json</codeblock>
           <p outputclass="expandcode"><b>Open | Close </b>testcase1_3.json</p>
           <p outputclass="hiddencode">
-            <codeblock outputclass="nomaxheight">[
+            <codeblock outputclass="nomaxheight prettyprint">[
   {
     "local": [
       {
@@ -761,6 +761,77 @@ group_domain_name=domain4
           <codeblock>group=group5, group_domain_name=domain5, 'group5' scopes to 'project5'</codeblock>
         </li>
         <li>Mapping used: <codeblock>testcase1_3.json</codeblock>
+          <p outputclass="expandcode"><b>Open | Close </b>testcase1_3.json</p>
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight prettyprint">[
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group4",
+           "domain":{
+             "name": "domain4"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "openstack_project",
+      "any_one_of": [
+          "test1"
+      ]
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   },
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group5",
+           "domain":{
+             "name": "domain5"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "openstack_roles",
+      "not_any_of": [
+          "_member_"
+      ]
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   }
+]       
+    </codeblock></p>
         </li>
         <li>Expected result: The federated user will scope to 'project5' </li>
       </ol>
@@ -773,6 +844,38 @@ group_domain_name=domain4
           <codeblock>group=group1, group_domain_name=domain1, 'group1' scopes to 'project1'</codeblock>
         </li>
         <li>Mapping used: <codeblock>testcase1_1.json</codeblock>
+          <p outputclass="expandcode"><b>Open | Close </b>testcase1_1.json</p>
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight prettyprint">[
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group1",
+           "domain":{
+             "name": "domain1"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   }
+]
+       </codeblock></p>
         </li>
         <li>Expected result: The federated user will scope to 'project1' Later, we like to scope
           federated users who has the Default domain in the identity provider to 'project2' in
@@ -788,6 +891,73 @@ group_domain_name=domain2
 'group2' scopes to 'project2'</codeblock>
         </li>
         <li>Mapping used: <codeblock>testcase1_2.json</codeblock>
+          <p outputclass="expandcode"><b>Open | Close </b>testcase1_2.json</p>
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight prettyprint">[
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group1",
+           "domain":{
+             "name": "domain1"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   }
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group2",
+           "domain":{
+             "name": "domain2"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "openstack_user_domain",
+      "any_one_of": [
+          "Default"
+      ]
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   }   
+]           
+            
+             </codeblock>
+          </p>
         </li>
         <li>Expected result: The federated user will scope to 'project1' and 'project2' </li>
       </ol>
