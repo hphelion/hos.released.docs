@@ -6,19 +6,37 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
       <title>What is Identity Service federation?</title>
-      <p>In a typical OpenStack cloud implementation that does not use federation, users
-        authenticate with each service's API using the identity service (based on OpenStack
-        Keystone). However, using Keystone to Keystone (K2K) federation, the user, or requester can
-        have one identity to be used across services.</p>
-      <p>In HPE Helion OpenStack, the service provider is the OpenStack cloud. Using Keystone to
-        Keystone federation, a number of different identity providers, such as Active Directory
-        Federation Services (ADFS) or SAML2 can be used to provide identity information and
-        authentication. </p>
-      <p>With K2K federation, an identity service instance can be the identity provider and another
-        can be the service provider. </p>
-      <p>Keystone to Keystone (K2K) is supported in <keyword keyref="kw-hos-phrase-30"/>. By running
-        a playbook with your configuration parameters, K2K will be enabled automatically. It's
-        disabled by default.</p>
+      <p/>
+      <p>Identity federation enables the ability to configure Helion OpenStack to use existing
+        identity management systems like a LDAP directory to be used as the source of user access
+        authentication. The Keystone to Keystone Federation (K2K) function extends this concept for
+        accessing resources in multiple, separate HPE Helion OpenStack clouds. Each cloud can be
+        configured to trust the authentication credentials of other clouds to provide the ability
+        for a user to authenticate with their home cloud and access authorized resources in another
+        cloud without having to re-authenticate with the remote cloud. This function is sometimes
+        referred to as "single sign on" or SSO.</p>
+      <p>The HPE Helion OpenStack cloud that will provide initial user authentication is called the
+        Identity Provider (IdP). The Identity Provider cloud can support domain-based authentication
+        against external authentication sources including LDAP directories such as Microsoft Active
+        Directory. The Identity Provider creates the user attributes known as Assertions that are
+        used to automatically authenticate a user with other HPE Helion OpenStack clouds.</p>
+      <p>An HPE Helion OpenStack cloud providing resources is called a Service Provider (SP). A
+        Service Provider cloud accepts user authentication assertions from the Identity Provider and
+        provides access to project resources based on the mapping file settings developed for each
+        Service Provider cloud. </p>
+      <p>
+        <ul id="ul_fym_xng_4v">
+          <li>The mapping file consists a set of rules that define user group membership. </li>
+          <li>Each Service Provider cloud has a unique set of projects, groups, and group role
+            assignments that are created and managed locally. </li>
+          <li>The mapping file enables the ability to auto-assign incoming users to a specific
+            group. Project membership and access are defined by group membership. </li>
+          <li>Project quotas are also defined locally by each Service Provider cloud.</li>
+        </ul>
+      </p>
+      <p>Keystone to Keystone Federation is supported and enabled in  <keyword
+          keyref="kw-hos-phrase-30"/> via configuration parameters in specific Ansible files.
+        Instructions are provided are provided to define and enable the required configurations.</p>
       <p>Support for Keystone to Keystone federation happens on the API level, and you must
         implement it using your own client code by calling the supported APIs. Python-keystoneclient
         has supported APIs to access the K2K APIs.</p>
@@ -995,6 +1013,13 @@ group_domain_name=domain2
           issued federated token. For example, if an already issued federated token was mapped to
           goup1 that has scope on project1, and mapping is changed to group2 that has scope on
           project2, the prevously issued federated token still has scope on project1. </li>
+      
+      <li>Access to Service Provider resources is provided only via the python-keystone CLI client or the Keystone API.  No Horizon web interface support is currently available.
+      </li><li>Domains, projects, groups, roles, and quotas are created per Service Provider cloud.  Support for federated projects, groups, roles, and quotas is currently not available.
+      
+      </li>
+      
+      
         <li>Scoping the federated user to a domain is not supported by default in the playbook.
           Please follow these steps to support it. <ol>
             <li>On the IdP side, set <codeph>hostname=myidp.com</codeph> and
