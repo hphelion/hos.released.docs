@@ -22,16 +22,14 @@
       <p>Support for Keystone to Keystone federation happens on the API level, and you must
         implement it using your own client code by calling the supported APIs. Python-keystoneclient
         has supported APIs to access the K2K APIs.</p>
-      <p>The file k2kclient.py, included below, is an example, and the diagram  the end of this page
-        shows how the flows a client will need to access. Expand the headline for k2kclient.py to
-        see the code.</p>
+      <p>The file k2kclient.py, included below, is an example, and the diagram the end of this page
+        shows how the flows a client will need to access. Expand the section below to view
+        k2kclient.py.</p>
       
       
-    </section>
-    
-    <section id="k2kclient"><title outputclass="headerH">k2kclient.py</title>
-      <sectiondiv outputclass="insideSection">
-      <codeblock outputclass="nomaxheight prettyprint">import json
+      <p outputclass="expandcode"><b>Open | Close </b>k2kclient.py</p>
+      <p outputclass="hiddencode">
+        <codeblock outputclass="nomaxheight prettyprint">import json
 import os
 import requests
 
@@ -139,7 +137,7 @@ if __name__ == "__main__":
     client.get_saml2_ecp_assertion()
     client.exchange_assertion()
     print('Unscoped token_id: %s' % client.fed_token_id)
-    print('Unscoped token body:\n%s' % client.fed_token)</codeblock></sectiondiv>
+    print('Unscoped token body:\n%s' % client.fed_token)</codeblock></p>
     </section>
     <section>
       <title><b>Set up a service provider (SP)</b></title>
@@ -551,6 +549,37 @@ group_domain_name=domain1
 'group1' scopes to 'project1'</codeblock>
         </li>
         <li>Mapping used: <codeblock>testcase1_1.json</codeblock>
+          <p outputclass="expandcode"><b>Open | Close </b>testcase1_1.json</p>
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight">[
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group1",
+           "domain":{
+             "name": "domain1"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   }
+]</codeblock></p>
         </li>
         <li>Expected result: The federated user will scope to 'project1' </li>
       </ol>
@@ -570,6 +599,71 @@ group_domain_name=domain2
 'group2' scopes to 'project2'</codeblock>
         </li>
         <li>Mapping used: <codeblock>testcase1_2.json</codeblock>
+          <p outputclass="expandcode"><b>Open | Close </b>testcase1_2.json</p>
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight">[
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group1",
+           "domain":{
+             "name": "domain1"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   }
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group2",
+           "domain":{
+             "name": "domain2"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "openstack_user_domain",
+      "any_one_of": [
+          "Default"
+      ]
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   }   
+]</codeblock>
+          </p>
         </li>
         <li>Expected result: The federated user will scope to both 'project1' and 'project2' </li>
       </ol>
@@ -587,6 +681,76 @@ group_domain_name=domain4
 'group4' scopes to 'project4'</codeblock>
         </li>
         <li>Mapping used: <codeblock>testcase1_3.json</codeblock>
+          <p outputclass="expandcode"><b>Open | Close </b>testcase1_3.json</p>
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight">[
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group4",
+           "domain":{
+             "name": "domain4"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "openstack_project",
+      "any_one_of": [
+          "test1"
+      ]
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   },
+  {
+    "local": [
+      {
+        "user": {
+          "name": "{0}"
+        }
+      },
+      {
+        "group": {
+           "name": "group5",
+           "domain":{
+             "name": "domain5"
+           }
+        }
+      }
+    ],
+    "remote":[{
+      "type": "openstack_user"
+    },
+    {
+      "type": "openstack_roles",
+      "not_any_of": [
+          "_member_"
+      ]
+    },
+    {
+      "type": "Shib-Identity-Provider",
+      "any_one_of":[
+         "https://myidp.com:5000/v3/OS-FEDERATION/saml2/idp"
+      ]
+     }
+    ]
+   }
+]</codeblock></p>
         </li>
         <li>Expected result: The federated user will scope to 'project4' </li>
       </ol>
