@@ -487,6 +487,36 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/h
           store shall be ignored and vice versa. </li>
         <li>List limit of identity data records can only apply for all-domain level but not
           per-domain level on Keystone side. </li>
+        <li>Each per-domain configuration file needs to be created and uploaded to the Keystone
+          MySQL database prior to using the Database store function and the Domain Admin API. </li>
+        <li>Each LDAP configuration is read-only. Configurations that perform write operations (i.e.
+          create users, groups, etc) are not currently supported. </li>
+        <li>LDAP is only supported for identity
+          operations (reading users and groups from LDAP). Keystone assignment operations from LDAP
+          records such as managing or assigning roles and projects, are not currently supported. </li>
+        <li>The
+          Helion OpenStack 'default' domain is pre-configured to store service account users and is
+          authenticated locally against Keystone. Domains configured for external LDAP integration are
+          non-default domains. 
+        </li>
+        <li>Each time a new domain is configured with LDAP integration the single CA file gets
+          overwritten. Ensure that you place certs for all the LDAP back-end domains in the cacert
+          parameter. Detailed CA file inclusion instructions are provided in the comments of the
+          sample 'keystone.domainldap.conf' file below. </li>
+        <li>When using the current OpenStackClient CLI you
+          must use the user ID rather than the user name when working with a non-default
+          domain.</li>
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
       </ul>
       <keyword keyref="kw-hos-phrase-30"/> API-based domain-specific configuration management <ul>
         <li>No GUI dashboard for domain-specific driver configuration management </li>
@@ -496,8 +526,8 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/h
           domain-specific configuration options. </li>
         <li>Status: Domain-specific driver configuration database store is a preview feature for
             <keyword keyref="kw-hos-phrase-30"/>. </li>
-      </ul>
-    </section>
+     
+        </ul></section>
 
 
 
