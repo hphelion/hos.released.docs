@@ -7,28 +7,42 @@
     <section>
       <title>What is WebSSO?</title>
       <p>WebSSO, or Web Single Sign On, is a method for web browsers to receive current
-        authentication information from an Identity Provider system without requiring a user to
-        re-login to the application displayed by the browser. Users initially access the Identity
-        Provider web page and provide their credentials. If the user successfully authenticates with
-        the Identity Provider, the authentication credentials are then stored in the user’s web
-        browser and automatically provided to all web-based applications, like OpenStack Horizon. If
-        a user has not yet authenticated with an Identity Provider or their credentials have timed
-        out, they are automatically re-directed to the Identity Provider to renew their
-        credentials.</p>
+        authentication information from an identity provider system without requiring a user to
+        re-login to the application displayed by the browser. Users initially access the identity
+        provider web page and provide their credentials. If the user successfully authenticates with
+        the identity provider, the authentication credentials are then stored in the user’s web
+        browser and automatically provided to all web-based applications, such as the Horizon
+        dashboard in <keyword keyref="kw-hos-phrase-30"/> . If a user has not yet authenticated with
+        an identity provider or their credentials have timed out, they are automatically redirected
+        to the identity provider to renew their credentials.</p>
     </section>
+    <section><title>Limitations</title>
+      <ul><li>The WebSSO function only supports Horizon web authentication.  It is not supported for direct API or CLI access.
+      </li><li>The HPE Helion OpenStack WebSSO function was tested with Microsoft Active Directory Federation
+          Services (ADFS). The instructions below are pertinent to ADFS and are intended to provide
+          a sample configuration for deploying WebSSO with an external identity provider. If you
+          have a different identity provider such as Ping Identity or IBM Tivoli please consult with
+          those vendors for specific instructions for those products. </li><li>Only WebSSO federation via the SAML method is supported in <keyword keyref="kw-hos-phrase-30"/>
+          . OpenID-based federation is not currently supported. </li></ul>
     
+    
+    
+    
+    
+    
+    </section>
     <section><title> Enabling WebSSO</title>
       <keyword keyref="kw-hos-phrase-30"/> now provides WebSSO support for the Horizon web
       interface. This support requires several configuration steps including editing the Horizon
       configuration file as well as ensuring that the correct Keystone authentication configuration
-      is also enabled to receive the authentication assertions provided by the Identity Provider.
+      is also enabled to receive the authentication assertions provided by the identity provider.
         <p>The following is the workflow that depicts how Horizon and Keystone supports WebSSO if no
         current authentication assertion is available. <ol id="ul_fcj_z4g_4v">
           <li>Horizon redirects the web browser to the Keystone endpoint</li>
-          <li>Keystone automatically redirects the web browser to the correct Identity Provider
+          <li>Keystone automatically redirects the web browser to the correct identity provider
             authentication web page based on the Keystone configuration file</li>
-          <li>The user authenticates with the Identity Provider</li>
-          <li>The Identity Provider automatically redirects the web browser back to the Keystone
+          <li>The user authenticates with the identity provider</li>
+          <li>The identity provider automatically redirects the web browser back to the Keystone
             endpoint</li>
           <li>Keystone generates the required Javascript code to POST a token back to Horizon</li>
           <li>Keystone automatically redirects the web browser back to Horizon and the user can then
@@ -171,7 +185,7 @@ keystone_sp_conf:
         </dlentry>
         <dlentry>
           <dt> shib_sso_application_entity_id</dt>
-          <dd>The Service Provider URI used as a entity Id. It can be any URI here for WebSSO as
+          <dd>The service provider URI used as a entity Id. It can be any URI here for WebSSO as
             long as it is unique to the SP.</dd>
         </dlentry>
         <dlentry>
@@ -473,7 +487,7 @@ keystone_sp_conf:
         authenticate via Websso.</p>
       <p>For more information, see the <xref
           href="https://technet.microsoft.com/en-us/library/gg317734" format="html" scope="external"
-          >Microsoft ADFS wiki</xref>, section "Step 2: Configure AD FS 2.0 as the Identity Provider
+          >Microsoft ADFS wiki</xref>, section "Step 2: Configure AD FS 2.0 as the identity provider
         and Shibboleth as the Relying Party".</p>
       <!--<p>For in-place reference, please see the below example instructions taken from the Microsoft
         wiki.</p>-->
