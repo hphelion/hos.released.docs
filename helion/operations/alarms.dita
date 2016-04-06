@@ -914,24 +914,26 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   run a reconfigure.</entry>
               </row>
               <row>
-                <entry>Elasticsearch Low Watermark alarm definition</entry>
+                <entry>Elasticsearch Low Watermark</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch Disk LOW Watermark. Backup
                   indices. If high watermark is reached, indices will be deleted. Adjust
                   curator_low_watermark_percent, curator_high_watermark_percent, and
                   elasticsearch_max_total_indices_size_in_bytes if needed.</entry>
-                <entry>Running out of disk space for /var/lib/elasticsearch.</entry>
+                <entry>Running out of disk space for
+                  <codeph>/var/lib/elasticsearch</codeph>.</entry>
                 <entry>Free up space by removing indices (backing them up first if desired).
                   Alternatively, adjust curator_low_watermark_percent,
                   curator_high_watermark_percent, and/or
                   elasticsearch_max_total_indices_size_in_bytes if needed.</entry>
               </row>
               <row>
-                <entry>Elasticsearch High Watermark alarm definition</entry>
+                <entry>Elasticsearch High Watermark</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch Disk HIGH Watermark. Attempting
                   to delete indices to free disk space. Adjust curator_low_watermark_percent,
                   curator_high_watermark_percent, and elasticsearch_max_total_indices_size_in_bytes
                   if needed.</entry>
-                <entry>Running out of disk space for /var/lib/elasticsearch.</entry>
+                <entry>Running out of disk space for
+                  <codeph>/var/lib/elasticsearch</codeph>.</entry>
                 <entry>Verify that disk space was freed up by the curator. If needed, free up
                   additional space by removing indices (backing them up first if desired).
                   Alternatively, adjust curator_low_watermark_percent,
@@ -948,7 +950,7 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   file.</entry>
               </row>
               <row>
-                <entry>Elasticsearch Open File Descriptors </entry>
+                <entry>Elasticsearch Open File Descriptors</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch Open File Descriptors is
                   greater than 90%.</entry>
                 <entry>Configured to allow too many file descriptors to be opened.</entry>
@@ -958,39 +960,85 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   config/logging-common/main.yml file.</entry>
               </row>
               <row>
-                <entry>Process Check</entry>
-                <entry><p>process = elasticsearch</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Elasticsearch process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart elasticsearch</codeph></entry>
+                <entry>Kafka Kronos Consumer Lag</entry>
+                <entry>component = kafka<p>Alarms when the Kronos consumer group is not keeping up
+                    with the incoming messages on the metric topic.</p></entry>
+                <entry>There is a slow down in the system or heavy load.</entry>
+                <entry>Look for high load in the various systems. This alert can fire for multiple
+                  topics or on multiple hosts. Which alarms are firing can help diagnose likely
+                  causes, ie if all on one host it could be the host. If one topic across multiple
+                  hosts it is likely the consumers of that topic, etc.</entry>
+              </row>
+              <row>
+                <entry>Service Log Directory Size</entry>
+                <entry>
+                  <p>Service log directory consuming more disk than its quota.</p>
+                </entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
+              </row>
+              <row>
+                <entry>Log Partition Low Watermark</entry>
+                <entry>The <codeph>/var/log</codeph> disk space usage has crossed the low watermark.
+                  If the high watermark is reached, <codeph>logrotate</codeph> will be run to free
+                  up disk space. Adjust <codeph>var_log_low_watermark_percent</codeph> if
+                  needed.</entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
+              </row>
+              <row>
+                <entry>Log Partition High Watermark</entry>
+                <entry>The <codeph>/var/log</codeph> volume is running low on disk space. Logrotate
+                  will be run now to free up space. Adjust
+                    <codeph>var_log_high_watermark_percent</codeph> if needed.</entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry><p>process = logstash</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Logstash process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart logstash</codeph>.</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry><p>component = beaver</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Beaver process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart beaver</codeph></entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry><p>component = apache</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Apache process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart apache2</codeph></entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry><p>component = kibana</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Kibana process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart kibana</codeph></entry>
+                <entry>Separate alarms for each of these logging services, specified by the
+                      <codeph>process_name</codeph> dimension:<ul>
+                      <li>elasticsearch</li>
+                      <li>logstash</li>
+                      <li>beaver</li>
+                      <li>apache2</li>
+                      <li>kibana</li>
+                    </ul></entry>
+                <entry>Process has crashed.</entry>
+                <entry>On the affected node, attempt to restart the process.<p>If the elasticsearch
+                    process has crashed, use:</p><codeblock>sudo systemctl restart elasticsearch</codeblock>
+                  <p>If the logstash process has crashed, use:</p>
+                  <codeblock>sudo systemctl restart logstash</codeblock>
+                  <p>The rest of the processes can be restarted using similar commands, listed
+                    here:</p>
+                  <codeblock>sudo systemctl restart beaver
+sudo systemctl restart apache2
+sudo systemctl restart kibana</codeblock>
+                </entry>
               </row>
               <!-- MONITORING -->
               <row>
