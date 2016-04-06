@@ -268,196 +268,217 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
         <ol>
           <li>Execute the following command to get the network information
               template:<codeblock><codeph># eon get-network-info-template --filename &lt;<b>NETWORK_CONF_FILENAME</b>></codeph></codeblock><p>For
-              example:<codeblock># eon get-network-info-template --filename net_conf.json</codeblock></p><p>Sample file of <codeph>net_conf.json</codeph> is shown
+              example:<codeblock># eon get-network-info-template --filename net_conf.json</codeblock></p><p>Sample
+              file of <codeph>net_conf.json</codeph> is shown
               below:<codeblock>{
-    # Don't modify this value
-    "hlm_version": "3.0",
+    "network": {
+        # Deployer Network details
+        # This network should be reachable from the Deployer node
+        "deployer_network": {
+            #Deployer Portgroup Name. Will create if not exist.
+            "deployer_pg_name": "CONF-PG",
 
-	# 1. Minimum of two switch entries are required of which one switch is OVSvApp trunk DVS With no Physical_nics
-	# 3. "physical_nics" can be a single or comma separated names. Physical NIC(s) must be unassigned to other uplinks.
-	# 4. Provide "mtu" value within the range 1500 to 9000 to enable Jumbo Frames.
+            #Single VLAN id for CONF/Deployer network
+            "deployer_vlan": "33",
 
-    "switches": [
-        {
-            "type": "dvSwitch",
-            "name": "MGMT-DVS",
-            "physical_nics": "vmnic1",
-            "mtu": "1500"
+            #VLAN type. Accepted values are "vlan", "trunk", "none"
+            "vlan_type": "trunk",
+
+            #DHCP setting for deployer network
+            "enable_deployer_dhcp": "false",
+
+            #CIDR and gateway for deployer network only when "enable_deployer_dhcp" is "no"
+            "deployer_cidr": "10.20.18.0/23",
+
+            # IP range from the CIDR. Will use whole pool from CIDR if ip_range is not provided.
+	    "ip_range": {
+	        "start_address": "10.20.18.50",
+		"end_address": "10.20.18.90"
+	    },
+
+            "deployer_gateway_ip": "10.20.18.1",
+
+            #Deployer Node's PXE IP Address
+            "deployer_node_ip": "10.20.16.2"
+
+            # NIC Teaming Configurations
+
+            # We support only single DVS for Mgmt and Deployer.
+            # The management_network NIC Teaming configs, will be applied to deployer_network as well.
         },
 
-        {
-		    # OVSvApp trunk without any "physical_nics"
-            "type": "dvSwitch",
-            "name": "TRUNK-DVS",
-			"physical_nics": "",
-            "mtu": "1500"
-        }
-    ],
+        #Management Network details
+        "management_network": {
+            #Mgmt DVS name. Will create if not exist.
+            "mgmt_dvs_name": "MGMT-DVS",
 
-	# 1. Minimum three portgroup entries are required.
+            #Physical NIC name(s) for Mgmt DVS. Physical NICs(s) must be unassigned to other uplinks.
+            "mgmt_nic_name": "vmnic3",
 
-	# 2. Portgroups that will carry data traffic should have the "cloud_network_type" attribute.
-	# 3. "cloud_network_type" should have either "vlan" or "vxlan" value.
+            #Mgmt Portgroup Name. Will create if not exist.
+            "mgmt_pg_name": "MGMT-PG",
 
-	# 4. "vlan_type" "trunk" supports non null values and ranges. Eg: 33 or 300-500 or 300-500, 600, 700-800
-	#    "vlan_type" "vlan" supports non null single vlan id and not range.
-	#    "vlan_type" "none" supports 0 or empty values
+            #VLAN id/range for MGMT network (and GUEST network if GUEST is carried over MGMT)
+            "mgmt_vlan": "0,1-4094",
 
-	# 5. "nic_teaming" explaination of the keys and their respective values:
-	    # "network_failover_detection"
-            # 1 -> Link Status. (Relies solely on the link status that the network adapter provides. This option detects failures,
+            #VLAN type. Accepted values are "vlan", "trunk", "none"
+            "vlan_type": "trunk",
+
+            #Interface order: Example eth1
+            "mgmt_interface_order": "eth1",
+
+            # Make sure you have exact same NIC teaming configurations for both deployer_network and management_network.
+
+            # NIC Teaming Configurations
+
+            #Provided physical NIC name(s) will be configured as active uplink(s) from mgmt_nic_name.
+            #If not provided then the first entry in mgmt_nic_name will be configured as active and
+            #the remaining as standby.
+            "active_nics": "",
+
+            #Load Balancing. Please choose the corresponding number
+
+            # 1 -&gt; Route based on the originating virtual port
+            #(Choose an uplink based on the virtual port where the traffic entered the virtual switch)
+
+            # 2 -&gt; Route based on IP hash
+            #(Choose an uplink based on a hash of the source and destination IP addresses of each packet.
+            #For non-IP packets, whatever is at those offsets is used to compute the hash)
+
+            # 3 -&gt; Route based on source MAC hash (Choose an uplink based on a hash of the source Ethernet.)
+
+            # 4 -&gt; Route based on physical NIC load (Choose an uplink based on the current loads of physical NICs)
+
+            # 5 -&gt; Use explicit failover order (Always use the highest order uplink, from the list of Active adapters,
+            #which passes failover detection criteria)
+
+            "load_balancing": "1",
+
+            #Network Failover Detection. Please choose the corresponding number
+
+            # 1 -&gt; Link Status. (Relies solely on the link status that the network adapter provides. This option detects failures,
             #such as cable pulls and physical switch power failures, but not configuration errors, such as a physical switch port
             #being blocked by spanning tree or that is misconfigured to the wrong VLAN or cable pulls on the other side of a physical switch.
 
-            # 2-> Beacon Probing. (Sends out and listens for beacon probes on all NICs in the team and uses this information, in addition to
+            # 2-&gt; Beacon Probing. (Sends out and listens for beacon probes on all NICs in the team and uses this information, in addition to
             #link status, to determine link failure. This detects many of the failures previously mentioned that are not detected by link status alone.
 
-		# "notify_switches"
-            #If you select "Yes", whenever a virtual NIC is connected to the Switch or whenever that virtual NIC?s traffic would be routed over
+            "network_failover_detection": "1",
+
+            #Notify Switches(yes/no).
+
+            #If you select Yes, whenever a virtual NIC is connected to the Switch or whenever that virtual NIC?s traffic would be routed over
             #a different physical NIC in the team because of a failover event, a notification is sent out over the network to update the lookup
             #tables on physical switches. In almost all cases, this process is desirable for the lowest latency of failover occurrences and
             #migrations with vMotion.
 
-		# "load_balancing"
-			# 1 -> Route based on the originating virtual port
-			#(Choose an uplink based on the virtual port where the traffic entered the virtual switch)
-
-			# 2 -> Route based on IP hash
-			#(Choose an uplink based on a hash of the source and destination IP addresses of each packet.
-			#For non-IP packets, whatever is at those offsets is used to compute the hash)
-
-			# 3 -> Route based on source MAC hash (Choose an uplink based on a hash of the source Ethernet.)
-
-			# 4 -> Route based on physical NIC load (Choose an uplink based on the current loads of physical NICs)
-
-			# 5 -> Use explicit failover order (Always use the highest order uplink, from the list of Active adapters,
-			#which passes failover detection criteria)
-
-		# "active_nics"
-            #Provided "physical_nics" from the respective switch entry will be configured as active uplinks.
-            #If not provided then the first entry in the "physical_nics"  will be configured as active and
-            #the remaining as standby uplinks.
-
-    "portGroups": [
-        {
-            "name": "ESX-CONF",
-            "vlan": "33",
-            "vlan_type": "trunk",
-            "switchName": "MGMT-DVS",
-            "nic_teaming": {
-                "network_failover_detection": "1",
-                "notify_switches": "yes",
-                "load_balancing": "1",
-                "active_nics": "vmnic1"
-            }
+            "notify_switches": "yes"
         },
 
-        {
-            "name": "MGMT",
-            "vlan": "",
-            "vlan_type": "none",
-            "switchName": "MGMT-DVS",
-            "nic_teaming": {
-                "network_failover_detection": "1",
-                "notify_switches": "yes",
-                "load_balancing": "1",
-                "active_nics": "vmnic1"
-            },
-            "cloud_network_type": "vxlan"
+        #Data network details. Uncomment if you want to use data_network.
+        #"data_network": {
+            #Data/Uplink DVS name. Will create if not exist.
+        #    "data_dvs_name": "GUEST-DVS",
+
+            #Physical NIC name(s) for Data/Uplink DVS. Physical NICs(s) must be unassigned to other uplinks.
+        #    "data_nic_name": "vmnic2, vmnic1",
+
+            #Data Portgroup Name. Will create if not exist.
+        #    "data_pg_name": "GUEST-PG",
+
+            #VLAN id for Data/GUEST network
+        #    "data_vlan": "50, 60-70, 1034-200",
+
+            #VLAN type. Accepted values are "vlan", "trunk", "none"
+        #    "vlan_type": "trunk",
+
+            #Interface order: Example eth3
+        #    "data_interface_order": "eth3",
+            # NIC Teaming Configurations
+
+            #Provided physical NIC name(s) will be configured as active uplink(s) from data_nic_name.
+            #If not provided then the first entry in data_nic_name will be configured as active and the remaining as standby.
+
+        #    "active_nics": "vmnic2",
+
+            #Load Balancing. Please choose the corresponding number
+
+            # 1 -&gt; Route based on the originating virtual port
+            #(Choose an uplink based on the virtual port where the traffic entered the virtual switch)
+
+            # 2 -&gt; Route based on IP hash
+            #(Choose an uplink based on a hash of the source and destination IP addresses of each packet.
+            #For non-IP packets, whatever is at those offsets is used to compute the hash)
+
+            # 3 -&gt; Route based on source MAC hash (Choose an uplink based on a hash of the source Ethernet.)
+
+            # 4 -&gt; Route based on physical NIC load (Choose an uplink based on the current loads of physical NICs)
+
+            # 5 -&gt; Use explicit failover order (Always use the highest order uplink, from the list of Active adapters,
+            #which passes failover detection criteria)
+
+        #    "load_balancing": "1",
+
+            #Network Failover Detection. Please choose the corresponding number
+
+            # 1 -&gt; Link Status. (Relies solely on the link status that the network adapter provides. This option detects failures,
+            #such as cable pulls and physical switch power failures, but not configuration errors, such as a physical switch port
+            #being blocked by spanning tree or that is misconfigured to the wrong VLAN or cable pulls on the other side of a physical switch.
+
+            # 2-&gt; Beacon Probing. (Sends out and listens for beacon probes on all NICs in the team and uses this information, in addition to
+            #link status, to determine link failure. This detects many of the failures previously mentioned that are not detected by link status alone.
+
+        #    "network_failover_detection": "1",
+
+            #Notify Switches(yes/no).
+
+            #If you select Yes, whenever a virtual NIC is connected to the Switch or whenever that virtual NIC?s traffic would be routed over
+            #a different physical NIC in the team because of a failover event, a notification is sent out over the network to update the lookup
+            #tables on physical switches. In almost all cases, this process is desirable for the lowest latency of failover occurrences and
+            #migrations with vMotion.
+
+        #    "notify_switches": "yes"
+        #},
+
+        # Trunk Network details
+        "trunk_network": {
+            #Trunk DVS name. Will create if not exist.
+            "trunk_dvs_name": "TRUNK-DVS",
+
+            #Trunk portgroup name. Will create if not exist.
+            "trunk_pg_name": "TRUNK-PG",
+
+            #Interface order: Example eth2
+            "trunk_interface_order": "eth2"
         },
+ 
+       #Tenant network type
+        "tenant_network_type": "vlan",
 
-        {
-		    # For OVSvApp trunk any change in the "vlan" and "vlan_type" will be ignored.
-			# The OVSvApp trunk network has no uplinks. That's why there is no "nic_teaming" section.
-			# Provided "nic_teaming" section will be ignored.
-            "name": "TRUNK",
-            "vlan": "1-4094",
-            "vlan_type": "trunk",
-            "switchName": "TRUNK-DVS"
-        }
-    ],
+        #VLAN Range for trunk network. It's applicable for both VXLAN &amp; VLAN deployment
+        #Please don't edit this field and value. Changing this value will have no effect !
+        #This field in future will be removed and is available for backward compatibility.
+        #The value must be 1-4094.
 
-	# 1. ESX Compute Proxy should have two "nics" connecting to ESX-CONF &amp; MGMT network.
-	# 2. "device" values need not be in order but should start with 0 and increase based on requirement.
-	# 3. Eg: I can configure the nics as eth3, eth1, eth0, eth2 But I cannot configure it as eth4, eth1, eth0, eth2
-	#    For best practice, arrange your nics allways in order.
-
-    "vm_config": [
-        {
-            "server_role": "ESX-COMPUTE-ROLE",
-            "template_name": "hlm-shell-vm",
-            "cpu": "4",
-            "memory_in_mb": "4096",
-            "nics": [
-                {
-                    "device": "eth0",
-                    "portGroup": "ESX-CONF",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                },
-                {
-                    "device": "eth1",
-                    "portGroup": "MGMT",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                }
-            ]
-        },
-
-        {
-            "server_role": "OVSVAPP-ROLE",
-            "template_name": "hlm-shell-vm",
-            "cpu": "4",
-            "memory_in_mb": "4096",
-            "nics": [
-                {
-                    "device": "eth0",
-                    "portGroup": "ESX-CONF",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                },
-                {
-                    "device": "eth1",
-                    "portGroup": "MGMT",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                },
-                {
-                    "device": "eth2",
-                    "portGroup": "TRUNK",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                }
-            ]
-        }
-    ],
-
-	# ESX CONF network configuration
-	# 1. "portGroup" value should point the ESX CONF portgroup name
-	# 2. It is mandatory to provide "cidr"
-	# 3. "start_ip" &amp; "end_ip" are optional. Either provide both values or don't provide at all.
-
-    "esx_conf_net": {
-        "portGroup": "ESX-CONF",
-        "cidr": "10.20.18.0/23",
-        "start_ip": "",
-        "end_ip": "",
-        "gateway": "10.20.18.1"
+        "vlan_range": "1-4094"
     },
 
-	# "ip_address" is the IP of deployer node
-	# Provide "user" name to configure a different user than inbuilt stack user.
-
-    "lifecycle_manager": {
-        "ip_address": "10.20.16.2",
-        "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EA stack@company.org",
-        "user": "stack"
+    "template": {
+        #Provide the template/appliance name that will be used for cloning Computeproxy and OVSvApp VMs
+        "template_name": "hlm-shell-vm"
     },
 
-    # Set to true if playbooks need to be run automatically on completing the installation of service VM’s(OVSvApp and Compute proxy) and updating of input model
-    # Set it to false if playbooks will be manually run.
-    "run_playbook": True
+    "vmconfig": {
+        #Number of CPUs for OVSvApp/Computeproxy VM
+        "cpu": "4",
 
+        #Amount of RAM for OVSvApp/Computeproxy VM(in Mega Byte)
+        "memory_in_mb": "4096",
+
+        #SSH public key content for OVSvAPP/Computeproxy password less login.
+        #Carefully copy the public key and paste it within the double quotes.
+        "ssh_key": "&lt;deployer-ssh-pub-key-contents&gt;"
+    }
 }</codeblock></p></li>
           <li>Modify the template (json file) as per your
               environment.<codeblock>vi &lt;<b>NETWORK_CONF_FILENAME</b>></codeblock><p>For
