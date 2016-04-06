@@ -185,17 +185,64 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
           </thead>
           <tbody>
             <row>
-              <entry morerows="8">object-storage</entry>
+              <entry morerows="18">object-storage</entry>
               <entry>swiftlm-scan monitor</entry>
-              <entry>Alarms if swiftlm-scan cannot execute a monitoring task.</entry>
-              <entry>The swiftlm-scan program is used to monitor/measure a number of metrics. If it
-                is unable to monitor or measure something, it raises this alarm.</entry>
-              <entry>Examine the <codeph>Details</codeph> field and look for a <codeph>msg</codeph>
-                field. The text may explain the error problem. To view/confirm this, you can also
-                log into the host specified by the <codeph>hostname</codeph> dimension, and then run
-                this command: <codeph>sudo swiftlm-scan | python -mjson.tool</codeph>. The
-                  <codeph>msg</codeph> field is contained in the <codeph>value_meta</codeph>
-                item.</entry>
+              <entry>Alarms if <codeph>swiftlm-scan</codeph> cannot execute a monitoring
+                task.</entry>
+              <entry>The <codeph>swiftlm-scan</codeph> program is used to monitor and measure a
+                number of metrics. If it is unable to monitor or measure something, it raises this
+                alarm.</entry>
+              <entry>Click on the alarm to examine the <codeph>Details</codeph> field and look for a
+                  <codeph>msg</codeph> field. The text may explain the error problem. To
+                view/confirm this, you can also log into the host specified by the
+                  <codeph>hostname</codeph> dimension, and then run this command: <codeblock>sudo swiftlm-scan | python -mjson.tool</codeblock>
+                <p>The <codeph>msg</codeph> field is contained in the <codeph>value_meta</codeph>
+                  item.</p></entry>
+            </row>
+            <row>
+              <entry>Swift account replicator last completed in 12 hours</entry>
+              <entry>Alarms if an account-replicator process did not complete a replication cycle
+                within the last 12 hours</entry>
+              <entry>This can indicate that the account-replication process is stuck.</entry>
+              <entry>
+                <p>Restart the process with
+                  <codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
+                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
+                  of this in the <codeph>/var/log/swift/swift.log</codeph> and
+                    <codeph>/var/log/kern.log</codeph>. The file system may need to be wiped and
+                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
+                  file system)</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift container replicator last completed in 12 hours</entry>
+              <entry>Alarms if a container-replicator process did not complete a replication cycle
+                within the last 12 hours</entry>
+              <entry>This can indicate that the container-replication process is stuck.</entry>
+              <entry>
+                <p>Restart the process with
+                  <codeblock>sudo systemctl restart swift-container-replicator</codeblock></p>
+                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
+                  of this in the <codeph>/var/log/swift/swift.log</codeph> and
+                    <codeph>/var/log/kern.log</codeph>. The files ystem may need to be wiped and
+                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
+                  file system)</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift object replicator last completed in 24 hours</entry>
+              <entry>Alarms if an object-replicator process did not complete a replication cycle
+                within the last 24 hours</entry>
+              <entry>This can indicate that the object-replication process is stuck.</entry>
+              <entry>
+                <p>Restart the process with
+                  <codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
+                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
+                  of this in the <codeph>/var/log/swift/swift.log</codeph> and
+                    <codeph>/var/log/kern.log</codeph>. The file system may need to be wiped and
+                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
+                  file system)</p>
+              </entry>
             </row>
             <row>
               <entry>Swift file ownership</entry>
@@ -219,8 +266,8 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
             </row>
             <row>
               <entry>Drive URE errors</entry>
-              <entry>Alarms if swift-drive-audit reports a unrecoverable read error on a drive used
-                by Swift.</entry>
+              <entry>Alarms if <codeph>swift-drive-audit</codeph> reports an unrecoverable read
+                error on a drive used by the Swift service.</entry>
               <entry>An unrecoverable read error has occurred when Swift attempted to access a
                 directory.</entry>
               <entry>
@@ -229,22 +276,29 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                   file and replicates a fresh copy from one of the other replicas.</p>
                 <p>UREs are a normal feature of large disk drives. It does not mean that the drive
                   has failed. However, if you get regular UREs on a specific drive, then this may
-                  indicate that the drive is indeed failed and should be replaced.</p>
+                  indicate that the drive has indeed failed and should be replaced.</p>
                 <p>You can use standard XFS repair actions to correct the UREs in the file
                   system.</p>
-                <p>If the XFS repair fails, you should wipe the GPT table as follows (where LETTER
-                  is replaced by the actual drive name):</p>
-                <codeblock>sudo dd if=/dev/zero of=/dev/sd&lt;LETTER&gt; bs=$((1024*1024)) count=1</codeblock>
-                <p>Then, on the deployer, run the <codeph>_swift-configure.yml</codeph> playbook.
-                  This will reformat the drive, remount it, and restart Swift services.</p>
+                <p>If the XFS repair fails, you should wipe the GPT table as follows (where
+                  &lt;drive_name> is replaced by the actual drive name):</p>
+                <codeblock>sudo dd if=/dev/zero of=/dev/sd&lt;drive_name&gt; bs=$((1024*1024)) count=1</codeblock>
+                <p>Then, follow the steps below which will reformat the drive, remount it, and
+                  restart Swift services on the affected node.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift reconfigure playbook, specifying the affected node:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;node name></codeblock></li>
+                </ol>
                 <p>It is safe to reformat drives containing Swift data because Swift maintains other
                   copies of the data (usually, Swift is configured to have three replicas of all
                   data).</p>
               </entry>
             </row>
             <row>
-              <entry>Swift services</entry>
-              <entry>Alarms if a Swift process is not running.</entry>
+              <entry>Swift service</entry>
+              <entry>Alarms if a Swift process, specified by the <codeph>component</codeph> field,
+                is not running. </entry>
               <entry>A daemon specified by the <codeph>component</codeph> dimension on the host
                 specified by the <codeph>hostname</codeph> dimension has stopped running.</entry>
               <entry>
@@ -273,6 +327,22 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               </entry>
             </row>
             <row>
+              <entry>Swift rings checksum</entry>
+              <entry>Alarms if the swift rings checksums do not match on all hosts</entry>
+              <entry>
+                <p>The Swift ring files must be the same on every node. The files are located in
+                    <codeph>/etc/swift/*.ring.gz</codeph></p>
+                <p>If you have just changed any of the rings and you are still deploying the change,
+                  it is normal for this alarm to trigger.</p>
+              </entry>
+              <entry>
+                <p>Use <codeph>sudo swift-recon --md5</codeph> to find which node has outdated
+                  rings.</p>
+                <p> Run the <codeph>swift-configure.yml</codeph> playbook. This should deploy the
+                  same set of rings to every node.</p>
+              </entry>
+            </row>
+            <row>
               <entry>Swift host socket connect</entry>
               <entry>Alarms if a socket cannot be opened to th eKeystone token validation
                 API.</entry>
@@ -284,7 +354,7 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 that haproxy is running. Check that the Keystone service is working.</entry>
             </row>
             <row>
-              <entry>Swift memcache connect</entry>
+              <entry>Swift memcached connect</entry>
               <entry>Alarms if a socket cannot be opened to the specified target memcached
                 server.</entry>
               <entry>The server may be down. The memcached deamon running the server may have
@@ -298,6 +368,79 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                   blocking port 11211.</p>
                 <p>If you see sporadic alarms on different servers, the system may be running out of
                   resources. Contact HPE Support for advice.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift individual disk usage exceeds 80%</entry>
+              <entry>Alarms when a disk drive used by Swift exceeds 80% utilization.</entry>
+              <entry>Generally all disk drives will fill roughly at the same rate. If an individual
+                disk drive becomes much fuller than other drives it can indicate a problem with the
+                replication process.</entry>
+              <entry>
+                <p>If many/most of your disk drives are 80% full you need to start adding more nodes
+                  to your system or delete existing objects.</p>
+                <p>Note: if you delete a project/account, the objects in that account are not
+                  removed until a week later (so this is not a good way of quickly freeing up
+                  space)</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift individual disk usage exceeds 90%</entry>
+              <entry>Alarms when a disk drive used by Swift exceeds 90% utilization.</entry>
+              <entry>Generally all disk drives will fill roughly at the same rate. If an individual
+                disk drive becomes much fuller than other drives it can indicate a problem with the
+                replication process.</entry>
+              <entry>
+                <p>If many/most of your disk drives are 80% full you must immediately stop all
+                  applications that PUT new objects into the system. At that point you can either
+                  delete objects or add more servers.</p>
+                <p>You should also set the fallocate_reserve value (in account/container/object
+                  configuration files to a value higher than the currently available space on disk
+                  drives. This will prevent more objects being created.</p>
+                <p>If you allow your filesystems to become full, you will be unable to delete
+                  objects or add more more nodes to the system. This is because the system needs
+                  some free space to handle the replication process when adding nodes. With no free
+                  space, the replication process cannot work.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift total disk usage exceeds 80%</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry>Swift total disk usage exceeds 90%</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry>Swift service per-minute availability</entry>
+              <entry>Alarms if the swift service reports unavailable for the previous
+                minutes</entry>
+              <entry>The <codeph>swiftlm-uptime-monitor</codeph> service runs on the first proxy
+                server. It monitors the Swift endpoint and reports latency data. If the endpoint
+                stops reporting, it generates this alarm.</entry>
+              <entry>
+                <p>There are many reasons why the endpoint may stop running. Check:</p>
+                <ul id="ul_ghg_4hc_4v">
+                  <li>Is <codeph>haproxy</codeph> running on the control nodes?</li>
+                  <li>Is <codeph>swift-proxy-server</codeph> running on the Swift proxy
+                    servers?</li>
+                </ul>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift rsync connect</entry>
+              <entry>Alarms if a socket cannot be opened to the specified rsync server</entry>
+              <entry>The rsync deamon on the specified node cannot be contacted. The most probably
+                cause is that the node is down. The rsync service might also have been stopped on
+                the node.</entry>
+              <entry>
+                <p>Reboot server if it is down.</p>
+                <p>Attempt to restart rsync:
+                  <codeblock>systemctl restart rsync.service</codeblock></p>
               </entry>
             </row>
             <row>
@@ -349,7 +492,7 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 associated logs.</entry>
             </row>
             <row>
-              <entry>Cinder backup running &lt;HOSTNAME&gt; check</entry>
+              <entry>Cinder backup running &lt;hostname&gt; check</entry>
               <entry>Cinder backup singleton check.</entry>
               <entry>
                 <p>Backup process is either:</p>
@@ -364,7 +507,7 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 correct node.</entry>
             </row>
             <row>
-              <entry>Cinder volume running &lt;HOSTNAME&gt; check</entry>
+              <entry>Cinder volume running &lt;hostname&gt; check</entry>
               <entry>Cinder volume singleton check.</entry>
               <entry>
                 <p>Volume process is either:</p>
@@ -400,7 +543,7 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               <entry>Investigate the VSA VM network status in the node.</entry>
             </row>
             <row>
-              <entry>ceph</entry>
+              <entry morerows="1">ceph</entry>
               <entry>Process Check</entry>
               <entry>process_name=&lt;cluster_name>-osd.&lt;id></entry>
               <entry>Process crashed.</entry>
