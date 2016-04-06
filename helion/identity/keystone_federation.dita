@@ -7,20 +7,21 @@
     <section>
       <title>What is Keystone to Keystone federation?</title>
       <p/>
-      <p>Identity federation enables the ability to configure Helion OpenStack to use existing
-        identity management systems such as an LDAP directory to be used as the source of user
-        access authentication. The Keystone to Keystone Federation (K2K) function extends this
-        concept for accessing resources in multiple, separate HPE Helion OpenStack clouds. Each
-        cloud can be configured to trust the authentication credentials of other clouds to provide
-        the ability for a user to authenticate with their home cloud and access authorized resources
-        in another cloud without having to re-authenticate with the remote cloud. This function is
-        sometimes referred to as "single sign on" or SSO.</p>
-      <p>The HPE Helion OpenStack cloud that will provide initial user authentication is called the
-        identity provider (IdP). The identity provider cloud can support domain-based authentication
-        against external authentication sources including LDAP directories such as Microsoft Active
-        Directory. The identity provider creates the user attributes, known as Assertions, which are
-        used to automatically authenticate a user with other HPE Helion OpenStack clouds.</p>
-      <p>An HPE Helion OpenStack cloud providing resources is called a service provider (SP). A
+      <p>Identity federation provides the ability to configure HPE Helion OpenStack to use existing
+        identity management systems such as an LDAP directory as the source of user access
+        authentication. The Keystone to Keystone Federation (K2K) function extends this concept for
+        accessing resources in multiple, separate HPE Helion OpenStack clouds. Each cloud can be
+        configured to trust the authentication credentials of other clouds to provide the ability
+        for a user to authenticate with their home cloud and access authorized resources in another
+        cloud without having to re-authenticate with the remote cloud. This function is sometimes
+        referred to as "single sign on" or SSO.</p>
+      <p>The HPE Helion OpenStack cloud that will provide the initial user authentication is called
+        the identity provider (IdP). The identity provider cloud can support domain-based
+        authentication against external authentication sources including LDAP-ased directories such
+        as Microsoft Active Directory. The identity provider creates the user attributes, known as
+        Assertions, which are used to automatically authenticate a user with other HPE Helion
+        OpenStack clouds.</p>
+      <p>An HPE Helion OpenStack cloud that provides resources is called a service provider (SP). A
         service provider cloud accepts user authentication assertions from the identity provider and
         provides access to project resources based on the mapping file settings developed for each
         service provider cloud. </p>
@@ -34,15 +35,14 @@
           <li>Project quotas are also defined locally by each service provider cloud.</li>
         </ul>
       </p>
-      <p>Keystone to Keystone Federation is supported and enabled in  <keyword
+      <p>Keystone to Keystone Federation is supported and enabled in <keyword
           keyref="kw-hos-phrase-30"/> via configuration parameters in specific Ansible files.
-        Instructions are provided are provided to define and enable the required configurations.</p>
+        Instructions are provided to define and enable the required configurations.</p>
       <p>Support for Keystone to Keystone federation happens on the API level, and you must
         implement it using your own client code by calling the supported APIs. Python-keystoneclient
         has supported APIs to access the K2K APIs.</p>
       <p>The file k2kclient.py, included below, is an example, and the diagram the end of this page
-        shows how the flows a client will need to access. Expand the section below to view
-        k2kclient.py.</p>
+        shows how the flow of client requests. Expand the section below to view k2kclient.py.</p>
       
       
       <p id="k2kclient" outputclass="expandcode"><b>Open | Close </b>k2kclient.py</p>
@@ -339,12 +339,12 @@ keystone_sp_conf:
           </table>
         </li>
         <li>Create a metadata file that is referenced from <codeph>k2k.yml</codeph>; for example,
-            <codeph>/tmp/idp_metadata.xml</codeph>.  The content of the metadata file is from the
-          IdP and can be found in <codeph> /etc/keystone/idp_metadata.xml</codeph>.<ol
+            <codeph>/tmp/idp_metadata.xml</codeph>. The content of the metadata file comes from the
+          identity provider and can be found in <codeph> /etc/keystone/idp_metadata.xml</codeph>.<ol
             id="ol_myr_zgb_mv">
             <li>Create a mapping file that is referenced in k2k.yml, shown above. For example
                 <codeph>/tmp/k2k_sp_mapping.json</codeph>. You can see the reference in bold in the
-              k2k.yml example.  The following is an example of the mapping file. <codeblock>[
+              k2k.yml example above. The following is an example of the mapping file. <codeblock>[
   {
     "local": [
       {
@@ -373,21 +373,22 @@ keystone_sp_conf:
     ]
    }
 ]           </codeblock>
-              <p>More details of how the K2K mapping works can be found here - <xref
+              <p>More information on how the K2K mapping works can be found here: <xref
                   href="https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst"
                   format="html" scope="external"
                   >https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst</xref></p></li>
           </ol></li>
-        <li>Go to <codeph>/home/stack/scratch/ansible/next/hos/ansible</codeph> and run the
-          following to enable the service provider:
+        <li>Next, go to <codeph>/home/stack/scratch/ansible/next/hos/ansible</codeph> and run the
+          following playbook to enable the service provider:
           <codeblock>ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/tmp/k2k.yml</codeblock></li>
       </ol>
-      <p><b><b>Set up an identity provider (IdP)</b></b></p>
+      <p><b><b>Setting up an identity provider</b></b></p>
       <p>To set up Keystone as an identity provider, follow these steps:</p>
       <ol>
         <li>Create a config file <codeph>k2k.yml</codeph> with the following parameters and place it
-          in any directory on your lifecycle manager, for example <codeph>/tmp</codeph>.
-          <codeblock outputclass="width66">keystone_k2k_idp_conf:
+          in any directory on your lifecycle manager, for example <codeph>/tmp</codeph>.  Note that
+          the certificate and key here are excerpted for
+          space.<codeblock outputclass="width66">keystone_k2k_idp_conf:
     service_provider: 
           -
             id: my_sp_id
@@ -488,8 +489,8 @@ keystone_sp_conf:
             <li>Create a private key of size
               2048<codeblock>openssl genrsa -out myidp.key 2048</codeblock>
             </li>
-            <li>Generate a certificate request named myidp.csr. When prompted, choose CommonName the
-              server's hostname.
+            <li>Generate a certificate request named myidp.csr. When prompted, choose CommonName for
+              the server's hostname.
               <codeblock>openssl req -new -key myidp.key -out myidp.csr</codeblock>
             </li>
             <li>Generate a self-signed certificate named myidp.cer:
@@ -505,7 +506,7 @@ keystone_sp_conf:
           href="#k2kfed/k2kclient" format="dita">k2kclient.py</xref></codeph>, can be used as an
       example for the end-to-end flows. To run <codeph>k2kclient.py</codeph>, follow the
       instructions below. <ol>
-        <li>There are few parameters must be changed in the beginning of
+        <li>There are few parameters that must be changed in the beginning of
             <codeph>k2kclient.py</codeph>. For example, enter your specific URL, project name, user
           name, etc., as shown
           here:<codeblock># IdP auth URL
@@ -536,8 +537,8 @@ curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endp
           querying his local cloud. </li>
         <li>For a given remote cloud, the end user must discover which resources are available to
           him to querying the remote cloud for the projects he can scope to. </li>
-        <li>In order to talk to the remote cloud, the end user must first trade, with his local
-          cloud, his local scoped token for SAML2 assertion for the remote cloud. </li>
+        <li>In order to talk to the remote cloud, the end user must first exchange, with his local
+          cloud, his local scoped token for a SAML2 assertion to present to the remote cloud. </li>
         <li>The user then presents the SAML2 assertion to the remote cloud. The remote cloud applies
           its mapping for the incoming SAML2 assertion to map the user to a local ephemeral persona
           (i.e. groups) and issues an unscoped token. </li>
@@ -895,9 +896,9 @@ group_domain_name=domain4
 ]
        </codeblock></p>
         </li>
-        <li>Expected result: The federated user will scope to 'project1' Later, we like to scope
-          federated users who has the Default domain in the identity provider to 'project2' in
-          addition to 'project1' </li>
+        <li>Expected result: The federated user will scope to 'project1' Later, we would like to
+          scope federated users who have the Default domain in the identity provider to 'project2'
+          in addition to 'project1' </li>
         <li>On the identity provider side:
           <codeblock>hostname=myidp.com, username=user1, user_domain_name=Default</codeblock>
         </li>
@@ -1006,8 +1007,8 @@ group_domain_name=domain2
       </ol>
     </section>
     <section><title>Known issues and limitations</title> Keep the following points in mind: <ul>
-        <li>When a user is disabled in the IdP, the issued federated token from the service provider
-          still remains valid until the token's expiration.</li>
+        <li>When a user is disabled in the identity provider, the issued federated token from the
+          service provider still remains valid until the token's expiration.</li>
         <li>An already issued federated token will retain its scope until its expiration. Any
           changes in the mapping on the service provider will not impact the scope of an already
           issued federated token. For example, if an already issued federated token was mapped to
@@ -1030,11 +1031,11 @@ group_domain_name=domain2
               any existing role to 'group1' on 'domain1.' Use CLI/Curl to remove 'project1' scope
               from 'group1' </li>
             <li>Result: The federated user will scope to 'domain1.' </li>
-          </ol> Note that similar tests have also been run for Two IdPs with one SP and One IdP with
-          two SPs.</li>
-        <li>K2K and WebSSO cannot be configured by putting both sets of config attributes in the
-          same config file; they will overwrite each other. So they will need to be configured
-          individually. </li>
+          </ol> Note that similar tests have also been run for two identity providers/one service
+          provider, and for one identity provider/two service providers.</li>
+        <li>Keystone to Keystone federation and WebSSO cannot be configured by putting both sets of
+          configuration  attributes in the same config file; they will overwrite each other. So they
+          will need to be configured individually. </li>
       </ul></section>
    
   </body>
