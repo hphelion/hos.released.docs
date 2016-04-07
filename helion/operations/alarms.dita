@@ -1080,7 +1080,7 @@ sudo systemctl restart kibana</codeblock>
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node. Review the associated logs.</entry>
               </row>
-             
+
             </tbody>
           </tgroup>
         </table></p>
@@ -1330,16 +1330,27 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
             <row>
               <entry morerows="1">vertica</entry>
               <entry>Process Check</entry>
-              <entry>The vertica process is not running.</entry>
+              <entry>The <codeph>vertica</codeph> process is not running.</entry>
               <entry>Process crashed.</entry>
-              <entry>Restart the process.</entry>
+              <entry>Restart the <codeph>vertica</codeph> process using these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Monasca start playbook with the vertica tag, like this:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags vertica</codeblock></li>
+                  <li>Check that it is up on all nodes in the cluster with this
+                    playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags vertica</codeblock></li>
+                </ol></entry>
             </row>
             <row>
               <entry>Vertica Status</entry>
-              <entry>Alarms if a Vertica node cannot connect to its database.</entry>
+              <entry>Alarms if a vertica node cannot connect to its database.<p>If both this alarm
+                  and the Process Check alarm for the <codeph>vertica</codeph> process go off at the
+                  same time, do the mitigation steps listed for the Process Check alarm
+                first.</p></entry>
               <entry>Process crashed.</entry>
-              <entry>Verify that the database node is down and then recover it if so by using these
-                steps: <ol>
+              <entry>Verify that the database node is down and, if it is, then recover it by using
+                these steps: <ol>
                   <li>Log in to the lifecycle manager.</li>
                   <li>Run the Monasca status playbook:
                     <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -1347,7 +1358,8 @@ ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags vertica</codebloc
                   <li>Run this playbook to do a recovery on Vertica:
                     <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery</codeblock></li>
-                </ol></entry>
+                </ol>
+              </entry>
             </row>
             <row>
               <entry morerows="1">kafka</entry>
