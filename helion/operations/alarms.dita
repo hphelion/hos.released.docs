@@ -83,8 +83,7 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeb
               <entry>image-service</entry>
               <entry>HTTP Status</entry>
               <entry>Separate alarms for each of these Glance services, specified by the
-                  <codeph>component</codeph> dimension:
-                <ul>
+                  <codeph>component</codeph> dimension: <ul>
                   <li>glance-api</li>
                   <li>glance-registry</li>
                 </ul></entry>
@@ -1021,13 +1020,13 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
               <row>
                 <entry>Process Check</entry>
                 <entry>Separate alarms for each of these logging services, specified by the
-                      <codeph>process_name</codeph> dimension:<ul>
-                      <li>elasticsearch</li>
-                      <li>logstash</li>
-                      <li>beaver</li>
-                      <li>apache2</li>
-                      <li>kibana</li>
-                    </ul></entry>
+                    <codeph>process_name</codeph> dimension:<ul>
+                    <li>elasticsearch</li>
+                    <li>logstash</li>
+                    <li>beaver</li>
+                    <li>apache2</li>
+                    <li>kibana</li>
+                  </ul></entry>
                 <entry>Process has crashed.</entry>
                 <entry>On the affected node, attempt to restart the process.<p>If the elasticsearch
                     process has crashed, use:</p><codeblock>sudo systemctl restart elasticsearch</codeblock>
@@ -1281,6 +1280,28 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
               <entry>rabbitmq-server process not running.</entry>
               <entry>Process crashed.</entry>
               <entry>Restart the process on the affected node. Review the associated logs.</entry>
+            </row>
+            <row>
+              <entry morerows="1">vertica</entry>
+              <entry>Process Check</entry>
+              <entry>The vertica process is not running.</entry>
+              <entry>Process crashed.</entry>
+              <entry>Restart the process.</entry>
+            </row>
+            <row>
+              <entry>Vertica Status</entry>
+              <entry>Alarms if a Vertica node cannot connect to its database.</entry>
+              <entry>Process crashed.</entry>
+              <entry>Verify that the database node is down and then recover it if so by using these
+                steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Monasca status playbook:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags vertica</codeblock></li>
+                  <li>Run this playbook to do a recovery on Vertica:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery</codeblock></li>
+                </ol></entry>
             </row>
           </tbody>
         </tgroup>
