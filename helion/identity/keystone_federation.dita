@@ -1039,7 +1039,9 @@ group_domain_name=domain2
       </ol>
       Note that similar tests have also been run for two identity providers/one service provider, and for one identity provider/two service providers.
     </section>
-    <section><title>Known issues and limitations</title> Keep the following points in mind: <ul>
+    <section><title>Known issues and limitations</title> Keep the following points in mind: 
+      
+      <ul id="k2klimitations">
         <li>When a user is disabled in the identity provider, the issued federated token from the
           service provider still remains valid until the token's expiration.</li>
         <li>An already issued federated token will retain its scope until its expiration. Any
@@ -1051,10 +1053,14 @@ group_domain_name=domain2
       <li>Access to service provider resources is provided only via the python-keystone CLI client
           or the Keystone API. No Horizon web interface support is currently available. </li><li>Domains, projects, groups, roles, and quotas are created per service provider cloud. Support for
           federated projects, groups, roles, and quotas is currently not available. </li>
+        <li>Keystone to Keystone federation and WebSSO cannot be configured by putting both sets of
+          configuration attributes in the same config file; they will overwrite each other. So they
+          will need to be configured individually. </li>
       
       
         <li>Scoping the federated user to a domain is not supported by default in the playbook.
-          Please follow these steps to support it.
+          Please <xref href="#k2kfed/scopeToDomain" format="dita">follow these steps to support
+            it.</xref></li></ul>
           
           <ol id='scopeToDomain'>
             <li>On the IdP side, set <codeph>hostname=myidp.com</codeph> and
@@ -1100,11 +1106,8 @@ group_domain_name=domain2
               any existing role to 'group1' on 'domain1.' Use CLI/Curl to remove 'project1' scope
               from 'group1' </li>
             <li>Result: The federated user will scope to 'domain1.' </li>
-          </ol></li>
-        <li>Keystone to Keystone federation and WebSSO cannot be configured by putting both sets of
-          configuration  attributes in the same config file; they will overwrite each other. So they
-          will need to be configured individually. </li>
-      </ul></section>
+          
+      </ol></section>
    
   </body>
 </topic>
