@@ -55,7 +55,7 @@
         Identity Providers)</b><ul id="ul_u52_jpd_bt">
         <li>No Horizon web portal support currently exists for the creation and management of
           external authentication system configurations.</li>
-      <!--  <li>A new Domain Admin API has been included in the Kilo release of OpenStack but is
+        <!--  <li>A new Domain Admin API has been included in the Kilo release of OpenStack but is
           currently an "experimental" function and is not recommended for production use until a
           future OpenStack release.</li>-->
       </ul>
@@ -64,17 +64,42 @@
           federation configurations.</li>
         <li>All end users authentication is available only via the Keystone API and OpenStackClient
           CLI.</li>
+        <li>When a user is disabled in the identity provider, the issued federated token from the
+          service provider still remains valid until the token's expiration.</li>
+        <li>An already issued federated token will retain its scope until its expiration. Any
+          changes in the mapping on the service provider will not impact the scope of an already
+          issued federated token. For example, if an already issued federated token was mapped to
+          goup1 that has scope on project1, and mapping is changed to group2 that has scope on
+          project2, the prevously issued federated token still has scope on project1. </li>
+        <li>Access to service provider resources is provided only via the python-keystone CLI client
+          or the Keystone API. No Horizon web interface support is currently available. </li>
+        <li>Domains, projects, groups, roles, and quotas are created per service provider cloud.
+          Support for federated projects, groups, roles, and quotas is currently not available. </li>
+        <li>Scoping the federated user to a domain is not supported by default in the playbook.
+          Please <xref href="keystone_federation.dita#k2kfed/scopeToDomain">follow these steps to
+            support it</xref>. </li>
         <li>Additional information can be found at <xref
             href="http://docs.openstack.org/developer/identity/configure_federation.html"
             format="html" scope="external"
             >http://docs.openstack.org/developer/keystone/configure_federation.html</xref></li>
       </ul>
+      <b>WebSSO</b><ul>
+        <li>The WebSSO function only supports Horizon web authentication. It is not supported for
+          direct API or CLI access. </li>
+        <li>The HPE Helion OpenStack WebSSO function was tested with Microsoft Active Directory
+          Federation Services (ADFS). The instructions below are pertinent to ADFS and are intended
+          to provide a sample configuration for deploying WebSSO with an external identity provider.
+          If you have a different identity provider such as Ping Identity or IBM Tivoli please
+          consult with those vendors for specific instructions for those products. </li>
+        <li>Only WebSSO federation via the SAML method is supported in <keyword
+            keyref="kw-hos-phrase-30"/> . OpenID-based federation is not currently supported. </li>
+      </ul>
       <b>Multi-Factor Authentication (MFA)</b>
       <ul id="ul_az2_jpd_bt">
-        <li><keyword keyref="kw-hos"/> MFA support is a custom configuration requiring HPE Professional
-          Services support.</li>
-        <li>MFA drivers are not included with <keyword keyref="kw-hos"/> and need to be provided by a
-          specific MFA vendor.</li>
+        <li><keyword keyref="kw-hos"/> MFA support is a custom configuration requiring HPE
+          Professional Services support.</li>
+        <li>MFA drivers are not included with <keyword keyref="kw-hos"/> and need to be provided by
+          a specific MFA vendor.</li>
         <li>Additional information can be found at <xref
             href="http://docs.openstack.org/security-guide/content/identity-authentication-methods.html#identity-authentication-methods-external-authentication-methods"
             format="html" scope="external"
@@ -90,13 +115,15 @@
             >http://specs.openstack.org/openstack/keystone-specs/specs/juno/hierarchical_multitenancy.html</xref>.</li>
       </ul>
       <b>Missing quota information for Compute resources</b>
-      <p><note>An error message that will appear in the default Horizon page if you are running
-        a Swift-only deployment (no Compute service). In this configuration, you will not see any
-        quota information for Compute resources and will see the following error message: </note></p>
+      <p>
+        <note>An error message that will appear in the default Horizon page if you are running a
+          Swift-only deployment (no Compute service). In this configuration, you will not see any
+          quota information for Compute resources and will see the following error message: </note>
+      </p>
       <p><i>The Compute service is not installed or is not configured properly. No information is
           available for Compute resources.</i></p>
-      <p>This error message is expected as no Compute service is configured for this
-        deployment. Please ignore the error message.</p>
+      <p>This error message is expected as no Compute service is configured for this deployment.
+        Please ignore the error message.</p>
     </section>
   </body>
 </topic>
