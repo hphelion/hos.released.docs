@@ -39,7 +39,16 @@
             device:
                name: hed0
             network-groups:
-               - MGMT</codeblock>
+               - MGMT
+
+...
+       fcoe-interfaces:
+          - name: FCOE_DEVICES
+            devices:
+              - eth7
+              - eth8
+
+</codeblock>
     <p>
         <table frame="all" rowsep="1" colsep="1" id="tb_interface_model">
             <tgroup cols="2">
@@ -60,6 +69,15 @@
                         <entry>network-interfaces</entry>
                         <entry>A list of network interface definitions.</entry>
                     </row>
+                    
+                     <row>
+                        <entry>fcoe-interfaces (optional)</entry>
+                        <entry><p>A list of network interfaces that will be used for Fibre Channel over Ethernet (FCoE).   
+                            This is only needed for devices that present as a native FCoE device, not cards such as Emulex 
+                            which present FCoE as a FC device.</p>
+                            <note type="important">The devices must be “raw” device names, not names controlled via a nic-mapping.    </note>
+                        </entry>
+                    </row>                   
                 </tbody>
             </tgroup>
         </table>
@@ -120,6 +138,36 @@
             </tgroup>
         </table>
     </p>
+
+    <p>The fcoe-interfaces configuration object has the following attributes:</p>
+
+        <table frame="all" rowsep="1" colsep="1" id="network_interface">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1"/>
+                <colspec colname="c2" colnum="2"/>
+                <thead>
+                    <row>
+                        <entry>Key</entry>
+                        <entry>Value Description</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>name</entry>
+                        <entry>An Administrator-defined name for the interface for a group of devices </entry>
+                    </row>
+                    <row>
+                        <entry>devices</entry>
+                        <entry><p>A list of network devices that will be configured for FCOE</p>
+                        <p>Entries in this must be the name of a device specified by the nic-mapping (see 
+                            <xref keyref="configobj_nicmappings">NIC Mappings</xref>).</p>
+                        </entry>
+                    </row>                    
+                    
+                </tbody>
+            </tgroup>
+        </table>
+
     </body>
 </topic>
 
