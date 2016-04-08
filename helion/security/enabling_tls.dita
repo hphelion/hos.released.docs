@@ -35,21 +35,22 @@
       <title>Enabling TLS in the input model</title>
     </section>
     <section>Because TLS is enabled by default during installation of <keyword
-        keyref="kw-hos-phrase-30"/>, a test certificate is bundled with the release named
-        <codeph>my-public-cert</codeph>. Having this default cert allows you to bring up a cloud
-      without having to worry about certificates, and this is the recommended way to proceed. The
+        keyref="kw-hos-phrase-30"/>, a test certificate named <codeph>my-public-cert</codeph>  is
+      bundled with the release. Having this default cert allows you to bring up a cloud without
+      having to worry about certificates, and this is the recommended way to proceed. The
       certificate will not match the IP address of your environment's API endpoints, but you can
       ignore the warnings. <p>When moving into production, you will require a trusted certificate
-        and you must add your own certificate and redeploy following the instructions
-        below.</p><note type="attention">Be sure to install your own certificate for all production
-        clouds after installing and testing your cloud.</note>
+        and you must add your own certificate and redeploy following the instructions in <xref
+          href="generate_own_certs.dita#generateCerts"/>.</p><note type="attention">Be sure to
+        install your own certificate for all production clouds after installing and testing your
+        cloud.</note>
       <note>If you ever want to test or troubleshoot later, you will be able to revert to the sample
         certificate to get back to a stable state for testing.</note>
       <note>There are two alarms specific to certificates, 14-days to expiration and 1-day to
         expiration.</note>You can add your own certificate by following the instructions below. All
       changes must go into the following file: <codeph>data/network_groups.yml</codeph>
     </section>
-    <section>TLS for the internal and admin load-balancers:
+    <section>Below are the entries for TLS for the internal and admin load balancers:
       <codeblock>- provider: ip-cluster
         name: lb
         tls-components:
@@ -86,8 +87,8 @@
     <section> See <xref href="generate_own_certs.dita#generateCerts"/> for detailed certificate
       installation instructions.</section>
     
-    <section><title>TLS for Barbican on the Loadbalancer backend and service endpoint</title>
-      
+    <section><title>TLS for the key management service on the load balancer back end and service
+        endpoint</title> Here are the entries specific to the Barbican key management service
       <codeblock>- name: MANAGEMENT
         hostname-suffix: mgmt
         hostname: true
@@ -97,13 +98,12 @@
         - barbican-api
         component-endpoints:
         - default </codeblock>
-      
     </section>
     
     
-    <section><title>User-provided Certificates and Trust Chains</title> HOS generates its own
-      internal certificates but is designed to allow you to bring in your own certificates for the
-      VIPs. Here is the general process. <ol>
+    <section><title>User-provided certificates and trust chains</title>
+      <keyword keyref="kw-hos"/> generates its own internal certificates but is designed to allow
+      you to bring in your own certificates for the VIPs. Here is the general process. <ol>
         <li>You must have a server certificate and a CA certificate to go with it (unless the signer
           is a public CA and it's already bundled with most distributions). </li>
         <li>You must decide the names of the server certificates and configure the network_groups in
@@ -122,11 +122,12 @@
           certificate. </li>
         <li>Next, input it into the lifecycle manager: Server certificates can be dropped into
           config/tls/certs CA certificates can be dropped into config/tls/cacerts. The file
-          extension should be .crt for the CA certificate to be processed by HOS. Visit this page
-          for a working example: <xref href="generate_own_certs.dita#tls30"/></li>
+          extension should be .crt for the CA certificate to be processed by <keyword
+            keyref="kw-hos"/>. </li>
       </ol></section>
-    <section><title>Testing</title> Checking if an endpoint is behind TLS The following command
-      probes a keystone endpoint that's behind TLS
+    <section><title>Testing</title>You can easily determine if an endpoint is behind TLS. To do so,
+      run the following command, which probes a Keystone identity service endpoint that's behind
+      TLS:
       <codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.5:5000 | openssl x509 -fingerprint -noout 
         depth=0 CN = helion-vip
         verify error:num=20:unable to get local issuer certificate
@@ -139,39 +140,40 @@
         verify return:1
         DONE
         SHA1 Fingerprint=C6:46:1E:59:C6:11:BF:72:5E:DD:FC:FF:B0:66:A7:A2:CC:32:1C:B8 </codeblock>
-      The next command probes a mysql endpoint that is not behind TLS
-      <codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.5:3306 | openssl x509 -fingerprint -noout 
+      The next command probes a MySQL endpoint that is not behind TLS <codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.5:3306 | openssl x509 -fingerprint -noout 
         140448358213264:error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol:s23_clnt.c:795:
         unable to load certificate
         140454148159120:error:0906D06C:PEM routines:PEM_read_bio:no start line:pem_lib.c:703:Expecting: TRUSTED CERTIFICATE</codeblock>
-    </section>
-    <section><title>Checking if the trust chain is correctly deployed</title>
+      You can determine if the trust chain is correctly deployed by running the following
+        commands:
       <codeblock>stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5000 2>/dev/null | grep code 
         Verify return code: 21 (unable to verify the first certificate)
         stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5000 -CAfile /usr/local/share/ca-certificates/helion_frontend_cacert.crt 2>/dev/null | grep code 
         Verify return code: 0 (ok) </codeblock>The
       first command shows error 21 which is then fixed by providing the CA certificate file. This
       verifies that the CA certificate matches the server certificatee. </section>
-    <section><title>Turning TLS on or off</title>Using an example input-model would enable all
-      supported TLS services before deploy. But if you want to change this setting afterwards, you
-      can change the input model and reconfigure the system. The sequence would be: <ol>
-        <li>Change the input model </li>
+    <section><title>Turning TLS on or off</title>If you are using an example/default input-model,
+      all supported TLS services will be enabled before deployment of your cloud. If you want to
+      change this setting later, you can change the input model and reconfigure the system. The
+      process is to:<ul>        <li>Change the input model </li>
         <li>Commit the changes to source control </li>
         <li>Run ready-deployment playbook </li>
-        <li>Run hlm-reconfigure playbook </li>
-      </ol> The commands could be:
+        <li>Run hlm-reconfigure playbook </li></ul>
+      changes:
       <codeblock>cd ~/helion
-        git add -A
-        git commit -m "TLS change"
-        cd ~/helion/hos/ansible/
-        ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
-        
-        ansible-playbook -i hosts/localhost ready-deployment.yml
-        cd ~/scratch/ansible/next/hos/ansible
-        ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml </codeblock>Note:
-      If you run into some issues with hlm-reconfigure (this is possible since hlm-reconfigure is
-      quite new and some services may have their own reconfigure playbooks broken), and if the only
-      change you made was the TLS, then run the following after the failed hlm-reconfigure.
+git add -A
+git commit -m "TLS change"</codeblock>
+Change directories again and run the configuration processor and ready deployment plabooks:
+      <codeblock>cd ~/helion/hos/ansible/
+
+ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+      Change directories again and run the reconfigure playbook:
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+
+ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml </codeblock>Note:
+      If you run into some issues with hlm-reconfigure, and the only change you made was to TLS,
+      then run the following after the failed hlm-reconfigure.
       <codeblock>ansible-playbook -i hosts/verb_hosts _tls-endpoint-reconfigure.yml</codeblock>
     </section>
     
