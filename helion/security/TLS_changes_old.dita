@@ -12,10 +12,10 @@
     </li><li>Barbican-api can be secured by TLS from the loadbalancer to service endpoint.
     </li><li>Customers can add multiple trust chains (CA certificates)
     </li></ul>
-       
+      
       Current Status:
       <ul> <li>All API services are behind TLS
-     
+        
       </li><li>TLS can be turned off/on.
       </li></ul>
     </section>
@@ -132,7 +132,7 @@
     <section><title>Checking if the trust chain is correctly deployed</title>
       <codeblock>stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5000 2>/dev/null | grep code 
         Verify return code: 21 (unable to verify the first certificate)
-stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5000 -CAfile /usr/local/share/ca-certificates/helion_frontend_cacert.crt 2>/dev/null | grep code 
+        stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5000 -CAfile /usr/local/share/ca-certificates/helion_frontend_cacert.crt 2>/dev/null | grep code 
         Verify return code: 0 (ok) </codeblock>The
       first command shows error 21 which is then fixed by providing the CA certificate file. This
       verifies that the CA certificate matches the server certificatee. </section>
@@ -145,20 +145,20 @@ stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5
         <li>Run hlm-reconfigure playbook </li>
       </ol> The commands could be:
       <codeblock>cd ~/helion
-git add -A
-git commit -m "TLS change"
-cd ~/helion/hos/ansible/
-ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
+        git add -A
+        git commit -m "TLS change"
+        cd ~/helion/hos/ansible/
+        ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
         
-ansible-playbook -i hosts/localhost ready-deployment.yml
-cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml </codeblock>Note:
+        ansible-playbook -i hosts/localhost ready-deployment.yml
+        cd ~/scratch/ansible/next/hos/ansible
+        ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml </codeblock>Note:
       If you run into some issues with hlm-reconfigure (this is possible since hlm-reconfigure is
       quite new and some services may have their own reconfigure playbooks broken), and if the only
       change you made was the TLS, then run the following after the failed hlm-reconfigure.
       <codeblock>ansible-playbook -i hosts/verb_hosts _tls-endpoint-reconfigure.yml</codeblock>
     </section>
-   
+    
     
   </body>
 </topic>
