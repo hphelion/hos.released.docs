@@ -124,22 +124,29 @@
       <p><keyword keyref="kw-hos"/> uses a tool called <b>curator</b> that is developed by the
         Elasticsearch community to handle these situations. <keyword keyref="kw-hos"/> installs and
         uses a curator in conjunction with several configurable settings. This curator is called
-        <b>cron</b> and perfoms the following checks:</p>
+          <b>cron</b> and perfoms the following checks:</p>
       <ul>
-        <li><b>First Check.</b> The hourly cron job checks to see if the currently used Elasticsearch
-          partition size is over the value set in:
-          <codeblock>curator_low_watermark_percent</codeblock>
-          If it is higher than this value, the curator deletes old indices according to the value set in:
-            <codeblock>curator_num_of_indices_to_keep</codeblock></li>
-        <li><b>Second Check.</b> Another check is made to verify if the partition size is below the high
-          watermark percent. If it is still too high, curator will delete all indices except the current one that is over the size as set in:
-            <codeblock>curator_max_index_size_in_gb</codeblock></li>
-        <li><b>Third Check.</b> A third check verifies if the partition size is still too high. If it is, curator
-          will delete all indices except the current one.</li>
-        <li><b>Final Check.</b> A final check verifies if the partition size is still high. If it is, an error
-          message is written to the log file but the current index is NOT deleted.</li>
+        <li><b>First Check.</b> The hourly cron job checks to see if the currently used
+          Elasticsearch partition size is over the value set in:
+          <codeblock>curator_low_watermark_percent</codeblock> If it is higher than this value, the
+          curator deletes old indices according to the value set in:
+          <codeblock>curator_num_of_indices_to_keep</codeblock></li>
+        <li><b>Second Check.</b> Another check is made to verify if the partition size is below the
+          high watermark percent. If it is still too high, curator will delete all indices except
+          the current one that is over the size as set in:
+          <codeblock>curator_max_index_size_in_gb</codeblock></li>
+        <li><b>Third Check.</b> A third check verifies if the partition size is still too high. If
+          it is, curator will delete all indices except the current one.</li>
+        <li><b>Final Check.</b> A final check verifies if the partition size is still high. If it
+          is, an error message is written to the log file but the current index is NOT deleted.</li>
       </ul>
-      <p>In the case of an extreme network issue, log files can run out of disk space in under an hour. To avoid this <keyword keyref="kw-hos"/> uses a shell script called <codeph>logrotate_if_needed.sh</codeph>. The cron process runs this script every 5 minutes to see if the value in <codeph>/var/log</codeph> is at 95% or more of its default. If it is at or above this level, cron runs the <codeph>logrotate_if_needed.sh</codeph> script to rotate logs and to free up extra space. This script helps to minimize the chance of running out of disk space on <codeph>/var/log</codeph>.</p>
+      <p>In the case of an extreme network issue, log files can run out of disk space in under an
+        hour. To avoid this <keyword keyref="kw-hos"/> uses a shell script called
+          <codeph>logrotate_if_needed.sh</codeph>. The cron process runs this script every 5 minutes
+        to see if the value in <codeph>/var/log</codeph> is at 95% or more of its default. If it is
+        at or above this level, cron runs the <codeph>logrotate_if_needed.sh</codeph> script to
+        rotate logs and to free up extra space. This script helps to minimize the chance of running
+        out of disk space on <codeph>/var/log</codeph>.</p>
     </section>
     <section id="types">
       <title>Centralized Logging Data</title>
@@ -242,17 +249,18 @@
         </tgroup>
       </table>
     </section>
-    
+
     <section id="rotating_logs"><title>Log Rotation Overview</title>
-      <p>Helion Openstack uses the cron process which in turn calls <b>logrotate</b> to provide rotation, compression, and removal of log files. Each log file can be rotated hourly, daily, weekly, or monthly. If no rotation period is set then the log file will only be rotated when it grows too large.</p>
-      
+      <p>Helion Openstack uses the cron process which in turn calls <b>logrotate</b> to provide
+        rotation, compression, and removal of log files. Each log file can be rotated hourly, daily,
+        weekly, or monthly. If no rotation period is set then the log file will only be rotated when
+        it grows too large.</p>
       <p>Rotating a file means that the logrotate process creates a copy of the log file with a new
         extension, for example, the <b>.1</b> extension. Then logrotate empties the contents of the
         original file. Logrotate continues to create the number of copies specified in the
           <b>Rotation</b> variable. When logrotate reaches the last possible file extension, it will
         delete the last file on the next rotation. By the time the logrotate process needs to delete
-        a file, the results have been copied to Elasticsearch, the central logging database.</p> 
-      
+        a file, the results have been copied to Elasticsearch, the central logging database.</p>
       <p>As an example, the Backup and Restore (BURA) service may be configured to create log files
         by setting the <b>Rotated Log Files</b> variable to
         <codeblock>/var/log/freezer-agent/freezer-scheduler.log</codeblock>This configuration means
@@ -260,10 +268,9 @@
         should be a file called <codeph>freezer-scheduler.log</codeph>. As the log file grows, the
         cron process runs every hour to check the log file size against the settings in the
         configuration files. The example freezer-agent settings are described in the table below. </p>
-        
-         <p>
-      <table frame="all" rowsep="1" colsep="1" id="table_itd_tjh_ht">
-        <tgroup cols="7">
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="table_itd_tjh_ht">
+          <tgroup cols="7">
             <colspec colname="c1" colnum="1" colwidth="1.32*"/>
             <colspec colname="c2" colnum="2" colwidth="1*"/>
             <colspec colname="c3" colnum="3" colwidth="3.26*"/>
@@ -309,10 +316,9 @@
               </row>
             </tbody>
           </tgroup>
-      </table>
-    </p>
-        
-        <p>For the <codeph>freezer-scheduler.log</codeph> file specifically, the information in the
+        </table>
+      </p>
+      <p>For the <codeph>freezer-scheduler.log</codeph> file specifically, the information in the
         table tells the cron and logrotate processes that the log file is to be rotated daily, and
         it can have a maximum size of 32 MB. After a week of log rotation, you would see something
         similar to this list:
@@ -330,28 +336,24 @@
           <codeph>freezer-scheduler.log8</codeph>. When the cron process runs its checks, if the
           <codeph>freezer-scheduler.log</codeph> size is more than 32 MB, then logrotate rotates the
         file.</p>
-      
       <p>In this example, the following log files are rotated:
-      <codeblock>
+        <codeblock>
         /var/log/freezer-agent/freezer-scheduler.log
         /var/log/freezer-agent/freezer-agent-json.log
       </codeblock>
       </p>
-      
       <p>However, in this example, only the following file is centrally logged with Elasticsearch:
         <codeblock>
           /var/log/freezer-agent/freezer-agent-json.log
         </codeblock>
         Only files that are listed in the <b>Centrally Logged Files</b> variable are copied to
         Elasticsearch. </p>
-        
-        <p>All of the variables for logging are found in the following file:
-          <codeblock>
+      <p>All of the variables for logging are found in the following file:
+        <codeblock>
             .../logging-ansible/kronos-common/defaults/main.yml
           </codeblock>
-        </p>
-        
-        <p>Cron uses the following values to determine when to call the logrotate process: <ul>
+      </p>
+      <p>Cron uses the following values to determine when to call the logrotate process: <ul>
           <li>Low watermark:
             <codeblock>
           #The following low watermark will be used to trigger alarms if the /var/log parition size grows over it.
@@ -372,9 +374,8 @@
           </li>
         </ul>
       </p>
-      
     </section>
-    
+
     <section id="kibana">
       <title>Kibana Configuration</title>
       <p>You can use the Kibana dashboards to view log data. Kibana is a tool developed to create
@@ -388,8 +389,8 @@
     </section>
     <section id="interface">
       <title>Logging into Kibana</title>
-      <p>To log into Kibana to view data, you must either access Kibana through Operations
-        Console or using a direct link. Then make sure you have the correct login credentials.</p>
+      <p>To log into Kibana to view data, you must either access Kibana through Operations Console
+        or using a direct link. Then make sure you have the correct login credentials.</p>
       <p><b>To log into Kibana:</b></p>
       <ol>
         <li>Access Kibana using the Operations Console or through a direct link.</li>
@@ -398,39 +399,42 @@
       <p><b>To use Operations Console:</b></p>
       <ol>
         <li>Access <xref href="monitoring_service.dita#monitoring/working" type="section">Operations
-          Console</xref>.</li>
+            Console</xref>.</li>
         <li>From the menu, choose <b>Logging Dashboard</b>.</li>
       </ol>
-       
       <p><b>To use a direct link:</b></p>
-      <p>This section helps you verify the Horizon virtual IP (VIP) address for Kibana that you should use.</p>
+      <p>This section helps you verify the Horizon virtual IP (VIP) address for Kibana that you
+        should use.</p>
       <ol>
         <li>Navigate to and open in a text editor the following file:
-          <codeblock>network_groups.yml</codeblock> </li>
-          <li>Find the following entry:
-            <codeblock><codeph>external-name</codeph></codeblock></li>
-          <li>If your administrator set a hostname value in the <b>external-name</b> field during the configuration process for your cloud,
-            then Kibana will be accessed over port 5601 on that hostname.</li>
-            <li>If your administrator did not set a hostname value, then to determine which IP
-              address to use, from your lifecycle manager, run:
-            <codeblock>grep vip-HZN-WEB /etc/hosts</codeblock>
-            <p>The output of that command will show you the virtual IP address for Kibana that you should
-              use. Access to Kibana will be over port 5601 of that virtual IP address. Example:</p>
-            <codeblock>http://&lt;VIP&gt;:5601</codeblock>
+          <codeblock>network_groups.yml</codeblock>
+        </li>
+        <li>Find the following entry: <codeblock><codeph>external-name</codeph></codeblock></li>
+        <li>If your administrator set a hostname value in the <b>external-name</b> field during the
+          configuration process for your cloud, then Kibana will be accessed over port 5601 on that
+          hostname.</li>
+        <li>If your administrator did not set a hostname value, then to determine which IP address
+          to use, from your lifecycle manager, run: <codeblock>grep vip-HZN-WEB /etc/hosts</codeblock>
+          <p>The output of that command will show you the virtual IP address for Kibana that you
+            should use. Access to Kibana will be over port 5601 of that virtual IP address.
+            Example:</p>
+          <codeblock>http://&lt;VIP&gt;:5601</codeblock>
         </li>
       </ol>
       <p><b>Login Credentials</b></p>
-      <p>During the installation of Kibana, a password is automatically set and it is randomized. Therefore, unless an administrator has already changed it, you need to retreive the default password from a file on the control plane node.</p>
+      <p>During the installation of Kibana, a password is automatically set and it is randomized.
+        Therefore, unless an administrator has already changed it, you need to retreive the default
+        password from a file on the control plane node.</p>
       <p>The default settings for Kibana are:</p>
       <dl>
         <dlentry>
           <dt>username</dt>
           <dd>kibana</dd>
         </dlentry>
-      <dlentry>
-        <dt>password</dt>
-        <dd>(randomized)</dd>
-      </dlentry>
+        <dlentry>
+          <dt>password</dt>
+          <dd>(randomized)</dd>
+        </dlentry>
       </dl>
       <p><b>To find the randomized password:</b></p>
       <ol>
@@ -438,15 +442,14 @@
           <codeblock>~/scratch/ansible/next/hos/ansible/group_vars/</codeblock>
         </li>
         <li>To GREP for the <codeph>logging_kibana_password</codeph>, run:
-          <codeblock>grep logging_kibana_password &lt;name-of-control-plane&gt;</codeblock> </li>
+          <codeblock>grep logging_kibana_password &lt;name-of-control-plane&gt;</codeblock>
+        </li>
       </ol>
-      
-      <note type="note">For example, if you are using the Entry-scale KVM with VSA model and you kept the default naming scheme in the example files
-        then your command would look similar to this:
+      <note type="note">For example, if you are using the Entry-scale KVM with VSA model and you
+        kept the default naming scheme in the example files then your command would look similar to
+        this:
         <codeblock>grep logging_kibana_password entry-scale-kvm-vsa-control-plane-1</codeblock>
       </note>
-
-      
     </section>
     <section id="troubleshooting"><title>Using Centralized Logging to Troubleshoot Issues</title>
       <p>You can troubleshoot service-specific issues by reviewing the logs. After logging into
@@ -519,14 +522,14 @@
       <title>For More Information</title>
       <p>For information the centralized logging components, use the following links:</p>
       <ul>
-        <li><xref href="https://www.elastic.co/guide/index.html" scope="external" format="html"
-          >Logstash</xref></li>
+        <li><xref href="https://www.elastic.co/guide/en/logstash/current/index.html"
+            scope="external" format="html">Logstash</xref></li>
         <li><xref href="http://www.elasticsearch.org/guide" scope="external" format="html"
             >Elasticsearch</xref></li>
         <li><xref href="http://www.elasticsearch.org/blog/scripting-security" scope="external"
             format="html">Elasticsearch Scripting and Security</xref></li>
-        <li><xref href="https://media.readthedocs.org/pdf/beaver/latest/beaver.pdf" scope="external" format="html"
-          >Beaver</xref></li>
+        <li><xref href="https://media.readthedocs.org/pdf/beaver/latest/beaver.pdf" scope="external"
+            format="html">Beaver</xref></li>
         <li><xref href="http://www.rabbitmq.com/" scope="external" format="html"
           >RabbitMQ</xref></li>
         <li><xref href="http://www.elasticsearch.org/guide/en/kibana/current/index.html"
