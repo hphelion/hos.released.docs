@@ -2,7 +2,7 @@
 <!DOCTYPE topic
   PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
 <topic id="alarmdefinitions">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Resolving Service Alarms</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Suggested Service Alarm Resolutions</title>
   <shortdesc>This topic contains a list of service-specific alarms and the recommended
     troubleshooting steps.</shortdesc>
   <body>
@@ -10,8 +10,9 @@
     <p>When alarms are triggered it may be helpful for you to review the service logs. For details
       on how to use the logging user interface built into the Operations Console, see <xref
         href="centralized_logging.dita#centralized_logging/interface"/>.</p>
-    <section id="services"><title>Services</title>
-      <p>Alarms for the following services are described below:</p>
+    <section id="services"><title>Alarms by Service</title>
+      <p>We have organized these alarm by the dashboard card they are located under in the Ops
+        Console and by the service dimension specified in the alarm.</p>
     </section>
 
 
@@ -37,118 +38,56 @@
           </thead>
           <tbody>
             <row>
-              <entry morerows="8">compute</entry>
+              <entry morerows="2">compute</entry>
               <entry>Process Check</entry>
-              <entry>nova-api check</entry>
-              <entry>Process crashed.</entry>
+              <entry>Separate alarms for each of these Nova services, specified by the
+                  <codeph>component</codeph> dimension: <ul>
+                  <li>nova-api</li>
+                  <li>nova-cert</li>
+                  <li>nova-compute</li>
+                  <li>nova-consoleauth</li>
+                  <li>nova-conductor</li>
+                  <li>nova-scheduler</li>
+                  <li>nova-novncproxy</li>
+                </ul></entry>
+              <entry>Process specified by the <codeph>component</codeph> dimension has crashed on
+                the host specified by the <codeph>hostname</codeph> dimension.</entry>
               <entry>Restart the process on the affected node using these steps: <ol>
                   <li>Log in to the lifecycle manager.</li>
                   <li>Use the Nova start playbook against the affected node:
                     <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
                 </ol>
-                <p>Review the associated logs.</p></entry>
+                <p>Review the associated logs. The logs will be in the format of
+                    <codeph>&lt;service>.log</codeph>, such as <codeph>nova-compute.log</codeph> or
+                    <codeph>nova-scheduler.log</codeph>.</p></entry>
             </row>
             <row>
               <entry>HTTP Status</entry>
-              <entry>nova-api health check</entry>
+              <entry>This is a <codeph>nova-api</codeph> health check</entry>
               <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node. Review the nova-api log files. Try to
-                connect locally to the http port to see if the connection is accepted.</entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-cert check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol>
-                <p>Review the nova-cert.log files.</p></entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-compute check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol>
-                <p>Review the nova-compute.log files.</p></entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-conductor check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol> Review the nova-conductor.log files.</entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-consoleauth check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol> Review the nova-consoleauth log files.</entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-novncproxy check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Glance start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol> Review the nova-novncproxy log files.</entry>
-            </row>
-            <row>
-              <entry>Process Check</entry>
-              <entry>nova-scheduler check</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Nova start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
-                </ol> Review the nova-scheduler.log files.</entry>
+              <entry>Restart the <codeph>nova-api</codeph> process on the affected node. Review the
+                  <codeph>nova-api.log</codeph> files. Try to connect locally to the http port that
+                is found in the dimension field of the alarm to see if the connection is
+                accepted.</entry>
             </row>
             <row>
               <entry>Process Bound Check</entry>
-              <entry>process_name=nova-api. Check that the number of processes found is in a
-                predefined range</entry>
+              <entry><codeph>process_name=nova-api</codeph><p>This alarm checks that the number of
+                  processes found is in a predefined range</p></entry>
               <entry>Process crashed or too many processes running</entry>
-              <entry>Stop all the processes and restart the nova-api process. Review the system and
-                nova-api logs.</entry>
+              <entry>Stop all the processes and restart the nova-api process on the affected host.
+                Review the system and nova-api logs.</entry>
             </row>
             <row>
-              <entry morerows="1">image-service</entry>
+              <entry>image-service</entry>
               <entry>HTTP Status</entry>
-              <entry>component=glance-api</entry>
+              <entry>Separate alarms for each of these Glance services, specified by the
+                  <codeph>component</codeph> dimension: <ul>
+                  <li>glance-api</li>
+                  <li>glance-registry</li>
+                </ul></entry>
               <entry>API is unresponsive.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use the Glance start playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></codeblock></li>
-                </ol>
-                <p>Review the associated logs.</p></entry>
-            </row>
-            <row>
-              <entry>HTTP Status</entry>
-              <entry>component=glance-registry</entry>
-              <entry>Glance registry is unresponsive.</entry>
               <entry>Restart the process on the affected node using these steps: <ol>
                   <li>Log in to the lifecycle manager.</li>
                   <li>Use the Glance start playbook against the affected node:
@@ -185,42 +124,93 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
           </thead>
           <tbody>
             <row>
-              <entry morerows="8">object-storage</entry>
+              <entry morerows="18">object-storage</entry>
               <entry>swiftlm-scan monitor</entry>
-              <entry>Alarms if swiftlm-scan cannot execute a monitoring task.</entry>
-              <entry>The swiftlm-scan program is used to monitor/measure a number of metrics. If it
-                is unable to monitor or measure something, it raises this alarm.</entry>
-              <entry>Examine the <codeph>Details</codeph> field and look for a <codeph>msg</codeph>
-                field. The text may explain the error problem. To view/confirm this, you can also
-                log into the host specified by the <codeph>hostname</codeph> dimension, and then run
-                this command: <codeph>sudo swiftlm-scan | python -mjson.tool</codeph>. The
-                  <codeph>msg</codeph> field is contained in the <codeph>value_meta</codeph>
-                item.</entry>
+              <entry>Alarms if <codeph>swiftlm-scan</codeph> cannot execute a monitoring
+                task.</entry>
+              <entry>The <codeph>swiftlm-scan</codeph> program is used to monitor and measure a
+                number of metrics. If it is unable to monitor or measure something, it raises this
+                alarm.</entry>
+              <entry>Click on the alarm to examine the <codeph>Details</codeph> field and look for a
+                  <codeph>msg</codeph> field. The text may explain the error problem. To
+                view/confirm this, you can also log into the host specified by the
+                  <codeph>hostname</codeph> dimension, and then run this command: <codeblock>sudo swiftlm-scan | python -mjson.tool</codeblock>
+                <p>The <codeph>msg</codeph> field is contained in the <codeph>value_meta</codeph>
+                  item.</p></entry>
+            </row>
+            <row>
+              <entry>Swift account replicator last completed in 12 hours</entry>
+              <entry>Alarms if an <codeph>account-replicator</codeph> process did not complete a
+                replication cycle within the last 12 hours.</entry>
+              <entry>This can indicate that the <codeph>account-replication</codeph> process is
+                stuck.</entry>
+              <entry>
+                <p>Restart the process on the affected host with this
+                  command:<codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
+                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
+                  of this in the logs located in <codeph>/var/log/swift/swift.log</codeph> and
+                    <codeph>/var/log/kern.log</codeph>. The file system may need to be wiped and
+                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
+                  file system)</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift container replicator last completed in 12 hours</entry>
+              <entry>Alarms if a container-replicator process did not complete a replication cycle
+                within the last 12 hours</entry>
+              <entry>This can indicate that the container-replication process is stuck.</entry>
+              <entry>
+                <p>Restart the process with
+                  <codeblock>sudo systemctl restart swift-container-replicator</codeblock></p>
+                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
+                  of this in the <codeph>/var/log/swift/swift.log</codeph> and
+                    <codeph>/var/log/kern.log</codeph>. The files ystem may need to be wiped and
+                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
+                  file system)</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift object replicator last completed in 24 hours</entry>
+              <entry>Alarms if an object-replicator process did not complete a replication cycle
+                within the last 24 hours</entry>
+              <entry>This can indicate that the object-replication process is stuck.</entry>
+              <entry>
+                <p>Restart the process with
+                  <codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
+                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
+                  of this in the <codeph>/var/log/swift/swift.log</codeph> and
+                    <codeph>/var/log/kern.log</codeph>. The file system may need to be wiped and
+                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
+                  file system)</p>
+              </entry>
             </row>
             <row>
               <entry>Swift file ownership</entry>
-              <entry>Alarms if files/directories in /srv/node/ or /etc/swift are not owned by
-                Swift.</entry>
+              <entry>Alarms if files/directories in <codeph>/srv/node/</codeph> or
+                  <codeph>/etc/swift</codeph> are not owned by Swift.</entry>
               <entry>
-                <p>For files in /etc/swift, somebody may have manually edited or created a file.</p>
-                <p>For directories in /srv/node/*, it may happen that root partition was reimaged or
-                  reinstalled and the UID assigned to the Swift user changes. The directories and
-                  files are then not owned by the UID assigned to the Swift user.</p>
+                <p>For files in <codeph>/etc/swift</codeph>, somebody may have manually edited or
+                  created a file.</p>
+                <p>For directories in <codeph>/srv/node/*</codeph>, it may happen that the root
+                  partition was reimaged or reinstalled and the UID assigned to the Swift user
+                  changes. The directories and files are then not owned by the UID assigned to the
+                  Swift user.</p>
               </entry>
               <entry>
-                <p>For files in <codeph>/etc/swift</codeph>, use this command: <codeph>sudo chown
-                    swift.swift /etc/swift/, /etc/swift/*</codeph>.</p>
+                <p>For files in <codeph>/etc/swift</codeph>, use this command to change the file
+                  ownership:<codeblock>sudo chown swift.swift /etc/swift/, /etc/swift/*</codeblock></p>
                 <p>For directories and files in <codeph>/srv/node/*</codeph>, compare the swift UID
                   of this system and other systems and the UID of the owner of
                     <codeph>/srv/node/*</codeph>. If possible, make the UID of the Swift user match
                   the directories/files. Otherwise, change the ownership of all files and
-                  directories under the <codeph>/srv/node</codeph> path.</p>
+                  directories under the <codeph>/srv/node</codeph> path using a similar command as
+                  above.</p>
               </entry>
             </row>
             <row>
               <entry>Drive URE errors</entry>
-              <entry>Alarms if swift-drive-audit reports a unrecoverable read error on a drive used
-                by Swift.</entry>
+              <entry>Alarms if <codeph>swift-drive-audit</codeph> reports an unrecoverable read
+                error on a drive used by the Swift service.</entry>
               <entry>An unrecoverable read error has occurred when Swift attempted to access a
                 directory.</entry>
               <entry>
@@ -229,30 +219,43 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                   file and replicates a fresh copy from one of the other replicas.</p>
                 <p>UREs are a normal feature of large disk drives. It does not mean that the drive
                   has failed. However, if you get regular UREs on a specific drive, then this may
-                  indicate that the drive is indeed failed and should be replaced.</p>
+                  indicate that the drive has indeed failed and should be replaced.</p>
                 <p>You can use standard XFS repair actions to correct the UREs in the file
                   system.</p>
-                <p>If the XFS repair fails, you should wipe the GPT table as follows (where LETTER
-                  is replaced by the actual drive name):</p>
-                <codeblock>sudo dd if=/dev/zero of=/dev/sd&lt;LETTER&gt; bs=$((1024*1024)) count=1</codeblock>
-                <p>Then, on the deployer, run the <codeph>_swift-configure.yml</codeph> playbook.
-                  This will reformat the drive, remount it, and restart Swift services.</p>
+                <p>If the XFS repair fails, you should wipe the GPT table as follows (where
+                  &lt;drive_name> is replaced by the actual drive name):</p>
+                <codeblock>sudo dd if=/dev/zero of=/dev/sd&lt;drive_name&gt; bs=$((1024*1024)) count=1</codeblock>
+                <p>Then, follow the steps below which will reformat the drive, remount it, and
+                  restart Swift services on the affected node.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift reconfigure playbook, specifying the affected node:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts _swift-configure.yml --limit &#60;hostname></codeblock></li>
+                </ol>
                 <p>It is safe to reformat drives containing Swift data because Swift maintains other
                   copies of the data (usually, Swift is configured to have three replicas of all
                   data).</p>
               </entry>
             </row>
             <row>
-              <entry>Swift services</entry>
-              <entry>Alarms if a Swift process is not running.</entry>
+              <entry>Swift service</entry>
+              <entry>Alarms if a Swift process, specified by the <codeph>component</codeph> field,
+                is not running. </entry>
               <entry>A daemon specified by the <codeph>component</codeph> dimension on the host
                 specified by the <codeph>hostname</codeph> dimension has stopped running.</entry>
               <entry>
                 <p>Examine the <codeph>/var/log/swift/swift.log</codeph> file for possible error
                   messages related the Swift process. The process in question is listed in the alarm
                   dimensions in the <codeph>component</codeph> dimension.</p>
-                <p>Restart Swift processes by running the <codeph>swift-start.yml</codeph>
-                  playbook.</p>
+                <p>Restart Swift processes by running the <codeph>swift-start.yml</codeph> playbook,
+                  with these steps:</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift start playbook against the affected host:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &#60;hostname></codeblock></li>
+                </ol>
               </entry>
             </row>
             <row>
@@ -273,18 +276,41 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               </entry>
             </row>
             <row>
-              <entry>Swift host socket connect</entry>
-              <entry>Alarms if a socket cannot be opened to th eKeystone token validation
-                API.</entry>
-              <entry>The Keystone server may be down. Another possible cause is that the network
-                between the host reporting the problem and the Keystone server or that the haproxy
-                process is not forwarding requests to Keystone.</entry>
-              <entry>The <codeph>URL</codeph> dimension contains the name of the VIP. Use cURL or a
-                similar program to confirm that a connection can or cannot be made to the VIP. Check
-                that haproxy is running. Check that the Keystone service is working.</entry>
+              <entry>Swift rings checksum</entry>
+              <entry>Alarms if the swift rings checksums do not match on all hosts.</entry>
+              <entry>
+                <p>The Swift ring files must be the same on every node. The files are located in
+                    <codeph>/etc/swift/*.ring.gz</codeph></p>
+                <p>If you have just changed any of the rings and you are still deploying the change,
+                  it is normal for this alarm to trigger.</p>
+              </entry>
+              <entry>
+                <p>Use <codeph>sudo swift-recon --md5</codeph> to find which node has outdated
+                  rings.</p>
+                <p> Run the <codeph>swift-configure.yml</codeph> playbook, using the steps below.
+                  This should deploy the same set of rings to every node.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift start playbook against the affected host:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-configure.yml</codeblock></li>
+                </ol>
+              </entry>
             </row>
             <row>
-              <entry>Swift memcache connect</entry>
+              <entry>Swift host socket connect</entry>
+              <entry>Alarms if a socket cannot be opened to the Identity service (Keystone) token
+                validation API.</entry>
+              <entry>The Identity service (Keystone) server may be down. Another possible cause is
+                that the network between the host reporting the problem and the Keystone server or
+                the <codeph>haproxy</codeph> process is not forwarding requests to Keystone.</entry>
+              <entry>The <codeph>URL</codeph> dimension contains the name of the virtual IP address.
+                Use cURL or a similar program to confirm that a connection can or cannot be made to
+                the virtual IP address. Check that <codeph>haproxy</codeph> is running. Check that
+                the Keystone service is working.</entry>
+            </row>
+            <row>
+              <entry>Swift memcached connect</entry>
               <entry>Alarms if a socket cannot be opened to the specified target memcached
                 server.</entry>
               <entry>The server may be down. The memcached deamon running the server may have
@@ -292,8 +318,14 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               <entry>
                 <p>If the server is down, restart it.</p>
                 <p>If memcached has stopped, you can restart it by using the
-                    <codeph>memcached-start.yml</codeph> playbook. if this fails, rebooting the node
-                  will restart the process.</p>
+                    <codeph>memcached-start.yml</codeph> playbook, using the steps below. If this
+                  fails, rebooting the node will restart the process.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the memcached start playbook against the affected host:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts memcached-start.yml --limit &lt;hostname></codeblock></li>
+                </ol>
                 <p>If the server is running and memcached is running, there may be a network problem
                   blocking port 11211.</p>
                 <p>If you see sporadic alarms on different servers, the system may be running out of
@@ -301,12 +333,130 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               </entry>
             </row>
             <row>
+              <entry>Swift individual disk usage exceeds 80%</entry>
+              <entry>Alarms when a disk drive used by Swift exceeds 80% utilization.</entry>
+              <entry>Generally all disk drives will fill roughly at the same rate. If an individual
+                disk drive becomes filled faster than other drives it can indicate a problem with
+                the replication process.</entry>
+              <entry>
+                <p>If many/most of your disk drives are 80% full you need to add more nodes to your
+                  system or delete existing objects.</p>
+                <p>If one disk drive is noticeably (more than 30%) more utilized than the average of
+                  other disk drives, you should check that Swift processes are working on the server
+                  (use the steps below) and also look for alarms related to the host. Otherwise
+                  continue to monitor the situation.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift status:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-status.yml</codeblock></li>
+                </ol>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift individual disk usage exceeds 90%</entry>
+              <entry>Alarms when a disk drive used by Swift exceeds 90% utilization.</entry>
+              <entry>Generally all disk drives will fill roughly at the same rate. If an individual
+                disk drive becomes filled faster than other drives it can indicate a problem with
+                the replication process.</entry>
+              <entry>If one disk drive is noticeably (more than 30%) more utilized than the average
+                of other disk drives, you should check that Swift processes are working on the
+                server, using these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift status:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-status.yml</codeblock></li>
+                </ol>
+                <p>Also look for alarms related to the host. An individual disk drive filling can
+                  indicate a problem with the replication process.</p>
+                <p>Restart Swift on that host using the <codeph>--limit</codeph> argument to target
+                  the host:</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Stop the Swift service:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-stop.yml --limit &lt;hostname></codeblock></li>
+                  <li>Start the Swift service back up:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &lt;hostname></codeblock></li>
+                </ol>
+                <p>If the utilization does not return to similar values as other disk drives, you
+                  can reformat the disk drive. You should only do this if the average utilization of
+                  all disk drives is less than 80%. To format a disk drive contact HPE Support for
+                  instructions.</p></entry>
+            </row>
+            <row>
+              <entry>Swift total disk usage exceeds 80%</entry>
+              <entry>Alarms when the average disk utilization of Swift disk drives exceeds 80%
+                utilization.</entry>
+              <entry>The number and size of objects in your system is beginning to fill the
+                available disk space. Account and container storage is included in disk utilization.
+                However, this generally consumes 1-2% of space compared to objects, so object
+                storage is the dominate consumer of disk space.</entry>
+              <entry>
+                <p>You need to add more nodes to your system or delete existing objects to remain
+                  under 80% utilization.</p>
+                <p>Note: if you delete a project/account, the objects in that account are not
+                  removed until a week later (so this is not a good way of quickly freeing up
+                  space)</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift total disk usage exceeds 90%</entry>
+              <entry>Alarms when the average disk utilization of Swift disk drives exceeds 90%
+                utilization.</entry>
+              <entry>The number and size of objects in your system is beginning to fill the
+                available disk space. Account and container storage is included in disk utilization.
+                However, this generally consumes 1-2% of space compared to objects, so object
+                storage is the dominate consumer of disk space.</entry>
+              <entry>
+                <p>If your disk drives are 90% full you must immediately stop all applications that
+                  put new objects into the system. At that point you can either delete objects or
+                  add more servers.</p>
+                <p>You should also set the <codeph>fallocate_reserve</codeph> value (in the
+                  account/container/object configuration files) to a value higher than the currently
+                  available space on disk drives. This will prevent more objects being created.</p>
+                <p>If you allow your file systems to become full, you will be unable to delete
+                  objects or add more nodes to the system. This is because the system needs some
+                  free space to handle the replication process when adding nodes. With no free
+                  space, the replication process cannot work.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift service per-minute availability</entry>
+              <entry>Alarms if the swift service reports unavailable for the previous
+                minute.</entry>
+              <entry>The <codeph>swiftlm-uptime-monitor</codeph> service runs on the first proxy
+                server. It monitors the Swift endpoint and reports latency data. If the endpoint
+                stops reporting, it generates this alarm.</entry>
+              <entry>
+                <p>There are many reasons why the endpoint may stop running. Check:</p>
+                <ul id="ul_ghg_4hc_4v">
+                  <li>Is <codeph>haproxy</codeph> running on the control nodes?</li>
+                  <li>Is <codeph>swift-proxy-server</codeph> running on the Swift proxy
+                    servers?</li>
+                </ul>
+              </entry>
+            </row>
+            <row>
+              <entry>Swift rsync connect</entry>
+              <entry>Alarms if a socket cannot be opened to the specified rsync server</entry>
+              <entry>The rsync deamon on the specified node cannot be contacted. The most probable
+                cause is that the node is down. The rsync service might also have been stopped on
+                the node.</entry>
+              <entry>
+                <p>Reboot the server if it is down.</p>
+                <p>Attempt to restart rsync with this
+                  command:<codeblock>systemctl restart rsync.service</codeblock></p>
+              </entry>
+            </row>
+            <row>
               <entry>Process Check</entry>
               <entry>Alarms when the specified process is not running.</entry>
               <entry>If the <codeph>service</codeph> dimension is <codeph>object-store</codeph>, see
-                the description of the "Swift Services" alarm for possible causes.</entry>
+                the description of the "Swift Service" alarm for possible causes.</entry>
               <entry>If the <codeph>service</codeph> dimension is <codeph>object-storage</codeph>,
-                see the description of the "Swift Services" alarm for possible mitigation
+                see the description of the "Swift Service" alarm for possible mitigation
                 tasks.</entry>
             </row>
             <row>
@@ -322,7 +472,13 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
             <row>
               <entry morerows="6">block-storage</entry>
               <entry>Process Check</entry>
-              <entry>process_name=cinder-api</entry>
+              <entry>Separate alarms for each of these Cinder services, specified by the
+                  <codeph>component</codeph> dimension: <ul>
+                  <li>cinder-api</li>
+                  <li>cinder-backup</li>
+                  <li>cinder-scheduler</li>
+                  <li>cinder-volume</li>
+                </ul></entry>
               <entry>Process crashed.</entry>
               <entry>Restart the process on the affected node. Review the associated logs.</entry>
             </row>
@@ -349,7 +505,7 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 associated logs.</entry>
             </row>
             <row>
-              <entry>Cinder backup running &lt;HOSTNAME&gt; check</entry>
+              <entry>Cinder backup running &lt;hostname&gt; check</entry>
               <entry>Cinder backup singleton check.</entry>
               <entry>
                 <p>Backup process is either:</p>
@@ -364,7 +520,7 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 correct node.</entry>
             </row>
             <row>
-              <entry>Cinder volume running &lt;HOSTNAME&gt; check</entry>
+              <entry>Cinder volume running &lt;hostname&gt; check</entry>
               <entry>Cinder volume singleton check.</entry>
               <entry>
                 <p>Volume process is either:</p>
@@ -385,6 +541,32 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 the number of executing Cinder processes</entry>
               <entry>Review the monasca agent collector.log file on the affected node to determine
                 why the service check did not execute as expected. </entry>
+            </row>
+            <row>
+              <entry morerows="1">vsa</entry>
+              <entry>VSA VM Status</entry>
+              <entry>Raises alarm when vsa_vm_status is non zero (Not running)</entry>
+              <entry>Node reboot or VM in paused state due to disk errors.</entry>
+              <entry>Investigate the VSA VM status in the node.</entry>
+            </row>
+            <row>
+              <entry>VSA VM Network Status</entry>
+              <entry>Raises alarm when vsa_vm_net_status is non zero (Not running)</entry>
+              <entry>Network/Bridge issues</entry>
+              <entry>Investigate the VSA VM network status in the node.</entry>
+            </row>
+            <row>
+              <entry morerows="1">ceph</entry>
+              <entry>Process Check</entry>
+              <entry>process_name=&lt;cluster_name>-osd.&lt;id></entry>
+              <entry>Process crashed.</entry>
+              <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
+            </row>
+            <row>
+              <entry>Process Check</entry>
+              <entry>process_name=&lt;cluster_name>-mon.&lt;id></entry>
+              <entry>Process crashed.</entry>
+              <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
             </row>
           </tbody>
         </tgroup>
@@ -731,24 +913,26 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   run a reconfigure.</entry>
               </row>
               <row>
-                <entry>Elasticsearch Low Watermark alarm definition</entry>
+                <entry>Elasticsearch Low Watermark</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch Disk LOW Watermark. Backup
                   indices. If high watermark is reached, indices will be deleted. Adjust
                   curator_low_watermark_percent, curator_high_watermark_percent, and
                   elasticsearch_max_total_indices_size_in_bytes if needed.</entry>
-                <entry>Running out of disk space for /var/lib/elasticsearch.</entry>
+                <entry>Running out of disk space for
+                  <codeph>/var/lib/elasticsearch</codeph>.</entry>
                 <entry>Free up space by removing indices (backing them up first if desired).
                   Alternatively, adjust curator_low_watermark_percent,
                   curator_high_watermark_percent, and/or
                   elasticsearch_max_total_indices_size_in_bytes if needed.</entry>
               </row>
               <row>
-                <entry>Elasticsearch High Watermark alarm definition</entry>
+                <entry>Elasticsearch High Watermark</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch Disk HIGH Watermark. Attempting
                   to delete indices to free disk space. Adjust curator_low_watermark_percent,
                   curator_high_watermark_percent, and elasticsearch_max_total_indices_size_in_bytes
                   if needed.</entry>
-                <entry>Running out of disk space for /var/lib/elasticsearch.</entry>
+                <entry>Running out of disk space for
+                  <codeph>/var/lib/elasticsearch</codeph>.</entry>
                 <entry>Verify that disk space was freed up by the curator. If needed, free up
                   additional space by removing indices (backing them up first if desired).
                   Alternatively, adjust curator_low_watermark_percent,
@@ -765,7 +949,7 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   file.</entry>
               </row>
               <row>
-                <entry>Elasticsearch Open File Descriptors </entry>
+                <entry>Elasticsearch Open File Descriptors</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch Open File Descriptors is
                   greater than 90%.</entry>
                 <entry>Configured to allow too many file descriptors to be opened.</entry>
@@ -775,43 +959,89 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   config/logging-common/main.yml file.</entry>
               </row>
               <row>
-                <entry>Process Check</entry>
-                <entry><p>process = elasticsearch</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Elasticsearch process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart elasticsearch</codeph></entry>
+                <entry>Kafka Kronos Consumer Lag</entry>
+                <entry>component = kafka<p>Alarms when the Kronos consumer group is not keeping up
+                    with the incoming messages on the metric topic.</p></entry>
+                <entry>There is a slow down in the system or heavy load.</entry>
+                <entry>Look for high load in the various systems. This alert can fire for multiple
+                  topics or on multiple hosts. Which alarms are firing can help diagnose likely
+                  causes, ie if all on one host it could be the host. If one topic across multiple
+                  hosts it is likely the consumers of that topic, etc.</entry>
+              </row>
+              <row>
+                <entry>Service Log Directory Size</entry>
+                <entry>
+                  <p>Service log directory consuming more disk than its quota.</p>
+                </entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
+              </row>
+              <row>
+                <entry>Log Partition Low Watermark</entry>
+                <entry>The <codeph>/var/log</codeph> disk space usage has crossed the low watermark.
+                  If the high watermark is reached, <codeph>logrotate</codeph> will be run to free
+                  up disk space. Adjust <codeph>var_log_low_watermark_percent</codeph> if
+                  needed.</entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
+              </row>
+              <row>
+                <entry>Log Partition High Watermark</entry>
+                <entry>The <codeph>/var/log</codeph> volume is running low on disk space. Logrotate
+                  will be run now to free up space. Adjust
+                    <codeph>var_log_high_watermark_percent</codeph> if needed.</entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry><p>process = logstash</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Logstash process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart logstash</codeph>.</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry><p>component = beaver</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Beaver process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart beaver</codeph></entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry><p>component = apache</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Apache process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart apache2</codeph></entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry><p>component = kibana</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>If the Kibana process goes down, try restarting it with: <codeph>sudo
-                    systemctl restart kibana</codeph></entry>
+                <entry>Separate alarms for each of these logging services, specified by the
+                    <codeph>process_name</codeph> dimension:<ul>
+                    <li>elasticsearch</li>
+                    <li>logstash</li>
+                    <li>beaver</li>
+                    <li>apache2</li>
+                    <li>kibana</li>
+                  </ul></entry>
+                <entry>Process has crashed.</entry>
+                <entry>On the affected node, attempt to restart the process.<p>If the elasticsearch
+                    process has crashed, use:</p><codeblock>sudo systemctl restart elasticsearch</codeblock>
+                  <p>If the logstash process has crashed, use:</p>
+                  <codeblock>sudo systemctl restart logstash</codeblock>
+                  <p>The rest of the processes can be restarted using similar commands, listed
+                    here:</p>
+                  <codeblock>sudo systemctl restart beaver
+sudo systemctl restart apache2
+sudo systemctl restart kibana</codeblock>
+                </entry>
               </row>
               <!-- MONITORING -->
               <row>
-                <entry morerows="9">monitoring</entry>
+                <entry morerows="5">monitoring</entry>
                 <entry>HTTP Status</entry>
                 <entry><p>component = persister</p>Persister Health Check</entry>
                 <entry>The process has crashed or a dependency is out.</entry>
@@ -826,27 +1056,11 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   that issue.</entry>
               </row>
               <row>
-                <entry>Kafka Consumer Lag</entry>
-                <entry><p>component = kafka</p>Consumers are falling behind for a particular Kafka
-                  topic.</entry>
-                <entry>There is a slow down in the system or heavy load.</entry>
-                <entry>Look for high load in the various systems. This alert can fire for multiple
-                  topics or on multiple hosts. Which alarms are firing can help diagnose likely
-                  causes, i.e., if all are on one machine it could be the machine. If one topic
-                  across multiple machines it is likely the consumers of that topic, etc.</entry>
-              </row>
-              <row>
                 <entry>Monasca Agent Collection Time</entry>
-                <entry><p>component = monasca-agent</p>The time the agent took to collect metrics.</entry>
+                <entry><p>component = monasca-agent</p>The time the agent took to collect
+                  metrics.</entry>
                 <entry>Heavy load on the box or a stuck agent plug-in.</entry>
                 <entry>Address the load issue on the machine. If needed, restart the agent.</entry>
-              </row>
-              <row>
-                <entry>Monasca Agent Emit Time</entry>
-                <entry><p>component = monasca-agent</p>The time the agent took to send metrics to the Monasca API.</entry>
-                <entry>API or the network is slow.</entry>
-                <entry>Check the network graphs and look for indication of network issues. If coming
-                  from most boxes, it is possibly API problems.</entry>
               </row>
               <row>
                 <entry>Process Check</entry>
@@ -866,19 +1080,7 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node. Review the associated logs.</entry>
               </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry><p>component = zookeeper</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <row>
-                <entry>Zookeeper Latency</entry>
-                <entry><p>component = zookpeeper</p>Zookeeper is experiencing high latency.</entry>
-                <entry>Heavy system load.</entry>
-                <entry>Check the individual system as well as activity across the entire
-                  service.</entry>
-              </row>
+
             </tbody>
           </tgroup>
         </table></p>
@@ -955,6 +1157,82 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
             </row>
           </thead>
           <tbody>
+            <row>
+              <entry morerows="1">backup</entry>
+              <entry>Process Check</entry>
+              <entry>freezer-scheduler</entry>
+              <entry>Process crashed.</entry>
+              <entry>Restart the process on the affected node. Review the associated logs.</entry>
+            </row>
+            <row>
+              <entry>HTTP Status</entry>
+              <entry>freezer-api</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+            </row>
+            <row>
+              <entry>ceilometer</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+            </row>
+            <row>
+              <entry>collectl</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+            </row>
+            <row>
+              <entry>designate</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+            </row>
+            <row>
+              <entry>eon</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry>freezer-agent</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry>freezer-api</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry>heat</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry>hlm-ux-services</entry>
+              <entry>HTTP Status</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry>horizon</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
             <!-- HEAT -->
             <row>
               <entry morerows="7">orchestration</entry>
@@ -1028,6 +1306,99 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>MySQL crashed.</entry>
               <entry>Restart MySQL on the affected node.</entry>
             </row>
+            <!-- HAPROXY -->
+            <row>
+              <entry>haproxy</entry>
+              <entry>Process Check</entry>
+              <entry><p>service=haproxy</p>process_name=haproxy</entry>
+              <entry>HA Proxy is not running on this machine.</entry>
+              <entry>Restart the process on the affected node using these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Use this playbook against the affected node:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></codeblock></li>
+                </ol>
+                <p>Review the associated logs.</p></entry>
+            </row>
+            <row>
+              <entry>rabbitmq</entry>
+              <entry>Process Check</entry>
+              <entry>rabbitmq-server process not running.</entry>
+              <entry>Process crashed.</entry>
+              <entry>Restart the process on the affected node. Review the associated logs.</entry>
+            </row>
+            <row>
+              <entry morerows="1">vertica</entry>
+              <entry>Process Check</entry>
+              <entry>The <codeph>vertica</codeph> process is not running.</entry>
+              <entry>Process crashed.</entry>
+              <entry>Restart the <codeph>vertica</codeph> process using these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Monasca start playbook with the vertica tag, like this:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags vertica</codeblock></li>
+                  <li>Check that it is up on all nodes in the cluster with this
+                    playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags vertica</codeblock></li>
+                </ol></entry>
+            </row>
+            <row>
+              <entry>Vertica Status</entry>
+              <entry>Alarms if a vertica node cannot connect to its database.<p>If both this alarm
+                  and the Process Check alarm for the <codeph>vertica</codeph> process go off at the
+                  same time, do the mitigation steps listed for the Process Check alarm
+                first.</p></entry>
+              <entry>Process crashed.</entry>
+              <entry>Verify that the database node is down and, if it is, then recover it by using
+                these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Monasca status playbook:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags vertica</codeblock></li>
+                  <li>Run this playbook to do a recovery on Vertica:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery</codeblock></li>
+                </ol>
+              </entry>
+            </row>
+            <row>
+              <entry morerows="1">kafka</entry>
+              <entry>Kafka Alarm Transition Consumer Lag</entry>
+              <entry><p>component = kafka</p>Consumers are falling behind for a particular Kafka
+                topic.</entry>
+              <entry>There is a slow down in the system or heavy load.</entry>
+              <entry>Look for high load in the various systems. This alert can fire for multiple
+                topics or on multiple hosts. Which alarms are firing can help diagnose likely
+                causes, i.e., if all are on one machine it could be the machine. If one topic across
+                multiple machines it is likely the consumers of that topic, etc.</entry>
+            </row>
+            <row>
+              <entry>Kafka Persister Metric Consumer Lag</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+              <entry>...</entry>
+            </row>
+            <row>
+              <entry>barbican</entry>
+              <entry>Service Log Directory Size</entry>
+              <entry/>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry morerows="1">zookeeper</entry>
+              <entry>Process Check</entry>
+              <entry><p>service = zookeeper</p>Process not running.</entry>
+              <entry>Process crashed.</entry>
+              <entry>Restart the process on the affected node. Review the associated logs.</entry>
+            </row>
+            <row>
+              <entry>Zookeeper Latency</entry>
+              <entry><p>component = zookeeper</p>Zookeeper is experiencing high latency.</entry>
+              <entry>Heavy system load.</entry>
+              <entry>Check the individual system as well as activity across the entire
+                service.</entry>
+            </row>
           </tbody>
         </tgroup>
       </table>
@@ -1035,10 +1406,11 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
 
 
 
-
-    <!-- NEED TO FIGURE OUT WHERE THESE ARE LOCATED -->
+    <section><title>Alarms by Hostname</title></section>
     <section id="hlinux">
-      <title>Linux for HPE Helion</title>
+      <title>Uncategorized Alarms</title>
+      <p>These alarms show under the Uncategorized section and are setup per hostname, so one for
+        each host in your cloud environment.</p>
       <table frame="all" rowsep="1" colsep="1" id="table_ik5_3km_zs">
         <tgroup cols="4">
           <colspec colname="c1" colnum="1" colwidth="1.0*"/>
@@ -1059,6 +1431,21 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>Alarms on high CPU usage.</entry>
               <entry>Heavy load or runaway processes.</entry>
               <entry>Log onto the system and diagnose the heavy CPU usage.</entry>
+            </row>
+            <row>
+              <entry>Crash Dump Count</entry>
+              <entry>Alarms if it receives any metrics with <codeph>crash.dump_count</codeph> >
+                0</entry>
+              <entry>When a crash dump is generated by kdump, the crash dump file is put into the
+                  <codeph>/var/crash</codeph> directory by default. Any crash dump files in this
+                directory will cause the <codeph>crash.dump_count</codeph> metric to show a value
+                greater than 0.</entry>
+              <entry>Analyze the crash dump file(s) located in <codeph>/var/crash</codeph> on the
+                hostname that generated the alarm to try to determine if a service or hardware
+                caused the crash.<p>Move the file to a new location so that a developer can take a
+                  look at it. Make sure all of the processes are back up after the crash (run the
+                  &lt;service>-status.yml playbooks). When the <codeph>/var/crash</codeph> directory
+                  is empty the Crash Dump Count alarm should transition back to OK.</p></entry>
             </row>
             <row>
               <entry>Disk Inode Usage</entry>
@@ -1112,140 +1499,5 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
 
 
 
-
-    <section id="rabbitmq">
-      <title>RabbitMQ</title>
-      <table frame="all" rowsep="1" colsep="1" id="table_rsb_mp5_zs">
-        <tgroup cols="4">
-          <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-          <colspec colname="c2" colnum="2" colwidth="1.0*"/>
-          <colspec colname="c3" colnum="3" colwidth="1.0*"/>
-          <colspec colname="c4" colnum="4" colwidth="1.0*"/>
-          <thead>
-            <row>
-              <entry>Alarm Name</entry>
-              <entry>Description</entry>
-              <entry>Likely Cause</entry>
-              <entry>Mitigation Tasks to Perform</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>Process Check</entry>
-              <entry>rabbitmq-server process not running.</entry>
-              <entry>Process crashed.</entry>
-              <entry>Restart the process on the affected node. Review the associated logs.</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-    </section>
-
-
-
-    <section id="ceph"><title>Ceph</title>
-      <p><table frame="all" rowsep="1" colsep="1" id="ceph_table">
-          <tgroup cols="4">
-            <colspec colname="c1" colnum="1" colwidth="1*"/>
-            <colspec colname="c2" colnum="2" colwidth="2*"/>
-            <colspec colname="c3" colnum="3" colwidth="1*"/>
-            <colspec colname="c4" colnum="4" colwidth="2*"/>
-            <thead>
-              <row>
-                <entry>Alarm Name</entry>
-                <entry>Description</entry>
-                <entry>Likely Cause</entry>
-                <entry>Mitigation Tasks to Perform</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>Process Check</entry>
-                <entry>process_name=&lt;cluster_name>-osd.&lt;id></entry>
-                <entry>Process crashed.</entry>
-                <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry>process_name=&lt;cluster_name>-mon.&lt;id></entry>
-                <entry>Process crashed.</entry>
-                <entry>Run the ceph-start.yml playbook to start the services (manual)</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table></p>
-    </section>
-
-
-    <section id="haproxy">
-      <title>HAProxy</title>
-      <table frame="all" rowsep="1" colsep="1" id="table_flj_2tl_zs">
-        <tgroup cols="4" align="left">
-          <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-          <colspec colname="c2" colnum="2" colwidth="2.0*"/>
-          <colspec colname="c3" colnum="3" colwidth="1.0*"/>
-          <colspec colname="c4" colnum="4" colwidth="2.0*"/>
-          <thead>
-            <row>
-              <entry>Alarm Name</entry>
-              <entry>Description</entry>
-              <entry>Likely Cause</entry>
-              <entry>Mitigation Tasks to Perform</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>Process Check</entry>
-              <entry>process_name=haproxy</entry>
-              <entry>HA Proxy is not running on this machine.</entry>
-              <entry>Restart the process on the affected node using these steps: <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Use this playbook against the affected node:
-                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
-                    ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></codeblock></li>
-                </ol>
-                <p>Review the associated logs.</p></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-    </section>
-
-
-
-
-    <section id="vsa">
-      <title>VSA</title>
-      <table frame="all" rowsep="1" colsep="1" id="vsa_table">
-        <tgroup cols="4">
-          <colspec colname="c1" colnum="1" colwidth="1.0*"/>
-          <colspec colname="c2" colnum="2" colwidth="1.0*"/>
-          <colspec colname="c3" colnum="3" colwidth="1.0*"/>
-          <colspec colname="c4" colnum="4" colwidth="1.0*"/>
-          <thead>
-            <row>
-              <entry>Alarm Name</entry>
-              <entry>Description</entry>
-              <entry>Likely Cause</entry>
-              <entry>Mitigation Tasks to Perform</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>VSA VM Status</entry>
-              <entry>Raises alarm when vsa_vm_status is non zero (Not running)</entry>
-              <entry>Node reboot or VM in paused state due to disk errors.</entry>
-              <entry>Investigate the VSA VM status in the node.</entry>
-            </row>
-            <row>
-              <entry>VSA VM Network Status</entry>
-              <entry>Raises alarm when vsa_vm_net_status is non zero (Not running)</entry>
-              <entry>Network/Bridge issues</entry>
-              <entry>Investigate the VSA VM network status in the node.</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-    </section>
   </body>
 </topic>

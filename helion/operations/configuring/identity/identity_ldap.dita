@@ -1,32 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="topic_ifg_n33_bt">
+<topic id="ldap">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Integrating LDAP with the Identity
     Service</title>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section><title>Integrating with an external LDAP server</title>
-      <p>If your organization, like most, uses an LDAP directory service such as Active Directory,
-        you can integrate it with Keystone via the Keystone domain-specific configuration. There are
-        two modes of domain-specific configuration. One is to use file store and the other is to use
-        database store for configuration. By default, domain-specific driver configuration - file
-        store is enabled but no domain is assigned to use the backend driver. The following
-        instruction is to depict the way to get a specific domain to integrate LDAP with the
-        identity service step by step.</p>
-      <p>Integration with an external LDAP server is supported via the Keystone domain-specific
-        configuration.</p>
-      <p id="filestore"><b>Set up domain-specific driver configuration - file store </b></p> See the following for
-      the detailed instruction to update configuration to a specific LDAP domain: <ol>
-        <li> Ensure that the following configuration options in the main configuration file
+      <p/><p>The Keystone identity service provides two primary functions: user authentication and
+        access authorization. The user authentication function validates a user's identity. Keystone
+        has a very basic user management system that can be used to create and manage user login and
+        password credentials but this system is intended only for proof of concept deployments due
+        to the very limited password control functions. The internal identity service user
+        management system is also commonly used to store and authenticate OpenStack-specific service
+        account information.</p><p>The recommended source of authentication is external user
+        management systems such as LDAP directory services. The identity service can be configured
+        to connect to and use external systems as the source of user authentication. The identity
+        service domain construct is used to define different authentication sources based on domain
+        membership. For example, an HPE Helion OpenStack deployment could consist of as few as two
+        domains:</p>
+      <ul id="ul_msq_q3h_4v">
+        <li>The default domain that is pre-configured for the service account users that are
+          authenticated directly against the  identity service internal user management system</li>
+        <li>A customer-defined domain that contains all user projects and membership definitions.
+          This domain can then be configured to use an external LDAP directory such as Microsoft
+          Active Directory as the authentication source.</li>
+      </ul><p>Helion OpenStack can support multiple domains for deployments that support multiple
+        tenants. Multiple domains can be created with each domain configured to either the same or
+        different external authentication sources. This deployment model is known as a "per-domain"
+        model.</p><p>There are currently two ways to configure "per-domain" authentication
+        sources:</p><ul id="ul_nsq_q3h_4v">
+        <li>File store – each domain configuration is created and stored in separate text files.
+          This is the older and current default method for defining domain configurations. </li>
+        <li>Database store – each domain configuration can be created using either the  identity
+          service manager utility (recommenced) or a <xref
+            href="http://developer.openstack.org/api-ref-identity-v3.html#domains-config-v3"
+            format="html" scope="external">Domain Admin API</xref> (from OpenStack.org), and the
+          results are stored in the  identity service MySQL database. This database store is a new
+          method introduced in the OpenStack Kilo release and now available in  <keyword
+            keyref="kw-hos-phrase-30"/>.</li>
+      </ul><p>Instructions for initially creating per-domain configuration files and then migrating
+        to the Database store method via the  identity service manager utility are provided as
+        follows.</p>
+      <p id="filestore"><b>Set up domain-specific driver configuration - file store </b></p> To
+      update configuration to a specific LDAP domain: <ol>
+        <li> Ensure that the following configuration options are in the main configuration file
           template: /home/stack/helion/my_cloud/config/keystone/keystone.conf.j2
           <codeblock>[identity]
           domain_specific_drivers_enabled = True
           domain_configurations_from_database = False</codeblock>
         </li>
-        <li>Create a YAML file which contains the definition of the LDAP server connection. The
-          sample file below is already provided as part of the lifecycle manager <xref
-            href="../installation/using_git.dita#using_git">local git repository</xref>. It is
-          available on a lifecycle manager in the following file:
+        <li>Create a YAML file that contains the definition of the LDAP server connection. The
+          sample file below is already provided as part of the lifecycle manager in the <xref
+            href="../../../installation/using_git.dita#using_git">local git repository</xref>. It is
+          available on the lifecycle manager in the following file:
             <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_sample.yml</codeblock><p>Save
             a copy of this file with a new name, for example:</p>
           <codeblock>/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_my.yml</codeblock>
@@ -34,13 +60,12 @@
               href="http://docs.openstack.org/liberty/config-reference/content/keystone-configuration-file.html"
               scope="external" format="html">Keystone</xref> documentation for OpenStack Liberty for
             the full option list and description.</note>
-          <p>Below is the sample YAML configuration for Keystone LDAP certificate settings,
+          <p>Below is the sample YAML configuration for identity service LDAP certificate settings,
             optimized for Microsoft Active Directory server. Open the section below to view the
             file.</p>
-          <p outputclass="expandcode"><b>Open | Close </b> keystone_domainldap_conf</p>
+          <p id="domainldap" outputclass="expandcode"><b>Open | Close </b>sample YAML configuration keystone_configure_ldap_my.yml</p>
           <p outputclass="hiddencode">
             <codeblock outputclass="nomaxheight" id="ldapcert">---
- 
 keystone_domainldap_conf:
  
     # CA certificates file content.
@@ -57,19 +82,19 @@ keystone_domainldap_conf:
  
         -----END CERTIFICATE-----
  
-    # A domain will be created in MySQL with this name, and associated with ldap backend.
+    # A domain will be created in MySQL with this name, and associated with ldap back end.
     # Installer will also generate a config file named /etc/keystone/domains/keystone.&lt;domain_name>.conf
     #
     domain_settings:
-      name: dept1
-      description: Dedicated domain for dept1 users
+      name: ad
+      description: Dedicated domain for ad users
  
     conf_settings:
       identity:
-         driver: keystone.identity.backends.ldap.Identity
+         driver: ldap
  
  
-      # For full list and description of ldap configuration options, please refer to
+      # For a full list and description of ldap configuration options, please refer to
       # https://github.com/openstack/keystone/blob/master/etc/keystone.conf.sample or
       # http://docs.openstack.org/liberty/config-reference/content/keystone-configuration-file.html.
       #
@@ -123,7 +148,7 @@ keystone_domainldap_conf:
         # It is also not python3 compliant.  </codeblock>
           </p>
         </li>
-        <li>As suggested in <xref href="../installation/using_git.dita#using_git">Using Git for
+        <li>As suggested in <xref href="../../../installation/using_git.dita#using_git">Using Git for
             Configuration Management</xref>, commit the new file to the local git repository, and
           rerun the configuration processor and ready deployment
           playbooks:<codeblock>$ cd ~/helion
@@ -139,8 +164,8 @@ $ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
 $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/helion/my_cloud/config/keystone/keystone_configure_ldap_my.yml</codeblock>
           <!-- stopped here 552pm mar 30 -->
         </li>
-        <li> Follow these same steps for each LDAP domain with which you are integrating Keystone,
-          creating a YAML file for each and running the reconfigure playbook once for each
+        <li>Follow these same steps for each LDAP domain with which you are integrating the identity
+          service, creating a YAML file for each and running the reconfigure playbook once for each
           additional domain. </li>
         <li>Ensure that a new domain was created for LDAP (Microsoft AD in this example) and set
           environment variables for admin level access <codeblock>$ source keystone.osrc</codeblock>
@@ -163,7 +188,7 @@ $ openstack group list - -domain ad
           <note>LDAP domain is read-only. This means that you cannot create new user or group
             records in it.</note>
         </li>
-        <li> Once the LDAP user is granted the appropriate role, he can authenticate within the
+        <li>Once the LDAP user is granted the appropriate role, he can authenticate within the
           specified domain. Set environment variables for admin-level access
           <codeblock>$ source keystone.osrc</codeblock> Get user record within the (Active
           Directory) ad domain <codeblock>$ openstack user show testuser1 --domain ad</codeblock>
@@ -285,7 +310,7 @@ $ openstack group list - -domain ad
       database stores is supported for a domain. </section>
     <section>To make the switch, execute the steps below. Remember, you must have already set up the
       configuration for a file store as explained in the section on <xref
-        href="#topic_ifg_n33_bt/filestore" format="dita">domain-specific driver configuration - file
+        href="#topic_ladp/filestore" format="dita">domain-specific driver configuration - file
         store</xref>, and it must be working properly. <ol id="ol_sff_px4_mv">
         <li> Ensure that the following configuration options are set in the main configuration file,
           /home/stack/helion/my_cloud/config/keystone/keystone.conf.j2:
@@ -331,11 +356,11 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
                   is an
                   example:<codeblock>keystone-manage domain_config_upload --domain-name ad </codeblock>Note
                   that the Keystone manager utility doesn't upload the domain-specific driver
-                  configuration file the second time for the same domain.
-                  <!--For the management of the
-                  domain-specific driver configuration in the database store, you may refer to
-                  Domain-Specific Driver Configuration - Database Store Management via Identity API
-                  - Draft Release Document.--></li>
+                  configuration file the second time for the same domain. For the management of the
+                  domain-specific driver configuration in the database store, you may refer to <xref
+                    href="http://developer.openstack.org/api-ref-identity-v3.html#domains-config-v3"
+                    format="html" scope="external">OpenStack Identity API - Domain
+                    Configuration</xref>.</li>
               </ol></li>
           </ol></li>
         <li>Verify that the switched domain driver configuration for LDAP (Microsoft AD in this
@@ -352,12 +377,12 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
           Get user records within the ad domain:
           <codeblock> $ openstack user show testuser1 --domain ad</codeblock> Here testuser1 is
           returned:<codeblock>+-----------+------------------------------------------------------------------+
-            | Field     | Value                                                            |
-            +-----------+------------------------------------------------------------------+
-            | domain_id | 143af847018c4dc7bd35390402395886                                 |
-            | id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
-            | name      | testuser1                                                        |
-            +-----------+------------------------------------------------------------------+</codeblock>
+| Field     | Value                                                            |
++-----------+------------------------------------------------------------------+
+| domain_id | 143af847018c4dc7bd35390402395886                                 |
+| id        | e6d8c90abdc4510621271b73cc4dda8bc6009f263e421d8735d5f850f002f607 |
+| name      | testuser1                                                        |
++-----------+------------------------------------------------------------------+</codeblock>
           Get a list of LDAP groups: <codeblock>$ openstack group list --domain ad</codeblock> Note
           that testgroup1 and testgroup2 are returned:<codeblock>+------------------------------------------------------------------+------------+
 | ID                                                               | Name       |
@@ -455,7 +480,7 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock>
           This file path name has to be consistent with the one defined in tls_cacertfile of the
           domain-specific configuration. Edit the file and populate or update it with LDAP CA
           certificates for all LDAP domains. </li>
-        <li>As suggested in <xref href="../installation/using_git.dita#using_git">Using Git for
+        <li>As suggested in <xref href="../../../installation/using_git.dita#using_git">Using Git for
             Configuration Management</xref>, add the new file to the local git
           repository:<codeblock>$ cd ~/helion
 $ git checkout site
@@ -476,16 +501,45 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/h
 
 
     <section><title>Limitations</title>
+      <sectiondiv id="ldapLimitations">
       <keyword keyref="kw-hos-phrase-30"/> domain-specific configuration: <ul>
-        <li>Read-only LDAP back ends. </li>
-        <li>No Global User Listing: Once domain-specific driver configuration is enabled, the
-          operations of listing all users and listing all groups are not supported. Those calls will
-          need either a domain filter to be specified or usage of a domain scoped token. </li>
-        <li>No mixture of domain-specific driver configuration file store and database store in a
-          single Keystone instance. Once database store enabled within the Keystone instance, file
-          store shall be ignored and vice versa. </li>
-        <li>List limit of identity data records can only apply for all-domain level but not
-          per-domain level on Keystone side. </li>
+        <li>No Global User Listing: Once domain-specific driver configuration is enabled, listing
+          all users and listing all groups are not supported operations. Those calls will need to
+          either specify a domain filter will need to use a domain-scoped token. </li>
+        <li>You cannot have both a file store and a database store for domain-specific driver
+          configuration in a single identity service instance. Once a database store is enabled
+          within the identity service instance, any file store will be ignored, and vice versa. </li>
+        <li>The identity service allows a list limit configuration to globally set the maximum
+          number of entities that will be returned in an identity collection per request but it
+          doesn't support per-domain list limit setting at this time. </li>
+        <li>Each time a new domain is configured with LDAP integration the single CA file gets
+            overwritten. Ensure that you place certs for all the LDAP back-end domains in the cacert
+            parameter. Detailed CA file inclusion instructions are provided in the comments of the
+            sample YAML configuration file  <xref href="#ldap/filestore" format="dita"
+              >keystone_configure_ldap_my.yml</xref>. </li>
+        <li>LDAP is only supported for identity operations (reading users and groups from LDAP).
+          Identity service  assignment operations from LDAP records such as managing or assigning
+          roles and projects, are not currently supported. </li>
+        <li>The HPE Helion OpenStack 'default' domain is pre-configured to store service account
+          users and is authenticated locally against the identity service. Domains configured for
+          external LDAP integration are non-default domains. </li>
+        <li>When using the current OpenStackClient CLI you
+          must use the user ID rather than the user name when working with a non-default
+          domain.</li>
+        <li>Each LDAP connection with the identity service is for read-only operations.
+          Configurations that that require identity service write operations (to create users,
+          groups, etc.) are not currently supported.</li>
+        <li>LDAP is only supported for identity operations (reading users and groups from LDAP).
+          Keystone assignment operations from LDAP records such as managing or assigning roles and
+          projects, are not currently supported. </li>
+        <li>The HPE Helion OpenStack 'default' domain is pre-configured to store service account
+          users and is authenticated locally against the identity service. Domains configured for
+          external LDAP integration are non-default domains. </li>
+        <li>When using the current OpenStackClient CLI you must use the user ID rather than the user
+          name when working with a non-default domain.</li>
+             
+
+        
       </ul>
       <keyword keyref="kw-hos-phrase-30"/> API-based domain-specific configuration management <ul>
         <li>No GUI dashboard for domain-specific driver configuration management </li>
@@ -495,7 +549,10 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml -e@/home/stack/h
           domain-specific configuration options. </li>
         <li>Status: Domain-specific driver configuration database store is a preview feature for
             <keyword keyref="kw-hos-phrase-30"/>. </li>
-      </ul>
+     
+        </ul>
+      </sectiondiv>
+
     </section>
 
 
