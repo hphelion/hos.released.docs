@@ -145,14 +145,22 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               <entry>This can indicate that the <codeph>account-replication</codeph> process is
                 stuck.</entry>
               <entry>
-                <p>Restart the process on the affected host with this
+                <p>SSH to the affected host and restart the process with this
                   command:<codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
-                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
-                  of this in the logs located in <codeph>/var/log/swift/swift.log</codeph> and
-                    <codeph>/var/log/kern.log</codeph>. The file system may need to be wiped and
-                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
-                  file system)</p>
-              </entry>
+                <p>Another cause of this problem may be that a file system may be corrupt. Look for
+                  sign of this in these logs on the affected node:</p>
+                <codeblock>/var/log/swift/swift.log
+/var/log/kern.log</codeblock>
+                <p>The file system may need to be wiped, contact HPE Support for advice on the best
+                  way to do that if needed. You can then reformat the file system with these
+                  steps:</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift deploy playbook against the affected node, which will format the
+                    wiped file system:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-deploy.yml --limit &#60;hostname></codeblock></li>
+                </ol></entry>
             </row>
             <row>
               <entry>Swift container replicator last completed in 12 hours</entry>
@@ -160,14 +168,22 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 within the last 12 hours</entry>
               <entry>This can indicate that the container-replication process is stuck.</entry>
               <entry>
-                <p>Restart the process with
-                  <codeblock>sudo systemctl restart swift-container-replicator</codeblock></p>
-                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
-                  of this in the <codeph>/var/log/swift/swift.log</codeph> and
-                    <codeph>/var/log/kern.log</codeph>. The files ystem may need to be wiped and
-                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
-                  file system)</p>
-              </entry>
+                <p>SSH to the affected host and restart the process with this
+                  command:<codeblock>sudo systemctl restart swift-container-replicator</codeblock></p>
+                <p>Another cause of this problem may be that a file system may be corrupt. Look for
+                  sign of this in these logs on the affected node:</p>
+                <codeblock>/var/log/swift/swift.log
+/var/log/kern.log</codeblock>
+                <p>The file system may need to be wiped, contact HPE Support for advice on the best
+                  way to do that if needed. You can then reformat the file system with these
+                  steps:</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift deploy playbook against the affected node, which will format the
+                    wiped file system:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-deploy.yml --limit &#60;hostname></codeblock></li>
+                </ol></entry>
             </row>
             <row>
               <entry>Swift object replicator last completed in 24 hours</entry>
@@ -175,14 +191,22 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 within the last 24 hours</entry>
               <entry>This can indicate that the object-replication process is stuck.</entry>
               <entry>
-                <p>Restart the process with
-                  <codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
-                <p>Another cause of this problem is that a file system may be corrupt. Look for sign
-                  of this in the <codeph>/var/log/swift/swift.log</codeph> and
-                    <codeph>/var/log/kern.log</codeph>. The file system may need to be wiped and
-                  reformatted (the <codeph>swift-deploy.yml</codeph> playbook will reformat a wiped
-                  file system)</p>
-              </entry>
+                <p>SSH to the affected host and restart the process with this
+                  command:<codeblock>sudo systemctl restart swift-account-replicator</codeblock></p>
+                <p>Another cause of this problem may be that a file system may be corrupt. Look for
+                  sign of this in these logs on the affected node:</p>
+                <codeblock>/var/log/swift/swift.log
+/var/log/kern.log</codeblock>
+                <p>The file system may need to be wiped, contact HPE Support for advice on the best
+                  way to do that if needed. You can then reformat the file system with these
+                  steps:</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Run the Swift deploy playbook against the affected node, which will format the
+                    wiped file system:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-deploy.yml --limit &#60;hostname></codeblock></li>
+                </ol></entry>
             </row>
             <row>
               <entry>Swift file ownership</entry>
@@ -285,15 +309,18 @@ ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &#60;hostname></cod
                   it is normal for this alarm to trigger.</p>
               </entry>
               <entry>
+                <p>If you have just changed any of your Swift rings, if you wait until the changes
+                  complete then this alarm will likely clear on its own. If it does not, then
+                  continue with these steps.</p>
                 <p>Use <codeph>sudo swift-recon --md5</codeph> to find which node has outdated
                   rings.</p>
-                <p> Run the <codeph>swift-configure.yml</codeph> playbook, using the steps below.
+                <p>Run the <codeph>swift-reconfigure.yml</codeph> playbook, using the steps below.
                   This should deploy the same set of rings to every node.</p>
                 <ol>
                   <li>Log in to the lifecycle manager.</li>
                   <li>Run the Swift start playbook against the affected host:
                     <codeblock>cd ~/scratch/ansible/next/hos/ansible/
-ansible-playbook -i hosts/verb_hosts swift-configure.yml</codeblock></li>
+ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
                 </ol>
               </entry>
             </row>
@@ -396,9 +423,11 @@ ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &lt;hostname></code
               <entry>
                 <p>You need to add more nodes to your system or delete existing objects to remain
                   under 80% utilization.</p>
-                <p>Note: if you delete a project/account, the objects in that account are not
-                  removed until a week later (so this is not a good way of quickly freeing up
-                  space)</p>
+                <p>
+                  <note>If you delete a project/account, the objects in that account are not removed
+                    until a week later by the <codeph>account-reaper</codeph> process, so this is
+                    not a good way of quickly freeing up space.</note>
+                </p>
               </entry>
             </row>
             <row>
@@ -413,9 +442,30 @@ ansible-playbook -i hosts/verb_hosts swift-start.yml --limit &lt;hostname></code
                 <p>If your disk drives are 90% full you must immediately stop all applications that
                   put new objects into the system. At that point you can either delete objects or
                   add more servers.</p>
-                <p>You should also set the <codeph>fallocate_reserve</codeph> value (in the
-                  account/container/object configuration files) to a value higher than the currently
-                  available space on disk drives. This will prevent more objects being created.</p>
+                <p>Using the steps below, you should also set the <codeph>fallocate_reserve</codeph>
+                  value to a value higher than the currently available space on disk drives. This
+                  will prevent more objects being created.</p>
+                <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Edit the configuration files below and change the value for
+                      <codeph>fallocate_reserve</codeph> to a value higher than the currently
+                    available space on the disk drives:
+                    <codeblock>~/helion/my_cloud/config/swift/account-server.conf.j2
+~/helion/my_cloud/config/swift/container-server.conf.j2
+~/helion/my_cloud/config/swift/object-server.conf.j2</codeblock></li>
+                  <li>Commit the changes to git:
+                    <codeblock>git add -A
+git commit -a -m "changing Swift fallocate_reserve value"</codeblock></li>
+                  <li>Run the configuration processor:
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                  <li>Update your deployment directory:
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                  <li>Run the Swift reconfigure playbook to deploy the change:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
+                </ol>
                 <p>If you allow your file systems to become full, you will be unable to delete
                   objects or add more nodes to the system. This is because the system needs some
                   free space to handle the replication process when adding nodes. With no free
