@@ -12,15 +12,73 @@
       <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
       <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
     </section>
+    
+    <section id="barbican">
+      <sectiondiv outputclass="insideSection">
+        <p>
+          <table frame="all" rowsep="1" colsep="1" id="barbican_table">
+            <tgroup cols="4">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <colspec colname="c3" colnum="3" colwidth="1*"/>
+              <colspec colname="c4" colnum="4" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Service</entry>
+                  <entry>Sub-component(s)</entry>
+                  <entry>Expected Default Logging Level</entry>
+                  <entry>Steps to Change Log Level</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry morerows="1"><p>Barbican</p></entry>
+                  <entry>barbican-api</entry>
+                  <entry><p>INFO</p></entry>
+                  <entry>
+                    <p>To change the logging level:</p>
+                    <ol>
+                      <li>Log in to the lifecycle manager.</li>
+                      <li>Ceilometer service component logging can be changed by modifying the
+                        following file: <codeblock>~/helion/hos/ansible/roles/_CEI-CMN/defaults/main.yml</codeblock></li>
+                      <li>To change the logging level, change from CRITICAL to DEBUG on the
+                        following line:
+                        <codeblock>ceilometer_loglevel:  INFO
+ceilometer_logstash_loglevel:  INFO</codeblock></li>
+                      <li>Commit your configuration to the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, as
+                        follows:
+                        <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+                      <li>Run the configuration processor:
+                        <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                      <li>Update your deployment directory:
+                        <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                      <li>Complete the changes by running this playbook:
+                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
+                    </ol>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </p>
+      </sectiondiv>
+    </section>
+    
     <section id="ceilometer"><title outputclass="headerH">Ceilometer</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="ceilometertb">
             <tgroup cols="4">
-              <colspec colname="c1" colnum="1"/>
-              <colspec colname="c2" colnum="2"/>
-              <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <colspec colname="c3" colnum="3" colwidth="1*"/>
+              <colspec colname="c4" colnum="4" colwidth="1*"/>
               <thead>
                 <row>
                   <entry>Service</entry>
@@ -44,13 +102,13 @@
                       <li>Log in to the lifecycle manager.</li>
                       <li>Ceilometer service component logging can be changed by modifying the
                         following file: <codeblock>~/helion/hos/ansible/roles/_CEI-CMN/defaults/main.yml</codeblock>
-                        <p>You can also change the log level for individual Ceilometer components by
-                          changing one or more of the files below:</p>
-                        <codeblock>~/helion/hos/ansible/roles/CEI-API/templates/api-logging.conf.j2
+                        <note type="note">You can also change the log level for individual
+                          Ceilometer components by changing one or more of the files
+                          below:<codeblock>~/helion/hos/ansible/roles/CEI-API/templates/api-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-COL/templates/collector-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-NAG/templates/agent-notification-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-CAG/templates/agent-central-logging.conf.j2
-~/helion/hos/ansible/roles/CEI-EXP/templates/expirer-logging.conf.j2</codeblock></li>
+~/helion/hos/ansible/roles/CEI-EXP/templates/expirer-logging.conf.j2</codeblock></note></li>
                       <li>To change the logging level, change from CRITICAL to DEBUG on the
                         following line:
                         <codeblock>ceilometer_loglevel:  INFO
@@ -198,6 +256,64 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
         </p>
       </sectiondiv>
     </section>
+    
+    <section id="designate">
+      <sectiondiv outputclass="insideSection">
+        <p>
+          <table frame="all" rowsep="1" colsep="1" id="designate_table">
+            <tgroup cols="4">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <colspec colname="c3" colnum="3" colwidth="1*"/>
+              <colspec colname="c4" colnum="4" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Service</entry>
+                  <entry>Sub-component(s)</entry>
+                  <entry>Expected Default Logging Level</entry>
+                  <entry>Steps to Change Log Level</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry morerows="1"><p>Designate</p></entry>
+                  <entry><p>barbican-api</p>
+                  <p>designate-central</p>
+                    <p>designate-mdns</p>
+                    <p>designate-pool-manager</p>
+                    <p>designate-zone-manager</p>
+                  </entry>
+                  <entry><p>INFO</p></entry>
+                  <entry>
+                    <p>To change the logging level:</p>
+                    <ol>
+                      <li>Log in to the lifecycle manager.</li>
+                      <li>Designate logging configuration files are linked to the
+                        following directory: <codeblock>~/my_cloud/config/designate</codeblock></li>
+                      <li>To change the logging level, check out the <xref
+                        href="../../installation/using_git.dita">local git repo</xref>, using the
+                        following command:
+                        <codeblock>git checkout site</codeblock></li>
+                      <li>Run the configuration processor:
+                        <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                      <li>Update your deployment directory:
+                        <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                      <li>Complete the changes by running this playbook:
+                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
+                    </ol>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </p>
+      </sectiondiv>
+    </section>
+    
+    
     <section id="esx"><title outputclass="headerH">ESX (Eon)</title>
       <sectiondiv outputclass="insideSection">
         <p>
