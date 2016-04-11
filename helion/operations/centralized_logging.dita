@@ -322,55 +322,42 @@
         table tells the cron and logrotate processes that the log file is to be rotated daily, and
         it can have a maximum size of 32 MB. After a week of log rotation, you would see something
         similar to this list:
-        <codeblock>
-          freezer-scheduler.log at 10K
-          freezer-scheduler.log.1 at 123K
-          freezer-scheduler.log.2 at 13K
-          freezer-scheduler.log.3 at 17K
-          freezer-scheduler.log.4 at 128K
-          freezer-scheduler.log.5 at 22K
-          freezer-scheduler.log.6 at 323K
-          freezer-scheduler.log.7 at 123K
-        </codeblock>
+        <codeblock>freezer-scheduler.log at 10K
+freezer-scheduler.log.1 at 123K
+freezer-scheduler.log.2 at 13K
+freezer-scheduler.log.3 at 17K
+freezer-scheduler.log.4 at 128K
+freezer-scheduler.log.5 at 22K
+freezer-scheduler.log.6 at 323K
+freezer-scheduler.log.7 at 123K        </codeblock>
         Since the Rotation value is set to 7 for this log file, there will never be a
           <codeph>freezer-scheduler.log8</codeph>. When the cron process runs its checks, if the
           <codeph>freezer-scheduler.log</codeph> size is more than 32 MB, then logrotate rotates the
         file.</p>
       <p>In this example, the following log files are rotated:
-        <codeblock>
-        /var/log/freezer-agent/freezer-scheduler.log
-        /var/log/freezer-agent/freezer-agent-json.log
-      </codeblock>
+        <codeblock>/var/log/freezer-agent/freezer-scheduler.log
+/var/log/freezer-agent/freezer-agent-json.log      </codeblock>
       </p>
       <p>However, in this example, only the following file is centrally logged with Elasticsearch:
-        <codeblock>
-          /var/log/freezer-agent/freezer-agent-json.log
-        </codeblock>
-        Only files that are listed in the <b>Centrally Logged Files</b> variable are copied to
-        Elasticsearch. </p>
+        <codeblock>/var/log/freezer-agent/freezer-agent-json.log        </codeblock> Only files that
+        are listed in the <b>Centrally Logged Files</b> variable are copied to Elasticsearch. </p>
       <p>All of the variables for logging are found in the following file:
-        <codeblock>
-            .../logging-ansible/kronos-common/defaults/main.yml
-          </codeblock>
+        <codeblock>../logging-ansible/kronos-common/defaults/main.yml          </codeblock>
       </p>
       <p>Cron uses the following values to determine when to call the logrotate process: <ul>
           <li>Low watermark:
-            <codeblock>
-          #The following low watermark will be used to trigger alarms if the /var/log parition size grows over it.
-          #Tuning this to a higher percent may not give sufficient time to free disk space on /var/log before
-          # it reaches 100% full, at which time log rotate will not work.
+            <codeblock>#The following low watermark will be used to trigger alarms if the /var/log parition size grows over it.
+#Tuning this to a higher percent may not give sufficient time to free disk space on /var/log before
+# it reaches 100% full, at which time log rotate will not work.
           
-          <b>var_log_low_watermark_percent:80</b>
-        </codeblock>
+<b>var_log_low_watermark_percent:80</b>        </codeblock>
           </li>
           <li> High watermark:
-            <codeblock>
-                #The following high watermark will be used to alert the user that when /var/log is 100% full,
-                #log rotate will not work, and to free up space on /var/log.
-                #Don't set it at 100%, as by then alarms may not fire properly.
+            <codeblock>#The following high watermark will be used to alert the user that when /var/log is 100% full,
+#log rotate will not work, and to free up space on /var/log.
+#Don't set it at 100%, as by then alarms may not fire properly.
                 
-                <b>var_log_high_watermark_percent:95</b>
-              </codeblock>
+<b>var_log_high_watermark_percent:95</b>              </codeblock>
           </li>
         </ul>
       </p>
@@ -494,14 +481,14 @@
         <li>Navigate to the Alarm Definitions page from the menu button in the upper left
           corner</li>
         <li>Find the alarm definitions that are applied to the various hosts. See the <xref
-            href="alarms.dita#alarmdefinitions/logging">Logging Alarm Definitions List</xref> for
+            href="alarm_resolutions.dita#alarmdefinitions/logging">Logging Alarm Definitions List</xref> for
           the Centralized Logging Alarm Definitions.</li>
         <li>Navigate to the Alarms page</li>
         <li>Find the alarm definitions applied to the various hosts. These should match the alarm
-          definitions in the <xref href="alarms.dita#alarmdefinitions/logging">Logging Alarm
+          definitions in the <xref href="alarm_resolutions.dita#alarmdefinitions/logging">Logging Alarm
             Definitions List</xref>.</li>
         <li>See if the alarm is green (good) or is in a bad state. If any are in a bad state, see
-          the possible actions to perform in the <xref href="alarms.dita#alarmdefinitions/logging"
+          the possible actions to perform in the <xref href="alarm_resolutions.dita#alarmdefinitions/logging"
             >Logging Alarms Definitions List</xref>.</li>
       </ol>
       <p>You can use this filtering technique in the "Alarms" page to look for the following:</p>
