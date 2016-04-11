@@ -2,13 +2,14 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="add_monitor_node">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Adding a Ceph Monitor Node</title>
-  <abstract><shortdesc outputclass="hdphidden">Steps for adding additional Ceph monitor
-      nodes.</shortdesc><p>In <keyword keyref="kw-hos-phrase"/>, a Ceph monitor node is installed on
-      the controller nodes by default. A new monitor node cannot be added to an existing Ceph
-      cluster if Ceph is deployed with the default configuration. However, if monitor nodes are
-      added on a dedicated resource node, then you can add a new monitor node.</p>
-    <p>If a monitor resource is not already defined, you will need to first define one and then add
-      the new monitor node. For instructions, see <xref href="defining_monitor_resource.dita"/>.</p>
+  <abstract><shortdesc outputclass="hdphidden">During your intial installation and deployment, if
+      you defined separate hosts for the Ceph monitor component then these steps can be used to add
+      additional Ceph monitor nodes.</shortdesc>
+    <p>During your initial installation and deployment, if you defined separate hosts for the Ceph
+      monitor component then these steps can be used to add additional Ceph monitor nodes.</p>
+    <p>If you did not define separate Ceph monitor nodes in your deployment then these steps will
+      not work for you. For details on how to define separate Ceph monitor nodes, see <xref
+        href="defining_monitor_resource.dita"/>.</p>
     <p>The steps involved are:</p></abstract>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
@@ -46,8 +47,8 @@ mac-addr: 8b:f6:9e:ca:3b:7a
 ilo-ip: 192.168.9.11
 ilo-password: password
 ilo-user: admin</codeblock>
-            <p>You can find detailed descriptions of these fields <xref
-              keyref="configobj_servers">here</xref>.</p>
+            <p>You can find detailed descriptions of these fields <xref keyref="configobj_servers"
+                >here</xref>.</p>
             <note type="important">You will need to verify that the <codeph>ip-addr</codeph> value
               you choose for this node does not conflict with any other IP address in your cloud
               environment. You can confirm this by checking the
@@ -60,8 +61,8 @@ ilo-user: admin</codeblock>
             your new total node count. So for example, if you had previously specified
               <codeph>member-count: 3</codeph> and are adding a fourth Ceph monitor node, you will
             need to change that value to <codeph>member-count: 4</codeph>. <p>See <xref
-              keyref="configobj_controlplane">Input Model - Control
-                Plane</xref> for more details.</p></li>
+                keyref="configobj_controlplane">Input Model - Control Plane</xref> for more
+              details.</p></li>
           <li>Commit the changes to git:
             <codeblock>git commit -a -m "Add node &lt;name>"</codeblock></li>
           <li>Run the configuration processor:
@@ -83,8 +84,7 @@ ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></
               nodes will not be numbered consecutively if any have previously been removed. This is
               to prevent loss of data; the config processor retains data about removed nodes and
               keeps their ID numbers from being reallocated. See the Persisted Server Allocations
-              section in <xref
-                keyref="persisteddata/persistedserverallocations"><keyword
+              section in <xref keyref="persisteddata/persistedserverallocations"><keyword
                   keyref="kw-hos-phrase"/> Input Model</xref> for information on how this
             works.</p></li>
           <li>Run the following series of playbooks complete the deployment of your additional Ceph
