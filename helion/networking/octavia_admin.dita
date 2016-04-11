@@ -6,8 +6,8 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="Overview">
       <title>Octavia Administration</title>
-      <p>Octavia is an open source load balancing solution. This document describes administration
-        topics for users of Octavia. </p>
+      <p>This document provides the instructions on how to enable and manage various components of
+        the Load Balancer Octavia driver if that driver is enabled. </p>
       <ul>
         <li><xref href="#OctaviaAdmin/Alerts" format="dita">Monasca Alerts</xref></li>
         <li><xref href="#OctaviaAdmin/Tuning" format="dita">Tuning Octavia Installation</xref>
@@ -16,10 +16,9 @@
             <li>Spare Pools</li>
           </ul>
         </li>
-        <li><xref href="#OctaviaAdmin/CryptoCerts" format="dita">Updating the Cryptographic
-            Certificates</xref></li>
         <li><xref href="#OctaviaAdmin/Amphora" format="dita">Managing Amphora</xref>
           <ul>
+            <li>Updating the Cryptographic Certificates</li>
             <li>Accessing VM information in Nova</li>
             <li>Initiating Failover of an Amphora VM</li>
           </ul>
@@ -56,13 +55,11 @@
       <p> After the changes are made to the configuration files, redeploy the service.</p>
       <!-- An example or reference could be useful here for the redeploying of a service. -->
       <p><b>Spare Pools</b></p>
-      <p>To speed up creation of new load balancers, <keyword keyref="kw-hos-phrase-30"/> supports
-        spare pools. Spare pools allow you to create extra load balancing VM's and store them in a
-        pool of load balancers. This means instead of creating a new load balancer when loads
-        increase, create new load balancer calls will pull a load balancer from the spare pool. The
-        spare pools feature consumes resources, therefore the load balancers in the spares pool has 
-        been set to 0, which is the default and also disables the feature.  If you often create load 
-        balancers, it might be beneficial to increase the number of spare load balancers.</p>
+      <p> The Octavia driver provides support for creating spare pools of the HAProxy software
+        installed in VMs. This means instead of creating a new load balancer when loads increase,
+        create new load balancer calls will pull a load balancer from the spare pool. The spare
+        pools feature consumes resources, therefore the load balancers in the spares pool has been
+        set to 0, which is the default and also disables the feature. </p>
       
       <p>Reasons to enable a load balancing spare pool in <keyword keyref="kw-hos"/>
         <ol>
@@ -84,8 +81,12 @@
 
     </section>
 
-    <section id="CryptoCerts">
-      <title>Updating the Cryptographic Certificates</title>
+    <section id="Amphora">
+      <title>Managing Amphora</title>
+      <p>Octavia starts a separate VM for each load balancing function. These VMs are called
+        amphora.</p>
+
+      <p><b>Updating the Cryptographic Certificates</b></p>
       <p>Octavia uses two-way SSL encryption for communication between amphora and the control
         plane. Octavia keeps track of the certificates on the amphora and will automatically recycle
         them. The certificates on the control plane are valid for one year after installation of
@@ -100,12 +101,7 @@ openssl x509 -in client.pem  -text –noout</codeblock></p>
       <p>On the lifecycle manager execute octavia-reconfigure:
         <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts octavia-reconfigure.yml</codeblock></p>
-    </section>
-
-    <section id="Amphora">
-      <title>Managing Amphora</title>
-      <p>Octavia starts a separate VM for each load balancing function. These VMs are called
-        amphora.</p>
+    
       <p><b>Accessing VM information in Nova</b></p>
       <p>You can use <codeph>openstack project list</codeph> as an administrative user to obtain
         information about the tenant or project-id of the Octavia project. In the example below, the
