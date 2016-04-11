@@ -1577,6 +1577,27 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery</codeblock></li>
               <entry>Bad network or cabling.</entry>
               <entry>Take this system out of service until the network can be fixed.</entry>
             </row>
+            <row>
+              <entry>NTP Time Sync</entry>
+              <entry/>
+              <entry/>
+              <entry>Log in to the reported host and check if the ntp service is running. <p>If it
+                  is running, then use these steps:</p>
+                <ol>
+                  <li>Stop the service. <p>On a Linux for HPE Helion host:</p>
+                    <codeblock>service ntp stop</codeblock>
+                    <p>On a RHEL host:</p>
+                    <codeblock>service ntpd stop</codeblock></li>
+                  <li>Resync the nodes time:
+                    <codeblock>/usr/sbin/ntpdate -b  &lt;ntp-server></codeblock></li>
+                  <li>Restart the ntp service back up. <p>On a Linux for HPE Helion host:</p>
+                    <codeblock>service ntp start</codeblock>
+                    <p>On a RHEL host:</p>
+                    <codeblock>service ntpd start</codeblock></li>
+                  <li>Restart rsyslog: <codeblock>service rsyslog restart</codeblock></li>
+                </ol>
+              </entry>
+            </row>
           </tbody>
         </tgroup>
       </table>
