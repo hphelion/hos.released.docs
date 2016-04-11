@@ -221,7 +221,7 @@ ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
         <p>Scenario 1: An OSD node is down</p>
         <ol>
           <li>If an OSD node has failed, note the OSD numbers on that node, by executing the 'ceph
-            --cluster &gt;cluster-name> osd tree' command on a controller node. A sample of OSD tree
+            --cluster &lt;cluster-name> osd tree' command on a controller node. A sample of OSD tree
             output is as follows: <codeblock>$ ceph osd tree
 # id    weight  type name       up/down reweight
 -1      6       root default
@@ -240,20 +240,20 @@ ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
             <p>For example, if <codeph>padawan-ceph-ccp-ceph0001-mgmt</codeph> is down, the OSD
               numbers 1, 4, and 7 are relevant.</p></li>
           <li>For each OSD number identified above perform below steps:
-            <codeblock>ceph --cluster &gt;cluster-name> osd out &gt;osd-num>
-ceph --cluster &gt;cluster-name> osd crush remove osd.&gt;osd-num>
-ceph --cluster &gt;cluster-name> auth del osd.&gt;osd-num>
-ceph --cluster &gt;cluster-name> osd rm &gt;osd-num></codeblock></li>
+            <codeblock>ceph --cluster &lt;cluster-name> osd out &gt;osd-num>
+ceph --cluster &lt;cluster-name> osd crush remove osd.&gt;osd-num>
+ceph --cluster &lt;cluster-name> auth del osd.&gt;osd-num>
+ceph --cluster &lt;cluster-name> osd rm &gt;osd-num></codeblock></li>
           <li>Remove the OSD host from crush map if all osd's on the particular host is down:
-            <codeblock>ceph --cluster &gt;cluster-name> osd crush remove &gt;osd-hostname></codeblock></li>
+            <codeblock>ceph --cluster &lt;cluster-name> osd crush remove &gt;osd-hostname></codeblock></li>
         </ol>
         <p>Scenario 2: One or more OSDs on an OSD node is/are down</p>
         <ol>
           <li>If the OSD node is up, but one/more OSDs on that node are down, remove those OSD's
             from the crush map, by repeating the step below for each OSD number (identified using
-            method mentioned in step #1 above): <codeblock>ceph --cluster &gt;cluster-name> osd crush remove osd.(osd-num}</codeblock>
+            method mentioned in step #1 above): <codeblock>ceph --cluster &lt;cluster-name> osd crush remove osd.(osd-num}</codeblock>
             <p>Once the maintenance is performed, the OSD can be added back once it is up:</p>
-            <codeblock>ceph --cluster &gt;cluster-name> osd crush add osd.&gt;osd-num> 1.0 host=&gt;osd-hostname></codeblock></li>
+            <codeblock>ceph --cluster &lt;cluster-name> osd crush add osd.&gt;osd-num> 1.0 host=&gt;osd-hostname></codeblock></li>
         </ol>
       </sectiondiv>
     </section>
