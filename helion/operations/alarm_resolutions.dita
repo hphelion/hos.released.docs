@@ -520,7 +520,7 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
                 tasks.</entry>
             </row>
             <row>
-              <entry morerows="6">block-storage</entry>
+              <entry morerows="8">block-storage</entry>
               <entry>Process Check</entry>
               <entry>Separate alarms for each of these Cinder services, specified by the
                   <codeph>component</codeph> dimension: <ul>
@@ -591,6 +591,24 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
                 the number of executing Cinder processes</entry>
               <entry>Review the monasca agent collector.log file on the affected node to determine
                 why the service check did not execute as expected. </entry>
+            </row>
+            <row>
+              <entry>Storage faulty lun check</entry>
+              <entry>Alarms if local LUNs on your servers are not OK.</entry>
+              <entry>A LUN on the server is degraded or has failed.</entry>
+              <entry>Log in to the reported host and run these commands to find out the status of
+                the LUN:<codeblock>sudo hpssacli
+=> ctrl slot=1 ld all show
+=> ctrl slot=1 pd all show</codeblock>
+                <p>Replace any broken drives.</p></entry>
+            </row>
+            <row>
+              <entry>Storage faulty drive check</entry>
+              <entry>Alarms if the local disk drives on your servers are not OK.</entry>
+              <entry>A disk drive on the server has failed or has warnings.</entry>
+              <entry>Log in to the reported and run these commands to find out the status of the LUN:<codeblock>sudo hpssacli
+=> ctrl slot=1 pd all show</codeblock>
+                <p>Replace any broken drives.</p></entry>
             </row>
             <!-- DOCS-2905 -->
             <row>
@@ -987,8 +1005,7 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                 <entry>Free up space by removing indices (backing them up first if desired).
                   Alternatively, adjust <codeph>curator_low_watermark_percent</codeph>,
                     <codeph>curator_high_watermark_percent</codeph>, and/or
-                    <codeph>elasticsearch_max_total_indices_size_in_bytes</codeph> if
-                  needed,
+                    <codeph>elasticsearch_max_total_indices_size_in_bytes</codeph> if needed,
                   <!-- need to link to doc created for DOCS-2831 --></entry>
               </row>
               <row>
