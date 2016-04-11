@@ -90,9 +90,10 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
             <p>Full details of how to do this can be found here: <xref keyref="input_model">Input
                 Model</xref>.</p></li>
           <li>Edit the <codeph>~/helion/my_cloud/definition/data/disks_osd.yml</codeph> file and
-            enter the details for the additional disks meant for OSD data and journal filesystems.
-              <p>A sample <codeph>disks_osd.yml</codeph> is as follows:</p>
-            <codeblock>disk-models:
+            enter the details for the additional disks meant for OSD data and journal
+              filesystems.<p>The following is an example <codeph>disks_osd.yml</codeph> with the OSD
+              journal on a separate
+              disk:</p><codeblock>disk-models:
   - name: OSD-DISKS
     # Disk model to be used for Ceph OSD nodes
     # /dev/sda_root is used as a volume group for /, /var/log and /var/crash
@@ -133,8 +134,26 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
            name: ceph
            attrs:
              usage: data
-             journal_disk: /dev/sdg</codeblock>
-            <p>The above sample file contains three OSD nodes and two journal disks.</p>
+             journal_disk: /dev/sdg  </codeblock><p>The
+              above sample file contains three OSD nodes and two journal disks.</p>The following is
+            an example <codeph>disks_osd.yml</codeph> with the OSD journal on a separate disk:<codeblock>disk-models:
+  - name: OSD-DISKS
+    # Disk model to be used for Ceph OSD nodes
+    # /dev/sda_root is used as a volume group for /, /var/log and /var/crash
+    # sda_root is a templated value to align with whatever partition is really used
+    # This value is checked in os config and replaced by the partition actually used
+    # on sda e.g. sda1 or sda5 
+
+    # Disks to be used by Ceph
+    # Additional disks can be added if available
+    device-groups:
+      -  name: ceph-osd-data-only
+      devices:
+         - name: /dev/sdcname: /dev/sdd         
+      consumer:            
+         - name: ceph  
+      attrs:              
+          usage: data           </codeblock>
             <p>The disk model has the following fields:</p>
             <table frame="all" rowsep="1" colsep="1" id="ceph1">
               <tgroup cols="2">
@@ -190,9 +209,11 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
                 </tbody>
               </tgroup>
             </table>
-            <p><note>Ensure that disks designated to be used for the OSD data and journal storage
+            <p>
+              <note>Ensure that disks designated to be used for the OSD data and journal storage
                 meet the requirements outlined in the prequisites at the beginning of this document.
-                If they do not then Ceph configuration will fail.</note></p></li>
+                If they do not then Ceph configuration will fail.</note>
+            </p></li>
           <li>[OPTIONAL] There are parameters for Ceph that can be edited by the admin in the
             locations described below. The default values will work but if you choose to change any
             of these values, ensure that you also change them where they are referenced in your
