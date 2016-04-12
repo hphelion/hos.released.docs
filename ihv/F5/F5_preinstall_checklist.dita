@@ -36,6 +36,7 @@
         </table>
       </p>
       <note type="attention">F5 BIG-IP currently supports only LBaaS Version 1. This is the version that was used to validate F5 BIG-IP integration with Helion OpenStack 2.0. The F5 LBaaS driver that was tested with Helion OpenStack 2.0 is planned to be officially supported in the next release of OpenStack.</note>
+      <note type="caution">Before continuing you must verify the LBaaS version you are using in your environment. If you have v2, to install the required version, v1, you can use the instructions in the <xref href="http://docs.hpcloud.com/#helion/networking/lbaas_admin.html" scope="external" format="html">Configuring Load Balance as a Service</xref> documentation.</note>
     </section>
     
     <section id="F5_supported_hardware">
@@ -85,12 +86,16 @@
     </section>
     <section id="F5_supp_network">
         <title>Create Supported F5 Network Configuration</title>
-      <p>The goal of the base networking setup is to create the OpenStack networks, subnets, and other networking elements that are necessary to run F5 with Helion OpenStack. To integrate F5 BIG-IP with Helion, there are certain network configurations that must be done.</p> 
+      <p>The goal of this networking setup is to create the F5 provider networks, subnets, and other networking elements that are necessary to run F5 with Helion OpenStack. To integrate F5 BIG-IP with Helion, there are certain network configurations that must be done.</p> 
 <ul>
-  <li><b>Management</b> - This network is used for the BIG-IP management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</li>
-  <li><b>High Availability (HA)</b> - This network is used for signaling between BIG-IP instances that are used for high availability purposes. This network is not required for standalone(non-HA) BIG-IP deployments.</li>
-  <li><b>Virtual Tunnel Endpoint (VTEP) network</b> - this is a data network</li>
-</ul>        
+  <li><b>Management</b> - Requires a new VLAN. This network is used for the BIG-IP management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</li>
+  <li><b>High Availability (HA)</b> - Requires a new VLAN. This network is used for signaling between BIG-IP instances that are used for high availability purposes. This network is not required for standalone(non-HA) BIG-IP deployments.</li>
+  <li><b>Virtual Tunnel Endpoint (VTEP) network</b> - Requires a free IP range from your GUEST_VXLAN. This is a data network.</li>
+</ul> 
+      <note type="attention">To ensure there is no IP conflict, make sure you define the <b>start and end IP range</b> for GUEST_VXLAN. This setting can be found in the following file:
+      <codeblock>~/helion/my_cloud/definition/data/networks.conf</codeblock>
+      </note>
+      <note type="note">The new mgmt and HA VLAN's you create for F5 must be tagged. You can set the optional variable <b>tagged-vlan</b> to either “true” or “false”. If true, packets for the network carry the vlanid in the packet header; such packets are referred to as VLAN-tagged frames in IEEE 802.1Q. For information on how to set this option, read the <xref href="http://docs.hpcloud.com/#helion/example_configurations.html#example_configurations__ceph_networks" scope="external" format="html">Helion OpenStack 2.1 Example Configurations</xref></note>
 
 <p><b>Frequently Asked Questions:</b></p>
 <dl>
@@ -125,8 +130,7 @@
     <section id="config_man_net">
       <title>Create a Management Network</title>
  
-          <p>Integrating F5 BIG-IP with Helion OpenStack 2.0 requires that you create an additional
-            Helion management network. This network is used for the BIG-IP management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</p>
+          <p>Integrating F5 BIG-IP with Helion OpenStack 2.0 requires that you create an additional management network. This network is used for the BIG-IP management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</p>
       <p>The same VLAN that you create in these steps must be used to configure the F5 device for management
         network. The network you create in the following steps must be the same network VLAN that
         the F5 device management network is on.</p>
@@ -178,7 +182,7 @@
           run:<codeblock>$ neutron net-create f5-vtep --provider:physical_network physnet1 --provider:network_type vlan --provider:segmentation_id 106</codeblock></li>
             <li>To create a subnet, use the settings for your deployment in the following command
           and
-          run:<codeblock>$ neutron subnet-create f5-vtep 10.1.40.0/24 --name f5-vtep-subnet --gateway 10.1.40.1 --allocation-pool start=10.1.40.25,end=10.1.40.200</codeblock></li>
+          run:<codeblock>$ neutron subnet-create f5-vtep 10.1.40.0/24 --name f5-vtep-subnet --gateway 10.1.40.1 --allocation-pool start=10.1.40.200,end=10.1.40.254</codeblock></li>
             <li>To create a router for the network,
           run:<codeblock>$ neutron router-create F5-vtep-router</codeblock></li>
             <li>To create an interface between the router and the subnet,
@@ -197,8 +201,10 @@
       <ol>
         <li>Launch a virtual machine (VM) on your mgmt (management) network.</li>
         <li>To ping an IP address, from the compute node,
-          run:<codeblock>$ ping &lt;ipaddress_of_Compute_node&gt;</codeblock></li>
-        <li>Repeat these steps for each Compute node.</li>
+          run:<codeblock>$ ping &lt;ipaddress_of_virtual_machine&gt;</codeblock></li>
+        <li>Repeat these steps for other F5 networks.</li>
+        <li>Repeat these steps for other HA networks.</li>
+        <li>Repeat these steps for other VTEP networks.</li>
       </ol>
 </section>
   </body>
