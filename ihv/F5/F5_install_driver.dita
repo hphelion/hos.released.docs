@@ -87,6 +87,7 @@ $ scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
 $ scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m2-mgmt:
 $ scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m3-mgmt:
 $ scp f5-bigip-common_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
+$ scp f5-oslbaasv1-agent_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
           </codeblock>
         </li>
 </ol>
@@ -96,6 +97,12 @@ $ scp f5-bigip-common_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
         expects the files to be under site packages, you must move the files to the expected
         location. Then you can edit the settings to identify the default load balancing service
         provider. Make sure you restart the neutron server when you are finished.</p>
+      
+      <note type="caution">You must install the F5 API driver in the virtual environment. If the
+        driver is not installed correctly, then you risk losing this driver if Helion OpenStack is
+        upgraded or updated. For more information, refer to the Helion documentation on<xref
+          href="https://docs.hpcloud.com/helion/administration/thirdparty_driver_support.html#thirdparty_driver_patching_venv"
+          scope="external" format="html">Third Party Driver Support</xref>.</note>
       
       <p>To copy the files to the neutron virtual environment:</p>
       <ol>
@@ -143,12 +150,7 @@ $ sudo touch /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/oslb
 
 <li>Save the modified file.</li>
     <li>To commit and apply the changes, follow the steps in <xref href="http://docs-staging.hpcloud.com/hos.docs-hos-30/helion/installation/using_git.html#using_git" scope="external" format="html">HPE Helion Openstack 3.0: Using Git for Configuration Management.</xref> </li>
-    <li>To restart the Neutron server, run:
-      <codeblock>$ sudo service neutron-server restart</codeblock>
-      <note type="attention">Keep in mind that it takes several minutes for this process to be completed.</note>
-    </li>
   </ol>
-  <note type="attention">The driver must be installed on all the controller nodes. Therefore, you must repeat the above steps on all other netron control plane nodes.</note>
 </section>
 
 <section id="verify_F5_driver_start">
