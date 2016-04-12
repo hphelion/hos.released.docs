@@ -68,6 +68,15 @@ ceph osd rm &lt;osd_number&gt;</codeblock></li>
             corresponds to the data disk being removed (i.e. <codeph>/dev/sde</codeph>. Remove the
             line in the <codeph>/etc/fstab</codeph> file having the entry starting with the text
               <codeph>UUID="51c32ca1-0ee1-4c75-bfbc-5d113a4b4402"</codeph>.</p></li>
+        <li>Delete the journal partition for each OSD number removed and instruct the kernel to
+          reload the table as
+          follows:<codeblock>(echo d; echo &lt;partition-number>; echo w) | sudo fdisk &lt;disk>
+sudo partprobe
+
+Example:
+In step #3 above, /dev/sdj1 journal partition can be removed by executing below commands: 
+$ echo d; echo 1; echo w) | sudo fdisk /dev/sdj
+$ sudo partprobe</codeblock></li>
         <li>Repeat steps 1-6 for each OSD node in the Ceph cluster one at a time.</li>
         <li>Log in to the lifecycle manager.</li>
         <li>Edit the <codeph>~/helion/my_cloud/definition/data/disks_osd.yml</codeph> file and
@@ -87,14 +96,14 @@ ceph osd rm &lt;osd_number&gt;</codeblock></li>
             git repo</xref>, as follows:
           <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "Removed OSD data disk"</codeblock></li>
+git commit -m "Removing OSD data disk"</codeblock></li>
         <li>Run the configuration processor:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
         <li>Update your deployment directory:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-        <li>Redeploy Ceph with this playbook:
+        <li>Check the status of Ceph services with this playbook:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts ceph-deploy.yml</codeblock></li>
       </ol>
