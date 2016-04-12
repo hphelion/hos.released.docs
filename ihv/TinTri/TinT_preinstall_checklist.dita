@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="tintri_preinstall_chklt">
+  <title>TinTri Pre-install Checklist</title>
+  <body>
+    <section id="TinTrichecklist">
+    <p>Before installing the TinTri driver into your Helion OpenStack deployment, make sure you fulfill all of the following requirements:</p>
+    <table frame="all" rowsep="1" colsep="1" id="table_TinT_preinstall_chklt">
+      <tgroup cols="2">
+        <colspec colname="c1" colnum="1" colwidth="25pt"/>
+        <colspec colname="c2" colnum="2" colwidth="1*"/>
+        <thead>
+          <row>
+            <entry>&#9744;</entry>
+            <entry>Item</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#TinT_preinstall_checklist/TinT_supported_hardware">Use the Supported Hardware Configuration</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#TinT_preinstall_checklist/TinT_verify_cluster">Verify you have a working Helion OpenStack 2.0 cluster</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#TinT_preinstall_checklist/TinT_ext_network">Configure the Helion OpenStack cluster with an external network</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#TinT_preinstall_checklist/TinT_ten_network">Configure the Helion OpenStack cluster with a tenant network</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#TinT_preinstall_checklist/TinT_glance">Configure the Helion OpenStack cluster with glance image</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#TinT_preinstall_checklist/TinT_floatingIP">Verify floating IP is working</xref></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    
+    
+      <p>Click on an item in the checklist for more information on how to complete the task.</p>
+
+<note>After completing the checklist, you may want to create an optional network configuration to improve storage input-output performance. The following configuration was tested:
+  <ol>
+    <li>Create an additional virtual local area networks (VLANs) for Storage Management network configuration.</li>
+    <li>Create an additional VLAN for data traffic.</li>
+    <li>Ensure that these additional VLANs can pass traffic through all the other Helion OpenStack VLAN networks.</li>
+  </ol>
+    For more information on how to complete these steps, refer to the Helion OpenStack Networking documentation.</note>
+    
+    </section>
+    
+    <section id="TinT_supported_hardware">
+      <title>Supported Hardware Configuration</title>
+    
+      <p>For testing purposes, the following hardware configurations was used to test a TinTri deployment:</p>
+    
+      <table frame="all" rowsep="1" colsep="1" id="table_TinT_supp_hdwr">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>Appliance</entry>
+              <entry>Requirement</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>Make</entry>
+              <entry>TinTri</entry>
+            </row>
+            <row>
+              <entry>Model</entry>
+              <entry>T620</entry>
+            </row>
+            <row>
+              <entry>Operating System</entry>
+              <entry>4.0.1.1-6350.33898.16558</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <note type="important">TinTri supports the following versions of OpenStack:
+        <ul>
+          <li>VMstore OS 4.0 supports Juno</li>
+          <li>TinTri is officially supported in Liberty</li>
+          <li>TinTri is not officially supported in Kilo, but the Cinder drive is identical to the one in Liberty</li></ul></note>
+      <p>For more information, refer to the <xref href="https://wiki.openstack.org/wiki/CinderSupportMatrix" scope="external" format="html">Cinder support matrix</xref>.</p>
+    </section>
+    
+    <section id="TinT_verify_cluster">
+      
+      <p>Verify Helion 2.0 Working Clusters</p>
+      
+      <p>To integrate TinTri with Helion Openstack, you must have a working cluster. Perform the following action to see a list of active clusters and their status.</p>
+      <ol>
+        <li>To view the list of clusters for the given vCenter, run:
+        <codeblock># eon cluster-list --vcenter-id &lt;vCenter ID&gt;</codeblock>
+        </li>
+      </ol>
+      
+      <p><b>Sample Output</b></p>
+<codeblock># eon cluster-list --vcenter-id BC9DED4E-1639-481D-B190-2B54A2BF5674</codeblock>
+      <table frame="all" rowsep="1" colsep="1" id="table_TinT_sample_output">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <colspec colname="c3" colnum="3" colwidth="1*"/>
+          <colspec colname="c4" colnum="4" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry><codeph>MOID</codeph></entry>
+              <entry><codeph>Name</codeph></entry>
+              <entry><codeph>Datacenter</codeph></entry>
+              <entry><codeph>Import Status</codeph></entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><codeph>domain-c22</codeph></entry>
+              <entry><codeph>Cluster2</codeph></entry>
+              <entry><codeph>DC1</codeph></entry>
+              <entry><codeph>imported</codeph></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="TinT_ext_network">
+      
+      <title>Configure the Cluster with an External Network</title>
+      <p>To integrate TinTri with Helion Openstack, you must have a working cluster configured with an external network so your Compute instances can reach the internet.</p> 
+      <note type="important">If you do not already have an external network configured, use the following steps. If you already have one configured, then you can continue on to the next item in the pre-installation checklist.</note>
+      
+      <p>There are multiple methods you can use to create this external network. The HPE Helion OpenStack Documentation provides information on two ways you can create an external network. Click on the following links for more information.</p>
+      <ul>
+        <li><xref href="http://docs.hpcloud.com/#helion/administration/create_extnet.html" scope="external" format="html">Using the Ansible Playbook</xref>. The HPE Helion OpenStack installer provides an Ansible playbook that will create this network for use across your projects. This playbook will query the Networking service for an existing external network, and then create a new one if you do not already have one. The resulting external network will have the name ext-net with a subnet matching the CIDR you specify in the command.</li>
+        <li><xref href="http://docs.hpcloud.com/#helion/administration/create_extnet.html" scope="external" format="html">Using the NeutronClient CLI</xref>. Use the command line tool from your lifecycle manager to create an external network.</li>
+      </ul>      
+    </section>
+    
+    <section id="TinT_ten_network">
+      
+      <title>Configure the Cluster with a Tenant Network</title>
+<p>In OpenStack user interfaces and documentation, a group of users is referred to as a project or tenant. These terms are interchangeable. In an OpenStack environment, you can create tenant networks using the Networking service (code named Neutron). Tenant networks are used to isolate access to Compute resources.</p>
+      <p>The Helion documentation includes more information on <xref href="http://docs.hpcloud.com/#helion/userguide/create_network.html" scope="external" format="html">creating a private network</xref>.</p>
+      <note type="important">If you do not already have a tenant network configured, use the following steps. If you already have one configured, then you can continue on to the next item in the pre-installation checklist.</note>
+<p>To configure a tenant network:</p>
+      <ol>
+        <li>To create a tenant network, run:
+        <codeblock>$ neutron net-create tenant-network
+      $ neutron subnet-create –name tenant-subnet –gateway &lt;ip-address&gt; -- allocation pool start &lt;ip-address&gt;,end=&lt;ip-address&gt; tenant-network &lt;ip-address/prefix&gt;</codeblock>
+        </li>
+        <li>To provision the baremetal node, run:
+        <codeblock>
+          $ nova boot --nic net-id=&lt;tenant network id&gt; --image &lt;glance image id&gt; --flavor baremetal --key-name &lt;keypair-name&gt;
+        </codeblock>
+          Where:
+          <ul>
+            <li><b>&lt;tenant network id&gt;</b> is the UUID of the tenant network </li>
+            <li><b>&lt;image&gt;</b> is the name or ID of image (see 'nova image-list')</li>
+            <li><b>&lt;flavor&gt;</b> is the name or ID of flavor</li>
+            <li><b>&lt;keypair-name</b>&gt; is the name of the key pair to use</li>
+          </ul>
+          <p><b>Sample Output</b></p>
+          <codeblock># eon cluster-list --vcenter-id BC9DED4E-1639-481D-B190-2B54A2BF5674</codeblock>
+          <table frame="all" rowsep="1" colsep="1" id="table_TinT_sample_output2">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <colspec colname="c3" colnum="3" colwidth="1*"/>
+              <colspec colname="c4" colnum="4" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry><codeph>ID</codeph></entry>
+                  <entry><codeph>Name</codeph></entry>
+                  <entry><codeph>Status</codeph></entry>
+                  <entry><codeph>Server</codeph></entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry><codeph>ca797ded-5fa0-4ef2-8635</codeph></entry>
+                  <entry><codeph>hoscg-2.0</codeph></entry>
+                  <entry><codeph>ACTIVE</codeph></entry>
+                  <entry/>
+                </row>
+                <row>
+                  <entry><codeph> 2394d02e-2f58-4b85-b9e4</codeph></entry>
+                  <entry><codeph>hoscg-2.0</codeph></entry>
+                  <entry><codeph>ACTIVE</codeph></entry>
+                  <entry/>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </li>
+      </ol>
+    </section>
+    
+    <section id="TinT_glance"></section>
+    
+    <section id="TinT_floatingIP"></section>
+    
+  </body>
+</topic>
