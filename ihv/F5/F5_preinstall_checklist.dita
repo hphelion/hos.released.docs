@@ -85,7 +85,35 @@
     </section>
     <section id="F5_supp_network">
         <title>Create Supported F5 Network Configuration</title>
-            <p>To integrate F5 Networks BIG-IP into your HPE Helion OpenStack deployment, you must create the following networks and verify they are working before you can install F5 drivers for BIG IP.</p>
+      <p>The goal of the base networking setup is to create the OpenStack networks, subnets, and other networking elements that are necessary to run F5 with Helion OpenStack. To integrate F5 BIG-IP with Helion, there are certain network configurations that must be done.</p> 
+<ul>
+  <li><b>Management</b> - This network is used for the BIG-IP management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</li>
+  <li><b>High Availability (HA)</b> - This network is used for signaling between BIG-IP instances that are used for high availability purposes. This network is not required for standalone(non-HA) BIG-IP deployments.</li>
+  <li><b>Virtual Tunnel Endpoint (VTEP) network</b> - this is a data network</li>
+</ul>        
+
+<p><b>Frequently Asked Questions:</b></p>
+<dl>
+  <dlentry>
+    <dt>Why do we need 3 Neutron provider networks?</dt>
+    <dd>A minimum of 2 logical interfaces, and a minimum of 3 VLANs is required. The first provider network would be a management VLAN that goes to the first interface. The second provider network would be external and the third one would be internal.</dd>
+  </dlentry>
+  <dlentry>
+    <dt>Do these Neutron provider networks need to have a router and be connected to an external
+            network?</dt>
+    <dd>Only the external VLAN needs to have a router.  The internal VLANs will share a subnet with the servers.</dd>
+  </dlentry>
+  <dlentry>
+    <dt>How do these provider networks talk to controller and compute nodes? Do they need any special routing?</dt>
+    <dd>You can add a fourth VXLAN network and have the F5 device talk directly to the compute nodes. No special routing is needed as long as the servers are connected to the same internal VLAN as BIG-IP.</dd>
+  </dlentry>
+  <dlentry>
+    <dt>On which tenant network should these provider networks be created?</dt>
+    <dd>During testing we used the admin tenant.</dd>
+  </dlentry>
+</dl>
+      
+      <p>To integrate F5 Networks BIG-IP into your HPE Helion OpenStack deployment, you must create the following networks and verify they are working before you can install F5 drivers for BIG IP.</p>
             <p>To configure your network to prepare for BIG-IP:</p>
             <ol>
               <li><xref type="section" href="#F5_preinstall_checklist/config_man_net">Create a management network</xref></li>
@@ -98,11 +126,10 @@
       <title>Create a Management Network</title>
  
           <p>Integrating F5 BIG-IP with Helion OpenStack 2.0 requires that you create an additional
-        Helion management network. Since Helion OpenStack creates a management network by default,
-        make sure to use a different name, such as "mgmt". The same VLAN that you create in these
-        steps must be used to configure the F5 device for management network. The network you create
-        in the following steps must be the same network VLAN that the F5 device management network
-        is on.</p>
+            Helion management network. This network is used for the BIG-IP management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</p>
+      <p>The same VLAN that you create in these steps must be used to configure the F5 device for management
+        network. The network you create in the following steps must be the same network VLAN that
+        the F5 device management network is on.</p>
           <p>To create a management network:</p>
           <ol>
             <li>To create the network, replace the sample settings with the settings from your
@@ -163,17 +190,16 @@
 <section id="verify_net">
   <title>Verify Your Network Connectivity</title>
       <p>After creating the management, high availability (HA), and virtual tunnel endpoint (VTEP)
-        networks, you should verify connectivity before installing the F5 BIG-IP driver. When the
-        PING test passes on both Controller and Compute nodes, you can install the F5 LBaaS
-        driver.</p>
+        networks, you should verify connectivity before installing the F5 BIG-IP driver. Ping the IP
+        of the VM from compute nodes ONLY as the pool members will be residing on compute nodes.
+        When the PING test passes on the compute nodes, you can install the F5 LBaaS driver. </p>
       <p>To verify connectivity:</p>
       <ol>
         <li>Launch a virtual machine (VM) on your mgmt (management) network.</li>
-        <li>To ping an IP address, from the Controller node,
+        <li>To ping an IP address, from the compute node,
           run:<codeblock>$ ping &lt;ipaddress_of_Compute_node&gt;</codeblock></li>
-        <li>Repeat these steps for Compute node.</li>
+        <li>Repeat these steps for each Compute node.</li>
       </ol>
-      <note type="attention">Repeat these steps for the HA (high availability) and VTEP (virtual tunnel endpoint) networks before installing the LBaaS (load balancing as a service) driver.</note>
 </section>
   </body>
 </topic>
