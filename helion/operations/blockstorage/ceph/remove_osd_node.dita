@@ -10,71 +10,72 @@
         <section id="steps"><title>Removing a Ceph OSD Node</title>
             <p>
                 <ol>
-                    <li>Log in to the lifecycle manager.</li>
-                    <li>Make a note of the OSD numbers on the OSD node to be removed. A sample of
-                        OSD node is as
+                    <li>Log in to the OSD node that you wish to remove.</li>
+                    <li>Make a note of the OSD numbers on the OSD node to be removed using this
+                        command:<codeblock>ceph osd tree</codeblock>A sample of OSD node is as
                             follows:<codeblock>$ ceph osd tree
 # id    weight  type name       up/down reweight
 -1      6       root default
--2      3               host padawan-ceph-ccp-ceph0003-mgmt
+-2      3               host ceph-ccp-ceph0003-mgmt
 0       1                       osd.0   up      1
 3       1                       osd.3   up      1
 6       1                       osd.6   up      1
-<b>-4      3               host padawan-ceph-ccp-ceph0001-mgmt
+<b>-4      3               host ceph-ccp-ceph0001-mgmt
 1       1                       osd.1   up      1
 4       1                       osd.4   up      1
 7       1                       osd.7   up      1</b>
--3      3               host padawan-ceph-ccp-ceph0002-mgmt
+-3      3               host ceph-ccp-ceph0002-mgmt
 2       1                       osd.2   up      1
 5       1                       osd.5   up      1
 8       1                       osd.8   up      1</codeblock><p>For
-                            example, to remove the OSD node
-                                <codeph>padawan-ceph-ccp-ceph0001-mgmt</codeph>, the OSD numbers 1,
-                            4, and 7 are relevant.</p></li>
+                            example, to remove the OSD node <codeph>ceph-ccp-ceph0001-mgmt</codeph>,
+                            the OSD numbers 1, 4, and 7 are relevant.</p></li>
+                    <li>Log in to the lifecycle manager.</li>
                     <li>Run the following command to stop the OSDs running on the specific host:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-stop.yml --limit &lt;osd-node-to-remove></codeblock>
-                        <p>The hostname of the node can be found in the list generated from the
-                            output of the following command:</p>
-                        <codeblock>grep hostname ~/helion/my_cloud/info/server_info.yml</codeblock></li>
-                    <li> Run the following command for each OSD number (obtained from step #2
+ansible-playbook -i hosts/verb_hosts ceph-stop.yml --limit &lt;osd_node_to_remove></codeblock>
+                        <p>Replace the <codeph>&lt;osd_node_to_remove></codeph> string wtith the
+                            hostname of the node that you wish to remove, for example
+                                <codeph>&lt;ceph-ccp-ceph0001-mgmt></codeph>.</p></li>
+                    <li> Log back in to the OSD node you are removing and run the following command
+                        for each OSD number (obtained from step #2
                             above):<codeblock>ceph osd out &lt;osd-number> --cluster &lt;ceph_cluster>
 ceph auth del osd.&lt;osd-number> --cluster &lt;ceph_cluster>
 ceph osd crush remove osd.&lt;osd-number> --cluster &lt;ceph_cluster> 
 ceph osd rm &lt;osd-number> --cluster &lt;ceph_cluster></codeblock><note>Replace
                             the string <codeph>&lt;ceph_cluster></codeph> with the name of your Ceph
                             cluster (default cluster name is <b>ceph</b>).</note></li>
-                    <li>To remove the OSD host from the Ceph CRUSH map, run the following
+                    <li>From the same OSD node, remove the OSD host from the Ceph CRUSH map by
+                        executing the following
                             command:<codeblock>ceph osd crush remove &lt;host-name></codeblock><note>
                             Replace the string <codeph>&lt;host-name></codeph> in the above
                             command.</note></li>
-                    <li>Remove the OSD host from Cobbler: <codeblock>sudo cobbler system remove --name=&lt;node></codeblock>
+                    <li>Log in to the lifecycle manager and remove the OSD host from the input model
+                        in the <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph>
+                        file.</li>
+                    <li>Check your
+                            <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph>
+                        file and ensure that the <codeph>member-count</codeph>,
+                            <codeph>min-count</codeph>, and <codeph>max-count</codeph> values (if
+                        used) are correct for your OSD nodes.</li>
+                    <li> Remove the OSD node from Cobbler: <codeblock>sudo cobbler system remove --name=&lt;node></codeblock>
                         <note>If you need to determine the OSD hostname in Cobbler you can use
                                 <codeph>sudo cobbler system list</codeph></note></li>
                     <li>Run the Cobbler deploy playbook:
                         <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
-
-                    <li>Remove the OSD node from your server definitions file, path is usually:
-                        <codeblock>~/helion/my_cloud/definition/data/servers.yml</codeblock></li>
                     <li>Commit your configuration to the <xref
                             href="../../../installation/using_git.dita">local git repo</xref>, as
                         follows:
                         <codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "My config or other commit message"</codeblock></li>
+git commit -m "removing OSD node"</codeblock></li>
                     <li>Run the configuration processor:
                         <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
                     <li>Update your deployment directory:
                         <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                    <li>Remove the OSD host from Cobbler: <codeblock>sudo cobbler system remove --name=&lt;node></codeblock>
-                        <note>If you need to determine the OSD hostname in Cobbler you can use
-                                <codeph>sudo cobbler system list</codeph></note></li>
-                    <li>Run the Cobbler deploy playbook:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
-                    <li>Log in to the OSD node and un-mount the data and journal disks. Also, remove
+                    <li>Log in to the OSD node and unmount the data and journal disks. Also, remove
                         the mount instructions for the same disks from the
                             <codeph>/etc/fstab</codeph> file.</li>
                 </ol></p>
