@@ -5,7 +5,299 @@
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="install_F5_Driver">
-      <p>This content is under construction.</p>
+      <p>At the time of the Helion OpenStack 2.0 release, the F5 neutron-LBaaS driver is only available in the following file formats:</p>
+<ul> 
+  <li>.deb</li>
+   <li>.rpm</li>
+</ul>
+      <p>These formats cannot be directly installed by Helion OpenStack. Therefore it is necessary to manually install the driver using the following steps:</p>
+<ol>
+  <li><xref type="section" href="#F5install_driver/dwnld_files">Download the archives from the F5 Networks site</xref></li>
+  <li><xref type="section" href="#F5install_driver/F5_extract">Extract the files relevant to BIG IP</xref></li>
+  <li><xref type="section" href="#F5install_driver/F5_movefiles">Copy the files to the neutron virtual environment</xref></li>
+  <li><xref type="section" href="#F5install_driver/install_agent">Install the F5 agent</xref></li>
+  <li><xref type="section" href="#F5install_driver/f5_run_agent">Run the F5 agent</xref></li>
+</ol> 
+      <note type="attention">Steps 1-3 should be repeated on all neutron control plane nodes.</note>
+   </section>
+    
+    <section id="dwnld_files">
+      <title>Download the archives from the F5 Networks site</title>
+      <p>Before downloading files you must install the screen utility on the lifecycle manager (deployer node). Then make sure you have stopped all existing neutron LBaaS agents on the computer node Bbfore you can place the downloaded files into the neutron environment.</p>
+      <p>To download and extract the F5 files:</p>
+      <ol>
+        <li>Log into the lifecycle manager.</li>
+        <li>To install the screen utility, run:
+        <codeblock>#sudo apt-get install screen</codeblock></li>
+        <li>To create an ansible playbook to stop all LBaaS agents, run:
+        <codeblock>#cd ~scratch/ansible/next/hos/ansible</codeblock>
+        </li>
+        <li>Create a file with the following name:
+        <codeblock>neutron-lbaas-stop.yml</codeblock>
+        </li>
+        <li>Add the following lines to the neutron-lbaas-stop.yml file, replacing names with those used in your environment:
+          <codeblock>-	hosts: NEU-LBAV2
+            sudo: yes
+            roles:
+            - neutron-common
+            - neutron-lbaasv2-agent
+            
+            tasks:
+            - include: roles/neutron-lbaasv2-agent/tasks/stop.yml
+            
+            -hosts: NEU-LBAV1
+            sudo: yes
+            roles:
+            - neutron-common
+            - neutron-lbaasv2-agent
+            
+            tasks:
+            - include: roles/neutron-lbaasv2-agent/tasks/stop.yml</codeblock>
+        </li>
+        <li>To stop existing LBaaS agents using the ansible playbook, run:
+          <codeblock>#ansible-playbook -i hosts/verb_hosts neutron-lbaas-stop.yml</codeblock>
+        </li>
+        <li>To verify that lbaas agents have stopped, run:
+          <codeblock>#neutron agent-list</codeblock>
+          <note type="attention">Keep in mind that it takes several minutes for an updated list to be shown by this command.</note>
+        </li>
+        <li>To download the F5 driver Debian files (Version 1.0.10), run
+          <codeblock>
+            #cd ~
+            #wget  --no-check-certificate  -O F5.tgz https://devcentral.f5.com/d/openstack-neutron-lbaas-driver-and-agent?download=true</codeblock>
+        </li>
+        <li>TO verify the contents of the downloaded archive, run:
+          <codeblock># md5sum F5.tgz</codeblock>
+          <p><b>Sample output</b></p>
+          <codeblock>e0a441b07874e7958de0bc5d733b9cca  F5.tgz</codeblock>
+        </li>
+      </ol>
+      <note type="attention">You should repeat these steps for the high availability and virtual tunnel endpoint (VTEP) networks before installing the LBaaS driver.</note>
+    </section>
+    
+    <section id="F5_extract">
+      <title>Extract the files relevant to BIG IP</title>
+      <p>The extraction procedure will extract several files, however you are only interested in the files with the &quot;.deb&quot; extension. Then you must test running the F5 agent on multiple nodes.</p>
+      
+      <p><b>To extract the files from the F5 .deb archives and test the agent:</b></p>
+<ol>
+  <li>In the same directory where you downloaded the archive, run:
+    <codeblock>#tar xvfz F5.tgz</codeblock>
+  </li>
+  <li>Copy the .deb archives onto appropriate nodes.  
+    <note type="attention">Use the following guidelines:
+    <ul>
+      <li>The API driver goes onto all neutron API control plane nodes</li>
+      <li>The agent and common packages go on one control plane node</li>
+    </ul>
+    </note> </li>
+  <li>To test running the agent on multiple nodes, run the following commands:
+    <codeblock>
+      #cd f5
+      #scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
+      #scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m2-mgmt:
+      #scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m3-mgmt:
+      #scp f5-bigip-common_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
+      #scp f5-oslbaasv1-agent_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:</codeblock>
+  </li>
+</ol>
+    </section>
+    <section id="F5_movefiles"><title>Copy the files to the neutron virtual environment</title>
+      <p>Since the F5 .deb files are delivered via distribution packages, and Helion OpenStack expects the files to be under site packages, you must move the files to the correct location. Then you can edit the settings to identify the default load balancing service provider. Make sure you restart the neutron server when you are finished.</p>
+      <note type="attention">Repeat all of these steps on all neutron controller plane nodes.</note>
+      
+      <p>To copy the files to the neutron virtual environment:</p>
+      <ol>
+        <li>To install the F5 API driver .deb files on all controller nodes, run the following commands:
+          <codeblock>#ssh stack@padawan-ccp-c1-m1-mgmt
+            #dpkg -x f5-oslbaasv1-driver_1.0.10-1_all.deb f5-driver
+            #cd f5-driver/usr/lib/python2.7/dist-packages
+            #sudo cp -rP * /opt/stack/service/neutron/venv/lib/python2.7/site-packages/   
+            #sudo touch /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/oslbaasv1driver/__init__.py
+          </codeblock>
+        </li>
+      </ol>
+    </section>
+    <section id="set_lb_default">
+      <p>You can choose to either set F5 as the default load balancing service provider, or you set another provider as the default. First determine which LOADBALANCER service provider you want to set as the default. If you have multiple service providers, only one of them may have the ":default" tag.</p>
+      
+      <p><b>To set the default load balancing service provider, choose one of the following options:</b></p>
+     <ul>
+       <li>Set F5 as the default</li>
+       <li>Set another provider as the default</li>
+     </ul>
+    </section>    
+
+<section id="f5_def_man">
+  <title>To set F5 as the default load balancing service provider:</title>
+<ol>
+  <li>In a text editor, open the following file:
+    <codeblock>/opt/stack/service/neutron/etc/neutron.conf</codeblock>
+  </li>
+  <li>Find the following service provider entry:
+    <codeblock>LOADBALANCER:Haproxy</codeblock>
+  </li>
+  <li>If you do not want to provide access to the HAProxy driver, delete the line containing the <codeph>LOADBALANCER:Haproxy</codeph> entry.</li>
+  <li>If you do want to provide access to the HAProxy driver, delete the following tag from the end of the line <codeph>:default</codeph>.</li>
+  <li>In the neutron.conf file you have open, add the following file:
+    <codeblock>service_provider=LOADBALANCER:F5:f5.oslbaasv1driver.drivers.plugin_driver.F5PluginDriver:default</codeblock>
+ </li>
+</ol>
+
+  <note type="caution">Only remove the ":default" tag for the HAPROXY line. The VPN line should have a ":default" tag at the end. If this is not configured correctly you will have issues in getting the neutron-server service up and running.</note> 
+  
+  <p><b>Sample of a working neutron.conf file:</b></p>
+ 
+    <codeblock>[service_providers]
+    #service_provider = LOADBALANCERV2:Haproxy:neutron_lbaas.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver:default
+    # To enable LBaaSv1, comment the above service_provider line and uncomment the below
+    service_provider = LOADBALANCER:Haproxy:neutron.services.loadbalancer.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver
+    service_provider = VPN:openswan:neutron_vpnaas.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default
+    service_provider = LOADBALANCER:F5:f5.oslbaasv1driver.drivers.plugin_driver.F5PluginDriver:default
+    </codeblock>
+</section>
+    
+    <section id="f5_not_def">
+      <title>To set F5 as the default load balancing service provider:</title>
+      <ol>
+        <li>In a text editor, open the following file:
+          <codeblock>/opt/stack/service/neutron/etc/neutron.conf</codeblock>
+        </li>
+        <li>Add the following file:
+          <codeblock>service_provider=LOADBALANCER:F5:f5.oslbaasv1driver.drivers.plugin_driver.F5PluginDriver</codeblock>
+        </li>
+      </ol>
+    </section>
+ <section id="install_agent">
+   <p>Before installing the F5 agent on the controller node, you must restart the server and check the neutron server log.</p>
+   
+   <ol>
+     <li>To restart the neutron server, run:
+       <codeblock>#sudo service neutron-server restart</codeblock>
+       <note type="attention">Keep in mind that it takes several minutes for this process to completed.</note>
+     </li>
+     <li>Return to controller node one and open the following file: <codeph>neutron-server.log</codeph>.</li>
+     <li> Verify the following conditions:
+       <ul>
+         <li>there are no stack traces</li>
+         <li>the driver has loaded</li>
+       </ul>
+       <note type="tip">If the driver does not load, verify the existence of the following file in all the f5 subdirectories in the site packages:
+         <codeblock>__init__.py</codeblock>
+       </note></li>
+     <li>To install the F5 agent code on one controller node, run the following commands:
+<codeblock>  #ssh stack@helion-ccp-c1-m1-mgmt
+             #sudo apt-get install python-suds # Needed by F5, not in hLinux.
+             #dpkg -x f5-bigip-common_1.0.10-1_all.deb f5-common
+             #dpkg -x f5-oslbaasv1-agent_1.0.10-1_all.deb f5-agent
+             #sudo cp -rP f5-common/usr/lib/python2.7/dist-packages/f5/* /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/
+             #sudo cp -rP f5-agent/usr/lib/python2.7/dist-packages/f5/* /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/    
+             #sudo cp -rP f5-agent/etc/* /opt/stack/service/neutron/etc
+             #sudo cp -rP f5-agent/usr/bin/* /opt/stack/service/neutron/venv/bin</codeblock>
+     </li>
+     <li>In a text editor, open the following file:
+       <codeblock>/opt/stack/service/neutron/etc/neutron/f5-oslbaasv1-agent.ini </codeblock></li>
+<li>Add the following lines to this file:
+  <table frame="all" rowsep="1" colsep="1" id="table_F5_agent">
+    <tgroup cols="2">
+      <colspec colname="c1" colnum="1" colwidth="1*"/>
+      <colspec colname="c2" colnum="2" colwidth="1*"/>
+      <thead>
+        <row>
+          <entry>Code</entry>
+          <entry>Description</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry>f5_ha_type = standalone</entry>
+          <entry>add this line if you are only using one F5 server</entry>
+        </row>
+        <row>
+          <entry>f5_vtep_selfip_name = 'VTEP'</entry>
+          <entry>'VTEP' is the default. Make sure this matches the selfIP name on F5 server</entry>
+        </row>
+        <row>
+          <entry>icontrol_hostname = 10.1.36.5</entry>
+          <entry>this is the management IP address of the F5 server
+            </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </table>
+     </li>
+   </ol>
+ </section>
+    <section id="f5_run_agent">
+      <title>To run the F5 agent:</title>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer node).</li>
+        <li>Run the agent under <codeph>screen</codeph> so that it will continue after disconnection.</li>
+        <li>run the following commands:
+        <codeblock>
+          #ssh stack@helion-cp1-c1-m1-mgmt
+          #cd /opt/stack/service/neutron/venv/bin
+          #sudo -u neutron bash
+          #./python2.7 f5-oslbaasv1-agent --config-file /opt/stack/service/neutron/etc/neutron.conf --config-file /opt/stack/service/neutron/etc/neutron/f5-oslbaasv1-agent.ini --log-file /var/log/neutron/f5.log
+        </codeblock>
+        </li>
+      </ol>
+      <p><b>To confirm the F5 agent status:</b></p>
+      <ol>
+        <li>From deployer node or any controller node, run:
+        <codeblock>neutron agent-list</codeblock>
+        </li>
+        <li>Verify the following settings:
+          <table frame="all" rowsep="1" colsep="1" id="table_agent_status">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Item</entry>
+                  <entry>Status</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry><codeph>f5-oslbaasv1-agent</codeph>(Loadbalance agent binary)</entry>
+                  <entry><codeph>: - )</codeph> (alive status)</entry>
+                </row>
+                <row>
+                  <entry>admin_state_up</entry>
+                  <entry>True</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </li>
+        <li>Login to the Horizon Dashboard with administrator credentials.</li>
+        <li>Click on <b>Admin</b>, then, <b>System</b>, then <b>System Information</b>, then <b>Network Agents</b>.</li>
+        <li>Verify the following settings:
+          <table frame="all" rowsep="1" colsep="1" id="horizon_agent_status">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Item</entry>
+                  <entry>Status</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry><codeph>f5-oslbaasv1-agent</codeph>(Loadbalance agent name)</entry>
+                  <entry>Enabled</entry>
+                </row>
+                <row>
+                  <entry>State</entry>
+                  <entry>Up</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </li>
+      </ol>
     </section>
   </body>
 </topic>
