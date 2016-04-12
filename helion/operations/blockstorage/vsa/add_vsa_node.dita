@@ -8,6 +8,11 @@
     <p>The steps involved are:</p></abstract>
   <body>
     <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="expandCollapse">
+      <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
+      <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
+    </section>
+
     <section id="prereqs"><title outputclass="headerH">Prerequisites</title>
       <sectiondiv outputclass="insideSection">
         <p>You should have one or more baremetal servers that meet the minimum hardware requirements
@@ -42,8 +47,8 @@ git checkout site</codeblock></li>
      ilo-ip: 192.168.9.4
      ilo-password: password
      ilo-user: admin</codeblock>
-            <p>You can find detailed descriptions of these fields <xref
-              keyref="configobj_servers">here</xref>.</p>
+            <p>You can find detailed descriptions of these fields <xref keyref="configobj_servers"
+                >here</xref>.</p>
             <note type="important">You will need to verify that the <codeph>ip-addr</codeph> value
               you choose for this node does not conflict with any other IP address in your cloud
               environment. You can confirm this by checking the
@@ -56,8 +61,8 @@ git checkout site</codeblock></li>
             your new total node count. So for example, if you had previously specified
               <codeph>member-count: 3</codeph> and are adding a fourth VSA node, you will need to
             change that value to <codeph>member-count: 4</codeph>. <p>See <xref
-              keyref="configobj_controlplane">Input Model - Control
-                Plane</xref> for more details.</p></li>
+                keyref="configobj_controlplane">Input Model - Control Plane</xref> for more
+              details.</p></li>
           <li>Commit the changes to git:
             <codeblock>git commit -a -m "Add node &lt;name>"</codeblock></li>
           <li>Run the configuration processor:
@@ -74,15 +79,14 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
 ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></codeblock>
             <note>If you don't know the <codeph>&#60;node name></codeph> already, you can get it by
               using <codeph>sudo cobbler system list</codeph></note>
-            <p>Before proceeding, you may want to take a look at <b>info/server_info.yml</b> to see
-              if the assignment of the node you have added is what you expect. It may not be, as
-              nodes will not be numbered consecutively if any have previously been removed. This is
-              to prevent loss of data; the config processor retains data about removed nodes and
-              keeps their ID numbers from being reallocated. See the Persisted Server Allocations
-              section in <xref
-                keyref="persisteddata/persistedserverallocations"><keyword
-                  keyref="kw-hos-phrase"/> Input Model</xref> for information on how this
-            works.</p></li>
+            <p>Before proceeding, you may want to take a look at
+                <b>~/helion/my_cloud/info/server_info.yml</b> to see if the assignment of the node
+              you have added is what you expect. It may not be, as nodes will not be numbered
+              consecutively if any have previously been removed. This is to prevent loss of data;
+              the config processor retains data about removed nodes and keeps their ID numbers from
+              being reallocated. See the Persisted Server Allocations section in <xref
+                keyref="persisteddata/persistedserverallocations"><keyword keyref="kw-hos-phrase"/>
+                Input Model</xref> for information on how this works.</p></li>
           <li>Run the following command:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts osconfig-run.yml</codeblock></li>
@@ -139,6 +143,10 @@ ansible-playbook -i hosts/verb_hosts monasca-deploy.yml --tags active_ping_check
           <li>The CMC utility will then add your new VSA node to the management group. Once it has
             completed you will see the <b>Status</b> change to <codeph>Storage System
               Normal</codeph>. <p><image href="../../../../media/vsa/addvsa_cmc7.png"/></p></li>
+          <li>Add the VSA node to an existing cluster.
+            <p><image href="../../../../media/vsa/addvsa_cmc8.png"/></p>
+            <p><image href="../../../../media/vsa/addvsa_cmc9.png"/></p>
+            <p><image href="../../../../media/vsa/addvsa_cmc10.png"/></p></li>
           <li>You can then continue on to create additional volumes.</li>
         </ol>
       </sectiondiv>
