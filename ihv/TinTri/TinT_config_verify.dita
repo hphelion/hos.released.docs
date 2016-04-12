@@ -1,25 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="tintri_overview">
-  <title>TinTri Integration Overview</title>
+<topic id="tintri_verify">
+  <title>Verify TinTri Integration</title>
   <body>
 
-    <p>Adding F5 Network products to your deployment can provide critical application delivery services consistently across the data center, private cloud, and public cloud. This allows hybrid users to experience the availability and performance they expect.</p>
-    <p> F5 Networks BIG-IP product family includes purpose-built hardware, software, and virtualized solutions. Depending on the appliance you use, one or more BIG-IP modules can be added to get the functionality your deployment requires.</p>
-<p>Creating an application centered strategy using F5 BIG-IP is supported in all of the following scenarios:</p>
-<ul>
-  <li>architecting a private cloud</li>
-  <li>migrating and re-architecting existing applications to a public cloud IbaaS (load balancing as a service) provider</li>
-  <li>moving to Software as a Service (SaaS)</li>
-  <li>deploying applications in a hybrid environment</li>
-  <li>ensuring business continuity</li>
-</ul>
-    <note>Keep in mind that flexible licensing options are available, based on where you want to deploy.</note>
-    <p>To integrate F5 BIG-IP features into your OpenStack deployment:</p>
+    <p>To verify TinTri integration, you will use the graphical user interface in Horizon to verify the backend is running and that you can create a virtual machine (VM). Horizon is an OpenStack project that provides a dashboard to bring together all OpenStack projects in one place. By building custom dashboards it is possible to seamlessly integrate external components or services with OpenStack.</p>
+
+    <p>To verify TinTri integration:</p>
     <ol>
-      <li><xref href="TinT_preinstall_checklist.dita">Meet all pre-installation requirements</xref></li>
-        <li><xref href="TinT_install_driver.dita">Install the TinTri Driver</xref></li>
-      <li><xref href="TinT_config_NFS.dita">Configure NFS</xref></li>
+      <li><xref type="section" href="#TinT_verify/TinT_Horizon">Access the Horizon dashboard.</xref></li>
+      <li><xref type="section" href="#TinT_verify/TinT_verify_backend">Verify the TinTri backend.</xref></li>
+      <li><xref type="section" href="#TinT_verify/TinT_VM">Create a new VM.</xref></li>
     </ol>
+<note type="important"> TinTri storage does support the below configurations and they have not been
+      tested with Helion OpenStack 2.0. <ul>
+        <li>Configuring Cinder for “Multi-VMstore” backend</li>
+        <li>Configuring Nova for data path to instances on VMstore</li>
+      </ul></note>
+
+<section id="TinTri_Horizon">
+  <title>Accessing Horizon</title>
+  <p>Horizon dashboards provide a web-based user interface to HPE Helion OpenStack services including Compute, Volume Operations, Networking, and Identity.</p> 
+  <p>To access a Horizon dashboard, you must know its hostname or IP address. If your administrator set a hostname value during the configuration process for your cloud, then Horizon will be accessed over port 80 on that hostname. If your administrator did not set a hostname value, then you can run a command to determine which IP address to use.</p>
+  <p>To log on to a Horizon dashboard, you must also know the username and password. The default username for the Administrator user is admin. In order to find the randomized password that is created by default you will need to look into a service file on the lifecycle manager.</p>
+  
+  <p><b>To find the hostname or IP address:</b></p>
+<ol>
+  <li>Log on to the lifecycle manager node (deployer node).</li>
+  <li>Find and open the following file in a text editor:
+    <codeblock>Network_groups.yml</codeblock></li>
+    <li>To check if your administrator set a hostname, find the following variable:
+      <codeblock>External_name</codeblock></li>
+  <li>If there is a value for external_name, then Horizon will be accessed over port 80 on that hostname. 
+    <note type="note">For example: If external_name=mycloud, then use <codeblock>mycloud:80</codeblock> to access Horizon.</note></li>
+    <li>If there is no value set for external_name, then to find the IP address, run:
+<codeblock>grep vip-HZN-WEB /etc/hosts</codeblock></li>
+  <li>Use the output of that command as the virtual IP address to access the Horizon dashboard.</li>
+</ol>  
+ 
+  <p><b> To find the password:</b></p>
+  <ol>
+    <li>Log on to the lifecycle manager node (deployer node).</li>
+    <li>To find the password, run:
+      <codeblock>Cat ~/service.osrc</codeblock></li>
+  </ol>
+    
+  <p><b>To access and log on to a Horizon dashboard:</b></p>
+  <ol>
+    <li>Open a web browser that has both JavaScript and cookies enabled.</li>
+    <li>In the address bar, enter the host name or IP address for the dashboard.</li>
+    <li> On the <b>Log In</b> page, enter your user name and password and then click <b>Sign
+          In</b>.</li>
+  </ol>
+</section>
+    
+    <section id="TinT_verify_backend">
+      <title>Verify the TinTri Backend</title>
+      <p>To verify the TinTri backend is running:</p>
+      <ol>
+        <li>In the Horizon dashboard, look in the list on the left side. Verify you can see
+            <b>Admin</b>.</li>
+        <li>In the list on the left side, click on <b>System Information</b>.</li>
+        <li>At the top, click <b>Block Storage Services</b>.</li>
+        <li>Verify that the cinder volume for the TinTri host you created is listed.</li>
+      </ol>
+      <p>Use the graphic below to navigate the user interface.</p>
+      <image href="verify_be_graphic.jpg"></image>
+      
+    </section>
+    
+    <section id="TinT_VM">
+      <title>Create a New Virtual Machine (VM)</title>
+      <p>To create a new VM in Horizon:</p>
+      <ol>
+        <li>In the Horizon dashboard, on the left side, click <b>Project</b>.</li>
+        <li>In the list on the left side, click <b>Compute</b>.</li>
+        <li>Under Compute, click <b>Volumes</b>.</li>
+        <li>At the top of the screen on the right side, click <b>+Create Volume</b>.</li>
+        <li>Verify that it is listed on the Volumes tab.</li>
+      </ol>
+      <p>Use the graphic below to navigate the user interface.</p>
+      <image href="new_vm_graphic.jpg"></image>
+    </section>
+    
   </body>
 </topic>
