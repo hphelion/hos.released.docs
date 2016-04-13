@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="tintri_preinstall_chklt">
+  <title>TinTri Pre-Installation Checklist</title>
+  <body>
+    <section id="TinTrichecklist">
+    <p>Before installing the TinTri driver into your Helion OpenStack deployment, make sure you fulfill all of the following requirements:</p>
+    <table frame="all" rowsep="1" colsep="1" id="table_TinT_preinstall_chklt">
+      <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="11.5*"/>
+          <thead>
+            <row>
+              <entry>&#9744;</entry>
+              <entry>Item</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#TinT_preinstall_checklist/TinT_supported_hardware"
+                  >Use the Supported Hardware Configuration</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#TinT_preinstall_checklist/TinT_network"
+                  >Use the Supported Network Configuration</xref></entry>
+            </row>
+          </tbody>
+        </tgroup>
+    </table>
+    
+    
+      <p>Click on an item in the checklist for more information on how to complete the task.</p>
+
+<note>After completing the checklist, you may want to create an optional network configuration to improve storage input-output performance. The following configuration was tested:
+  <ol>
+    <li>Create an additional virtual local area networks (VLANs) for Storage Management network configuration.</li>
+    <li>Create an additional VLAN for data traffic.</li>
+    <li>Ensure that these additional VLANs can pass traffic through all the other Helion OpenStack VLAN networks.</li>
+  </ol>
+  For more information on how to complete these steps, refer to the <xref href="https://docs.hpcloud.com/helion/installation/preinstall_checklist.html" scope="external" format="html">Helion OpenStack Pre-Installation Checklist</xref> which covers example configuration models, input model configurations, and network configurations.
+</note>
+    
+    </section>
+    
+    <section id="TinT_supported_hardware">
+      <title>Supported Hardware Configuration</title>
+    
+      <p>For testing purposes, the following hardware configurations was used to test a TinTri deployment:</p>
+    
+      <table frame="all" rowsep="1" colsep="1" id="table_TinT_supp_hdwr">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="4.26*"/>
+          <thead>
+            <row>
+              <entry>Appliance</entry>
+              <entry>Requirement</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>Make</entry>
+              <entry>TinTri</entry>
+            </row>
+            <row>
+              <entry>Model</entry>
+              <entry>T620</entry>
+            </row>
+            <row>
+              <entry>Operating System</entry>
+              <entry>4.0.1.1-6350.33898.16558</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <note type="important">TinTri supports the following versions of OpenStack:
+        <ul>
+          <li>VMstore OS 4.0 supports Juno</li>
+          <li>TinTri is officially supported in Liberty</li>
+          <li>TinTri is not officially supported in Kilo, but the Cinder drive is identical to the one in Liberty</li></ul></note>
+      <p>For more information, refer to the <xref href="https://wiki.openstack.org/wiki/CinderSupportMatrix" scope="external" format="html">Cinder support matrix</xref>.</p>
+    </section>
+    
+
+    <section id="TinT_network">
+      
+      <title>Supported Network Configuration</title>
+      <p>To integrate TinTri with Helion Openstack, you must have the following items in your network:
+     <ul>
+       <li><xref href="https://docs.hpcloud.com/index.html#helion/administration/create_extnet.html" scope="external" format="html">External Network </xref></li>
+       <li>Tenant Network</li>
+       <li>Management Network</li>
+       <li>Data Network</li>
+       <li>Glance Images</li>
+       <li>Floating IP</li>
+     </ul>
+        </p> 
+      <note type="important">If you do not already have an external network configured, use the following steps. If you already have one configured, then you can skip this step.</note>
+      
+      <p>There are multiple methods you can use to create this external network. The HPE Helion OpenStack Documentation provides information on two ways you can create an external network. Click on the following links for more information.</p>
+      <ul>
+        <li><xref href="http://docs.hpcloud.com/#helion/administration/create_extnet.html" scope="external" format="html">Using the Ansible Playbook</xref>. The HPE Helion OpenStack installer provides an Ansible playbook that will create this network for use across your projects. This playbook will query the Networking service for an existing external network, and then create a new one if you do not already have one. The resulting external network will have the name ext-net with a subnet matching the CIDR you specify in the command.</li>
+        <li><xref href="http://docs.hpcloud.com/#helion/administration/create_extnet.html" scope="external" format="html">Using the NeutronClient CLI</xref>. Use the command line tool from your lifecycle manager to create an external network.</li>
+      </ul>      
+    </section>
+    
+    <section id="TinT_ten_network">
+      
+      <title>Use the Supported Network Configuration</title>
+<p>In OpenStack user interfaces and documentation, a group of users is referred to as a project or tenant. These terms are interchangeable. In an OpenStack environment, you can create tenant networks using the Networking service (code named Neutron). Tenant networks are used to isolate access to Compute resources.</p>
+      <p>The Helion documentation includes more information on <xref href="http://docs.hpcloud.com/#helion/userguide/create_network.html" scope="external" format="html">creating a private network</xref>.</p>
+      <note type="important">If you do not already have a tenant network configured, use the following steps. If you already have one configured, then you can continue on to the next item in the pre-installation checklist.</note>
+<p>To configure a tenant network:</p>
+      <ol>
+        <li>To create a tenant network, run:
+          <codeblock>$ neutron net-create tenant-network
+      $ neutron subnet-create –name tenant-subnet –gateway &lt;ip-address&gt; -- allocation pool start &lt;ip-address&gt;,end=&lt;ip-address&gt; tenant-network &lt;ip-address/prefix&gt;</codeblock></li>
+        <li>To provision the baremetal node, run:
+          <codeblock>$ nova boot --nic net-id=&lt;tenant network id&gt; --image &lt;glance image id&gt; --flavor baremetal --key-name &lt;keypair-name&gt;</codeblock>
+          Where: <ul>
+            <li><b>&lt;tenant network id&gt;</b> is the UUID of the tenant network </li>
+            <li><b>&lt;image&gt;</b> is the name or ID of image (see 'nova image-list')</li>
+            <li><b>&lt;flavor&gt;</b> is the name or ID of flavor</li>
+            <li><b>&lt;keypair-name</b>&gt; is the name of the key pair to use</li>
+          </ul><p><b>Sample
+            Output</b></p><codeblock># eon cluster-list --vcenter-id BC9DED4E-1639-481D-B190-2B54A2BF5674</codeblock><table
+            frame="all" rowsep="1" colsep="1" id="table_TinT_sample_output2">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="2.37*"/>
+              <colspec colname="c2" colnum="2" colwidth="1.34*"/>
+              <colspec colname="c3" colnum="3" colwidth="1*"/>
+              <colspec colname="c4" colnum="4" colwidth="2.55*"/>
+              <thead>
+                <row>
+                  <entry>ID</entry>
+                  <entry>Name</entry>
+                  <entry>Status</entry>
+                  <entry>Server</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>ca797ded-5fa0-4ef2-8635</entry>
+                  <entry>hoscg-2.0</entry>
+                  <entry>ACTIVE</entry>
+                  <entry/>
+                </row>
+                <row>
+                  <entry>2394d02e-2f58-4b85-b9e4</entry>
+                  <entry>hoscg-2.0</entry>
+                  <entry>ACTIVE</entry>
+                  <entry/>
+                </row>
+              </tbody>
+            </tgroup>
+          </table></li>
+        <li>To view details about the network, run:
+              <codeblock>$ neutron net-show tenant-network</codeblock><p><b>Sample
+            Output</b></p><codeblock># eon cluster-list --vcenter-id BC9DED4E-1639-481D-B190-2B54A2BF5674</codeblock><table
+            frame="all" rowsep="1" colsep="1" id="table_TinT_sample_output3">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="1.94*"/>
+              <thead>
+                <row>
+                  <entry>Field</entry>
+                  <entry>Value</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>admin_state_up</entry>
+                  <entry>TRUE</entry>
+                </row>
+                <row>
+                  <entry>id</entry>
+                  <entry><codeph>2c4f260c-507a-47a7-a0f4-7faebfe312b0</codeph></entry>
+                </row>
+                <row>
+                  <entry>mtu</entry>
+                  <entry>0</entry>
+                </row>
+                <row>
+                  <entry>name</entry>
+                  <entry>tenant-network</entry>
+                </row>
+                <row>
+                  <entry>provider:network_type</entry>
+                  <entry>vlan</entry>
+                </row>
+                <row>
+                  <entry>provider:physical_network</entry>
+                  <entry>physnet1</entry>
+                </row>
+                <row>
+                  <entry>provider:segmentation_id</entry>
+                  <entry>102</entry>
+                </row>
+                <row>
+                  <entry>router:external</entry>
+                  <entry>False</entry>
+                </row>
+                <row>
+                  <entry>Shared</entry>
+                  <entry>True</entry>
+                </row>
+                <row>
+                  <entry>Subnets</entry>
+                  <entry>6a952e6b-903f-41db-b31d-62dc52c65dd0</entry>
+                </row>
+                <row>
+                  <entry>tenant-id</entry>
+                  <entry>c288a2816237465c8ea6efc16dc05b88</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </li>
+      </ol>
+    </section>
+    
+    <section id="TinT_glance">
+      <title>Configure the Cluster with Glance Image</title>
+      
+      <p>The Glance project provides the following features:</p>
+      <ul>
+        <li>image registration</li>
+        <li>discovery service</li>
+        <li>image delivery service</li> 
+      </ul>
+      <p>These services are used by Nova to deliver images from object stores, such as OpenStack's Swift service to Nova's compute nodes. Glance may be deployed in a number of ways.</p>
+      
+      <note type="important">If you already have Glance images configured, then you can continue on to the next item in the pre-installation checklist.</note>
+      
+      <p>To learn about the three main Glance configurations, see the <xref href="https:////jujucharms.com/glance/" scope="external" format="html">Glance Website</xref>.</p>
+    </section>
+    
+    <section id="TinT_floatingIP">
+      
+      <title>Verify Floating IP</title>
+      <p>When a single OpenStack cluster boots up, fixed IPs are allocated dynamically by the nova-network component. A fixed IP works well when you need connectivity only between instances inside your cloud deployment.</p>
+      <p>To provide IP addresses that are publicly routable and to allow users to explicitly allocate an IP address, the cloud administrator must configure a pool of floating IPs. When an instance starts up, this pool allows users to allocate floating IP addresses to their instances. The result is that the floating IP address is now visible to different ISPs or external networks outside of your cloud deployment. If an instance dies, the user can reuse the floating IP by attaching it to another instance. Only one floating IP address can be allocated to an instance at any given time.</p>
+      
+      <p>To verify that floating IP Pools are configured:</p>
+      <ol>
+        <li>To list all pools that provide floating IP addresses, run: <codeblock>$ nova floating-ip-pool-list</codeblock>
+          <b>Sample Output</b>
+          <codeblock><b>Name</b>
+          <b>Public test</b></codeblock>
+          <note type="important">If this list is empty, the cloud administrator must configure a
+            pool of floating IP addresses. For more information go to the <xref
+              href="http://docs.openstack.org/admin-guide-cloud/compute-networking-nova.html"
+              scope="external" format="html">OpenStack Website</xref>.</note></li>
+        <li> To list all floating IP addresses that are allocated to the current project, run: <codeblock>$ nova floating-ip-list</codeblock>
+          <b>Sample Output:</b>
+          <table frame="all" rowsep="1" colsep="1" id="table_TinT_sample_output4">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1.24*"/>
+              <colspec colname="c2" colnum="2" colwidth="1.12*"/>
+              <colspec colname="c3" colnum="3" colwidth="1*"/>
+              <colspec colname="c4" colnum="4" colwidth="2.71*"/>
+              <thead>
+                <row>
+                  <entry>IP</entry>
+                  <entry>Instance ID</entry>
+                  <entry>Fixed IP</entry>
+                  <entry>Pool</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>172.24.4.255</entry>
+                  <entry>hoscg-2.0</entry>
+                  <entry>10.0.0.2</entry>
+                  <entry>public</entry>
+                </row>
+                <row>
+                  <entry>172.24.4.226</entry>
+                  <entry>None</entry>
+                  <entry>None</entry>
+                  <entry>public</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table><p>For each floating IP address that is allocated to the current project, the
+            command outputs the floating IP address, the ID for the instance to which the floating
+            IP address is assigned, the associated fixed IP address, and the pool from which the
+            floating IP address was allocated.</p>
+        </li>
+      </ol>
+    </section>
+    
+  </body>
+</topic>

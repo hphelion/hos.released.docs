@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="F5_preinstall_checklist">
+  <title>F5 Pre-Installation Checklist</title>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <p>Before installing the F5 BIG-IP driver in your Helion OpenStack deployment, make
+      sure you fulfill all of the following requirements:</p>
+    <section id="F5checklist">
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="table_ckx_rd4_ht">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="25pt"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>&#9744;</entry>
+                <entry>Item</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#F5_preinstall_checklist/F5_supported_hardware">Use the Supported Hardware Configuration</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#F5_preinstall_checklist/verify_F5_device">Verify the F5 Device</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#F5_preinstall_checklist/F5_supp_network">Create the supported network configuration</xref></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      <note type="attention">F5 BIG-IP currently supports only LBaaS Version 1. This is the version that was used to validate F5 BIG-IP integration with Helion OpenStack 2.0. The F5 LBaaS driver that was tested with Helion OpenStack 2.0 is planned to be officially supported in the next release of OpenStack.</note>
+      <note type="caution">Before continuing you must verify the LBaaS version you are using in your environment. If you have v2, to install the required version, v1, you can use the instructions in the <xref href="http://docs.hpcloud.com/#helion/networking/lbaas_admin.html" scope="external" format="html">Configuring Load Balance as a Service</xref> documentation.</note>
+    </section>
+    
+    <section id="F5_supported_hardware">
+      <title>Use the Supported Hardware Configuration</title>
+      <p>HPE Helion OpenStack supports the F5 hardware configurations listed in the 
+        <xref href="http://helionready.hpcloud.com/search?title=f5" scope="external" format="html">HPE Helion Ready Solution Catalog</xref>.</p>
+      <p>For testing purposes, the following hardware configuration was used to test F5 BIG-IP deployment with Helion OpenStack 2.0:</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_F5_shw">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="3.14*"/>
+          <thead>
+            <row>
+              <entry>Appliance</entry>
+              <entry>Requirement</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>Make</entry>
+              <entry>F5 BIG-IP Load Balancer Device</entry>
+            </row>
+            <row>
+              <entry>Model</entry>
+              <entry>F5 BIG-IP 3600</entry>
+            </row>
+            <row>
+              <entry>Operating System</entry>
+              <entry>12.0.0 (Build 0.0.606)
+                OpenStack Kilo - F5 BIG-IP SM
+                <note type="attention">F5 BIG-IP is officially not supported in OpenStack Kilo.</note></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="verify_F5_device">
+      <title>Verify the F5 Device</title>
+      <p>Integrating F5 BIG-IP with Helion OpenStack 2.0 requires that your F5 device is configured and available.</p>
+      <p>For more information on the initial configuration of your F5 device, refer to the documentation you received from F5 Networks when the device was purchased.</p> 
+      <p>The following links provide more information from the F5 Support Web site:</p>
+      <ul>
+        <li><xref href="https://support.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/bigip-system-initial-configuration-11-6-0/1.html#conceptid" scope="external" format="html">BIG-IP initial configuration</xref></li>
+        <li><xref href="https://support.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/tmos_management_guide_10_0_0/tmos_high_avail.html" scope="external" format="html">Configure High Availability</xref></li>
+      </ul>
+    </section>
+    <section id="F5_supp_network">
+        <title>Create Supported F5 Network Configuration</title>
+      <p>The goal of this networking setup is to create the F5 provider networks, subnets, and other networking elements that are necessary to run F5 with Helion OpenStack. To integrate F5 BIG-IP with Helion, there are certain network configurations that must be done.</p> 
+<ul>
+  <li><b>Management</b> - Requires a new VLAN. This network is used for the BIG-IP management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</li>
+  <li><b>High Availability (HA)</b> - Requires a new VLAN. This network is used for signaling between BIG-IP instances that are used for high availability purposes. This network is not required for standalone(non-HA) BIG-IP deployments.</li>
+  <li><b>Virtual Tunnel Endpoint (VTEP) network</b> - Requires a free IP range from your GUEST_VXLAN. This is a data network.</li>
+</ul> 
+      <note type="attention">To ensure there is no IP conflict, make sure you define the <b>start
+          and end IP range</b> for GUEST_VXLAN. This setting can be found in the following file:
+        <codeblock>~/helion/my_cloud/definition/data/networks.conf</codeblock></note>
+      <note type="note">The new mgmt and HA VLAN's you create for F5 must be tagged. You can set the optional variable <b>tagged-vlan</b> to either “true” or “false”. If true, packets for the network carry the vlanid in the packet header; such packets are referred to as VLAN-tagged frames in IEEE 802.1Q. For information on how to set this option, read the <xref href="http://docs.hpcloud.com/#helion/example_configurations.html" scope="external" format="html">Helion OpenStack 2.1 Example Configurations</xref></note>
+
+<p><b>Frequently Asked Questions:</b></p>
+<dl>
+  <dlentry>
+    <dt>Why do we need 3 Neutron provider networks?</dt>
+    <dd>A minimum of 2 logical interfaces, and a minimum of 3 VLANs is required. The first provider network would be a management VLAN that goes to the first interface. The second provider network would be external and the third one would be internal.</dd>
+  </dlentry>
+  <dlentry>
+    <dt>Do these Neutron provider networks need to have a router and be connected to an external
+            network?</dt>
+    <dd>Only the external VLAN needs to have a router.  The internal VLANs will share a subnet with the servers.</dd>
+  </dlentry>
+  <dlentry>
+    <dt>How do these provider networks talk to controller and compute nodes? Do they need any special routing?</dt>
+    <dd>You can add a fourth VXLAN network and have the F5 device talk directly to the compute nodes. No special routing is needed as long as the servers are connected to the same internal VLAN as BIG-IP.</dd>
+  </dlentry>
+  <dlentry>
+    <dt>On which tenant network should these provider networks be created?</dt>
+    <dd>During testing we used the admin tenant.</dd>
+  </dlentry>
+</dl>
+      
+      <p>To integrate F5 Networks BIG-IP into your HPE Helion OpenStack deployment, you must create the following networks and verify they are working before you can install F5 drivers for BIG IP.</p>
+            <p>To configure your network to prepare for BIG-IP:</p>
+            <ol>
+              <li><xref type="section" href="#F5_preinstall_checklist/config_man_net">Create a management network</xref></li>
+              <li><xref type="section" href="#F5_preinstall_checklist/config_HA_net">Create a high availability network</xref></li>
+              <li><xref type="section" href="#F5_preinstall_checklist/config_VTEP_net">Create a Virtual Tunnel Endpoint (VTEP) network</xref></li>
+              <li><xref type="section" href="#F5preinstall_checklist/verify_net">Verify your network connectivity</xref></li>
+            </ol>
+          </section>
+    <section id="config_man_net">
+      <title>Create a Management Network</title>
+ 
+          <p>Integrating F5 BIG-IP with Helion OpenStack 2.0 requires that you create an additional management network. This network is used for the BIG-IP management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</p>
+      <p>The same VLAN that you create in these steps must be used to configure the F5 device for management
+        network. The network you create in the following steps must be the same network VLAN that
+        the F5 device management network is on.</p>
+          <p>To create a management network:</p>
+          <ol>
+            <li>To create the network, replace the sample settings with the settings from your
+          deployment in the following command and
+          run:<codeblock>$ neutron net-create f5-mgmt --provider:physical_network physnet1  --provider:network_type vlan --provider:segmentation_id 102</codeblock></li>
+            <li>To create a subnet, replace the sample settings with the settings from your
+          deployment in the following command and
+          run:<codeblock>$ neutron subnet-create f5-mgmt 10.1.36.0/24 --name f5-mgmt-subnet --gateway 10.1.36.1 --allocation-pool start=10.1.36.15,end=10.1.36.200</codeblock></li>
+            <li>To create a router for the network, run:
+          <codeblock>$ neutron router-create f5-mgmt-router</codeblock></li>
+            <li>To create an interface between the router and the subnet,
+          run:<codeblock>$ neutron router-interface-add f5-mgmt-router f5-mgmt-subnet</codeblock></li>
+            <li>To set the router gateway to the external network,
+          run:<codeblock>$ neutron router-gateway-set f5-mgmt-router ext-net</codeblock></li>
+          </ol>
+    </section>
+    <section id="config_HA_net">
+      
+      <title>Create a High Availability Network</title>
+          <p>Integrating F5 BIG-IP with Helion OpenStack requires that you create a high availability (HA) network. You must create this network using a VLAN that is not in use anywhere else.</p>
+          <p>To create a high availability network:</p>
+          <ol>
+            <li>To create the network, use the settings for your deployment in the following command
+          and
+          run:<codeblock>$ neutron net-create F5-HA --provider:physical_network physnet1 --provider:network_type vlan --provider:segmentation_id 103</codeblock></li>
+            <li>To create a subnet, use the settings for your deployment in the following command
+          and
+          run:<codeblock>$ neutron subnet-create F5-HA 10.1.37.0/24 --name F5-HA-subnet --gateway 10.1.37.1</codeblock></li>
+            <li>To create a router for the network,
+          run:<codeblock>$ neutron router-create F5-HA-router</codeblock></li>
+            <li>To create an interface between the router and the subnet,
+          run:<codeblock>$ neutron router-interface-add F5-HA-router F5-HA-subnet</codeblock></li>
+            <li>To set the router gateway to the external network,
+          run:<codeblock>$ neutron router-gateway-set F5-HA-router ext-net</codeblock></li>
+          </ol>
+        </section>
+    <section id="config_VTEP_net">
+      
+      <title>Create a Virtual Tunnel Endpoint (VTEP) Network</title>
+
+          <p>Integrating F5 BIG-IP with Helion OpenStack 2.0 requires that you create a virtual tunnel endpoint (VTEP) network. You must create this network using a free IP range from your GUEST_VXLAN VLAN.</p>
+          <p>To create a VTEP network:</p>
+          <ol>
+            <li>To create the network, use the settings for your deployment in the following command
+          and
+          run:<codeblock>$ neutron net-create f5-vtep --provider:physical_network physnet1 --provider:network_type vlan --provider:segmentation_id 106</codeblock></li>
+            <li>To create a subnet, use the settings for your deployment in the following command
+          and
+          run:<codeblock>$ neutron subnet-create f5-vtep 10.1.40.0/24 --name f5-vtep-subnet --gateway 10.1.40.1 --allocation-pool start=10.1.40.200,end=10.1.40.254</codeblock></li>
+            <li>To create a router for the network,
+          run:<codeblock>$ neutron router-create F5-vtep-router</codeblock></li>
+            <li>To create an interface between the router and the subnet,
+          run:<codeblock>$ neutron router-interface-add F5-vtep-router F5-vtep-subnet</codeblock></li>
+            <li>To set the router gateway to the external network,
+          run:<codeblock>$ neutron router-gateway-set F5-vtep-router ext-net</codeblock></li>
+          </ol>
+        </section>
+<section id="verify_net">
+  <title>Verify Your Network Connectivity</title>
+      <p>After creating the management, high availability (HA), and virtual tunnel endpoint (VTEP)
+        networks, you should verify connectivity before installing the F5 BIG-IP driver. Ping the IP
+        of the VM from compute nodes ONLY as the pool members will be residing on compute nodes.
+        When the PING test passes on the compute nodes, you can install the F5 LBaaS driver. </p>
+      <p>To verify connectivity:</p>
+      <ol>
+        <li>Launch a virtual machine (VM) on your mgmt (management) network.</li>
+        <li>To ping an IP address, from the compute node,
+          run:<codeblock>$ ping &lt;ipaddress_of_virtual_machine&gt;</codeblock></li>
+        <li>Repeat these steps for other F5 networks.</li>
+      </ol>
+</section>
+  </body>
+</topic>

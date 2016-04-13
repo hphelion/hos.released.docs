@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="tintri_install_driver">
+  <title>Install the TinTri Driver</title>
+  <body>
+    <p>To integrate TinTri with Helion, you must install the TinTri Cinder driver, configure NFS, and configure TinTri as a single-VMstore backend.</p>
+<ol>
+  <li><xref type="section" href="#TinT_install_driver/TinT_driver">Install the TinTri Cinder driver</xref></li>
+  <li><xref type="section" href="#TinT_install_driver/TinT_NFS">Configurae NFS</xref></li>
+  <li><xref type="section" href="#TinT_install_driver/TinT_backend">Configuring TinTri as a Single-VMstore Backend</xref></li>
+    </ol>
+
+    <note type="caution">If the TinTri driver is not installed in a virtual environment, there is a chance the driver can be lost when Helion OpenStack is upgraded. To ensure correct installation of Helion, follow the steps in <xref href="https://docs.hpcloud.com/helion/administration/thirdparty_driver_support.html#thirdpartydriver_patching_venv" scope="external" format="html">Title</xref></note>
+
+<section id="TinT_install_driver">
+  
+  <title>Install the TinTri Cinder Driver</title>
+  <p>To install the TinTri Cinder driver you must copy it to an active controller node.</p> 
+  <p>To install the driver:</p>
+  <ol>
+    <li>Copy the following file to the controller node that is running the VIP:
+          <codeblock>Tintri_Cinder_Driver_2.0.0.1.tar</codeblock></li>
+    <li> To unpack the archive with the following operands: <ul>
+            <li><b>x</b> -- extract the named file or files from the archive</li>
+            <li><b>v</b> -- write to standard error the name of each file processed</li>
+            <li><b>f</b> -- use the first file operand as the name of the archive instead of the
+              system-dependent default</li>
+          </ul> run: <codeblock>$ tar -zxvf Tintri_Cinder_Driver_2.0.0.1.tar</codeblock></li>
+    <li>After the file is unpacked, to change to the directory where the file is, run:
+      <codeblock>$ cd kilo/volume/drivers</codeblock></li>
+    <li>Verify that the following file exists in this directory:
+          <codeblock>Tintry.py</codeblock></li>
+    <li>To find the Cinder install path, run:
+      <codeblock>#sudo find / -name cinder</codeblock></li>
+    <li>Copy the <b>tintry.py</b> file to the cinder install path. The command will look like the following example:  
+      <codeblock>$ sudo cp tintri.py /opt/stack/venv/cinder-20151019T060521Z/lib/python2.7/site-packages/cinder</codeblock></li>
+  </ol>
+</section>
+    
+    <section id="TinT_NFS">
+      
+      <title>Configure NFS</title>
+      <p> Helion OpenStack uses Network File System (NFS) as the distributed file system protocol. NFS allows you to share a directory on a network. The computers or devices connecting to the shared directory usually mount the shared directory to make it a part of their own directory structure.</p>
+      <p>To configure NFS to work with the TinTri driver, verify that NFS-common is installed on the controller, create and verify the volume mount, and edit the NFS settings.</p>
+      <p>To configure NFS:</p>
+<ol>
+<li>To verify that NFS-common is installed on the controller, run:
+  <codeblock>$ sudo dpkg -l | grep nfs</codeblock></li>
+  <li>If NFS-common is not installed, to install it, run:
+ <codeblock>$ sudo apt-get install nfs-common</codeblock></li>
+  <li>To create and verify the volume mount, run the following commands:
+<codeblock>      $ mkdir &lt;mountname&gt;
+      $ mkdir &lt;mountname&gt;/&lt;submountname&gt;
+      $ mount &lt;vmstore_data_ip&gt;:/tintri/&lt;submountname&gt;
+            
+      For example:
+        $ mkdir m
+        $ mkdir m/cinder
+        $ mount 10.2.14.241:/tintri/cinder</codeblock></li>
+  <li>To edit the NFS shares settings for TinTri, open the following file in a text editor:
+          <codeblock>/etc/cinder/nfs_shares</codeblock></li>
+  <li>To add the submount name, add the following text:
+<codeblock>&lt;vmstore_data_ip&gt;:/tintri/&lt;submountname&gt;</codeblock>  
+  </li>
+</ol>   
+    </section>
+    
+    <section id="TinT_backend">
+    <title>Configuring TinTri as a Single-VMstore Backend</title>
+
+    <p>With HP StoreVirtual 4000 Storage, you Install the Centralized Management Console (CMC) on the computer or virtual machine that you use to administer the StoreVirtual Storage. You administer the entire network of Virtual Storage Appliances (VSA) from this CMC. </p>
+    <p>VSAs provide a complete array functionality of StoreVirtual 4000 Storage for VMware vSphere, Microsoft Hyper-V, and KVM environments without external array hardware. The CMC lets you easily configure, manage, and monitor your storage.</p>
+    <note type="note">To configure your Cinder backend server to use your VSA environment, you will use the information you configured in the CMC.</note>
+    <p>To configure TinTri as a backend:</p>
+    <ol>
+      <li><xref type="section" href="#TinT_install_driver/TinT_VSA">Add your VSA backend to the Cinder configuration file.</xref></li>
+      <li><xref type="section" href="#TinT_install_driver/TinT_Cinder">Add the TinTri backend to the Cinder configuration file.</xref></li>
+      <li><xref type="section" href="#TinT_install_driver/TinT_Nova">Add NFS mount options to the Nova configuration file.</xref></li>
+      <li><xref type="section" href="#TinT_install_driver/TinT_Commit">Commit your changes and reconfigure Cinder and Nova.</xref></li>
+    </ol>
+    </section>  
+    
+    <section id="TinT_VSA">
+      <title>Add Your VSA backend to the Cinder Configuration File</title>
+      <p>You must update your Cinder configuration to add VSA storage.</p>
+      <p>To add VSA to the Cinder configuration file:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Find the following file:
+          <codeblock>Cinder.conf.j2</codeblock> 
+          <b>For example:</b>
+          <codeblock>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeblock></li>
+        <li>In a text editor, open the following file:
+        <codeblock>cinder.conf.j2</codeblock>
+        </li>
+        <li>To add your VSA backend to the enabled_backends section, add the following text:
+          <codeblock># Configure the enabled backends
+Enabled_backends=tintri_vmstore</codeblock></li>
+      </ol> 
+      <note type="important">If you are using multiple backend types, you can use a comma delimited
+        list here. For example, if you are going to use both TinTri and EMC backends, you could
+        specify it in the following way:
+        <codeblock># Configure the enabled backends
+Enabled_backends=tintri,emc</codeblock>
+      </note>
+          </section>  
+    
+    <section id="TinT_Cinder">
+      <title>Add the TinTri backend to the Cinder Configuration File</title>
+      <p>To create a section for the TinTri backend:</p>
+      <ol>
+        <li>If not already open, find and open the following file in a text editor:
+          <codeblock>Cinder.conf.j2</codeblock></li>
+        <li>Add the following settings and fill in the values as per your cluster/environment:
+            <table frame="all" rowsep="1" colsep="1" id="table_TinT_Cinder">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1.08*"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Settings</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>volume_driver=cinder.volume.drivers.tintri.TintriDriver</entry>
+                  <entry>Options defined in cinder.</entry>
+                </row>
+                <row>
+                  <entry>nfs_mount_options=vers=3,lookupcache=pos</entry>
+                  <entry>Mount options passed to the NFS client. For more details, refer to the NFS
+                    man pages (string value)</entry>
+                </row>
+                <row>
+                  <entry>tintri_server_hostname=&lt;Tintri VMstore Management IP&gt;</entry>
+                  <entry>The hostname (or IP address) for the storage system. (string value)</entry>
+                </row>
+                <row>
+                  <entry>tintri_server_username=&lt;username&gt;</entry>
+                  <entry>User name for the storage system (string value)</entry>
+                </row>
+                <row>
+                  <entry>tintri_server_password=&lt;password&gt;</entry>
+                  <entry>Password for the storage system (string value)</entry>
+                </row>
+                <row>
+                  <entry>nfs_shares_config=/etc/cinder/nfs_shares</entry>
+                  <entry>This option is required for NFS configuration. It is the file with the list
+                    of available NFS shares (string value)</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table></li>
+      </ol>
+      <note type="note">The following is an example configuration:
+        <codeblock>[tintri_vmstore]
+volume_driver=cinder.volume.drivers.tintri.TintriDriver
+volume_backend_name=NFS_tintri
+nfs_mount_options=vers=3,lookupcache=pos
+tintri_server_hostname=10.2.14.240
+tintri_server_username=admin
+tintri_server_password=tintriadmin
+nfs_shares_config=/opt/stack/service/cinder-volume-20151019T060521Z/etc/nfs_shares</codeblock>
+      </note>
+    </section> 
+    
+    <section id="TinT_Nova">
+      <title>Add NFS Mount Options to the NOVA Configuration File</title>
+      <p>To add NFS mount options to the NOVA configuration file:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Find the following file:
+          <codeblock>nova.conf.j2</codeblock> 
+          For example:<codeph>~/helion/my_cloud/config/Nova/nova.conf.j2</codeph></li>
+        <li>In a text editor, open the following file: <codeblock>nova.conf.j2</codeblock></li>
+        <li>To add your NFS options to the Nova configuration, find the following text:
+            <codeblock>LIBVIRT</codeblock><note type="important">If this text does not exist, add it
+            after the line “END OF DEFAULT”</note></li>
+        <li>To the <b>LIBVIRT</b> section, add the following text:
+          <codeblock>nfs_mount_options= vers=3,proto=tcp</codeblock>
+          For example:
+          <codeblock># LIBVIRT
+          [libvirt]
+          virt_type = kvm
+          nfs_mount_options=vers=3,proto=tcp</codeblock>
+           </li>
+      </ol>
+    </section>
+ 
+    <section id="TinT_Commit">
+      <title>Commit Your Changes</title>
+      <p>Commit your changes and reconfigure Cinder and Nova to finish integrating TinTri with Helion OpenStack.</p>
+      <p>To finish configuring TinTri as a backend:</p>
+      <ol>
+        <li>To commit your configuration changes to a local git repository, run:
+          <codeblock>#cd ~/helion/hos/ansible
+          git add -A
+          git commit -m "&lt;your commit message&gt;"</codeblock></li>
+        <li>To use an ansible playbook to run the configuration processor, run:
+          <codeblock>#cd ~/helion/hos/ansible
+          ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To use an ansible playbook to create a deployment directory, run:
+          <codeblock>#cd ~/helion/hos/ansible
+          ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To use an ansible playbook to reconfigure Cinder, run:
+          <codeblock>#cd ~/helion/hos/ansible
+          ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+        <li>To use an ansible playbook to reconfigure Nova, run:
+          <codeblock>#cd ~/helion/hos/ansible
+          ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
+      </ol>
+    </section>  
+  
+  </body>
+</topic>
