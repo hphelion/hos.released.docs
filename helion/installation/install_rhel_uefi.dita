@@ -24,7 +24,10 @@
                     <li>Extract <codeph>grubx64.efi</codeph> from a RHEL 7.2 iso on an existing RHEL installation.</li>
                     <li>Copy <codeph>grubx64.efi</codeph> to the lifecycle manager. </li>
                     <li>Reconfigure Cobbler/PXE to use the RedHat secondary loader <codeph>grubx64.efi</codeph>.</li>
-                    <li>Create a separate Grub2 configuration file in <codeph>/srv/tftp/grub/</codeph> for each UEFI RHEL server that you intend to install</li>
+                    <li>Create a separate Grub2 configuration file in <codeph>/srv/tftp/grub/</codeph> for each UEFI RHEL server 
+                        that you intend to install.</li>
+                    <li>Carry out the installation.</li>
+                    <li>Restore the original configuration.</li>
                     
                 </ul>
                 
@@ -92,7 +95,7 @@ rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv
 </codeblock>                
                 
                 </li>
-                <li>Change <codeph>grub/grub-x86_64.efi</codeph> to <codeph>grubx64.efi</codeph> to select the RHEL 
+                <li>Change <codeph>grub-x86_64.efi</codeph> to <codeph>grubx64.efi</codeph> to select the RHEL 
                 secondary bootloader, instead of the HPE Linux one.</li>
                 
                 <li>Save your changes and then re-run the cobbler-deploy playbook.
@@ -178,6 +181,64 @@ and node name.
 
         </section>
         
+        <section>
+            <title>Carry out the installation</title>
+            
+            <p>To install RHEL on the configured UEFI nodes, run the <codeph>bm-reimage</codeph> playbook, 
+                specifying the nodes in the <codeph>-e nodelist</codeph> option.
+            </p>
+<codeblock>
+cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-reimage.yml [-e nodelist=node1,node2,node3]
+</codeblock>            
+            
+        </section>
+        
+        <section>
+            <title>Restore the original configuration</title>
+            
+            <p>When you have finished installing your RHEL/UEFI nodes, you must undo the steps you took when 
+                Reconfiguring Cobbler/PXE to use the RedHat loader. </p>
+            
+            <ul>
+                
+                <li>Edit <codeph>~/helion/hos/ansible/roles/cobbler/templates/cobbler.dhcp.template.j2</codeph> and 
+                    navigate to the section containing <codeph>00:07</codeph>. 
+                </li>
+                <li>Change <codeph>grubx64.efi</codeph> back to <codeph>grub-x86_64.efi</codeph> to select the HPE Linux loader, instead of the RHEL one.</li>
+                <li>Save your changes and then re-run the cobbler-deploy playbook.
+<codeblock>
+cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml
+</codeblock>                
+                </li>
+            </ul>               
+              
+            <note type="important">
+                
+                <p>To confirm that you have successfully undone the changes:</p>
+                <ul>
+                    <li>Check the file <codeph>/etc/dhcp/dhcpd.conf</codeph> and confirm that the HPE Linux loader file <codeph>grub-x86_64.efi</codeph> is 
+                        in back in the <codeph>00:07</codeph> section 
+                        
+                    </li>
+                    <li>You do not need to remove the Grub2 files named <codeph>grub.cfg-01-*</codeph> in <codeph>/srv/tftp/grub/</codeph>. 
+                        You also do not need to remove the <codeph>grubx64.efi</codeph> from  the same directory. They will be ignored during 
+                        the normal installation and my be convenient if you need to reimage the RHEL/UEFI nodes 
+                        in the future.                                               
+                    </li>
+                </ul>
+            </note>
+                      
+        </section>
+        <section>
+            <title>Reimaging RHEL/UEFI nodes</title>
+            
+            
+            <p>If you need to reimage a RHEL/UEFI node, just follow the above instructions again to 
+                reconfigure Cobbler, reimage the node(s) and then restore the original configuration yet again.</p>
+            
+        </section>        
     </body>
 </topic>
 
