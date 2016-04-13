@@ -7,15 +7,80 @@
         <section id="overview">
             <title>Introduction</title>
             
-            <p>If you want to use <keyword keyref="kw-hos-phrase"/> Lifecycle Manager to install RHEL 7.2 on UEFI nodes,
+            <p>If you want to use <keyword keyref="kw-hos-phrase"/> lifecycle manager to install RHEL 7.2 on UEFI nodes,
                  you will need to manually configure Cobbler to perform the task. Afterwards, you will need to reverse the 
                  steps to restore the normal Cobbler configuration. 
             
             </p>
             
-            <p>Before you attempt to use the Lifecycle Manager to install RHEL  on UEFI nodes, you should 
-            install any hLinux nodes or any RHEL on legacy BIOS nodes first.</p>
+            
+            <p>Before you attempt to use the lifecycle manager to install RHEL  on UEFI nodes, you should 
+                install any hLinux nodes or any RHEL on legacy BIOS nodes first.</p>
+            
+            <p>The lifecycle manager  configures PXE to supply the hLinux secondary loader <codeph>grub-x86_64.efi</codeph> 
+                to UEFI nodes. However, bootstrapping  RHEL on UEFI nodes requires a different
+                secondary loader <codeph>grubx64.efi</codeph> that is RHEL-specific. You need to 
+                <ul>
+                    <li>Extract <codeph>grubx64.efi</codeph> from a RHEL 7.2 iso on an existing RHEL installation.</li>
+                    <li>Copy <codeph>grubx64.efi</codeph> to the lifecycle manager. </li>
+                    <li>Reconfigure Cobbler/PXE to use the RedHat secondary loader <codeph>grubx64.efi</codeph>.</li>
+                    <li>Create a separate Grub2 configuration file in <codeph>/srv/tftp/grub/</codeph> for each UEFI RHEL server that you intend to install</li>
+                    
+                </ul>
+                
+                 
+                
+                
+            </p>
+
         </section>
+        
+        
+        
+        <section>
+            <title>Extracting the RedHat secondary loader <codeph>grubx64.efi</codeph>  from a RHEL 7.2 iso</title>
+            
+            <p>You must perform these steps on an existing RHEL installation as it depends on 
+                <codeph>rpm2cpio</codeph> which is not available on HPE Linux.
+            </p>
+            
+<codeblock>
+sudo mount rhel7.iso /mnt
+cp /mnt/Packages/grub2-efi-2.02-0.29.el7.x86_64.rpm /tmp
+cd /tmp
+rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv
+</codeblock>
+            <p>The output from this command should look similar to the following:</p>
+<codeblock>
+./boot/efi/EFI/redhat
+./boot/efi/EFI/redhat/fonts
+./boot/efi/EFI/redhat/fonts/unicode.pf2
+./boot/efi/EFI/redhat/gcdx64.efi
+<b>./boot/efi/EFI/redhat/grubx64.efi</b>
+./boot/grub2/grubenv
+./etc/grub2-efi.cfg
+./usr/share/doc/grub2-efi-2.02
+./usr/share/doc/grub2-efi-2.02/COPYING
+</codeblock>
+            
+            <p>The required RHEL secondary loader file is <codeph>/tmp/boot/efi/EFI/redhat/grubx64.efi</codeph>.
+            
+            </p>
+        </section>
+        
+        
+        <section>
+            <title>Reconfiguring Cobbler/PXE to use the RedHat secondary loader <codeph>grubx64.efi</codeph></title>
+            
+            <p></p>
+            
+            <ul>
+                <li></li>
+                
+            </ul>
+            
+        </section>
+        
     </body>
 </topic>
 
