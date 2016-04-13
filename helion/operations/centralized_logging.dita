@@ -2,69 +2,39 @@
 <!DOCTYPE topic
   PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
 <topic xml:lang="en-us" id="centralized_logging">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Centralized Logging Service</title>
-  <abstract><shortdesc outputclass="hdphidden">Using the Centralized Logging
-    service.</shortdesc></abstract>
+  <title>Centralized Logging Service</title>
   <body>
-    <p conkeyref="HOS-conrefs/applies-to"/>
-    <p>A typical <keyword keyref="kw-hos"/> cloud consists of multiple servers which makes locating
-      a specific log from a single server difficult. The <keyword keyref="kw-hos"/> Centralized
+    <p>A typical cloud consists of multiple servers which makes locating
+      a specific log from a single server difficult. The Centralized
       Logging feature helps the administrator evaluate and troubleshoot the distributed cloud
       deployment from a single location.</p>
     <p>The Centralized Logging feature collects logs on a central system, rather than leaving the
       logs scattered across the network. The administrator can use a single Kibana interface to view
       log information in charts, graphs, tables, histograms, and other forms.</p>
-    <p>In addition to each of the <keyword keyref="kw-hos"/> services, Centralized Logging also
+    <p>In addition to each of the services, Centralized Logging also
       processes logs for the following features:</p>
     <ul>
       <li>HAProxy</li>
       <li>syslog</li>
       <li>keepalived</li>
     </ul>
-    <p>This document describes the Centralized Logging feature and contains the following
-      sections:</p>
+    <p>This topic describes the following concepts related to the Centralized Logging feature:</p>
     <ul>
-      <li><xref href="#centralized_logging/install">Installation</xref></li>
-      <li><xref href="#centralized_logging/components">Centralized Logging Components</xref></li>
-      <li><xref href="#centralized_logging/retaining_logs">Log Retention Overview</xref></li>
+      <li><xref href="#centralized_logging/components">Components overview</xref></li>
+      <li><xref href="#centralized_logging/retaining_logs">Log File Retention</xref></li>
+      <li><xref href="#centralized_logging/types">Logging Data Collected by Helion</xref></li>
       <li><xref href="#centralized_logging/rotating_logs">Log Rotation Overview</xref></li>
-      <li>
-        <xref href="#centralized_logging/types">Centralized Logging Data</xref>
-      </li>
-      <li>
-        <xref href="#centralized_logging/kibana">Kibana Configuration</xref>
-        <ul>
-          <li>
-            <xref href="#centralized_logging/interface">Logging into Kibana</xref>
-          </li>
-        </ul>
-      </li>
-      <li>
-        <xref href="#centralized_logging/troubleshooting">Using Centralized Logging to Troubleshoot
-          Issues</xref>
-      </li>
-      <li>
-        <xref href="#centralized_logging/monitoring">Monitoring Centralized Logging</xref>
-      </li>
-      <li>
-        <xref href="troubleshooting/troubleshooting_logging.dita">Troubleshooting Centralized
-          Logging Issues</xref>
-      </li>
-      <li>
-        <xref href="#centralized_logging/info">For More Information</xref>
-      </li>
+      <li><xref href="#centralized_logging/info">For More Information</xref></li>
     </ul>
-    <section id="install">
-      <title>Installation</title>
-      <p>The Centralized Logging feature is automatically installed as part of the <keyword
-          keyref="kw-hos"/> installation. The base logging levels will be tuned during installation
-        according to the amount of RAM allocated to your control plane nodes to ensure optimum
-        performance.</p>
-      <p>No specific configuration is required to use Centralized Logging. However, you can tune or
-        configure the individual components as needed for your environment as detailed in the <xref
-          href="configuring/configure_logging.dita">Configuration the Centralized Logging
-          Service</xref> page.</p>
-    </section>
+    <p>For steps on how to administer and troubleshoot logging, refer to the following topics:</p>
+    <ul>
+      <li><xref href="central_log_configure.dita">Configuring Logging</xref></li>
+      <li><xref href="central_log_troubleshoot.dita"></xref>Troubleshooting</li>
+    </ul>
+   
+    
+    
+    
     <section id="components">
       <title>Centralized Logging Components</title>
       <p>Centralized logging consists of several components, detailed below:</p>
@@ -112,7 +82,9 @@
         also be seen as coming from the credential holder to the application requiring
         authentication.</note>
     </section>
-    <section id="retaining_logs"><title>Log Retention Overview</title>
+    
+    
+    <section id="retaining_logs"><title>Log File Retention</title>
       <p>The logs that are centrally stored are saved to persistent storage as Elasticsearch
         indices. These indices are stored in the partition <codeph>/var/lib/elasticsearch</codeph>
         on each of the Elasticsearch cluster nodes. Out of the box, each day&apos;s worth of logs is
@@ -121,8 +93,8 @@
         indices takes up CPU and memory. If these indicies are left unattended they will continue to
         consume system resources and eventually deplete them.</p>
       <p>Elasticsearch, by itself, doesn't prevent this from happening.</p>
-      <p><keyword keyref="kw-hos"/> uses a tool called <b>curator</b> that is developed by the
-        Elasticsearch community to handle these situations. <keyword keyref="kw-hos"/> installs and
+      <p>Helion OpenStack uses a tool called <b>curator</b> that is developed by the
+        Elasticsearch community to handle these situations. Helion installs and
         uses a curator in conjunction with several configurable settings. This curator is called
           <b>cron</b> and perfoms the following checks:</p>
       <ul>
@@ -141,7 +113,7 @@
           is, an error message is written to the log file but the current index is NOT deleted.</li>
       </ul>
       <p>In the case of an extreme network issue, log files can run out of disk space in under an
-        hour. To avoid this <keyword keyref="kw-hos"/> uses a shell script called
+        hour. To avoid this Helion uses a shell script called
           <codeph>logrotate_if_needed.sh</codeph>. The cron process runs this script every 5 minutes
         to see if the value in <codeph>/var/log</codeph> is at 95% or more of its default. If it is
         at or above this level, cron runs the <codeph>logrotate_if_needed.sh</codeph> script to
@@ -149,7 +121,7 @@
         out of disk space on <codeph>/var/log</codeph>.</p>
     </section>
     <section id="types">
-      <title>Centralized Logging Data</title>
+      <title>Logging Data Collected by Helion</title>
       <p>The following table lists the types of logs collected by Centralized Logging and provides
         information on how the logs are maintained.</p>
       <table>
@@ -357,170 +329,26 @@ freezer-scheduler.log.7 at 123K        </codeblock>
 #log rotate will not work, and to free up space on /var/log.
 #Don't set it at 100%, as by then alarms may not fire properly.
                 
-<b>var_log_high_watermark_percent:95</b>              </codeblock>
-          </li>
+<b>var_log_high_watermark_percent:95</b>              </codeblock></li>
         </ul>
       </p>
-    </section>
-
-    <section id="kibana">
-      <title>Kibana Configuration</title>
-      <p>You can use the Kibana dashboards to view log data. Kibana is a tool developed to create
-        charts, graphs, tables, and histograms based on logs send to Elasticsearch by logstash.</p>
-      <p>While creating Kibana dashboards is beyond the scope of this document, it is important to
-        know that you can use the default Kibana dashboards or create custom dashboards. The
-        dashboards are JSON files that you can modify or create new dashboards based on existing
-        dashboards.</p>
-      <note>Kibana is client-side software. To operate properly, the browser must be able to access
-        port 5601 on the control plane.</note>
-    </section>
-    <section id="interface">
-      <title>Logging into Kibana</title>
-      <p>To log into Kibana to view data, you must either access Kibana through Operations Console
-        or using a direct link. Then make sure you have the correct login credentials.</p>
-      <p><b>To log into Kibana:</b></p>
-      <ol>
-        <li>Access Kibana using the Operations Console or through a direct link.</li>
-        <li>Verify login credentials.</li>
-      </ol>
-      <p><b>To use Operations Console:</b></p>
-      <ol>
-        <li>Access <xref href="monitoring_service.dita#monitoring/working" type="section">Operations
-            Console</xref>.</li>
-        <li>From the menu, choose <b>Logging Dashboard</b>.</li>
-      </ol>
-      <p><b>To use a direct link:</b></p>
-      <p>This section helps you verify the Horizon virtual IP (VIP) address for Kibana that you
-        should use.</p>
-      <ol>
-        <li>Navigate to and open in a text editor the following file:
-          <codeblock>network_groups.yml</codeblock>
-        </li>
-        <li>Find the following entry: <codeblock><codeph>external-name</codeph></codeblock></li>
-        <li>If your administrator set a hostname value in the <b>external-name</b> field during the
-          configuration process for your cloud, then Kibana will be accessed over port 5601 on that
-          hostname.</li>
-        <li>If your administrator did not set a hostname value, then to determine which IP address
-          to use, from your lifecycle manager, run: <codeblock>grep vip-HZN-WEB /etc/hosts</codeblock>
-          <p>The output of that command will show you the virtual IP address for Kibana that you
-            should use. Access to Kibana will be over port 5601 of that virtual IP address.
-            Example:</p>
-          <codeblock>http://&lt;VIP&gt;:5601</codeblock>
-        </li>
-      </ol>
-      <p><b>Login Credentials</b></p>
-      <p>During the installation of Kibana, a password is automatically set and it is randomized.
-        Therefore, unless an administrator has already changed it, you need to retreive the default
-        password from a file on the control plane node.</p>
-      <p>The default settings for Kibana are:</p>
-      <dl>
-        <dlentry>
-          <dt>username</dt>
-          <dd>kibana</dd>
-        </dlentry>
-        <dlentry>
-          <dt>password</dt>
-          <dd>(randomized)</dd>
-        </dlentry>
-      </dl>
-      <p><b>To find the randomized password:</b></p>
-      <ol>
-        <li>On your lifecycle manager, navigate to the following directory:
-          <codeblock>~/scratch/ansible/next/hos/ansible/group_vars/</codeblock>
-        </li>
-        <li>To GREP for the <codeph>logging_kibana_password</codeph>, run:
-          <codeblock>grep logging_kibana_password &lt;name-of-control-plane&gt;</codeblock>
-        </li>
-      </ol>
-      <note type="note">For example, if you are using the Entry-scale KVM with VSA model and you
-        kept the default naming scheme in the example files then your command would look similar to
-        this:
-        <codeblock>grep logging_kibana_password entry-scale-kvm-vsa-control-plane-1</codeblock>
-      </note>
-    </section>
-    <section id="troubleshooting"><title>Using Centralized Logging to Troubleshoot Issues</title>
-      <p>You can troubleshoot service-specific issues by reviewing the logs. After logging into
-        Kibana, follow these steps to load the logs for viewing:</p>
-      <ol>
-        <li>Navigate to the <b>Settings</b> menu to configure an index pattern to search for.</li>
-        <li>In the <b>Index name or pattern</b> field, you can enter <codeph>logstash-*</codeph> to
-          query all elasticsearch indices.</li>
-        <li>Click the green <b>Create</b> button to create and load the index.</li>
-        <li>Navigate to the <b>Discover</b> menu to load the index and make it available to
-          search.</li>
-      </ol>
-      <note>If you want to search specific elasticsearch indices, you can run <codeph>curl
-          localhost:9200/_cat/indices?v</codeph> from the control plane to get a full list of
-        available indices.</note>
-      <p>Once the logs load you can change the timeframe from the dropdown in the upper-righthand
-        corner of the Kibana window. You have the following options to choose from:</p>
-      <ul>
-        <li>Quick - a variety of time frame choices will be available here</li>
-        <li>Relative - allows you to select a start time relative to the current time to show this
-          range</li>
-        <li>Absolute - allows you to select a date range to query</li>
-      </ul>
-      <p>When searching there are common fields you will want to use, such as:</p>
-      <ul>
-        <li>type - this will include the service name, such as <codeph>keystone</codeph> or
-            <codeph>ceilometer</codeph></li>
-        <li>host - you can specify a specific host to search for in the logs</li>
-        <li>file - you can specify a specific log file to search</li>
-      </ul>
-      <p>For more details on using Kibana and Elasticsearch to query logs, see <xref
-          href="https://www.elastic.co/guide/en/kibana/3.0/working-with-queries-and-filters.html"
-          scope="external" format="html"
-          >https://www.elastic.co/guide/en/kibana/3.0/working-with-queries-and-filters.html</xref></p>
-    </section>
-    <section id="monitoring"><title>Monitoring Centralized Logging</title>
-      <p>To help keep ahead of potential logging issues and resolve issues before they affect
-        logging, you may want to monitor the Centralized Logging Alarms.</p>
-      <p><b>To monitor logging alarms:</b></p>
-      <ol>
-        <li>Log in to the Operations Console GUI</li>
-        <li>Navigate to the Alarm Definitions page from the menu button in the upper left
-          corner</li>
-        <li>Find the alarm definitions that are applied to the various hosts. See the <xref
-            href="alarm_resolutions.dita#alarmdefinitions/logging">Logging Alarm Definitions List</xref> for
-          the Centralized Logging Alarm Definitions.</li>
-        <li>Navigate to the Alarms page</li>
-        <li>Find the alarm definitions applied to the various hosts. These should match the alarm
-          definitions in the <xref href="alarm_resolutions.dita#alarmdefinitions/logging">Logging Alarm
-            Definitions List</xref>.</li>
-        <li>See if the alarm is green (good) or is in a bad state. If any are in a bad state, see
-          the possible actions to perform in the <xref href="alarm_resolutions.dita#alarmdefinitions/logging"
-            >Logging Alarms Definitions List</xref>.</li>
-      </ol>
-      <p>You can use this filtering technique in the "Alarms" page to look for the following:</p>
-      <ol>
-        <li>To look for Processes that may be down, filter for "Process" then make sure the process
-          are up: <ol>
-            <li>Elasticsearch</li>
-            <li>Logstash</li>
-            <li>RabbitMQ</li>
-            <li>Beaver</li>
-            <li>Apache</li>
-          </ol></li>
-      </ol>
-      <p>To look for sufficient Disk space, filter for "Disk"</p>
-      <p>To look for sufficient RAM Memory, filter for "Memory"</p>
     </section>
     <section id="info">
       <title>For More Information</title>
       <p>For information the centralized logging components, see the following sites:</p>
       <ul>
         <li><xref href="https://www.elastic.co/guide/en/logstash/current/introduction.html"
-            format="html" scope="external">Logstash</xref></li>
+          format="html" scope="external">Logstash</xref></li>
         <li><xref href="http://www.elasticsearch.org/guide" scope="external" format="html"
-            >Elasticsearch</xref></li>
+          >Elasticsearch</xref></li>
         <li><xref href="http://www.elasticsearch.org/blog/scripting-security" scope="external"
-            format="html">Elasticsearch Scripting and Security</xref></li>
+          format="html">Elasticsearch Scripting and Security</xref></li>
         <li><xref href="https://media.readthedocs.org/pdf/beaver/latest/beaver.pdf" format="pdf"
-            scope="external">Beaver</xref></li>
+          scope="external">Beaver</xref></li>
         <li><xref href="http://www.rabbitmq.com/" scope="external" format="html"
           >RabbitMQ</xref></li>
         <li><xref href="http://www.elasticsearch.org/guide/en/kibana/current/index.html"
-            scope="external" format="html">Kibana Dashboard</xref></li>
+          scope="external" format="html">Kibana Dashboard</xref></li>
       </ul>
     </section>
   </body>
