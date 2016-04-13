@@ -56,6 +56,8 @@ ceph osd rm &lt;osd_number&gt;</codeblock></li>
               </tbody>
             </tgroup>
           </table></li>
+        <li>Unmount the OSD data
+          disk:<codeblock>sudo umount &lt;mount_path_of_datadisk></codeblock></li>
         <li>Remove the mount instructions for the same disk(s) from the <codeph>/etc/fstab</codeph>
           file. For example, to remove the data disk <codeph>/dev/sde</codeph>, find out its UUID by
           executing this command:<codeblock>sudo blkid | grep "ceph data"</codeblock>
@@ -77,7 +79,7 @@ Example:
 In step #3 above, /dev/sdj1 journal partition can be removed by executing below commands: 
 $ echo d; echo 1; echo w) | sudo fdisk /dev/sdj
 $ sudo partprobe</codeblock></li>
-        <li>Repeat steps 1-6 for each OSD node in the Ceph cluster one at a time.</li>
+        <li>Repeat steps 1-9 for each OSD node in the Ceph cluster one at a time.</li>
         <li>Log in to the lifecycle manager.</li>
         <li>Edit the <codeph>~/helion/my_cloud/definition/data/disks_osd.yml</codeph> file and
           remove the details for the corresponding data disk that you removed earlier.
@@ -105,7 +107,7 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>Check the status of Ceph services with this playbook:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-deploy.yml</codeblock></li>
+ansible-playbook -i hosts/verb_hosts ceph-status.yml</codeblock></li>
       </ol>
     </section>
   </body>
