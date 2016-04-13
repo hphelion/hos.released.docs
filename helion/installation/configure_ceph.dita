@@ -104,13 +104,6 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
     # Disks to be used by Ceph
     # Additional disks can be added if available
     device-groups:
-      - name: ceph-osd-data-only
-        devices:
-          - name: /dev/sdb
-        consumer:
-           name: ceph
-           attrs:
-             usage: data
       - name: ceph-osd-data-and-journal
         devices:
           - name: /dev/sdc
@@ -135,8 +128,10 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
            attrs:
              usage: data
              journal_disk: /dev/sdg  </codeblock><p>The
-              above sample file contains three OSD nodes and two journal disks.</p>The following is
-            an example <codeph>disks_osd.yml</codeph> with the OSD journal on a separate disk:<codeblock>disk-models:
+              above sample file contains three OSD services, one OSD with dedicated journal disk and
+              two OSDs with shared journal disk. </p>The following is an example
+              <codeph>disks_osd.yml</codeph> with the OSD journal on a separate
+            disk:<codeblock>disk-models:
   - name: OSD-DISKS
     # Disk model to be used for Ceph OSD nodes
     # /dev/sda_root is used as a volume group for /, /var/log and /var/crash
@@ -153,8 +148,10 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
       consumer:            
          - name: ceph  
       attrs:              
-          usage: data           </codeblock>
-            <p>The disk model has the following fields:</p>
+          usage: data           </codeblock>The
+            above sample file contains one OSD service, without a separate journal disk. For OSDs
+            without separate journal disk, Ceph stores the journal on the OSD's data disk (in a
+            separate partition).<p>The disk model has the following fields:</p>
             <table frame="all" rowsep="1" colsep="1" id="ceph1">
               <tgroup cols="2">
                 <colspec colname="c1" colnum="1"/>
@@ -201,10 +198,11 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
                       indicates that the device is used for data storage.</entry>
                   </row>
                   <row>
-                    <entry><b>journal_disk</b></entry>
+                    <entry><b>journal_disk</b> [OPTIONAL]</entry>
                     <entry>Disk to be used for storing the journal data. When running multiple Ceph
                       OSD daemons on a single node, a journal disk can be shared between OSDs of the
-                      node.</entry>
+                        node.<p>If you do not specify this value, Ceph stores the journal on the
+                        OSD's data disk (in a separate partition).</p></entry>
                   </row>
                 </tbody>
               </tgroup>
