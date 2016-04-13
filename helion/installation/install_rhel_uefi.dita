@@ -130,8 +130,52 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml
             <p>For every UEFI RHEL server that you intend to install, you will need to create a corresponding 
                 Grub2 file in <codeph>/srv/tftp/grub/</codeph>. The file name is based on the MAC address of the
                 target node, and follows the pattern <codeph>grub.cfg-01-</codeph> followed by the MAC address
-            of the node, with hyphens replacing colons. For example, a node with a MAC address of </p>
+                of the node, with hyphens replacing colons. For example, a node with a MAC address of 
+                <codeph>ec:b1:d7:77:d0:b0</codeph> will have a filename of <codeph>grub.cfg-01-<b>ec-b1-d7-77-d0-b0</b></codeph></p>
             
+            <p>The contents of each file needs to be modified to reflect the MAC address of the node, the IP of the 
+                lifecycle manager and the node name (the <codeph>id</codeph> parameter in the appropriate entry 
+                in the <codeph>servers.yml</codeph> file. For example, given the following stanzas from <codeph>servers.yml</codeph>
+                where <codeph>controller1</codeph> is also the lifecycle manager:
+            
+            </p>
+            
+<codeblock>
+    # Controllers
+    - id: controller1
+      ip-addr: <b>10.13.111.12</b>
+      role: CONTROLLER-ROLE
+      server-group: RACK1
+      nic-mapping: DL360p_G8_2Port
+      mac-addr: ec:b1:d7:77:11:c8
+...
+    - id: <b>compute1</b>
+      ip-addr: 10.13.111.15
+      role: RHEL-COMPUTE-ROLE
+      server-group: RACK1
+      nic-mapping: DL360p_G8_2Port
+      mac-addr: <b>ec:b1:d7:77:d0:b0</b>
+      ilo-ip: 10.12.13.14
+      ilo-password: *********
+      ilo-user: Administrator
+      distro-id: rhel72-x86_64
+</codeblock>         
+            
+            <p>Then you should create a Grub2 file named <codeph>grub.cfg-01-<b>ec-b1-d7-77-d0-b0</b></codeph>  with the following content:</p>            
+            
+<codeblock>
+set timeout=5
+menuentry 'RHEL 7.2 Cobbler install' {
+  linuxefi images/rhel72-x86_64/vmlinuz interface=<b>ec:b1:d7:77:d0:b0</b> inst.ks=http://<b>10.13.111.12</b>:79/cblr/svc/op/ks/system/<b>compute1</b> inst.repo=http://<b>10.13.111.12</b>:79/cblr/ks_mirror/rhel72 inst.ks.sendmac inst.text ip=dhcp ksdevice=bootif lang=
+  initrdefi images/rhel72-x86_64/initrd.img
+}
+</codeblock>            
+
+<note type="important">For each node, you will need to create such a file, with a name based 
+on the MAC address, and with the contents above updated with the node MAC address, lifecycle manager IP (in two places) 
+and node name.
+</note>
+
         </section>
         
     </body>
