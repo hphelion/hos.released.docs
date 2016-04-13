@@ -75,9 +75,51 @@ rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv
             <p></p>
             
             <ul>
-                <li></li>
+                <li>Copy the RedHat secondary loader file <codeph>grubx64.efi</codeph> to /var/lib/cobbler/loaders/</li>
+                <li>Edit <codeph>~/helion/hos/ansible/roles/cobbler/templates/cobbler.dhcp.template.j2</codeph> and 
+                    navigate to the section containing <codeph>00:07</codeph> 
+                
+<codeblock>
+  if option pxe-system-type = 00:02 {
+          filename "ia64/elilo.efi";
+  } else if option pxe-system-type = 00:06 {
+          filename "grub/grub-x86.efi";
+  } <b>else if option pxe-system-type = 00:07 {
+          filename "grub/grub-x86_64.efi";
+  }</b> else {
+          filename "pxelinux.0";
+  }
+</codeblock>                
+                
+                </li>
+                <li>Change <codeph>grub/grub-x86_64.efi</codeph> to <codeph>grubx64.efi</codeph> to select the RHEL 
+                secondary bootloader, instead of the HPE Linux one.</li>
+                
+                <li>Save your changes and then re-run the cobbler-deploy playbook.
+<codeblock>
+cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml
+</codeblock>                
+                </li>
+                
                 
             </ul>
+            
+            <note type="important">There are a number of checks you should perform to make sure the reconfiguration of Cobbler
+            has succeeded. Do not proceed any futher with the installation if any of these checks should fail.
+            Retrace your steps though the reconfiguration procedure until your system pass these tests.
+            
+                <ul>
+                    <li>Check the directory <codeph>/srv/tftp/grub/</codeph> and confirm that the RHEL loader file <codeph>grubx64.efi</codeph>
+                        has been copied there by the playbook, as well as the HPE Linux loader file <codeph>grub/grub-x86_64.efi</codeph>.
+                    </li>
+                    <li>Check the file <codeph>/etc/dhcp/dhcpd.conf</codeph> and confirm that the RHEL loader file <codeph>grubx64.efi</codeph> is 
+                        in the <codeph>00:07</codeph> section 
+                        
+                    </li>
+                </ul>
+            </note>
+            
             
         </section>
         
