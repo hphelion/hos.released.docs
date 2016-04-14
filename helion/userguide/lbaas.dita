@@ -34,7 +34,7 @@
       <sectiondiv id="CreateLBaaSNetwork">
         <p><b>Create Private Network for LBaaS</b></p>
         <p>You can create the new network and router by executing the following command from the
-          deployer or a shell with access to the API nodes.</p>
+          lifecycle manager or a shell with access to the API nodes.</p>
         <ol>
           <li>Run the following commands to create a private network and a router.
             <codeblock>neutron net-create private
@@ -67,7 +67,7 @@ nova boot --flavor 1 --image &lt;image&gt; --nic net-id=$(neutron net-list | awk
       <sectiondiv id="TLSCertificate">
         <p><b>For TLS Load Balancers - Create Certificate Chain and Key</b></p>
           <ol>
-            <li>From a computer with access to the barbican and labs API, run the following sequence
+            <li>From a computer with access to the Barbican and labs API, run the following sequence
             of commands
             <codeblock>openssl genrsa -des3 -out ca.key 1024
 openssl req -new -x509 -days 3650 -key ca.key -out ca.crt  
@@ -108,6 +108,10 @@ openssl x509 -req -days 3650 -in server2.csr -CA ca-int2.crt -CAkey ca-int2.key 
 barbican secret store --payload-content-type='text/plain' --name='private_key' --payload="$(cat server.key)"
 barbican container create --name='tls_container' --type='certificate' --secret="certificate=$(barbican secret list | awk '/ certificate / {print $2}')" --secret="private_key=$(barbican secret list | awk '/ private_key / {print $2}')"
             </codeblock>
+            <note type="warning">Do not delete the certificate container associated with your Load Balancer listeners before 
+              deleting the Load Balancers themselves.  If you delete the certificate first, future operations on your Load Balancers 
+              and failover will case to function.
+            </note>
           </li>
           <li>Add the second certificate chain to test SNI
             <codeblock>barbican secret store --payload-content-type='text/plain' --name='certificate2' --payload="$(cat server2.crt)"
