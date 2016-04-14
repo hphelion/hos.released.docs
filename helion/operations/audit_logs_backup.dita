@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="backup_audit_logs">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Backing up and Restoring Audit Logs</title>   
+  
+  <body>    <p conkeyref="HOS-conrefs/applies-to"/>
+    
+
+<section>
+      <p>In order to enable backup of the audit log directory, follow these steps. <ol
+          id="ol_dbz_hxg_qv">
+          <li>Enable audit logging From the deployer, run the following playbook:</li>
+        </ol></p><codeblock>ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock>
+      <p> This will create a job to backup the audit log directory on any node where that directory
+        exists. In order to limit this to only a few node, use the --limit option of ansible In
+        order to restore the logs, please follow one of the following procedure: To restore from the
+        node that made the backup to the same node and directly on the audi log dir (for example,
+        the folder has been deleted):</p>
+  
+      <codeblock># Connect to the node
+# Source OpenStack credentials
+source backup.osrc
+# List pre-configured jobs
+freezer-scheduler job-list -c `hostname`
+# Note the id corresponding to the job: "HLM Default: Audit log restore from ..."
+# Schedule the restore
+freezer-scheduler job-start -c `hostname` -j &lt;id of the job></codeblock>
+      To restore the backup on another directory, or from another host, please use: # Connect to the
+      node # Source OpenStack credentials <codeblock>source backup.osrc</codeblock> Create a restore
+      config file to restore from a swift backup (make sure to fill in &lt;value> )
+      <codeblock>cat &lt;&lt; EOF > restore.ini
+    [default]
+    action = restore
+    backup_name = freezer_audit_log_backup
+    container = freezer_audit_backup
+    log_file = /var/log/freezer-agent/freezer-agent.log
+    restore_abs_path = &lt;path to the directory where you want to restore>
+      hostname = &lt;hostname of the host you want to restore the backup from>
+        EOF</codeblock>
+      Or Create a restore config to restore from an SSH backup (make sure to fill in &lt;value> )
+      SSH information is available in the helion/my_cloud/config/freezer/ssh_credentials.yml
+      <codeblock> cat &lt;&lt; EOF > restore.ini
+          [default]
+          action = restore
+          storage = ssh
+          backup_name = freezer_audit_log_backup
+          log_file = /var/log/freezer-agent/freezer-agent.log
+          ssh_key = /etc/freezer/ssh_key
+          restore_abs_path = &lt;path to the directory where you want to restore>
+          hostname = &lt;hostname of the host you want to restore the backup from>
+          ssh_host = &lt;your ssh backup host>
+          ssh_port = &lt;your ssh backup port>
+          ssh_username = &lt;your ssh backup username>
+          container = &lt;your ssh backup basedir>/freezer_audit_backup
+          EOF</codeblock>
+      Run the freezer-agent to restore <codeblock>freezer-agent --config restore.ini</codeblock>
+    </section>
+                      
+
+
+  </body>
+</topic>
