@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="l2gateway">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Installing the L2 Gateway for the Networking
+    Service</title>
+  
+  <body>    <p conkeyref="HOS-conrefs/applies-to"/>
+    
+    
+    
+    <section>
+      <title>Introduction</title>
+
+
+
+
+
+The L2 gateway agent is an interoperable SDN (Software-Defined Networking) and network
+virtualization solution deployed over the HP Helion CloudSystem. The agent allows users to leverage
+their physical and virtual network to work together as a single entity, thus eliminating the manual
+network configuration, which is time consuming and error prone.
+
+    </section>
+    
+  <section><title>Installation</title>L2 Gateway installation requires the following steps: Update
+      the neutron.conf.j2 file to include the L2GatewayPlugin <codeblock>$vi /home/stack/my_cloud/config/neutron/neutron.conf.j2</codeblock>
+      <codeblock>[DEFAULT]
+    ...
+    service_plugins = {{ ovsvapp_service_plugin }}neutron.services.l3_router.l3_router_plugin.L3RouterPlugin,neutron_fwaas.services.firewall.fwaas_plugin.FirewallPlugin,{{ neutron_lbaas_plugin }}neutron_vpnaas.services.vpn.plugin.VPNDriverPlugin,networking_l2gw.services.l2gateway.plugin.L2GatewayPlugin
+    # To enable L2 Gateway, add the following string to the service_plugins line,
+    # from and including the comma (,) to the end of the line:
+    #    ,networking_l2gw.services.l2gateway.plugin.L2GatewayPlugin
+    ...</codeblock>Update
+      the input model (in  control_plane.yml) to specify where you want to run the
+      neutron-l2gateway-agent For
+      example:<codeblock>---
+    product:
+    version: 2
+    control-planes:
+    - name: cp
+    region-name: region1
+    failure-zones:
+    - AZ1
+    common-service-components:
+    - logging-producer
+    - monasca-agent
+    - freezer-agent
+    - stunnel
+    - lifecycle-manager-target
+    clusters:
+    - name: cluster1
+    cluster-prefix: c1
+    server-role: ROLE-CONTROL
+    member-count: 2
+    allocation-policy: strict
+    service-components:
+    
+    ( ... )
+    - neutron-l2gateway-agent
+    ( ... )</codeblock>Update
+      the <codeph>l2gateway_agent.ini.j2</codeph> For example: xx.xxx.xxx.xxx must be the IP of your
+      5930 switch. First open the file in vi:
+      <codeblock>$vi /home/stack/my_cloud/config/neutron/l2gateway_agent.ini.j2</codeblock>Then make
+      the
+      changes<codeblock>[ovsdb]
+    # (StrOpt) OVSDB server tuples in the format
+    # &lt;ovsdb_name>:&lt;ip address>:&lt;port>[,&lt;ovsdb_name>:&lt;ip address>:&lt;port>]
+      # - ovsdb_name: a symbolic name that helps identifies keys and certificate files
+      # - ip address: the address or dns name for the ovsdb server
+      # - port: the port (ssl is supported)
+      ovsdb_hosts = hardware_vtep:xx.xxx.xxx.xxx:6640</codeblock>
+      If not using SSL, comment out the following:
+      <codeblock>#l2_gw_agent_priv_key_base_path={{ neutron_l2gateway_agent_creds_dir }}/keys
+#l2_gw_agent_cert_base_path={{ neutron_l2gateway_agent_creds_dir }}/ca_certs
+#l2_gw_agent_ca_cert_base_path={{ neutron_l2gateway_agent_creds_dir }}/ca_certs</codeblock>
+      If using an SSL connection to your switch, leave the following not commented:
+      <codeblock>l2_gw_agent_priv_key_base_path={{ neutron_l2gateway_agent_creds_dir }}/keys
+l2_gw_agent_cert_base_path={{ neutron_l2gateway_agent_creds_dir }}/ca_certs
+l2_gw_agent_ca_cert_base_path={{ neutron_l2gateway_agent_creds_dir }}/ca_certs</codeblock>Perform
+      standard <keyword keyref="kw-hos"/> installation steps </section>
+    <section>Perform HP 5930 Switch set-up by following these steps:</section>
+    <section> First, configure HP 5930 switch. Get into system-view:
+      <codeblock>&lt;VGP_LCC_EOR_02>system-view  
+        [VGP_LCC_EOR_02]</codeblock> Enable l2vpn:
+      <codeblock>l2vpn enable </codeblock> Configure a passive TCP connection for OVSDB, we use port
+      6632 here: <codeblock>ovsdb server ptcp port 6632</codeblock> Enable OVSDB server:
+      <codeblock>ovsdb server enable</codeblock> Enable VTEP process:
+      <codeblock>vtep enable</codeblock> Configure 10.7.31.1 as VTEP source IP:
+      <codeblock>tunnel global source-address 10.7.31.1</codeblock> Configure vtep access port, in
+      our example, we use Bridge-Aggregation1:
+      <codeblock>interface Bridge-Aggregation1  
+        vtep access port</codeblock>Now the switch
+      configuration is complete, you can dump the OVSDB to see what it looks like. To do so, run
+      ovsdb-client from any Linux machine: <codeblock>[stack@under ~(stackrc)]$ ovsdb-client dump --pretty tcp:10.7.31.1:6632</codeblock>
+      <codeblock>Arp_Sources_Local table  
+_uuid locator src_mac  
+----- ------- -------
+
+Arp_Sources_Remote table  
+_uuid locator src_mac  
+----- ------- -------
+
+Global table  
+_uuid                                managers switches  
+------------------------------------ -------- --------------------------------------
+58708319-c85e-44a5-b221-4c2d3cde6004 []       [8f3d25db-f219-443e-9771-1d8e5219b5d9]
+
+Logical_Binding_Stats table  
+_uuid bytes_from_local bytes_to_local packets_from_local packets_to_local  
+----- ---------------- -------------- ------------------ ----------------
+
+Logical_Router table  
+_uuid description name static_routes switch_binding  
+----- ----------- ---- ------------- --------------
+
+Logical_Switch table  
+_uuid description name tunnel_key  
+----- ----------- ---- ----------
+
+Manager table  
+_uuid inactivity_probe is_connected max_backoff other_config status target  
+----- ---------------- ------------ ----------- ------------ ------ ------
+
+Mcast_Macs_Local table  
+MAC _uuid ipaddr locator_set logical_switch  
+--- ----- ------ ----------- --------------
+
+Mcast_Macs_Remote table  
+MAC _uuid ipaddr locator_set logical_switch  
+--- ----- ------ ----------- --------------
+Physical_Locator table  
+_uuid dst_ip encapsulation_type  
+----- ------ ------------------
+
+Physical_Locator_Set table  
+_uuid locators  
+----- --------
+
+Physical_Port table  
+_uuid                                description name                  port_fault_status vlan_bindings vlan_stats  
+------------------------------------ ----------- --------------------- ----------------- ------------- ----------
+28d3da91-7666-492e-9c20-fc960249a7b6 ""          "Bridge-Aggregation1" [UP]              {}            {}
+
+Physical_Switch table  
+_uuid                                description management_ips name             ports                                  switch_fault_status tunnel_ips    tunnels  
+------------------------------------ ----------- -------------- ---------------- -------------------------------------- ------------------- ------------- -------
+8f3d25db-f219-443e-9771-1d8e5219b5d9 ""          []             "VGP_LCC_EOR_02" [28d3da91-7666-492e-9c20-fc960249a7b6] []                  ["10.7.31.1"] []
+
+Tunnel table  
+_uuid bfd_config_local bfd_config_remote bfd_params bfd_status local remote  
+----- ---------------- ----------------- ---------- ---------- ----- ------
+
+Ucast_Macs_Local table  
+MAC _uuid ipaddr locator logical_switch  
+--- ----- ------ ------- --------------
+
+Ucast_Macs_Remote table  
+MAC _uuid ipaddr locator logical_switch
+--- ----- ------ ------- --------------  </codeblock>
+    </section>
+  </body>
+</topic>
