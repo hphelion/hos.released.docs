@@ -922,33 +922,66 @@ ansible-playbook -i hosts/verb_hosts bind-start.yml</codeblock></li>
               <row>
                 <entry morerows="4">identity-service</entry>
                 <entry>HTTP Status</entry>
-                <entry>component=keystone-api,api_endpoint=public</entry>
-                <entry>API is unresponsive.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>component=keystone-api<p>api_endpoint=public</p><p>This check is contacting
+                    the Keystone public endpoint directly. </p></entry>
+                <entry>The Keystone service is down on the affected node.</entry>
+                <entry>Restart the Keystone service on the affected node: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Use the Keystone start playbook against the affected node:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts keystone-start.yml --limit &lt;hostname></codeblock></li>
+                  </ol></entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
-                <entry>component=keystone-api,api_endpoint=admin</entry>
-                <entry>API is unresponsive.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>component=keystone-api<p>api_endpoint=admin</p><p>This check is contacting
+                    the Keystone admin endpoint directly.</p></entry>
+                <entry>The Keystone service is down on the affected node.</entry>
+                <entry>Restart the Keystone service on the affected node: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Use the Keystone start playbook against the affected node:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts keystone-start.yml --limit &lt;hostname></codeblock></li>
+                  </ol></entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
-                <entry>component=keystone-api,monitored_host_type=vip</entry>
-                <entry>API is unresponsive on each node.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>component=keystone-api<p>monitored_host_type=vip</p><p>This check is
+                    contacting the Keystone admin endpoint via the virtual IP address
+                  (HAProxy).</p></entry>
+                <entry>The Keystone service is unreachable via the virtual IP address.</entry>
+                <entry>If neither the <codeph>api_endpoint=public</codeph> or
+                    <codeph>api_endpoint=admin</codeph> alarms are triggering at the same time then
+                  there is likely a problem with haproxy.
+                <p>You can restart the haproxy service with these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Use this playbook against the affected node:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></codeblock></li>
+                  </ol></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry>process_name=keystone-main</entry>
+                <entry>Separate alarms for each of these Glance services, specified by the
+                  <codeph>component</codeph> dimension: <ul>
+                    <li>keystone-main</li>
+                    <li>keystone admin</li>
+                  </ul></entry>
                 <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry><p>You can restart the Keystone service with these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Use this playbook against the affected node:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts keystone-start.yml --limit &lt;hostname></codeblock></li>
+                  </ol></entry>
               </row>
               <row>
-                <entry>Process Check</entry>
-                <entry>process_name=keystone-admin</entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>Host Alive Check</entry>
+                <entry/>
+                <entry>The affected host has halted or SSH is down.</entry>
+                <entry/>
               </row>
             </tbody>
           </tgroup>
@@ -1374,8 +1407,9 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>ceilometer</entry>
               <entry>Service Log Directory Size</entry>
               <entry>...</entry>
-              <entry>...</entry>
-              <entry>...</entry>
+              <entry>The size of the log file directory has exceeded 2.5 GB.</entry>
+              <entry>Connect via SSH to the affected host and check the log file directory and
+                investigate reasons why it may be filling up faster than it should.</entry>
             </row>
             <row>
               <entry>collectl</entry>
