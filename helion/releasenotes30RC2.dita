@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "concept.dtd" >
+<topic xml:lang="en-us" id="release-notes-30-RC1">
+    <title><keyword keyref="kw-hos-tm"/>
+        <keyword keyref="kw-hos-version-30"/>: Release Candidate 2 Release Notes</title>
+    <body>
+
+            <p>This document provides an overview of the known issues and workarounds for <keyword
+                keyref="kw-hos-phrase"/> Release Candidate 2. </p>
+        
+            <p>Preliminary release notes for <keyword keyref="kw-hos-phrase"/> are available <xref keyref="releasenotes30">here</xref>. </p>
+        <section><title>Distribution file names</title><p>When installing HPE Helion OpenStack
+                Release Candidate 2, use the following files during the install process:</p>
+            Download the package by logging into <p><xref
+                    href="https://helion.hpwsportal.com/catalog.html#/Home/Show" format="html"
+                    scope="external"
+                >https://helion.hpwsportal.com/catalog.html#/Home/Show</xref></p> and
+            downloading:<codeblock>HelionOpenStack-3.0-RC2.iso</codeblock> Mount the ISO:
+            <codeblock>sudo mount HelionOpenStack-3.0-RC2.iso /media/cdrom</codeblock> Unpack the
+            following: <codeblock>hos-3.0.0-20160414T004740Z.tar</codeblock> For example:
+            <codeblock>tar xvf /media/cdrom/hos-3.0.0-20160414T004740Z.tar</codeblock> Continue with
+            your installation</section>
+        
+        <section>
+            <title>Multipath Boot from SAN </title>
+            
+            <p>The installation instructions for Multipath Boot from SAN are available <xref keyref="multipath_boot_from_san">here</xref>.</p>
+            <note type="important">Multipath Boot from SAN is not supported on "native" FCoE. Also, only LUNs 
+                that are fully provisioned at the backend are supported. Some issues have been seen with Qlogic FC configurations and 
+                these are currently being investigated. It is not recommended to use this configuration in RC1. (HLX-1762) </note>
+        </section>
+
+
+        <section>
+            <title>RHEL Compute Nodes</title>
+            
+            <sectiondiv conkeyref="install_rhel/rhel_overview"/>
+
+            <p>For information on deploying RHEL Compute Nodes see <xref keyref="install_rhel">here</xref>.</p>
+
+         </section>
+        
+        
+        <section>
+            <title>Upgrade is Broken</title>
+            
+             <p>It is not possible to upgrade from <keyword keyref="kw-hos"/> 2.* to <keyword
+                    keyref="kw-hos-phrase"/> Release Candidate 2. Also, it will not be possible to
+                upgrade from Release Candidate 2 to a later release.</p>
+            
+        </section>
+        
+        <section>
+            <title>Other Know Issues in Release Candidate 2</title>
+            
+           <ul>
+               <li>Multiple attach/detach operations to a RHEL compute instance can lead to failed 
+                   subsequent attaches (CINDER-451).</li>
+               <li>Intermittent kernel crashes on contoller nodes (HLX-1748).</li>
+               <li>Horizon UI error messages cannot be seesn as they are displayed in white text on a white background (HORI-5330).</li>
+               <li>False alarms are reported for temporary files at <codeph>/run/netns/qrouter*</codeph> (JAH-2693).</li>
+               <li>Octavia fails to configure on mid-scale models (LBAAS-2164).</li>
+               <li>In the OpsConsole, after selecting 1 or more alarms and then choosing the DELETE ALARM button, nothing happens. It is 
+               possible to delete alarms individually by selecting the alarm details. (OPSCON-827)</li>
+           </ul> 
+            
+        </section>
+        
+        <section>
+            <title>Fixing Logrotate After Running Out Of Disk Space</title>
+            <p>Improvements to the log rotation process provides more frequent checks to
+                automatically warn customers if they are close to using 100% of the disk space.
+                However, if a customer does run out of disk space on /var/log, then logrotate will
+                start creating empty .1 files. These files will not be compressed because there is
+                no more disk space. Freeing disk space will not fix logrotate. To fix logrotate, you
+                will need to either compress all the *.l log files, or remove them.</p>
+            <note type="important">Currently there are no plans to fix this because the improvements to the log rotation process make it less likely to run out of disk space. The improvements include running a check on disk space every 5 minutes (instead of once an hour in Helion OpenStack 2.0), and when it gets close to full (default value is 95%), running logrotate.</note>
+        </section>
+
+    </body>
+</topic>
