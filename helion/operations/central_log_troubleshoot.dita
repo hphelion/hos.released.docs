@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
+<topic xml:lang="en-us" id="central_log_troubleshoot">
+  <title>Troubleshooting Centralized Logging</title>
+  <body>
+<p>This section contains the following scenarios:</p>
+    <ul>
+      <li><xref href="#central_log_troubleshoot/review_logs">Reviewing Log Files</xref></li>
+      <li><xref href="#central_log_troubleshoot/monitoring">Monitoring Centralized Logging</xref></li>
+      <li><xref href="#central_log_troubleshoot/log_collection">Situations In Which Logs Might Not Be Collected</xref></li>
+      <li><xref href="#central_log_troubleshoot/kibana_visualization">Error When Creating a Kibana Visualization</xref></li>
+      <li><xref href="#central_log_troubleshooting/curator">Elasticsearch Will Stop Storing Data in it's Shards When the Elasticsearch Disk Partition Reaches 90% Capacity</xref></li>
+    </ul>
+
+    <section id="review_logs">
+      <title>Reviewing Log Files</title>
+      <p>You can troubleshoot service-specific issues by reviewing the logs. After logging into
+        Kibana, follow these steps to load the logs for viewing:</p>
+      <ol>
+        <li>Navigate to the <b>Settings</b> menu to configure an index pattern to search for.</li>
+        <li>In the <b>Index name or pattern</b> field, you can enter <codeph>logstash-*</codeph> to
+          query all elasticsearch indices.</li>
+        <li>Click the green <b>Create</b> button to create and load the index.</li>
+        <li>Navigate to the <b>Discover</b> menu to load the index and make it available to
+          search.</li>
+      </ol>
+      <note>If you want to search specific elasticsearch indices, you can run <codeph>curl
+          localhost:9200/_cat/indices?v</codeph> from the control plane to get a full list of
+        available indices.</note>
+      <p>Once the logs load you can change the timeframe from the dropdown in the upper-righthand
+        corner of the Kibana window. You have the following options to choose from:</p>
+      <ul>
+        <li>Quick - a variety of time frame choices will be available here</li>
+        <li>Relative - allows you to select a start time relative to the current time to show this
+          range</li>
+        <li>Absolute - allows you to select a date range to query</li>
+      </ul>
+      <p>When searching there are common fields you will want to use, such as:</p>
+      <ul>
+        <li>type - this will include the service name, such as <codeph>keystone</codeph> or
+            <codeph>ceilometer</codeph></li>
+        <li>host - you can specify a specific host to search for in the logs</li>
+        <li>file - you can specify a specific log file to search</li>
+      </ul>
+      <p>For more details on using Kibana and Elasticsearch to query logs, see <xref
+          href="https://www.elastic.co/guide/en/kibana/3.0/working-with-queries-and-filters.html"
+          scope="external" format="html"
+          >https://www.elastic.co/guide/en/kibana/3.0/working-with-queries-and-filters.html</xref></p>
+    </section>
+    
+    
+    <section id="monitoring"><title>Monitoring Centralized Logging</title>
+      <p>To help keep ahead of potential logging issues and resolve issues before they affect
+        logging, you may want to monitor the Centralized Logging Alarms.</p>
+      <p><b>To monitor logging alarms:</b></p>
+      <ol>
+        <li>Log in to the Operations Console GUI</li>
+        <li>Navigate to the Alarm Definitions page from the menu button in the upper left
+          corner</li>
+        <li>Find the alarm definitions that are applied to the various hosts. See the <xref
+            href="alarm_resolutions.dita#alarmdefinitions/logging">Logging Alarm Definitions List</xref> for
+          the Centralized Logging Alarm Definitions.</li>
+        <li>Navigate to the Alarms page</li>
+        <li>Find the alarm definitions applied to the various hosts. These should match the alarm
+          definitions in the <xref href="alarm_resolutions.dita#alarmdefinitions/logging">Logging Alarm
+            Definitions List</xref>.</li>
+        <li>See if the alarm is green (good) or is in a bad state. If any are in a bad state, see
+          the possible actions to perform in the <xref href="alarm_resolutions.dita#alarmdefinitions/logging"
+            >Logging Alarms Definitions List</xref>.</li>
+      </ol>
+      <p>You can use this filtering technique in the "Alarms" page to look for the following:</p>
+      <ol>
+        <li>To look for Processes that may be down, filter for "Process" then make sure the process
+          are up: <ol>
+            <li>Elasticsearch</li>
+            <li>Logstash</li>
+            <li>RabbitMQ</li>
+            <li>Beaver</li>
+            <li>Apache</li>
+          </ol></li>
+      </ol>
+      <p>To look for sufficient Disk space, filter for "Disk"</p>
+      <p>To look for sufficient RAM Memory, filter for "Memory"</p>
+    </section>
+    
+    <section id="log_collection"><title outputclass="headerH">Situations In Which Logs Might Not Be
+      Collected</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Centralized logging might not collect log data under the following circumstances:</p>
+        <ul>
+          <li>If the Beaver service is not running on one or more of the nodes (controller or
+            compute), logs from these nodes will not be collected.</li>
+          <li>Beaver watches the log files for any additions and only pushes the incremental log
+            records for centralized logging. It does not parse all the existing log records in the
+            log files that were added <b>before</b> Beaver started watching those files. Similarly,
+            if Beaver was stopped for some reason and then started again later, the logs that were
+            added during the time span that Beaver was not running will not be collected for
+            centralized logging.</li>
+          <li>The logging service uses a RabbitMQ queue and this queue is not persistent. This
+            means, if the RabbitMQ service on the master node is restarted for some reason, all
+            messages that are not yet consumed by the logstash workers might be lost.</li>
+        </ul>
+      </sectiondiv>
+    </section>
+    
+    <section id="kibana_visualization"><title outputclass="headerH">Error When Creating a Kibana
+      Visualization</title>
+      <sectiondiv outputclass="insideSection">
+        <p>When creating a visualization in Kibana you may get an error similiar to this:
+          <codeblock>"logstash-*" index pattern does not contain any of the following field types: number</codeblock></p>
+        <p>To resolve this issue:</p>
+        <ol>
+          <li>Log in to Kibana.</li>
+          <li>Navigate to the <codeph>Settings</codeph> page.</li>
+          <li>Select the <codeph>logstash-*</codeph> index in the left panel.</li>
+          <li>Click the refresh button. You may see a mapping conflict warning after refreshing the
+            index.</li>
+          <li>Re-create the visualization.</li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="curator"><title outputclass="headerH">Elasticsearch Will Stop Storing Data in it's
+      Shards When the Elasticsearch Disk Partition Reaches 90% Capacity</title>
+      <sectiondiv outputclass="insideSection">
+        <p>To resolve this issue, we recommend changing the default value for
+          <codeph>curator_high_watermark_percent</codeph> from 95% to 89% to ensure that this
+          doesn't happen:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          
+          <li>Edit the ~/helion/my_cloud/config/logging/main.yml file and change the value of
+            <codeph>curator_high_watermark_percent</codeph> from the default setting of
+            <codeph>95</codeph> to the new value of <codeph>89</codeph>
+            <p>Example:</p>
+            <codeblock># The following high watermark will be used to decide if it is time to delete old indices.
+# The following approach is taken:
+# An hourly cronjob checks if the current used ES parition size is over this value.
+# If it is, curator will be run to delete old indices per the curator_num_of_indices_to_keep setting.
+# Then, a check is made again to see if the partition size is below the high watermark percent.
+# If it is still high, curator will be run again to delete all indices except the current one that
+# are over curator_max_index_size_in_gb size.
+# A check is made again and if it is still high, curator will be run to delete all indices except
+# the current one. Finally, if the usage is still high, just an error message is written to the log
+# file but the current index is NOT deleted.
+<b>curator_high_watermark_percent: 95</b>
+curator_max_index_size_in_gb: 30</codeblock></li>
+          
+          <li>Save the changes to the file and commit the changes to your local git:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+          
+          <li>Run the configuration processor, as follows:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          
+          <li>Run the following command to create a deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          
+          <li>Run the logging reconfigure playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts logging-reconfigure.yml</codeblock></li>
+        </ol>
+      </sectiondiv>
+    </section>
+    
+  </body>
+</topic>
