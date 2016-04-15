@@ -75,7 +75,7 @@ UUID=36060f7a-12da-469b-a1da-ee730a3b1d7c
 DEVICE=eno1
 ONBOOT=yes
 <b>NETMASK=255.255.255.192</b>
-<b>IPADDR=10.13.111.178</b>
+<b>IPADDR=10.13.111.14</b>
 
 </codeblock>                    
                     
@@ -147,15 +147,84 @@ usermod -aG wheel stack
         
         </section>
         
+        <section>
+            <title>Set up yum repository</title>
+            
+            <p>You need to set up a yum repository, either external or local, containing a <keyword keyref="kw-hos"/>
+                supported RHEL distro. A possible method for setting up a local repository is outlined in this section.
+            
+            </p>
+            
+            <ol>
+                <li>Mount the RHEL iso and expand it
+                
+<codeblock>
+mkdir /tmp/localrhel
+mount -o loop rhel7.iso /mnt
+cd /mnt
+tar cvf - . | (cd /tmp/localrhel ; tar xvf -)
+cd /
+umount /mnt
+</codeblock>                
+                </li>
+                
+                <li>Create a repo file <codeph>/etc/yum.repos.d/localrhel.repo</codeph>
+<codeblock>
+[localrhel]
+name=myrhel
+baseurl=file:///tmp/localrhel
+enabled=1
+gpgcheck=0
+
+[localrhel-1]
+name=myrhel
+baseurl=file:///tmp/localrhel/addons/ResilientStorage
+enabled=1
+gpgcheck=0
+
+[localrhel-2]
+name=myrhel
+baseurl=file:///tmp/localrhel/addons/HighAvailability
+enabled=1
+gpgcheck=0
+
+</codeblock>                    
+                    
+                </li>
+                
+                <li>Run <codeph> yum clean all</codeph>.</li>
+                
+            </ol>
+            
+            
+            
+        </section>
+        
         
         
         <section>
             <title>Set up passwordless SSH access</title>
             
-            <ol>
-                <li> </li>
-            </ol>
+            <p>Once you have started your installation using the lifecycle manager, or
+            if you are adding a RHEL node to an existing cloud, you need to copy the 
+            deployer public key to the RHEL node. One way of doing this is to copy the 
+            <codeph>/home/stack/.ssh/authorized_keys</codeph> from another node in the cloud
+                to the same location on the RHEL node.
+             If you are instaling a new cloud, this file will be available on the nodes 
+             after running the <codeph>bm-reimage.yml</codeph> playbook.
+             <note type="important">
+                 Ensure that there is global read access to the file <codeph>/home/stack/.ssh/authorized_keys</codeph>.
+             </note>   
+                
+            </p>
             
+            <p>Now test passwordless ssh and your ability to remotely execute sudo commands:
+                
+<codeblock>
+ssh  stack@10.13.111.14 "sudo tail -5 /var/log/messages"
+</codeblock>            
+            </p>
+
         </section>
                 
 
