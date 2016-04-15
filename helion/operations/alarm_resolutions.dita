@@ -103,7 +103,10 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeb
               <row>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
-                <entry/>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
                 <entry/>
               </row>
               <row>
@@ -126,14 +129,20 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
               <row>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
-                <entry/>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
                 <entry/>
               </row>
               <row>
                 <entry>baremetal</entry>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
-                <entry/>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
                 <entry/>
               </row>
             </tbody>
@@ -567,7 +576,10 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
               <row>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
-                <entry/>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
                 <entry/>
               </row>
               <row>
@@ -670,7 +682,10 @@ ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml</codeblock></entr
               <row>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
-                <entry/>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
                 <entry/>
               </row>
               <!-- DOCS-2905 -->
@@ -738,7 +753,10 @@ ansible-playbook -i hosts/verb_hosts ceph-start.yml --limit &lt;hostname></codeb
               <row>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
-                <entry/>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
                 <entry/>
               </row>
             </tbody>
@@ -771,10 +789,11 @@ ansible-playbook -i hosts/verb_hosts ceph-start.yml --limit &lt;hostname></codeb
             </thead>
             <tbody>
               <row>
-                <entry morerows="3">networking</entry>
+                <entry morerows="4">networking</entry>
                 <entry>Process Check</entry>
                 <entry>Separate alarms for each of these Neutron services, specified by the
-                  component dimension: <ul>
+                    <codeph>component</codeph> dimension: <ul>
+                    <li>ipsec/charon</li>
                     <li>neutron-openvswitch-agent</li>
                     <li>neutron-l3-agent</li>
                     <li>neutron-dhcp-agent</li>
@@ -844,9 +863,18 @@ ansible-playbook -i hosts/verb_hosts neutron-status.yml</codeblock></li>
                 <entry>Reboot the node if it crashed or diagnose the networking connectivity
                   failures between the local and remote nodes. Review the logs.</entry>
               </row>
+              <row>
+                <entry>Service Directory Log Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry/>
+              </row>
 
               <row>
-                <entry morerows="5">dns</entry>
+                <entry morerows="6">dns</entry>
                 <entry>Process Check</entry>
                 <entry>designate-zone-manager</entry>
                 <entry>Process crashed.</entry>
@@ -913,7 +941,10 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml --limit 'DES-MDN'</code
               </row>
               <row>
                 <entry>HTTP Status</entry>
-                <entry>designate-api</entry>
+                <entry>component = designate-api<p>This alarm will also have the
+                      <codeph>api_endpoint</codeph> and <codeph>monitored_host_types</codeph>
+                    dimensions defined. The likely cause and mitigation steps are the same for
+                    both.</p></entry>
                 <entry>The API is unresponsive.</entry>
                 <entry>Restart the process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
@@ -925,11 +956,20 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml --limit 'DES-API,DES-CE
                   <codeblock>/var/log/designate/designate-api.log
 /var/log/designate/designate-central.log</codeblock></entry>
               </row>
+              <row>
+                <entry>Service Directory Log Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry/>
+              </row>
 
               <row>
                 <entry>powerdns</entry>
                 <entry>Process Check</entry>
-                <entry>pdns_server</entry>
+                <entry>process_name = pdns_server</entry>
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
@@ -1044,9 +1084,12 @@ ansible-playbook -i hosts/verb_hosts keystone-start.yml --limit &lt;hostname></c
                   </ol></entry>
               </row>
               <row>
-                <entry>Host Alive Check</entry>
-                <entry/>
-                <entry>The affected host has halted or SSH is down.</entry>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
                 <entry/>
               </row>
             </tbody>
@@ -1080,7 +1123,7 @@ ansible-playbook -i hosts/verb_hosts keystone-start.yml --limit &lt;hostname></c
             <tbody>
               <!-- service=telemetry -->
               <row>
-                <entry morerows="5">telemetry</entry>
+                <entry morerows="3">telemetry</entry>
                 <entry>Process Check</entry>
                 <entry>Alarms when the <codeph>ceilometer-agent-notification</codeph> process is not
                   running.</entry>
@@ -1111,39 +1154,25 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                 </entry>
               </row>
               <row>
-                <entry>Process Check</entry>
-                <entry>process_name=ceilometer-collector</entry>
-                <entry>Process has crashed.</entry>
-                <entry>This alarm was removed in <keyword keyref="kw-hos-phrase"/>, if you have
-                  upgraded from a previous version then this alarm will go into an Undetermined
-                  state and you should delete the alarm.</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry>process_name=ceilometer-agent-central</entry>
-                <entry>Process has crashed.</entry>
-                <entry>This alarm was removed in <keyword keyref="kw-hos-phrase"/>, if you have
-                  upgraded from a previous version then this alarm will go into an Undetermined
-                  state and you should delete the alarm.</entry>
-              </row>
-              <row>
                 <entry>HTTP Status</entry>
                 <entry>
-                  <p>service=telemetry and used with hostname of one of the controller </p>
+                  <p>Alarms when the specified HTTP endpoint is down or not reachable.</p>
                 </entry>
-                <entry>Ceilometer API.</entry>
+                <entry>The host defined in the <codeph>url</codeph> field is down or not
+                  reachable.</entry>
                 <entry>Restart the process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
                     <li>Use the Ceilometer start playbook against the affected node:
                       <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname></codeblock></li>
+ansible-playbook -i hosts/verb_hosts FND-AP2-start.yml --limit &lt;hostname></codeblock></li>
                   </ol>
                 </entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
-                <entry>component=ceilometer-api </entry>
-                <entry>Ceilometer API on administrator VIP.</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
+                <entry>The host defined in the <codeph>host_type</codeph> and
+                    <codeph>endpoint_type</codeph> fields is down or not reachable.</entry>
                 <entry><p>If this occurs with an http_status in error on all nodes, then restart
                     Apache on all controllers.</p>
                   <p>If this occurs with a specific host with http_status in non-error for
@@ -1152,9 +1181,19 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                     Ceilometer log directory for the ceilometer_modwsgi file and ceilometer-api
                     logs.</p></entry>
               </row>
+              <row>
+                <entry>metering</entry>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                  message filling up the log files. Finally, it could be due to log rotate not
+                  configured properly so old log files are not being deleted properly.</entry>
+                <entry/>
+              </row>
               <!-- service=logging -->
               <row>
-                <entry morerows="12">logging</entry>
+                <entry morerows="5">logging</entry>
                 <entry>Elasticsearch Unassigned Shards</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch unassigned shards count is
                   greater than 0.</entry>
@@ -1182,17 +1221,6 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                 </entry>
               </row>
               <row>
-                <entry>Elasticsearch Max Total Indices Size</entry>
-                <entry><p>component = elasticsearch</p>Elasticsearch Total Indices size is greater
-                  than elasticsearch_max_total_indices_size_in_bytes defined by user.</entry>
-                <entry>elasticsearch_max_total_indices_size_in_bytes may be set too low, or you may
-                  have insufficient resources.</entry>
-                <entry>If the total size of all the indices exceeds the size of the
-                  elasticsearch_max_total_indices_size_in_bytes as you have defined it, you can
-                  adjust the value if you want to give more space and you have the resources. If
-                  not, you may need to adjust the Curator to remove indices sooner.</entry>
-              </row>
-              <row>
                 <entry>Elasticsearch Number of Log Entries</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch Number of Log Entries.</entry>
                 <entry>The number of log entries may get too large.</entry>
@@ -1210,26 +1238,6 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                 <entry>The elasticsearch_indices_fielddata_cache_size is tuned out-of-the box, but
                   if it is insufficient, you may need to increase this configuration parameter and
                   run a reconfigure.</entry>
-              </row>
-
-              <row>
-                <entry>Elasticsearch Bulk Pool Rejected</entry>
-                <entry><p>component = elasticsearch</p>Elasticsearch Bulk Pool Rejected count is
-                  greater than 0.</entry>
-                <entry>Thread pool size could be too small.</entry>
-                <entry>You may need to increase the threadpool.bulk.queue_size (from 50 to 100, or
-                  even 3000, for example). This is found in the config/logging/elasticsearch.yml.j2
-                  file.</entry>
-              </row>
-              <row>
-                <entry>Elasticsearch Open File Descriptors</entry>
-                <entry><p>component = elasticsearch</p>Elasticsearch Open File Descriptors is
-                  greater than 90%.</entry>
-                <entry>Configured to allow too many file descriptors to be opened.</entry>
-                <entry>Close some old indices. This can be performed by setting the
-                  curator_close_indices_after_days value from the default of 0, which does not close
-                  indices, to a specific number of days. This is located in the
-                  config/logging-common/main.yml file.</entry>
               </row>
               <row>
                 <entry>Kafka Kronos Consumer Lag</entry>
@@ -1282,24 +1290,24 @@ sudo systemctl restart kibana</codeblock>
               </row>
               <!-- MONITORING -->
               <row>
-                <entry morerows="5">monitoring</entry>
+                <entry morerows="12">monitoring</entry>
                 <entry>HTTP Status</entry>
-                <entry><p>component = persister</p>Persister Health Check</entry>
+                <entry><p>component = monasca-persister</p>Persister Health Check</entry>
                 <entry>The process has crashed or a dependency is out.</entry>
                 <entry>If the process has crashed, restart. If a dependent service is down, address
                   that issue.</entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
-                <entry><p>component = api</p>API Health Check</entry>
+                <entry><p>component = monasca-api</p>API Health Check</entry>
                 <entry>The process has crashed or a dependency is out.</entry>
                 <entry>If the process has crashed, restart. If a dependent service is down, address
                   that issue.</entry>
               </row>
               <row>
                 <entry>Monasca Agent Collection Time</entry>
-                <entry><p>component = monasca-agent</p>The time the agent took to collect
-                  metrics.</entry>
+                <entry>Alarms when the elapsed time the <codeph>monasca-agent</codeph> takes to
+                  collect metrics is high.</entry>
                 <entry>Heavy load on the box or a stuck agent plug-in.</entry>
                 <entry>Address the load issue on the machine. If needed, restart the agent.</entry>
               </row>
@@ -1307,19 +1315,90 @@ sudo systemctl restart kibana</codeblock>
                 <entry>Process Check</entry>
                 <entry><p>component = kafka</p>Process not running.</entry>
                 <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>Restart the process on the affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if Kafka is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags kafka</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags kafka</codeblock></li>
+                    <li>Verify that Kafka is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags kafka</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry><p>component = notification</p>Process not running.</entry>
+                <entry><p>process_name = monasca-notification</p>Process not running.</entry>
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node. Review the associated logs.</entry>
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry><p>component = storm</p>Process not running.</entry>
+                <entry>process_name = monasca-agent</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry>process_name = monasca-api</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry>process_name = monasca-persister</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry>process_name = backtype.storm.daemon.nimbus<p>component =
+                  apache-storm</p></entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry>process_name = backtype.storm.daemon.supervisor<p>component =
+                    apache-storm</p></entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry>process_name = backtype.storm.daemon.worker<p>component =
+                  apache-storm</p></entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry><p>process_name = monasca-thresh</p><p>component = apache-storm</p><p>Process
+                    not running.</p></entry>
                 <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>Restart the process on the affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if <codeph>monasca-thresh</codeph> is running on all nodes with this
+                      playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags thresh</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock></li>
+                    <li>Verify that it is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags thresh</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
+              </row>
+              <row>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry/>
+                <entry/>
               </row>
 
             </tbody>
@@ -1803,7 +1882,7 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery</codeblock></li>
               <row>
                 <entry>barbican</entry>
                 <entry>Service Log Directory Size</entry>
-                <entry/>
+                <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry/>
                 <entry/>
               </row>
