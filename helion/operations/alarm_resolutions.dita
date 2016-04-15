@@ -50,7 +50,31 @@
             </thead>
             <tbody>
               <row>
-                <entry morerows="2">compute</entry>
+                <entry morerows="4">compute</entry>
+                <entry>HTTP Status</entry>
+                <entry>This is a <codeph>nova-api</codeph> health check</entry>
+                <entry>Process crashed.</entry>
+                <entry>Restart the <codeph>nova-api</codeph> process on the affected node. Review
+                  the <codeph>nova-api.log</codeph> files. Try to connect locally to the http port
+                  that is found in the dimension field of the alarm to see if the connection is
+                  accepted.</entry>
+              </row>
+              <row>
+                <entry>Host Status</entry>
+                <entry>Alarms when the specified host is down or not reachable.</entry>
+                <entry>The host is down, has been rebooted, or has network connectivity
+                  issues.</entry>
+                <entry/>
+              </row>
+              <row>
+                <entry>Process Bound Check</entry>
+                <entry><codeph>process_name=nova-api</codeph><p>This alarm checks that the number of
+                    processes found is in a predefined range</p></entry>
+                <entry>Process crashed or too many processes running</entry>
+                <entry>Stop all the processes and restart the nova-api process on the affected host.
+                  Review the system and nova-api logs.</entry>
+              </row>
+              <row>
                 <entry>Process Check</entry>
                 <entry>Separate alarms for each of these Nova services, specified by the
                     <codeph>component</codeph> dimension: <ul>
@@ -75,24 +99,13 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeb
                     or <codeph>nova-scheduler.log</codeph>.</p></entry>
               </row>
               <row>
-                <entry>HTTP Status</entry>
-                <entry>This is a <codeph>nova-api</codeph> health check</entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the <codeph>nova-api</codeph> process on the affected node. Review
-                  the <codeph>nova-api.log</codeph> files. Try to connect locally to the http port
-                  that is found in the dimension field of the alarm to see if the connection is
-                  accepted.</entry>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry/>
+                <entry/>
               </row>
               <row>
-                <entry>Process Bound Check</entry>
-                <entry><codeph>process_name=nova-api</codeph><p>This alarm checks that the number of
-                    processes found is in a predefined range</p></entry>
-                <entry>Process crashed or too many processes running</entry>
-                <entry>Stop all the processes and restart the nova-api process on the affected host.
-                  Review the system and nova-api logs.</entry>
-              </row>
-              <row>
-                <entry>image-service</entry>
+                <entry morerows="1">image-service</entry>
                 <entry>HTTP Status</entry>
                 <entry>Separate alarms for each of these Glance services, specified by the
                     <codeph>component</codeph> dimension: <ul>
@@ -107,6 +120,19 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeb
 ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></codeblock></li>
                   </ol>
                   <p>Review the associated logs.</p></entry>
+              </row>
+              <row>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>baremetal</entry>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry/>
+                <entry/>
               </row>
             </tbody>
           </tgroup>
@@ -139,7 +165,7 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
             </thead>
             <tbody>
               <row>
-                <entry morerows="18">object-storage</entry>
+                <entry morerows="19">object-storage</entry>
                 <entry>swiftlm-scan monitor</entry>
                 <entry>Alarms if <codeph>swiftlm-scan</codeph> cannot execute a monitoring
                   task.</entry>
@@ -537,7 +563,13 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
                   mitigation tasks.</entry>
               </row>
               <row>
-                <entry morerows="8">block-storage</entry>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry morerows="9">block-storage</entry>
                 <entry>Process Check</entry>
                 <entry>Separate alarms for each of these Cinder services, specified by the
                     <codeph>component</codeph> dimension: <ul>
@@ -590,7 +622,7 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
                 <entry>Cinder volume running &lt;hostname&gt; check</entry>
                 <entry>Cinder volume singleton check.</entry>
                 <entry>
-                  <p>Volume process is either:</p>
+                  <p>The <codeph>cinder-volume</codeph> process is either:</p>
                   <p>
                     <ul>
                       <li>running on a node it should not be on, or</li>
@@ -599,7 +631,9 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
                   </p>
                 </entry>
                 <entry>Run the cinder-migrate-volume playbook to migrate the volume and backup to
-                  correct node.</entry>
+                  correct
+                  node.<codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml</codeblock></entry>
               </row>
               <row>
                 <entry>Cinderlm diagnostics monitoring</entry>
@@ -630,6 +664,12 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
                 <entry>Log in to the reported and run these commands to find out the status of the LUN:<codeblock>sudo hpssacli
 => ctrl slot=1 pd all show</codeblock>
                   <p>Replace any broken drives.</p></entry>
+              </row>
+              <row>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry/>
+                <entry/>
               </row>
               <!-- DOCS-2905 -->
               <row>
@@ -678,9 +718,13 @@ ansible-playbook -i hosts/verb_hosts vsa-start.yml --limit &lt;hostname></codebl
                   </ol></entry>
               </row>
               <row>
-                <entry morerows="1">ceph</entry>
+                <entry morerows="1">ceph-storage</entry>
                 <entry>Process Check</entry>
-                <entry>process_name=&lt;cluster_name>-osd.&lt;id></entry>
+                <entry>Separate alarms for each of these Ceph services, specified by the
+                    <codeph>component</codeph> dimension: <ul id="ul_vyv_1z5_qv">
+                    <li>&lt;cluster_name>-osd.&lt;id></li>
+                    <li>&lt;cluster_name>-mon.&lt;id></li>
+                  </ul></entry>
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
@@ -690,15 +734,10 @@ ansible-playbook -i hosts/verb_hosts ceph-start.yml --limit &lt;hostname></codeb
                   </ol></entry>
               </row>
               <row>
-                <entry>Process Check</entry>
-                <entry>process_name=&lt;cluster_name>-mon.&lt;id></entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node using these steps: <ol>
-                    <li>Log in to the lifecycle manager.</li>
-                    <li>Use the Ceph start playbook against the affected node:
-                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-start.yml --limit &lt;hostname></codeblock></li>
-                  </ol></entry>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry/>
+                <entry/>
               </row>
             </tbody>
           </tgroup>
@@ -1170,34 +1209,7 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   if it is insufficient, you may need to increase this configuration parameter and
                   run a reconfigure.</entry>
               </row>
-              <row>
-                <entry>Elasticsearch Low Watermark</entry>
-                <entry><p>component = elasticsearch</p>Elasticsearch Disk LOW Watermark. Backup
-                  indices. If high watermark is reached, indices will be deleted. Adjust
-                  curator_low_watermark_percent, curator_high_watermark_percent, and
-                  elasticsearch_max_total_indices_size_in_bytes if needed.</entry>
-                <entry>Running out of disk space for
-                  <codeph>/var/lib/elasticsearch</codeph>.</entry>
-                <entry>Free up space by removing indices (backing them up first if desired).
-                  Alternatively, adjust <codeph>curator_low_watermark_percent</codeph>,
-                    <codeph>curator_high_watermark_percent</codeph>, and/or
-                    <codeph>elasticsearch_max_total_indices_size_in_bytes</codeph> if needed,
-                  <!-- need to link to doc created for DOCS-2831 --></entry>
-              </row>
-              <row>
-                <entry>Elasticsearch High Watermark</entry>
-                <entry><p>component = elasticsearch</p>Elasticsearch Disk HIGH Watermark. Attempting
-                  to delete indices to free disk space. Adjust curator_low_watermark_percent,
-                  curator_high_watermark_percent, and elasticsearch_max_total_indices_size_in_bytes
-                  if needed.</entry>
-                <entry>Running out of disk space for
-                  <codeph>/var/lib/elasticsearch</codeph>.</entry>
-                <entry>Verify that disk space was freed up by the curator. If needed, free up
-                  additional space by removing indices (backing them up first if desired).
-                  Alternatively, adjust curator_low_watermark_percent,
-                  curator_high_watermark_percent, and/or
-                  elasticsearch_max_total_indices_size_in_bytes if needed.</entry>
-              </row>
+
               <row>
                 <entry>Elasticsearch Bulk Pool Rejected</entry>
                 <entry><p>component = elasticsearch</p>Elasticsearch Bulk Pool Rejected count is
@@ -1243,39 +1255,7 @@ ansible-playbook -i hosts/verb_hosts ceilometer-start.yml --limit &lt;hostname><
                   to remove them. You could also choose to remove old log files by hand after
                   backing them up if needed.</entry>
               </row>
-              <row>
-                <entry>Log Partition Low Watermark</entry>
-                <entry>The <codeph>/var/log</codeph> disk space usage has crossed the low watermark.
-                  If the high watermark is reached, <codeph>logrotate</codeph> will be run to free
-                  up disk space. Adjust <codeph>var_log_low_watermark_percent</codeph> if
-                  needed.</entry>
-                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
-                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
-                  message filling up the log files. Finally, it could be due to log rotate not
-                  configured properly so old log files are not being deleted properly.</entry>
-                <entry>Find the service that is consuming too much disk space. Look at the logs. If
-                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
-                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
-                  what is needed to resolve the error. If old log files exist, configure log rotate
-                  to remove them. You could also choose to remove old log files by hand after
-                  backing them up if needed.</entry>
-              </row>
-              <row>
-                <entry>Log Partition High Watermark</entry>
-                <entry>The <codeph>/var/log</codeph> volume is running low on disk space. Logrotate
-                  will be run now to free up space. Adjust
-                    <codeph>var_log_high_watermark_percent</codeph> if needed.</entry>
-                <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
-                    <codeph>INFO</codeph> level. Another reason could be due to a repeating error
-                  message filling up the log files. Finally, it could be due to log rotate not
-                  configured properly so old log files are not being deleted properly.</entry>
-                <entry>Find the service that is consuming too much disk space. Look at the logs. If
-                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
-                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
-                  what is needed to resolve the error. If old log files exist, configure log rotate
-                  to remove them. You could also choose to remove old log files by hand after
-                  backing them up if needed.</entry>
-              </row>
+
               <row>
                 <entry>Process Check</entry>
                 <entry>Separate alarms for each of these logging services, specified by the
@@ -1420,11 +1400,68 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
           </thead>
           <tbody>
             <row>
-              <entry morerows="7">Uncategorized</entry>
+              <entry morerows="11">system</entry>
               <entry>CPU Usage</entry>
               <entry>Alarms on high CPU usage.</entry>
               <entry>Heavy load or runaway processes.</entry>
               <entry>Log onto the reporting host and diagnose the heavy CPU usage.</entry>
+            </row>
+            <row>
+              <entry>Elasticsearch Low Watermark</entry>
+              <entry><p>component = elasticsearch</p>Elasticsearch Disk LOW Watermark. Backup
+                indices. If high watermark is reached, indices will be deleted. Adjust
+                curator_low_watermark_percent, curator_high_watermark_percent, and
+                elasticsearch_max_total_indices_size_in_bytes if needed.</entry>
+              <entry>Running out of disk space for <codeph>/var/lib/elasticsearch</codeph>.</entry>
+              <entry>Free up space by removing indices (backing them up first if desired).
+                Alternatively, adjust <codeph>curator_low_watermark_percent</codeph>,
+                  <codeph>curator_high_watermark_percent</codeph>, and/or
+                  <codeph>elasticsearch_max_total_indices_size_in_bytes</codeph> if needed,
+                <!-- need to link to doc created for DOCS-2831 --></entry>
+            </row>
+            <row>
+              <entry>Elasticsearch High Watermark</entry>
+              <entry><p>component = elasticsearch</p>Elasticsearch Disk HIGH Watermark. Attempting
+                to delete indices to free disk space. Adjust curator_low_watermark_percent,
+                curator_high_watermark_percent, and elasticsearch_max_total_indices_size_in_bytes if
+                needed.</entry>
+              <entry>Running out of disk space for <codeph>/var/lib/elasticsearch</codeph>.</entry>
+              <entry>Verify that disk space was freed up by the curator. If needed, free up
+                additional space by removing indices (backing them up first if desired).
+                Alternatively, adjust curator_low_watermark_percent, curator_high_watermark_percent,
+                and/or elasticsearch_max_total_indices_size_in_bytes if needed.</entry>
+            </row>
+            <row>
+              <entry>Log Partition Low Watermark</entry>
+              <entry>The <codeph>/var/log</codeph> disk space usage has crossed the low watermark.
+                If the high watermark is reached, <codeph>logrotate</codeph> will be run to free up
+                disk space. Adjust <codeph>var_log_low_watermark_percent</codeph> if needed.</entry>
+              <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                  <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                message filling up the log files. Finally, it could be due to log rotate not
+                configured properly so old log files are not being deleted properly.</entry>
+              <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                  <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                  <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                what is needed to resolve the error. If old log files exist, configure log rotate to
+                remove them. You could also choose to remove old log files by hand after backing
+                them up if needed.</entry>
+            </row>
+            <row>
+              <entry>Log Partition High Watermark</entry>
+              <entry>The <codeph>/var/log</codeph> volume is running low on disk space. Logrotate
+                will be run now to free up space. Adjust
+                  <codeph>var_log_high_watermark_percent</codeph> if needed.</entry>
+              <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
+                  <codeph>INFO</codeph> level. Another reason could be due to a repeating error
+                message filling up the log files. Finally, it could be due to log rotate not
+                configured properly so old log files are not being deleted properly.</entry>
+              <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                  <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                  <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                what is needed to resolve the error. If old log files exist, configure log rotate to
+                remove them. You could also choose to remove old log files by hand after backing
+                them up if needed.</entry>
             </row>
             <row>
               <entry>Crash Dump Count</entry>
