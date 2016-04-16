@@ -92,25 +92,46 @@ COMMIT
             <ul>
                 <li>Delete the files <codeph>/etc/sysconfig/iptables</codeph> and <codeph>/etc/sysconfig/ip6tables</codeph>
                     as none of the contained rules are required.
+                    
+                    <note type="important">
+                        <p>
+                            If these files existed on your system, and did contain content, the corresponding rules are currently installed 
+                            and active on the system.   Once you delete these two files (or edit them to only limit the rules to 
+                            interfaces not used by <keyword keyref="kw-hos"/>), you will need to reboot the system to activate the new settings.
+                        </p>
+                        
+                        <p>
+                            After the reboot, use the <codeph>sudo iptables-save</codeph> and <codeph>sudo ip6tables-save</codeph>
+                            commands to ensure the rules are set up correctly before you proceed with the installation. 
+                        </p>
+                    </note>                   
                 </li>
-                <li>Ensure that any remaining rules are limited to interfaces not used by <keyword keyref="kw-hos"/> (see
-                    the iptables documentation for details on how to modify the rules).
+                <li>Ensure that any remaining rules are limited to interfaces not used by <keyword keyref="kw-hos"/>.  To delete
+                    rules on an active system (without rebooting) use the <codeph>iptables</codeph> or the <codeph>ip6tables</codeph>
+                    commands. For example:
+<codeblock>
+iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited
+</codeblock>                  
+                    
+                    or:
+                    
+<codeblock>
+ip6tables -D INPUT -j REJECT --reject-with icmp6-adm-prohibited
+</codeblock>                         
+                    Use the commands <codeph>iptables -S</codeph> and <codeph>ip6tables -S</codeph> to show currently active rules.
+                    
+         
+                    <note type="important">
+                    An active system may contain rules for <codeph>helion-</codeph>, <codeph>neutron-</codeph> or <codeph>nova-</codeph>. 
+                        Be careful not to remove or modify any rules that are named this way.
+                    </note>             
+                    
+                    
                 </li>
                 
             </ul>
             
-            <note type="important">
-                <p>
-                If these files existed on your system, and did contain content, the corresponding rules are currently installed 
-                and active on the system.   Once you delete these two files (or modify them to only limit the rules to 
-                interfaces not used by <keyword keyref="kw-hos"/>), you will need to reboot the system to activate the new settings.
-                </p>
-                
-                <p>
-                    After the reboot, use the <codeph>sudo iptables-save</codeph> and <codeph>sudo ip6tables-save</codeph>
-                    commands to ensure the rules are set up correctly before you proceed with the installation. 
-                </p>
-            </note>
+
         </section>
     </body>
 </topic>
