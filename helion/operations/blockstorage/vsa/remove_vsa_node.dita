@@ -8,93 +8,82 @@
     <p>If you want to remove the VSA node permanently then you must start by removing the node from
       the management group cluster in the CMC utility. Once it has been removed from the management
       group cluster then you can remove the VSA storage system from the cloud.</p></abstract>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <section id="expandCollapse">
-      <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
-      <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
+
+    <section id="prereqs"><title>Prerequisites</title>
+      <p>You must remove the VSA cluster from the CMC utility before removing the VSA node from your
+        cloud environment. To remove the CMC cluster, refer to <b>HPE StoreVirtual Storage Online
+          help in CMC</b> for more details.</p>
+      <p>You can only remove a VSA node if you have more than three nodes in a cluster. If you
+        attempt to remove a node which takes you below this threshold, the configuration processor
+        will throw an error similar to this:</p>
+      <codeblock>ERR: Couldn't allocate 3 servers with role ['VSA-ROLE'] for resource group vsa in control-plane-1</codeblock>
     </section>
-    <section id="prereqs"><title outputclass="headerH">Prerequisites</title>
-      <sectiondiv outputclass="insideSection">
-        <p>You must remove the VSA cluster from the CMC utility before removing the VSA node from
-          your cloud environment. To remove the CMC cluster, refer to <b>HPE StoreVirtual Storage
-            Online help in CMC</b> for more details.</p>
-        <p>You can only remove a VSA node if you have more than three nodes in a cluster. If you
-          attempt to remove a node which takes you below this threshold, the configuration processor
-          will throw an error similar to this:</p>
-        <codeblock>ERR: Couldn't allocate 3 servers with role ['VSA-ROLE'] for resource group vsa in control-plane-1</codeblock>
-      </sectiondiv>
+    <section id="notes"><title>Notes</title>
+      <p>While removing VSA storage system permanently, the operator needs to ensure there is an odd
+        number of managers running to avoid split brain syndrome. For example, if there are five
+        nodes and one node is getting removed the operator needs to stop the manager running on any
+        of the remaining four nodes.</p>
     </section>
-    <section id="notes"><title outputclass="headerH">Notes</title>
-      <sectiondiv outputclass="insideSection">
-        <p>While removing VSA storage system permanently, the operator needs to ensure there is an
-          odd number of managers running to avoid split brain syndrome. For example, if there are
-          five nodes and one node is getting removed the operator needs to stop the manager running
-          on any of the remaining four nodes.</p>
-      </sectiondiv>
-    </section>
-    <section id="howto"><title outputclass="headerH">Removing a VSA Node</title>
-      <sectiondiv outputclass="insideSection">
-        <p>Perform the following steps to remove the same cluster which has been removed from CMC in
-          your cloud.</p>
-        <ol>
-          <li>Log in to the lifecycle manager.</li>
-          <li>Edit your <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file and
-            remove the reference to the VSA node you are removing.</li>
-          <li>Commit your configuration to the <xref href="../../../installation/using_git.dita"
-              >local git repo</xref>, as follows:
-            <codeblock>cd ~/helion/hos/ansible
+    <section id="howto"><title>Removing a VSA Node</title>
+      <p>Perform the following steps to remove the same cluster which has been removed from CMC in
+        your cloud.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Edit your <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file and remove
+          the reference to the VSA node you are removing.</li>
+        <li>Commit your configuration to the <xref href="../../../installation/using_git.dita">local
+            git repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
-          <li>Run the configuration processor:
-            <codeblock>cd ~/helion/hos/ansible
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-          <li>Update your deployment directory:
-            <codeblock>cd ~/helion/hos/ansible
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-          <li>There is no need to run the site.yml playbook. However you should remove the node from
-            cobbler using these steps. <p>List out your current sytsems in Cobbler:</p>
-            <codeblock>sudo cobbler system list</codeblock>
-            <p>Remove them with this command:</p>
-            <codeblock>sudo cobbler system remove --name=&lt;node></codeblock></li>
-          <li>Run the Cobbler deploy playbook:
-            <codeblock>cd ~/helion/hos/ansible
+        <li>There is no need to run the site.yml playbook. However you should remove the node from
+          cobbler using these steps. <p>List out your current sytsems in Cobbler:</p>
+          <codeblock>sudo cobbler system list</codeblock>
+          <p>Remove them with this command:</p>
+          <codeblock>sudo cobbler system remove --name=&lt;node></codeblock></li>
+        <li>Run the Cobbler deploy playbook:
+          <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
-          <li>Ensure that the node you removed is also removed in the
-              <codeph>~/scratch/ansible/next/hos/ansible/hosts/verb_hosts</codeph> file.</li>
-        </ol>
-      </sectiondiv>
+        <li>Ensure that the node you removed is also removed in the
+            <codeph>~/scratch/ansible/next/hos/ansible/hosts/verb_hosts</codeph> file.</li>
+      </ol>
     </section>
 
-    <section id="remove_monitoring"><title outputclass="headerH">Remove the VSA Node from
-        Monitoring</title><sectiondiv outputclass="insideSection">
-        <p>Once you have removed the VSA node from your cloud infrastructure, the Host Status alarm
-          against it will trigger so there are additional steps to take to resolve this issue.</p>
-        <p>You will want to SSH to each of the Monasca API servers and edit the
-            <codeph>/etc/monasca/agent/conf.d/host_alive.yaml</codeph> file to remove references to
-          the VSA node you removed. This will require <codeph>sudo</codeph> access. The entries will
-          look similar to the one below:</p>
-        <codeblock>- alive_test: ping
+    <section id="remove_monitoring"><title>Remove the VSA Node from Monitoring</title>
+      <p>Once you have removed the VSA node from your cloud infrastructure, the Host Status alarm
+        against it will trigger so there are additional steps to take to resolve this issue.</p>
+      <p>You will want to SSH to each of the Monasca API servers and edit the
+          <codeph>/etc/monasca/agent/conf.d/host_alive.yaml</codeph> file to remove references to
+        the VSA node you removed. This will require <codeph>sudo</codeph> access. The entries will
+        look similar to the one below:</p>
+      <codeblock>- alive_test: ping
   built_by: HostAlive  
   host_name: helion-cp1-vsa0001-mgmt
   name: helion-cp1-vsa0001-mgmt ping</codeblock>
-        <p>Once you have removed the references on each of your Monasca API servers you then need to
-          restart the monasca-agent on each of those servers with this command:</p>
-        <codeblock>sudo service monasca-agent restart</codeblock>
-        <p>With the VSA node references removed and the monasca-agent restarted, you can then delete
-          the corresponding alarm to finish this process. To do so we recommend using the Monasca
-          CLI which should be installed on each of your Monasca API servers by default:</p>
-        <codeblock>monasca alarm-list --metric-dimensions hostname=&#60;vsa node deleted></codeblock>
-        <p>For example, if your VSA node looked like the example above then you would use this
-          command to get the alarm ID:</p>
-        <codeblock>monasca alarm-list --metric-dimensions hostname=helion-cp1-vsa0001-mgmt</codeblock>
-        <p>You can then delete the alarm with this command:</p>
-        <codeblock>monasca alarm-delete &#60;alarm ID></codeblock>
-      </sectiondiv>
+      <p>Once you have removed the references on each of your Monasca API servers you then need to
+        restart the monasca-agent on each of those servers with this command:</p>
+      <codeblock>sudo service monasca-agent restart</codeblock>
+      <p>With the VSA node references removed and the monasca-agent restarted, you can then delete
+        the corresponding alarm to finish this process. To do so we recommend using the Monasca CLI
+        which should be installed on each of your Monasca API servers by default:</p>
+      <codeblock>monasca alarm-list --metric-dimensions hostname=&#60;vsa node deleted></codeblock>
+      <p>For example, if your VSA node looked like the example above then you would use this command
+        to get the alarm ID:</p>
+      <codeblock>monasca alarm-list --metric-dimensions hostname=helion-cp1-vsa0001-mgmt</codeblock>
+      <p>You can then delete the alarm with this command:</p>
+      <codeblock>monasca alarm-delete &#60;alarm ID></codeblock>
     </section>
     <section>
       <title>Removing a VSA Node from your CMC Management Cluster using Ansible</title>
-      <sectiondiv outputclass="insideSection">
       <p>If you <xref href="../../../installation/configure_vsa.dita#config_vsa/create_cluster"
           >created the VSA cluster using Ansible</xref>, you can remove nodes to that cluster using
         the same playbook. Perform the following steps:</p>
@@ -105,7 +94,7 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
           <codeblock>ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li>
         <li>When prompted, enter an administrative user name and password you will use to administer
           the CMC utility.</li>
-      </ol></sectiondiv>
+      </ol>
     </section>
 
   </body>
