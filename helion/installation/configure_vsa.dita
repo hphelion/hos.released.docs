@@ -6,7 +6,7 @@
   <abstract><shortdesc outputclass="hdphidden">Installation and configuration steps for your VSA
       backend.</shortdesc>This page describes how to configure your VSA backend for the Helion
     Entry-scale with KVM cloud model. It consists of the following steps:</abstract>
-  <body>
+  <body><!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="expandCollapse">
       <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
@@ -196,10 +196,42 @@ tcp6       0      0 :::5903                 :::*                    LISTEN      
           </ol></p>
       </sectiondiv>
     </section>
-    <section id="create_cluster"><title outputclass="headerH">Use the CMC Utility to Create a
-        Cluster and Add it to the Management Group</title>
+    <section id="create_cluster"><title outputclass="headerH">Create a Cluster and Add it to the
+        Management Group</title>
       <sectiondiv outputclass="insideSection">
-        <p>Perform the following steps to create the cluster.<ol id="ol_yln_fhl_jt">
+      <b>Using Ansible</b><p>Perform the following steps to create the
+        cluster using Ansible.</p><ol id="ol_gfz_1rn_qv">
+        <li>Run the following command from your first controller node:
+          <codeblock>ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li>
+        <li>When prompted, enter an administrative user name and password you will use to administer
+          the CMC utility.<p>Administrative user naming requirements:<ul id="ul_b3z_1sn_qv">
+              <li>3 to 30 characters</li>
+              <li>Must begin with a letter</li>
+              <li>Allowed characters: 0-9, a-z, A-Z, hyphen (-), underline (_)</li>
+              <li>Disallowed characters: Multibyte character set</li>
+            </ul>Administrative user password requirements:<ul id="ul_bxp_csn_qv">
+              <li>5 to 40 characters</li>
+              <li>Must begin with a letter</li>
+              <li>Many ASCII and extended ASCII characters, Multibyte character set</li>
+              <li>Disallowed characters: dot (.), colon (:), forward slash (/), comma (,), backward
+                slash (\), semi-colon (;), single-quote (‘), space ( ), equals (=)</li>
+            </ul></p><note type="important">You will need to remember these values to access cluster
+            using CMC or to re-run this playbook at another time. Do not change the credentials for
+            one or few of them using CMC as it will make cluster automation creation playbook to
+            ignore those cluster for reconfiguration. </note></li>
+        <li>Run the following command from your first controller node which will open the HP
+          StoreVirtual Centralized Management Console (CMC) GUI on your local
+          machine:<codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar</codeblock></li>
+        <li>In the CMC GUI, click the Find menu and then select the Find Systems options.Once
+          systems are found, new created clusters can been observed in CMC.</li>
+        <li>In the CMC GUI, click the <b>Find</b> menu and then select the <b>Find Systems</b>
+          options. <p>After the systems are found, the newly created clusters are displayed in
+            CMC.</p><p>The management group name is automatically creating using the following
+            pattern: <codeph>mg-&lt;resource-prefix></codeph></p><p>The cluster name is
+            automatically creating using the following pattern:
+              <codeph>cluster-&lt;resource-prefix></codeph></p></li>
+      </ol><p><b>Using the CMC Utility</b></p>
+        <p>Perform the following steps to create the cluster using CMC.<ol id="ol_yln_fhl_jt">
             <li>Run the following command from your first controller node which will open the HP
               StoreVirtual Centralized Management Console (CMC) GUI on your local machine:<codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar</codeblock>
               <p>By default, the CMC GUI is configured to discover the StoreVirtual nodes in the
@@ -224,9 +256,10 @@ tcp6       0      0 :::5903                 :::*                    LISTEN      
             <li>Enter a name in the <b>New Management Group Name</b> field and then click
                 <b>Next</b>. <p><image href="../../media/vsa/cmc6.png"/></p></li>
             <li>On the <b>Add Administrative User</b> you will enter a username and password you
-              will use to administer the CMC utility. <p><note type="important">You will need to
-                  remember these values as you will input them into your
-                    <codeph>cinder.conf.j2</codeph> file later.</note></p>
+              will use to administer the CMC utility. <p>
+                <note type="important">You will need to remember these values as you will input them
+                  into your <codeph>cinder.conf.j2</codeph> file later.</note>
+              </p>
               <p><image href="../../media/vsa/cmc7.png"/></p></li>
             <li>Click <b>Next</b> to display the <b>Management Group Time</b> page.</li>
             <li>Add your NTP server information and click <b>Next</b>
@@ -257,8 +290,7 @@ tcp6       0      0 :::5903                 :::*                    LISTEN      
             <li>If this process is successful you will see a summary page at the end which outlines
               what you have completed.</li>
           </ol></p>
-      </sectiondiv>
-    </section>
+      </sectiondiv></section>
     <section id="config_backend">
       <title outputclass="headerH">Configure VSA as the Backend</title>
       <sectiondiv outputclass="insideSection">
