@@ -13,9 +13,9 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
 
     <section id="prereqs"><title>Prerequisites</title>
-      <p>You must remove the VSA cluster from the CMC utility before removing the VSA node from your
-        cloud environment. To remove the CMC cluster, refer to <b>HPE StoreVirtual Storage Online
-          help in CMC</b> for more details.</p>
+      <p>You must remove the VSA node from the cluster and management group in the CMC utility
+        before removing the VSA node from your cloud environment. Refer to the <b>HPE StoreVirtual
+          Storage Online help in CMC</b> for more details.</p>
       <p>You can only remove a VSA node if you have more than three nodes in a cluster. If you
         attempt to remove a node which takes you below this threshold, the configuration processor
         will throw an error similar to this:</p>
@@ -28,8 +28,7 @@
         of the remaining four nodes.</p>
     </section>
     <section id="howto"><title>Removing a VSA Node</title>
-      <p>Perform the following steps to remove the same cluster which has been removed from CMC in
-        your cloud.</p>
+      <p>Perform the following steps to remove the VSA node from your cloud.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Edit your <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file and remove
@@ -57,6 +56,26 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
             <codeph>~/scratch/ansible/next/hos/ansible/hosts/verb_hosts</codeph> file.</li>
       </ol>
     </section>
+    
+    <section id="remove_cmc"><title>Removing a VSA Node from your CMC Management Cluster</title>
+    <p>You can remove VSA nodes from an existing cluster using either the CMC utility or by using an Ansible playbook provided on the lifecycle manager.</p>
+      <p><b>Using Ansible</b></p>
+      <p>If you <xref href="../../../installation/configure_vsa.dita#config_vsa/create_cluster"
+        >created the VSA cluster using Ansible</xref>, you can remove nodes to that cluster using
+        the same playbook. Perform the following steps:</p>
+      <ol id="ol_gfz_1rn_qv">
+        <li>Edit your <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file to include
+          the details about your new VSA node(s), as <xref href="#remove_vsa/howto" format="dita"
+            >described previously</xref>.</li>
+        <li>Run the following command from your first controller node:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li>
+        <li>When prompted, enter an administrative user name and password you will use to administer
+          the CMC utility.</li>
+      </ol>
+      <p><b>Using the CMC Utility</b></p>
+    
+    </section>
 
     <section id="remove_monitoring"><title>Remove the VSA Node from Monitoring</title>
       <p>Once you have removed the VSA node from your cloud infrastructure, the Host Status alarm
@@ -82,20 +101,7 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
       <p>You can then delete the alarm with this command:</p>
       <codeblock>monasca alarm-delete &#60;alarm ID></codeblock>
     </section>
-    <section>
-      <title>Removing a VSA Node from your CMC Management Cluster using Ansible</title>
-      <p>If you <xref href="../../../installation/configure_vsa.dita#config_vsa/create_cluster"
-          >created the VSA cluster using Ansible</xref>, you can remove nodes to that cluster using
-        the same playbook. Perform the following steps:</p>
-      <ol id="ol_gfz_1rn_qv">
-        <li>Edit your <codeph>servers.yml</codeph> file to include the details about your new VSA
-          node(s), as <xref href="#remove_vsa/howto" format="dita">described previously</xref>.</li>
-        <li>Run the following command from your first controller node:
-          <codeblock>ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li>
-        <li>When prompted, enter an administrative user name and password you will use to administer
-          the CMC utility.</li>
-      </ol>
-    </section>
+
 
   </body>
 </topic>

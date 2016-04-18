@@ -7,6 +7,7 @@
     troubleshooting steps.</shortdesc>
   <body>
     <!--not tested-->
+    <!-- LIST IS CURRENT AS OF HOS 3.0 BUILD 871 -->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <p>When alarms are triggered it may be helpful for you to review the service logs. For details
       on how to use the logging user interface built into the Operations Console, see <xref
@@ -1202,12 +1203,14 @@ ansible-playbook -i hosts/verb_hosts FND-AP2-start.yml --limit &lt;hostname></co
                   <p>To find the unassigned shards, run the following command on the lifecycle
                     manager from the <codeph>~/scratch/ansible/next/hos/ansible</codeph>
                     directory:</p>
-                  <codeblock>ansible -i hosts/verb_hosts LOG-SVR[0] -m shell -a "curl localhost:9200/_cat/shards?pretty -s" | grep UNASSIGNED</codeblock>
+                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible -i hosts/verb_hosts LOG-SVR[0] -m shell -a "curl localhost:9200/_cat/shards?pretty -s" | grep UNASSIGNED</codeblock>
                   <p>This should show which shards are unassigned, like this:</p>
                   <codeblock>logstash-2015.10.21 4 p UNASSIGNED 11412371  3.2gb 10.241.67.11 Keith Kilham</codeblock>
                   <p>The last column shows the name that Elasticsearch uses for the node that the
                     unassigned shards are on. To find the actual hostname, run:</p>
-                  <codeblock>ansible -i hosts/verb_hosts LOG-SVR[0] -m shell -a "curl localhost:9200/_nodes/_all/name?pretty -s"</codeblock>
+                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible -i hosts/verb_hosts LOG-SVR[0] -m shell -a "curl localhost:9200/_nodes/_all/name?pretty -s"</codeblock>
                   <p>Once you find the hostname, you can try the following:</p>
                   <ol>
                     <li>Make sure the node is not out of disk space, and free up space if
@@ -1215,7 +1218,8 @@ ansible-playbook -i hosts/verb_hosts FND-AP2-start.yml --limit &lt;hostname></co
                     <li>Restart the node (use caution, as this may affect other services as
                       well).</li>
                     <li>Check to make sure all versions of Elasticsearch are the same with this:
-                      <codeblock>ansible -i hosts/verb_hosts LOG-SVR -m shell -a "curl localhost:9200/_nodes/_local/name?pretty -s" | grep version</codeblock></li>
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible -i hosts/verb_hosts LOG-SVR -m shell -a "curl localhost:9200/_nodes/_local/name?pretty -s" | grep version</codeblock></li>
                     <li>Contact customer support.</li>
                   </ol>
                 </entry>
@@ -1397,8 +1401,14 @@ ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags thresh</codeblock
               <row>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
-                <entry/>
-                <entry/>
+                <entry>The service log directory, as indicated by the <codeph>path</codeph>
+                  dimension, is over the 2.5 GB quota.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
 
             </tbody>
@@ -1565,14 +1575,16 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>Nearly out of inodes for a partition, as indicated by the
                   <codeph>mount_point</codeph> reported.</entry>
               <entry>Many files on the disk.</entry>
-              <entry>Investigate cleanup of data or migration to other partitions.</entry>
+              <entry>Investigate cleanup of data or migration to other
+                partitions.<!-- DOCS-2942 --></entry>
             </row>
             <row>
               <entry>Disk Usage</entry>
               <entry>High disk usage, as indicated by the <codeph>mount_point</codeph>
                 reported.</entry>
               <entry>Large files on the disk.</entry>
-              <entry>Investigate cleanup of data or migration to other partitions.</entry>
+              <entry>Investigate cleanup of data or migration to other
+                partitions.<!-- DOCS-2942 --></entry>
             </row>
             <row>
               <entry>Host Status</entry>
@@ -1619,7 +1631,7 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
       </table>
     </section>
 
-    <!-- OTHER ALARMS -->
+    <!-- OTHER SERVICES -->
     <section id="other">
       <title>Other Services</title>
       <p>These alarms show under the Other Services section of the HPE Helion Ops Console.</p>
@@ -1642,160 +1654,77 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
             </thead>
             <tbody>
               <row>
-                <entry morerows="1">backup</entry>
+                <entry morerows="2">apache</entry>
+                <entry>Apache Status</entry>
+                <entry>Alarms on failure to reach the Apache status endpoint.</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
                 <entry>Process Check</entry>
-                <entry>freezer-scheduler</entry>
+                <entry>Alarms when the specified process is not running.<p>process_name =
+                    apache2</p></entry>
+                <entry/>
+                <entry>If the Apache process goes down, connect to the affected node via SSH and
+                  restart it with this command:
+                  <codeblock>sudo systemctl restart apache2</codeblock>
+                </entry>
+              </row>
+              <row>
+                <entry>Apache Idle Worker Count</entry>
+                <entry>Alarms when there are no idle workers in the Apache server.</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry morerows="2">backup</entry>
+                <entry>Process Check</entry>
+                <entry>Alarms when the specified process is not running.
+                  <p>freezer-scheduler</p></entry>
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node. Review the associated logs.</entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
-                <entry>freezer-api</entry>
-                <entry>...</entry>
-                <entry>...</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.
+                    <p>process_name = freezer-api</p></entry>
+                <entry/>
+                <entry/>
               </row>
               <row>
-                <entry>ceilometer</entry>
                 <entry>Service Log Directory Size</entry>
-                <entry>...</entry>
-                <entry>The size of the log file directory has exceeded 2.5 GB.</entry>
-                <entry>Connect via SSH to the affected host and check the log file directory and
-                  investigate reasons why it may be filling up faster than it should.</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>The service log directory, as indicated by the <codeph>path</codeph>
+                  dimension, is over the 2.5 GB quota.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
-              <row>
-                <entry>collectl</entry>
-                <entry>Service Log Directory Size</entry>
-                <entry>...</entry>
-                <entry>...</entry>
-                <entry>...</entry>
-              </row>
-              <row>
-                <entry>designate</entry>
-                <entry>Service Log Directory Size</entry>
-                <entry>...</entry>
-                <entry>...</entry>
-                <entry>...</entry>
-              </row>
+
+              <!-- EON -->
               <row>
                 <entry>eon</entry>
                 <entry>Service Log Directory Size</entry>
-                <entry/>
-                <entry/>
-                <entry/>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>The service log directory, as indicated by the <codeph>path</codeph>
+                  dimension, is over the 2.5 GB quota.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
-              <row>
-                <entry>freezer-agent</entry>
-                <entry>Service Log Directory Size</entry>
-                <entry/>
-                <entry/>
-                <entry/>
-              </row>
-              <row>
-                <entry>freezer-api</entry>
-                <entry>Service Log Directory Size</entry>
-                <entry/>
-                <entry/>
-                <entry/>
-              </row>
-              <row>
-                <entry>heat</entry>
-                <entry>Service Log Directory Size</entry>
-                <entry/>
-                <entry/>
-                <entry/>
-              </row>
-              <row>
-                <entry>hlm-ux-services</entry>
-                <entry>HTTP Status</entry>
-                <entry/>
-                <entry/>
-                <entry/>
-              </row>
-              <row>
-                <entry>horizon</entry>
-                <entry>Service Log Directory Size</entry>
-                <entry/>
-                <entry/>
-                <entry/>
-              </row>
-              <!-- HEAT -->
-              <row>
-                <entry morerows="7">orchestration</entry>
-                <entry>Process Check</entry>
-                <entry>heat-api process check on each node</entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry>heat-api-cfn process check on each node</entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry>heat-api-cloudwatch process check on each node</entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry>heat-engine process check on each node</entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <row>
-                <entry>HTTP Status</entry>
-                <entry>heat-api local http status check on each node</entry>
-                <entry>Process hung or crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <row>
-                <entry>HTTP Status</entry>
-                <entry>heat-api-cfn local http status check on each node</entry>
-                <entry>Process hung or crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <row>
-                <entry>HTTP Status</entry>
-                <entry>heat-api remote http status check only on one node</entry>
-                <entry>Process hung or crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <row>
-                <entry>HTTP Status</entry>
-                <entry>heat-api-cfn remote http status check only on one node</entry>
-                <entry>Process hung or crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
-              </row>
-              <!-- HORIZON -->
-              <row>
-                <entry>web-ui</entry>
-                <entry>HTTP Status</entry>
-                <entry>Alerts when Horizon's login page is not returned.</entry>
-                <entry>Apache is not running or there is a misconfiguration.</entry>
-                <entry>Check that Apache is running; investigate Horizon logs.</entry>
-              </row>
-              <!-- MYSQL -->
-              <row>
-                <entry morerows="1">mysql</entry>
-                <entry>MySQL Slow Query Rate</entry>
-                <entry>MySQL is reporting many slow queries.</entry>
-                <entry>System load.</entry>
-                <entry>This could be an indication of near capacity limits or an exposed bad query.
-                  First, check overall system load and then investigate MySQL details.</entry>
-              </row>
-              <row>
-                <entry>Process Check</entry>
-                <entry>process="mysqld"</entry>
-                <entry>MySQL crashed.</entry>
-                <entry>Restart MySQL on the affected node.</entry>
-              </row>
+
               <!-- HAPROXY -->
               <row>
                 <entry>haproxy</entry>
                 <entry>Process Check</entry>
-                <entry><p>service=haproxy</p>process_name=haproxy</entry>
+                <entry>Alarms when the specified process is not running. <p>process_name =
+                    haproxy</p></entry>
                 <entry>HA Proxy is not running on this machine.</entry>
                 <entry>Restart the process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
@@ -1805,17 +1734,180 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
                   </ol>
                   <p>Review the associated logs.</p></entry>
               </row>
+
+              <!-- hlm-ux-services -->
               <row>
-                <entry>rabbitmq</entry>
+                <entry>hlm-ux-services</entry>
+                <entry>HTTP Status</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
+                <entry/>
+                <entry/>
+              </row>
+
+              <!-- KAFKA -->
+              <row>
+                <entry morerows="1">kafka</entry>
+                <entry>Kafka Persister Metric Consumer Lag</entry>
+                <entry>Alarms when the Persister consumer group is not keeping up with the incoming
+                  messages on the metric topic.</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
                 <entry>Process Check</entry>
-                <entry>rabbitmq-server process not running.</entry>
+                <entry>Alarms when the specified process is not running. <p>process_name =
+                    kafka.Kafka</p></entry>
+                <entry/>
+                <entry/>
+              </row>
+
+              <!-- key-manager / barbican -->
+              <row>
+                <entry morerows="2">key-manager</entry>
+                <entry>Process Check</entry>
+                <entry>Alarms when the specified process is not running. <p>process_name =
+                    barbican-api</p></entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>HTTP Status</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
+                <entry/>
+                <entry/>
+              </row>
+              <row>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>The service log directory, as indicated by the <codeph>path</codeph>
+                  dimension, is over the 2.5 GB quota.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
+              </row>
+
+              <!-- MYSQL -->
+              <row>
+                <entry morerows="1">mysql</entry>
+                <entry>MySQL Slow Query Rate</entry>
+                <entry>Alarms when the slow query rate is high.</entry>
+                <entry>The system load is too high.</entry>
+                <entry>This could be an indication of near capacity limits or an exposed bad query.
+                  First, check overall system load and then investigate MySQL details.</entry>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry>Alarms when the specified process is not running. <p>process_name =
+                    mysqld</p></entry>
+                <entry>MySQL crashed.</entry>
+                <entry>Restart MySQL on the affected node.</entry>
+              </row>
+
+              <!-- Octavia -->
+              <row>
+                <entry morerows="2">octavia</entry>
+                <entry>Process Check</entry>
+                <entry>Alarms when the specified process is not running. There are individual alarms
+                  for each of these processes: <ul>
+                    <li>octavia-worker</li>
+                    <li>octavia-housekeeping</li>
+                    <li>octavia-api</li>
+                    <li>octavia-health-manager</li>
+                  </ul></entry>
+                <entry>The process has crashed.</entry>
+                <entry>Restart the process on the affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Use the Octavia start playbook against the affected node:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts octavia-start.yml --limit &lt;hostname></codeblock></li>
+                  </ol></entry>
+              </row>
+              <row>
+                <entry>HTTP Status</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
+                <entry>The <codeph>octavia-api </codeph>process could be down or you could be
+                  experiencing an issue with either haproxy or another network related
+                  issue.</entry>
+                <entry>If the <codeph>octavia-api</codeph> process is is down, restart it on the
+                  affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Use the Octavia start playbook against the affected node:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts octavia-start.yml --limit &lt;hostname></codeblock></li>
+                  </ol>
+                  <p>If it's not the <codeph>octavia-process</codeph> that is the issue, then check
+                    if there is an issue with <codeph>haproxy</codeph> or possibly a network issue
+                    and troubleshoot accordingly.</p></entry>
+              </row>
+              <row>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>The service log directory, as indicated by the <codeph>path</codeph>
+                  dimension, is over the 2.5 GB quota.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
+              </row>
+              <row>
+                <entry>logging</entry>
+                <entry>Process Check</entry>
+                <entry>Alarms when the specified process is not running. <p>process_name =
+                    apache2</p></entry>
+                <entry/>
+                <entry/>
+              </row>
+
+              <!-- orchestration / heat -->
+              <row>
+                <entry morerows="2">orchestration</entry>
+                <entry>Process Check</entry>
+                <entry>Alarms when the specified process is not running. There are individual alarms
+                  for each of these processes:<ul id="ul_kvs_yjq_rv">
+                    <li>heat-api</li>
+                    <li>heat-api-cfn</li>
+                    <li>heat-api-cloudwatch</li>
+                    <li>heat-engine</li>
+                  </ul>heat-api process check on each node</entry>
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node. Review the associated logs.</entry>
               </row>
               <row>
-                <entry morerows="3">vertica</entry>
+                <entry>HTTP Status</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.<p>
+                    <ul id="ul_ztx_1kq_rv">
+                      <li>heat-api</li>
+                      <li>heat-api-cfn</li>
+                      <li>heat-api-cloudwatch</li>
+                    </ul>
+                  </p></entry>
+                <entry/>
+                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+              </row>
+              <row>
+                <entry>Service Log Directory Size</entry>
+                <entry>Service log directory consuming more disk than its quota.</entry>
+                <entry>The service log directory, as indicated by the <codeph>path</codeph>
+                  dimension, is over the 2.5 GB quota.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
+              </row>
+
+              <!-- vertica -->
+              <row>
+                <entry morerows="1">vertica</entry>
                 <entry>Process Check</entry>
-                <entry>The <codeph>vertica</codeph> process is not running.</entry>
+                <entry>Alarms when the specified process is not running. <p>process_name =
+                    vertica</p></entry>
                 <entry>Process crashed.</entry>
                 <entry>Restart the <codeph>vertica</codeph> process using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
@@ -1846,56 +1938,40 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery</codeblock></li>
                   </ol>
                 </entry>
               </row>
+
+              <!-- web-ui / HORIZON -->
               <row>
-                <entry>Disk Usage</entry>
-                <entry>This alarm is notated by the dimension <codeph>mount_point:
-                    /var/vertica</codeph>. <p>Alarms when disk usage is high.</p></entry>
-                <entry>If Vertica's file system is incorrectly configured for the expected load, or
-                  if higher than expected load occurs and the file system fills up, this alarm will
-                    trigger.<p>If this alarm is not resolved before the file system completely fills
-                    up then Vertica will fail.</p></entry>
-                <entry><!-- DOCS-2942 --></entry>
+                <entry morerows="1">web-ui</entry>
+                <entry>HTTP Status</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
+                <entry>Apache is not running or there is a misconfiguration.</entry>
+                <entry>Check that Apache is running; investigate Horizon logs.</entry>
               </row>
               <row>
-                <entry>Disk Inode Usage</entry>
-                <entry><!-- DOCS-2942 --></entry>
-                <entry/>
-                <entry/>
-              </row>
-              <row>
-                <entry morerows="1">kafka</entry>
-                <entry>Kafka Alarm Transition Consumer Lag</entry>
-                <entry><p>component = kafka</p>Consumers are falling behind for a particular Kafka
-                  topic.</entry>
-                <entry>There is a slow down in the system or heavy load.</entry>
-                <entry>Look for high load in the various systems. This alert can fire for multiple
-                  topics or on multiple hosts. Which alarms are firing can help diagnose likely
-                  causes, i.e., if all are on one machine it could be the machine. If one topic
-                  across multiple machines it is likely the consumers of that topic, etc.</entry>
-              </row>
-              <row>
-                <entry>Kafka Persister Metric Consumer Lag</entry>
-                <entry>...</entry>
-                <entry>...</entry>
-                <entry>...</entry>
-              </row>
-              <row>
-                <entry>barbican</entry>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
-                <entry/>
-                <entry/>
+                <entry>The service log directory, as indicated by the <codeph>path</codeph>
+                  dimension, is over the 2.5 GB quota.</entry>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
+
+              <!-- zookeeper -->
               <row>
                 <entry morerows="1">zookeeper</entry>
                 <entry>Process Check</entry>
-                <entry><p>service = zookeeper</p>Process not running.</entry>
-                <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>Alarms when the specified process is not running.<p>process_name =
+                    org.apache.zookeeper.server</p></entry>
+                <entry/>
+                <entry/>
               </row>
               <row>
-                <entry>Zookeeper Latency</entry>
-                <entry><p>component = zookeeper</p>Zookeeper is experiencing high latency.</entry>
+                <entry>ZooKeeper Latency</entry>
+                <entry>Alarms when the ZooKeeper latency is high.</entry>
                 <entry>Heavy system load.</entry>
                 <entry>Check the individual system as well as activity across the entire
                   service.</entry>

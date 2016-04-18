@@ -161,7 +161,7 @@ ironic node-update ea7246fd-e1d6-4637-9699-0b7c59c22e67 <b>add properties/cpu_ar
         </section>
         
         
-        <section id="IRONIC-450">
+        <section id="IRONIC-450-power_state">
             <!-- IRONIC-450 -->
             <title>Deployment to a node fails and in "ironic node-list" command, the power_state column for the node is shown as "None"</title>
 
@@ -224,6 +224,39 @@ u'details': u'Download of image id 77700b53-9e15-406c-b2d5-13e7d9b96551 failed: 
               
           </section>
         
+
+
+        <section id="IRONIC-450">
+            <!-- IRONIC-450 -->
+            <title>Using <codeph>node-inspection</codeph> can cause temporary claim of IP addresses</title>
+            
+            
+            
+            <p><b>Possible cause: </b> Running <codeph>node-inspection</codeph> on a node discovers all the NIC ports including the NICs 
+                that don’t have any connectivity. This causes a temporary consumption of the network IPs and increased 
+                usage of the allocated quota.  As a result, other nodes  are deprived of IP addresses and deployments can fail.</p>
+            
+            <p><b>Resolution: </b>You can add node properties manually added instead of using the inspection tool.
+
+            </p>
+            
+            <p>Note: Upgrade <codeph>ipmitool</codeph> to a version >= 1.8.15 or it may not return detailed information
+                about the NIC interface for <codeph>node-inspection</codeph>. </p>
+            
+        </section>
+ 
+        <section id="IRONIC-450-deploying-state">
+            <title>Node permanently stuck in deploying state</title>     
+            
+            <p><b>Possible cause: </b>During scalability testing, some nodes have been seen to get stuck in the deploying state.</p>
+            
+            <p><b>Resolution: </b> 
+                To recover from this condition, set the provision state of the node to <codeph>Error</codeph> and maintenance to <codeph>True</codeph>. 
+                Delete the node and re-register again.
+            </p>
+        </section>
+        
+        
         
         <section>
             <title>Other Known Issues</title>
@@ -231,7 +264,7 @@ u'details': u'Download of image id 77700b53-9e15-406c-b2d5-13e7d9b96551 failed: 
             <ul>
                 <li>First NIC must always be in connected state when multiple NICs are present</li>
                 <li>Higher concurrency can cause power commands to fail</li>
-                <li>Using node-inspection can cause temporary claim of IP addresses</li>
+
             </ul>
 
         </section>
