@@ -10,6 +10,7 @@
       <p>No specific configuration is required to use Centralized Logging. However, you can configure the individual components as needed for your environment. This topic provides information on how to configure the following settings:</p>
       
 <ul>
+  <li><xref href="#central_log_configure/CL_stop_start">Stopping and Starting the Service</xref></li>
   <li><xref href="#central_log_configure/CL_config_files">Main Configuration Files</xref></li>
   <li><xref href="#central_log_configure/CL_general_config">General Configuration</xref></li>
   <li><xref href="#central_log_configure/CL_kibana_config">Configuring Kibana</xref></li>
@@ -19,6 +20,29 @@
 </ul>
     </section>
     
+    <section id="CL_stop_start">
+      <title>Stopping and Starting the Logging Service</title>   
+      <p>The steps in this section only impact centralized logging. Logrotate is an essential feature that keeps the service log files from filling the disk and will not be affected.
+     
+     <note type="attention">These playbooks must be run from the lifecycle manager.</note>
+   </p>
+    <p>To stop the Logging service:</p>
+<ol>
+  <li>To change to the directory containing the ansible playbook, run
+    <codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock></li>
+  <li>To run the ansible playbook that will stop the logging service, run:
+    <codeblock>ansible-playbook -i hosts/verb_hosts logging-stop.yml</codeblock></li>
+</ol>
+      <p>To start the Logging service:</p>
+      <ol>
+        <li>To change to the directory containing the ansible playbook, run
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock></li>
+        <li>To run the ansible playbook that will stop the logging service, run:
+          <codeblock>ansible-playbook -i ansible-playbook -i hosts/verb_hosts logging-start.yml
+</codeblock></li>
+      </ol>
+    </section>
+   
    
    <section id="CL_config_files"><title>Main Configuration Files</title>
       <p>Centralized Logging can be configured via the configuration files in the
@@ -547,11 +571,26 @@
     
     <section id="CL_config_log_rotate">
       <title>Configuring Log Rotation Settings</title>
-      <p>For each service, you can configure which files are rotated, how often they are rotated, and how large
-        they can grow before being rotated. Helion Openstack uses the cron process which in turn calls
+      <p>As you use each service, you might need change the default configuration settings such as:
+        <ul>
+          <li>which files are rotated</li>
+          <li>how often they are rotated</li>
+          <li>how large they can grow before being rotated</li>
+        </ul> 
+        Helion Openstack uses the cron process which in turn calls
         <codeph>logrotate</codeph> to provide rotation, compression, and removal of log files. Each
         log file can be checked hourly, daily, weekly, or monthly. If no rotation period is set then
         the log file will only be rotated when it grows too large.</p>
+      
+      <p>You can find the configuration files for each service in the following 
+        directory:
+        <codeblock>.../logging-ansible/logging-common/vars/*</codeblock>
+        Only files that have "centralized logging" enabled are copied to Elasticsearch.</p>
+        
+        <p>All of the variables for the logrotate process are found in the following file:
+          <codeblock>../logging-ansible/logging-common/defaults/main.yml          
+</codeblock></p>
+      
       <p>All of the variables for logging are found in the following file:
         <codeblock>        .../logging-ansible/kronos-common/defaults/main.yml</codeblock>
       </p>
