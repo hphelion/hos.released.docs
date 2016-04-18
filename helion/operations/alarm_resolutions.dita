@@ -1403,7 +1403,12 @@ ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags thresh</codeblock
                 <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry>The service log directory, as indicated by the <codeph>path</codeph>
                   dimension, is over the 2.5 GB quota.</entry>
-                <entry/>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
 
             </tbody>
@@ -1570,14 +1575,16 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <entry>Nearly out of inodes for a partition, as indicated by the
                   <codeph>mount_point</codeph> reported.</entry>
               <entry>Many files on the disk.</entry>
-              <entry>Investigate cleanup of data or migration to other partitions.<!-- DOCS-2942 --></entry>
+              <entry>Investigate cleanup of data or migration to other
+                partitions.<!-- DOCS-2942 --></entry>
             </row>
             <row>
               <entry>Disk Usage</entry>
               <entry>High disk usage, as indicated by the <codeph>mount_point</codeph>
                 reported.</entry>
               <entry>Large files on the disk.</entry>
-              <entry>Investigate cleanup of data or migration to other partitions.<!-- DOCS-2942 --></entry>
+              <entry>Investigate cleanup of data or migration to other
+                partitions.<!-- DOCS-2942 --></entry>
             </row>
             <row>
               <entry>Host Status</entry>
@@ -1656,11 +1663,12 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <row>
                 <entry>Process Check</entry>
                 <entry>Alarms when the specified process is not running.<p>process_name =
-                  apache2</p></entry>
+                    apache2</p></entry>
                 <entry/>
-                <entry>If the Apache process goes down, connect to the affected node via SSH and restart it with this command:
-                    <codeblock>sudo systemctl restart apache2</codeblock>
-                  </entry>
+                <entry>If the Apache process goes down, connect to the affected node via SSH and
+                  restart it with this command:
+                  <codeblock>sudo systemctl restart apache2</codeblock>
+                </entry>
               </row>
               <row>
                 <entry>Apache Idle Worker Count</entry>
@@ -1688,7 +1696,12 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry>The service log directory, as indicated by the <codeph>path</codeph>
                   dimension, is over the 2.5 GB quota.</entry>
-                <entry/>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
 
               <!-- EON -->
@@ -1698,7 +1711,12 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry>The service log directory, as indicated by the <codeph>path</codeph>
                   dimension, is over the 2.5 GB quota.</entry>
-                <entry/>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
 
               <!-- HAPROXY -->
@@ -1763,7 +1781,12 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
                 <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry>The service log directory, as indicated by the <codeph>path</codeph>
                   dimension, is over the 2.5 GB quota.</entry>
-                <entry/>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
 
               <!-- MYSQL -->
@@ -1787,28 +1810,49 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
               <row>
                 <entry morerows="2">octavia</entry>
                 <entry>Process Check</entry>
-                <entry>Alarms when the specified process is not running. There are individual alarms for each of these processes:
-                  <ul>
+                <entry>Alarms when the specified process is not running. There are individual alarms
+                  for each of these processes: <ul>
                     <li>octavia-worker</li>
                     <li>octavia-housekeeping</li>
                     <li>octavia-api</li>
                     <li>octavia-health-manager</li>
                   </ul></entry>
-                <entry/>
-                <entry/>
+                <entry>The process has crashed.</entry>
+                <entry>Restart the process on the affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Use the Octavia start playbook against the affected node:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts octavia-start.yml --limit &lt;hostname></codeblock></li>
+                  </ol></entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
                 <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
-                <entry/>
-                <entry/>
+                <entry>The <codeph>octavia-api </codeph>process could be down or you could be
+                  experiencing an issue with either haproxy or another network related
+                  issue.</entry>
+                <entry>If the <codeph>octavia-api</codeph> process is is down, restart it on the
+                  affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Use the Octavia start playbook against the affected node:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts octavia-start.yml --limit &lt;hostname></codeblock></li>
+                  </ol>
+                  <p>If it's not the <codeph>octavia-process</codeph> that is the issue, then check
+                    if there is an issue with <codeph>haproxy</codeph> or possibly a network issue
+                    and troubleshoot accordingly.</p></entry>
               </row>
               <row>
                 <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry>The service log directory, as indicated by the <codeph>path</codeph>
                   dimension, is over the 2.5 GB quota.</entry>
-                <entry/>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
               <row>
                 <entry>logging</entry>
@@ -1850,7 +1894,12 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
                 <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry>The service log directory, as indicated by the <codeph>path</codeph>
                   dimension, is over the 2.5 GB quota.</entry>
-                <entry/>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
 
               <!-- vertica -->
@@ -1903,7 +1952,12 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery</codeblock></li>
                 <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry>The service log directory, as indicated by the <codeph>path</codeph>
                   dimension, is over the 2.5 GB quota.</entry>
-                <entry/>
+                <entry>Find the service that is consuming too much disk space. Look at the logs. If
+                    <codeph>DEBUG</codeph> log entries exist, set the logging level to
+                    <codeph>INFO</codeph>. If the logs are repeatedly logging an error message, do
+                  what is needed to resolve the error. If old log files exist, configure log rotate
+                  to remove them. You could also choose to remove old log files by hand after
+                  backing them up if needed.</entry>
               </row>
 
               <!-- zookeeper -->
