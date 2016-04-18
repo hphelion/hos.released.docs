@@ -699,19 +699,22 @@ ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml</codeblock></entr
                   due to disk errors. Insufficient hard drive space is another possible
                   cause.</entry>
                 <entry>Investigate the VSA appliance VM status in the node. You can check the status
-                  by connecting to the affected VSA host via SSH and using this
-                    command:<codeblock>sudo virsh list --all</codeblock><p>If it is in a paused
-                    state, you can restart it by using this command. Note that the
-                      <codeph>&lt;vsa_vm_name></codeph> value will be the name in the output of the
-                      <codeph>virsh list</codeph> command
-                    above.<codeblock>sudo virsh start &lt;vsa_vm_name></codeblock></p>
+                  by using these steps: <ol>
+                    <li>SSH to the affected VSA host.</li>
+                    <li>Use this command to check the status of the VSA appliance VM:
+                      <codeblock>sudo virsh list --all</codeblock></li>
+                    <li>If it is in a paused state, you can restart it by using this command. Note
+                      that the <codeph>&lt;vsa_vm_name></codeph> value will be the name in the
+                      output of the <codeph>virsh list</codeph> command
+                      above.<codeblock>sudo virsh start &lt;vsa_vm_name></codeblock></li>
+                  </ol>
                   <p>If you wish to resolve this issue from the lifecycle manager, you can use these
                     steps:</p>
                   <ol>
                     <li>Log in to the lifecycle manager.</li>
-                    <li>Use the Nova start playbook against the affected node:
+                    <li>Use the VSA start playbook against the affected node:
                       <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts vsa-start.yml --limit &lt;hostname></codeblock></li>
+ansible-playbook -i hosts/verb_hosts vsa-start.yml --limit &lt;vsa_hostname></codeblock></li>
                   </ol></entry>
               </row>
               <row>
@@ -720,19 +723,22 @@ ansible-playbook -i hosts/verb_hosts vsa-start.yml --limit &lt;hostname></codebl
                   indicated by <codeph>vsa_vm_net_status</codeph> not running.</entry>
                 <entry>VSA appliance VM network/bridge issues.</entry>
                 <entry>Investigate the VSA VM network status in the node. You can check the status
-                  by connecting to the affected VSA host via SSH and using this
-                    command:<codeblock>sudo virsh net-list</codeblock><p>If it is in an inactive
-                    state, you can restart it by using this command. Note that the
-                      <codeph>&lt;vsa_vm_network_name></codeph> value will be the name in the output
-                    of the <codeph>virsh net-list</codeph> command
-                    above.<codeblock>sudo virsh net-start &lt;vsa_vm_network_name></codeblock></p>
+                  by using these steps:<ol>
+                    <li>SSH to the affected VSA host.</li>
+                    <li>Use this command to check the status of the VSA VM
+                      network:<codeblock>sudo virsh net-list</codeblock></li>
+                    <li>If it is in an inactive state, you can restart it by using this command.
+                      Note that the <codeph>&lt;vsa_vm_network_name></codeph> value will be the name
+                      in the output of the <codeph>virsh net-list</codeph> command
+                      above.<codeblock>sudo virsh net-start &lt;vsa_vm_network_name></codeblock></li>
+                  </ol>
                   <p>If you wish to resolve this issue from the lifecycle manager, you can use these
                     steps:</p>
                   <ol>
                     <li>Log in to the lifecycle manager.</li>
-                    <li>Use the Nova start playbook against the affected node:
+                    <li>Use the VSA start playbook against the affected node:
                       <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts vsa-start.yml --limit &lt;hostname></codeblock></li>
+ansible-playbook -i hosts/verb_hosts vsa-start.yml --limit &lt;vsa_hostname></codeblock></li>
                   </ol></entry>
               </row>
               <row>
