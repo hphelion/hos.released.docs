@@ -1203,12 +1203,14 @@ ansible-playbook -i hosts/verb_hosts FND-AP2-start.yml --limit &lt;hostname></co
                   <p>To find the unassigned shards, run the following command on the lifecycle
                     manager from the <codeph>~/scratch/ansible/next/hos/ansible</codeph>
                     directory:</p>
-                  <codeblock>ansible -i hosts/verb_hosts LOG-SVR[0] -m shell -a "curl localhost:9200/_cat/shards?pretty -s" | grep UNASSIGNED</codeblock>
+                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible -i hosts/verb_hosts LOG-SVR[0] -m shell -a "curl localhost:9200/_cat/shards?pretty -s" | grep UNASSIGNED</codeblock>
                   <p>This should show which shards are unassigned, like this:</p>
                   <codeblock>logstash-2015.10.21 4 p UNASSIGNED 11412371  3.2gb 10.241.67.11 Keith Kilham</codeblock>
                   <p>The last column shows the name that Elasticsearch uses for the node that the
                     unassigned shards are on. To find the actual hostname, run:</p>
-                  <codeblock>ansible -i hosts/verb_hosts LOG-SVR[0] -m shell -a "curl localhost:9200/_nodes/_all/name?pretty -s"</codeblock>
+                  <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible -i hosts/verb_hosts LOG-SVR[0] -m shell -a "curl localhost:9200/_nodes/_all/name?pretty -s"</codeblock>
                   <p>Once you find the hostname, you can try the following:</p>
                   <ol>
                     <li>Make sure the node is not out of disk space, and free up space if
@@ -1216,7 +1218,8 @@ ansible-playbook -i hosts/verb_hosts FND-AP2-start.yml --limit &lt;hostname></co
                     <li>Restart the node (use caution, as this may affect other services as
                       well).</li>
                     <li>Check to make sure all versions of Elasticsearch are the same with this:
-                      <codeblock>ansible -i hosts/verb_hosts LOG-SVR -m shell -a "curl localhost:9200/_nodes/_local/name?pretty -s" | grep version</codeblock></li>
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible -i hosts/verb_hosts LOG-SVR -m shell -a "curl localhost:9200/_nodes/_local/name?pretty -s" | grep version</codeblock></li>
                     <li>Contact customer support.</li>
                   </ol>
                 </entry>
