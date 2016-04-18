@@ -229,7 +229,7 @@
         it grows too large.</p>
       <p>Rotating a file means that the logrotate process creates a copy of the log file with a new
         extension, for example, the <b>.1</b> extension, then empties the contents of the
-        original file. If a .1 file already exists, then that file is first renamed to .2. If a .2 file already exists, it is renamed to .3, etc., up to the maximum number of rotated files specified in the settings file.</p> 
+        original file. If a .1 file already exists, then that file is first renamed with a .2 extension. If a .2 file already exists, it is renamed to .3, etc., up to the maximum number of rotated files specified in the settings file. When logrotate reaches the last possible file extension, it will delete the last file first on the next roation. By the time the logrotate process needs to delete a file, the results will have been copied to Elasticsearch, the central logging database.</p> 
       
       <p>The log rotation setting files can be found in the following directory 
         <codeblock>.../logging-ansible/logging-common/vars/*</codeblock>
@@ -248,18 +248,14 @@
             <dd>Updated copies of an original log file. These files are kept locally on the server and will continue to be rotated. If the file is also listed as Centrally Logged, it will also be copied to Elasticsearch.</dd>
           </dlentry>
         </dl>
-        
-        Logrotate continues to create the number of copies specified in the
-          <b>Rotation</b> variable. When logrotate reaches the last possible file extension, it will
-        delete the last file on the next rotation. By the time the logrotate process needs to delete
-        a file, the results have been copied to Elasticsearch, the central logging database.</p>
+      </p>
       <p>As an example, the Backup and Restore (BURA) service may be configured to create log files
         by setting the <b>Rotated Log Files</b> variable to
         <codeblock>/var/log/freezer-agent/freezer-scheduler.log</codeblock>This configuration means
         that in the <codeph>/var/log/freezer-agent</codeph> directory, in a live environment, there
         should be a file called <codeph>freezer-scheduler.log</codeph>. As the log file grows, the
         cron process runs every hour to check the log file size against the settings in the
-        configuration files. The example freezer-agent settings are described in the table below. </p>
+        configuration files. The example freezer-agent settings are described below. </p>
       <p>
         <table frame="all" rowsep="1" colsep="1" id="table_itd_tjh_ht">
           <tgroup cols="7">
@@ -316,12 +312,15 @@
         similar to this list:
         <codeblock>freezer-scheduler.log at 10K
 freezer-scheduler.log.1 at 123K
-freezer-scheduler.log.2 at 13K
-freezer-scheduler.log.3 at 17K
-freezer-scheduler.log.4 at 128K
-freezer-scheduler.log.5 at 22K
-freezer-scheduler.log.6 at 323K
-freezer-scheduler.log.7 at 123K        </codeblock>
+freezer-scheduler.log.2.gz at 13K
+freezer-scheduler.log.3.gz at 17K
+freezer-scheduler.log.4.gz at 128K
+freezer-scheduler.log.5.gz at 22K
+freezer-scheduler.log.6.gz at 323K
+freezer-scheduler.log.7.gz at 123K        </codeblock>
+        
+        <note type="note">The log files beyond .1 are compressed so they have a .gz for a file extension.</note>
+        
         Since the Rotation value is set to 7 for this log file, there will never be a
           <codeph>freezer-scheduler.log8</codeph>. When the cron process runs its checks, if the
           <codeph>freezer-scheduler.log</codeph> size is more than 32 MB, then logrotate rotates the
@@ -333,26 +332,17 @@ freezer-scheduler.log.7 at 123K        </codeblock>
       <p>However, in this example, only the following file is centrally logged with Elasticsearch:
         <codeblock>/var/log/freezer-agent/freezer-agent-json.log        </codeblock> Only files that
         are listed in the <b>Centrally Logged Files</b> variable are copied to Elasticsearch. </p>
-      <p>All of the variables for logging are found in the following file:
-        <codeblock>../logging-ansible/kronos-common/defaults/main.yml          </codeblock>
+      
+        <p>You can find the configuration files for each service in the following directory:
+        <codeblock>.../logging-ansible/logging-common/vars/*</codeblock>
+        Only files that have "centralized logging" enabled are copied to Elasticsearch.</p>
+        
+        <p>All of the variables for the logrotate process are found in the following file:
+        <codeblock>../logging-ansible/logging-common/defaults/main.yml          </codeblock>
       </p>
-      <p>Cron uses the following values to determine when to call the logrotate process: <ul>
-          <li>Low watermark:
-            <codeblock>#The following low watermark will be used to trigger alarms if the /var/log parition size grows over it.
-#Tuning this to a higher percent may not give sufficient time to free disk space on /var/log before
-# it reaches 100% full, at which time log rotate will not work.
-          
-<b>var_log_low_watermark_percent:80</b>        </codeblock>
-          </li>
-          <li> High watermark:
-            <codeblock>#The following high watermark will be used to alert the user that when /var/log is 100% full,
-#log rotate will not work, and to free up space on /var/log.
-#Don't set it at 100%, as by then alarms may not fire properly.
-                
-<b>var_log_high_watermark_percent:95</b>              </codeblock></li>
-        </ul>
-      </p>
+      <p>Cron runs logrotate hourly. Every 5 minutes another process is run called "logrotate_if_needed" which uses a watermark value to determine if the logrotate process needs to be run. If the "high watermark" has been reached, and the /var/log partition is more than 95% full (by default - this can be adjusted), then logrotate will be run within 5 minutes.</p>
     </section>
+    
     <section id="info">
       <title>For More Information</title>
       <p>For information the centralized logging components, see the following sites:</p>
