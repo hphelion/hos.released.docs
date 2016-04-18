@@ -2,7 +2,8 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "concept.dtd" >
 <topic xml:lang="en-us" id="knownissues30">
     <title>Known Issues in this Release</title>
-    <body><!--not tested-->
+    <body>
+        <!--not tested-->
 
         <section>
             <title>Fact cache entry isn't valid</title>
@@ -19,8 +20,9 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
 
         <section>
             <title>Compute (Nova)</title>
-            <p><!-- DOCS-2653 --> The <codeph>policy.json</codeph> file for the Nova service has
-                been changed, although the location of the file remains the same:</p>
+            <p><!-- DOCS-2653 --><b>Change in policy.json File</b></p>
+            <p>The <codeph>policy.json</codeph> file for the Nova service has been changed, although
+                the location of the file remains the same:</p>
             <p>Old name/location: <codeph>~/helion/my_cloud/config/nova/policy.json</codeph></p>
             <p>New name/location: <codeph>~/helion/my_cloud/config/nova/policy.json.j2</codeph></p>
             <p>If you have made changes to this file in your environment, you should recreate these
@@ -32,6 +34,19 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                 migration, see <xref href="operations/live_migration.dita"/>.</p>
         </section>
 
+        <section><title>Compute (ESX)</title>
+            <p><!-- DOCS-2925 --><b>Unable to Create Instance Snapshot when Instance is
+                Active</b></p>
+            <p>There is a known issue with VMWare vCenter where if you have a compute instance in
+                    <codeph>Active</codeph> state you will receive the error below when attempting
+                to take a snapshot of it:</p>
+            <codeblock>An error occurred while saving the snapshot: Failed to quiesce the virtual machine</codeblock>
+            <p>The workaround for this issue is to stop the instance prior to taking the snapshot.
+                For details on the workaround, see <xref
+                    href="operations/troubleshooting/troubleshooting_nova.dita#troubleshootingNova/esx"
+                />.</p>
+        </section>
+
         <section>
             <title>Block Storage (Cinder)</title>
             <p><!-- DOCS-2878 --> Although <keyword keyref="kw-hos-version-30"/> supports encrypted
@@ -41,7 +56,8 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                         bug can be seen <xref href="https://bugs.launchpad.net/nova/+bug/1463525"
                             scope="external" format="html">here</xref>.</li>
                     <!-- DOCS-2979 -->
-                    <li>Attaches and detaches of encrypted volumes are not supported with non-multipath Fiber Channel backends.</li>
+                    <li>Attaches and detaches of encrypted volumes are not supported with
+                        non-multipath Fiber Channel backends.</li>
                 </ul></p>
         </section>
         <section>
@@ -82,11 +98,11 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
         <section>
             <title>Load Balancer Octavia Driver (Neutron)</title>
             <!--DOCS-2879-->
-            <p>The Load Balancer Octavia driver requires KVM based compute nodes but
-                also supports mixed environments.  The Octavia driver currently provides limited 
-                load balancer failover functionality that may have a unpredictable failover time. 
-                Other load balancer solutions should be considered If predictable and fast 
-                (less than 10 seconds) load balancer failover timing is required.</p>
+            <p>The Load Balancer Octavia driver requires KVM based compute nodes but also supports
+                mixed environments. The Octavia driver currently provides limited load balancer
+                failover functionality that may have a unpredictable failover time. Other load
+                balancer solutions should be considered If predictable and fast (less than 10
+                seconds) load balancer failover timing is required.</p>
         </section>
     </body>
 </topic>

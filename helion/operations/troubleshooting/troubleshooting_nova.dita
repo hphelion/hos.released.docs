@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
   <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="troubleshootingNova">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Troubleshooting Compute Service (Nova)</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Troubleshooting Compute Service</title>
   <abstract><shortdesc outputclass="hdphidden">Troubleshooting scenarios with resolutions for the
       Nova service.</shortdesc>Nova offers scalable, on-demand, self-service access to compute
     resources. You can use this guide to help with known issues and troubleshooting of Nova
@@ -23,6 +23,20 @@
           <codeblock>ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock>
         </li>
       </ul>
+    </section>
+    
+    <section id="esx"><title>Compute (ESX)</title>
+      <p><!-- DOCS-2925 --><b>Unable to Create Instance Snapshot when Instance is Active</b></p>
+      <p>There is a known issue with VMWare vCenter where if you have a compute instance in <codeph>Active</codeph> state you will receive the error below when attempting to take a snapshot of it:</p>
+      <codeblock>An error occurred while saving the snapshot: Failed to quiesce the virtual machine</codeblock>
+      <p>The workaround for this issue is to stop the instance. Here are steps to achieve this using the command line tool:</p>
+      <ol>
+        <li>Stop the instance using the NovaClient:
+          <codeblock>nova stop &lt;instance UUID></codeblock></li>
+        <li>Take the snapshot of the instance.</li>
+        <li>Start the instance back up:
+          <codeblock>nova start &lt;instance UUID></codeblock></li>
+      </ol>
     </section>
   </body>
 </topic>
