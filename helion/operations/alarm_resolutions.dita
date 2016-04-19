@@ -9,9 +9,6 @@
     <!--not tested-->
     <!-- LIST IS CURRENT AS OF HOS 3.0 BUILD 871 -->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <p>When alarms are triggered it may be helpful for you to review the service logs. For details
-      on how to use the logging user interface built into the Operations Console, see <xref
-        href="centralized_logging.dita#centralized_logging/interface"/>.</p>
     <section id="services"><title>Alarms by Service</title>
       <p>We have organized these alarm by the section of the HPE Helion Ops Console dashboard they
         are organized in as well as the <codeph>service</codeph> dimension defined.</p>
@@ -137,8 +134,65 @@ ansible-playbook -i hosts/verb_hosts glance-start.yml --limit &lt;hostname></cod
                 <entry/>
               </row>
               <row>
-                <entry>baremetal</entry>
-                <entry>Service Log Directory Size</entry>
+                <entry morerows="2">baremetal</entry>
+                <entry>Process Check</entry>
+                <entry>Alarms when the specified process is not running.<p>process_name =
+                  ironic-api</p></entry>
+                <entry>The Ironic API is unresponsive.</entry>
+                <entry>Restart the <codeph>ironic-api</codeph> process with these steps:
+                <ol>
+                  <li>Log in to the affected host via SSH.</li>
+                  <li>Restart the <codeph>ironic-api</codeph> process with this command:
+                  <codeblock>sudo service ironic-api restart</codeblock></li>
+                </ol></entry>
+              </row>
+              <row>
+                <entry>Process Check</entry>
+                <entry>Alarms when the specified process is not running.<p>process_name =
+                  ironic-conductor</p></entry>
+                <entry>The <codeph>ironic-conductor</codeph> process has crashed.</entry>
+                <entry>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Source your <codeph>admin</codeph> user credentials:
+                    <codeblock>source ~/service.osrc</codeblock></li>
+                    <li>Locate the <codeph>messaging_deployer</codeph> VM:
+                    <codeblock>nova list --all-tenants | grep mess</codeblock></li>
+                    <li>SSH to the <codeph>messaging_deployer</codeph> VM:
+                      <codeblock>sudo -u stack ssh &lt;ip_address_of_messaging_deployer></codeblock></li>
+                   <li>Stop the <codeph>ironic-conductor</codeph> process by using this playbook:
+                     <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts ironic-stop.yml</codeblock></li>
+                     <li>Start the process back up again, effectively restarting it, by using this playbook:
+                       <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+                         ansible-playbook -i hosts/verb_hosts ironic-start.yml</codeblock></li>
+                  </ol>
+                </entry>
+              </row>
+              <row>
+                <entry>HTTP Status</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
+                <entry>The API is unresponsive.</entry>
+                <entry>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Source your <codeph>admin</codeph> user credentials:
+                      <codeblock>source ~/service.osrc</codeblock></li>
+                    <li>Locate the <codeph>messaging_deployer</codeph> VM:
+                      <codeblock>nova list --all-tenants | grep mess</codeblock></li>
+                    <li>SSH to the <codeph>messaging_deployer</codeph> VM:
+                      <codeblock>sudo -u stack ssh &lt;ip_address_of_messaging_deployer></codeblock></li>
+                    <li>Stop the <codeph>ironic-api</codeph> process by using this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts ironic-stop.yml</codeblock></li>
+                    <li>Start the process back up again, effectively restarting it, by using this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts ironic-start.yml</codeblock></li>
+                  </ol>
+                </entry>
+              </row>
+              <row>
+               <entry>Service Log Directory Size</entry>
                 <entry>Service log directory consuming more disk than its quota.</entry>
                 <entry>This could be due to a service set to <codeph>DEBUG</codeph> instead of
                     <codeph>INFO</codeph> level. Another reason could be due to a repeating error
@@ -1088,7 +1142,8 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
                     <li>Use this playbook against the affected node:
                       <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts keystone-start.yml --limit &lt;hostname></codeblock></li>
-                  </ol></entry>
+                  </ol>
+                <p>Review the logs in <codeph>/var/log/keystone</codeph> on the affected node.</p></entry>
               </row>
               <row>
                 <entry>Service Log Directory Size</entry>
@@ -1886,7 +1941,20 @@ ansible-playbook -i hosts/verb_hosts octavia-start.yml --limit &lt;hostname></co
                     <li>heat-engine</li>
                   </ul>heat-api process check on each node</entry>
                 <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>Restart the process with these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Stop all the Heat processes:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts heat-start.yml</codeblock></li>
+                    <li>Start the Heat processes back up:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts heat-start.yml</codeblock></li>
+                  </ol>
+                  <p>Review the relevant log at the following locations on the affected node:</p>
+                      <codeblock>/var/log/heat/heat-api.log
+/var/log/heat/heat-cfn.log
+/var/log/heat/heat-cloudwatch.log
+/var/log/heat/heat-engine.log</codeblock></entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
@@ -1898,7 +1966,19 @@ ansible-playbook -i hosts/verb_hosts octavia-start.yml --limit &lt;hostname></co
                     </ul>
                   </p></entry>
                 <entry/>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>Restart the Heat service with these steps: <ol>
+                  <li>Log in to the lifecycle manager.</li>
+                  <li>Stop all the Heat processes:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts heat-start.yml</codeblock></li>
+                  <li>Start the Heat processes back up:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts heat-start.yml</codeblock></li>
+                </ol>
+                  <p>Review the relevant log at the following locations on the affected node:</p>
+                  <codeblock>/var/log/heat/heat-api.log
+/var/log/heat/heat-cfn.log
+/var/log/heat/heat-cloudwatch.log</codeblock></entry>
               </row>
               <row>
                 <entry>Service Log Directory Size</entry>
