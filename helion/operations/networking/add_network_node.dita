@@ -6,7 +6,8 @@
       you to increase the performance of your cloud.</shortdesc><p>You may have a need to add an
       additional Neutron network node for increased performance or another purpose and these steps
       will help you achieve this.</p></abstract>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="prereqs"><title>Prerequisites</title>
       <p>If you are using the mid-scale model then your networking nodes are already separate and
@@ -44,9 +45,6 @@ git checkout site</codeblock></li>
   ilo-ip: 10.1.12.91
   ilo-password: password
   ilo-user: admin</codeblock>
-          <p>You can find detailed descriptions of these fields <xref
-              href="../../architecture/input_model/input_model.dita#input_model/co_servers"
-              >here</xref>.</p>
           <note type="important">You will need to verify that the <codeph>ip-addr</codeph> value you
             choose for this node does not conflict with any other IP address in your cloud
             environment. You can confirm this by checking the
@@ -58,9 +56,7 @@ git checkout site</codeblock></li>
             <codeph>max-count</codeph>, if you specified them, to ensure that they match up with
           your new total node count. So for example, if you had previously specified
             <codeph>member-count: 3</codeph> and are adding a fourth network node, you will need to
-          change that value to <codeph>member-count: 4</codeph>. <p>See <xref
-              href="../../architecture/input_model/input_model.dita#input_model/co_controlplane"
-              >Input Model - Control Plane</xref> for more details.</p></li>
+          change that value to <codeph>member-count: 4</codeph>.</li>
         <li>Commit the changes to git:
           <codeblock>git commit -a -m "Add new networking node &lt;name>"</codeblock></li>
         <li>Run the configuration processor:
@@ -76,16 +72,7 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
         <li>Then you can image the node: <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;hostname></codeblock>
           <note>If you don't know the <codeph>&lt;hostname></codeph> already, you can get it by
-            using <codeph>sudo cobbler system list</codeph></note>
-          <p>Before proceeding, you may want to take a look at <b>info/server_info.yml</b> to see if
-            the assignment of the node you have added is what you expect. It may not be, as nodes
-            will not be numbered consecutively if any have previously been removed. This is to
-            prevent loss of data; the config processor retains data about removed nodes and keeps
-            their ID numbers from being reallocated. See the Persisted Server Allocations section in
-              <xref
-              href="../../architecture/input_model/input_model.dita#input_model/persistedserverallocations"
-              >HPE Helion OpenStack 2.0 Input Model</xref> for information on how this
-          works.</p></li>
+            using <codeph>sudo cobbler system list</codeph></note></li>
         <li>[OPTIONAL] - Run the <codeph>wipe_disks.yml</codeph> playbook to ensure all of your
           partitions on your nodes are completely wiped prior to continuing with the installation:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible/
