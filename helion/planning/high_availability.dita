@@ -35,6 +35,7 @@
               Controller Nodes</xref></li>
         </ul>
       </li>
+      <li><xref href="#HP3.0HA/CVR">High Availablility Routing</xref></li>
       <li><xref href="#HP3.0HA/availability_zones">Availability Zones</xref></li>
       <li><xref href="#HP3.0HA/compute_kvm">Compute with KVM</xref></li>
       <li><xref href="#HP3.0HA/nova_availability_zones">Nova Availability Zones</xref></li>
@@ -307,6 +308,51 @@
             master role</li>
         </ul>
       </p>
+      
+      <p>Incorporating High Availability into a system involves implementing redundancies in the component 
+        that is being made highly available. In Centralized Virtual Router (CVR), that element is the Layer 3 
+        agent a.k.a L3 agent. By making L3 agent highly available, upon failure all HA routers are migrated 
+        from the primary L3 agent to a secondary L3 agent. The implementation efficiency of an HA subsystem 
+        is measured by the number of packets that are lost when the secondary L3 agent is made the master. </p>
+      
+      <p><keyword keyref="kw-hos-phrase-20"/> implemented controller level HA which required a 
+        failover to secondary controller and restart of all controller services on the secondary controller 
+        upon failure. Such a mechanism incurs higher latency during failover. At scale (hundreds of routers), 
+        the failover can take north of 1 hour. </p>
+      
+      <p>In <keyword keyref="kw-hos-phrase-30"/> we are implementing L3 HA mechanism that was 
+        introduced in Kilo release of OpenStack. In L3 HA, the primary and secondary L3 agents are running 
+        and do not require a restart. The failover essentially involves a switchover from a already running 
+        master to already running slave. This substantially reduces the latency of the HA. The mechanism 
+        used by the master and the slave to implement a failover is implemented using Linux’s pacemaker 
+        HA resource manager. This CRM (Cluster resource manager) uses VRRP (Virtual Router  Redundancy 
+        Protocol) to implement the HA mechanism. VRRP is a industry standard protocol and defined in RFC 5798.</p>
+      
+      <p>L3 HA uses of VRRP comes with several benefits.</p>
+      
+      <p><image href="../../media/ha30/HPE_HA_Layer-3HA.png" id="Layer3HA"/></p>
+      
+      <p>The primary benefit is that the failover mechanism does not involve interprocess communication 
+        overhead (order of 10s of seconds). By not using an RPC mechanism to invoke the secondary agent to 
+        assume the primary agents role enables VRRP to achieve failover within 1-2 seconds. </p>
+      
+      <p>In VRRP, the primary and secondary routers are all active. This has the negative of increased 
+        overall resource consumption. But that is a small price to pay for very fast switchover as the restart 
+        latency is eliminated. As the routers are all running, it is a matter of making the router aware of its 
+        primary/master status. This switchover takes less than 2 seconds instead of 60+ seconds it would 
+        have taken to start a backup router and failover. </p>
+      
+      <p>The failover depends upon a heartbeat link between the primary and secondary. That link in 
+        <keyword keyref="kw-hos-phrase-30"/> uses keepalived package of the pacemaker resource manager. 
+        The heartbeats are sent at a 2 second intervals between the primary and secondary. As per the 
+        VRRP protocol, if the secondary does not hear from the master after 3 intervals, it assumes the 
+        function of the primary. </p>
+      
+      <p>To preserve the precious routable IP addresses, the HA mechanism uses the link local address 
+        range (169.254.0.0/16) on the HA port where the heartbeats are sent and received. Further, all the 
+        routable IP addresses i.e. the VIPs (virtual IPs) are assigned to the primary agent. This is in contrast 
+        to the non VRRP failover where both the primary and secondary components have public IP addresses. </p>
+      
     </section>
 
 
