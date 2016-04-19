@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="OctaviaUpgrade">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Upgrading to the LBaaS Octavia Driver.</title>
+  <body><!--not tested-->
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="Upgrade">
+      <title>Upgrade from <keyword keyref="kw-hos"/> <keyword keyref="kw-hos-version-20-21"/></title>
+  
+      <p>In <keyword keyref="kw-hos-version-20-21"/> the default LBaaS driver was based on a
+        namespace deployment on the compute nodes of the HAProxy load balancer software. This driver
+        was commonly called <i>'the namespace driver'</i>. In <keyword keyref="kw-hos-phrase-30"/> a
+        new driver called <i>'Octavia'</i> is now available that provides additional functionality
+        for deploying and using the HAProxy software load balancer. Helion OpenStack v3 provides
+        support for both the namespace and Octavia drivers. It is recommended that customers migrate
+        to the Octavia driver. To update to the Octavia driver follow the steps below.</p>
+      
+      <ol>
+        <li>Run the <keyword keyref="kw-hos"/> update. The update will install the latest version of the 
+          LBaaS code and the namespace driver but an additional step needs to be taken to install and 
+          enable the Octavia driver..</li>
+        <li>Set up and configure a provider network. Please refer to the corresponding Neutron 
+          document, <xref href="../networking/neutron_provider_networks.dita#neutron_provider_networks"/> 
+          for more information. </li>
+        <li>Add the Octavia services to the control plane in your control_plane.yml.
+          Make sure to add both services <codeph>octavia-api</codeph> and
+            <codeph>octavia-health-manager</codeph> to the Controller as seen in the example below.
+          It is recommended that Octavia components be added in alphabetical order.
+          <codeblock>clusters:
+      - name: cluster0
+        cluster-prefix: c0
+        server-role: CONTROLLER-ROLE
+        member-count: 1
+        allocation-policy: strict
+        service-components:
+        ...
+          - neutron-client
+          - octavia-api
+          - octavia-health-manager
+          - horizon</codeblock></li>
+        <li>Run the configuration
+          processor.<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Use the <xref href="../installation/octavia_installation.dita#OctaviaInstall"/> 
+          Guide to install Octavia and the amphora image.</li>
+        <li>Migrate load balancers from the namespace driver to Octavia to take advantage of the 
+          additional features. Please be aware that we only support a self migration. If you created your 
+          load balancers with an automation tool it should be very straightforward to do so.</li>
+      </ol>
+    </section>
+  </body>
+</topic>
