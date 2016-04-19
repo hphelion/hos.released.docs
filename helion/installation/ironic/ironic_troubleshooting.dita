@@ -263,18 +263,58 @@ u'details': u'Download of image id 77700b53-9e15-406c-b2d5-13e7d9b96551 failed: 
             </p>
         </section>
         
+       
+       
+        <section id="NIC-boot-order">
+            <title>The NICs in the baremetal node should come first in boot order</title>     
         
+            <p><b>Possible causes: </b> By default, the boot order of baremetal node is set as NIC1, HDD and NIC2. If NIC1 fails, the nodes starts booting from HDD and the provisioning fails.
+            
+            </p>        
+            
+            <p>
+                Set boot order so that all the NICs appear before the hard disk of the baremetal 
+                as NIC1, NIC2…, HDD. 
+                
+            </p>
         
-        <section>
-            <title>Other Known Issues</title>
+        </section>
+        
+        <section id="NIC-boot-order">
+            <title>Increase in the number of nodes can cause power commands to fail</title>   
+            
+            <p><b>Possible causes: </b>Ironic periodically performs a power state sync with all the baremetal nodes. When the number of nodes increase, ironic does not get sufficient time to 
+            perform power operations.</p>
+            
+            <p><b>Resolution: The following procedure gives a way to increase 
+                <codeph>sync_power_state_interval</codeph>:</b>   </p>
             
             <ul>
-                <li>First NIC must always be in connected state when multiple NICs are present</li>
-                <li>Higher concurrency can cause power commands to fail</li>
+                <li>Edit the file <codeph>~/helion/my_cloud/config/ironic/ironic-conductor.conf.j2</codeph> and
+                    navigate to the section for <codeph>[conductor]</codeph></li>
+                <li>Set <codeph>sync_power_state_interval = 60</codeph> and save the file. 
+                    
+                    
+                    
+                </li>
+                <li>Execute the following set of commands to reconfigure Ironic:
 
+ <codeblock>
+cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml 
+ansible-playbook -i hosts/localhost ready-deployment.yml 
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ironic-reconfigure.yml    
+ </codeblock>  
+                            
+                </li>
+                
+                
             </ul>
-
+            
         </section>
+            
+                
         
     </body>
 

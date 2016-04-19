@@ -11,6 +11,8 @@
         
         <note type="warning">Providing bare metal resources to an un-trusted third party is not advised as a malicious user can potentially modify hardware firmware.</note>
         
+        <note type="important">The steps outlined in <xref keyref="ironic-tls"/> <b>must</b> be performed.</note>
+        
         <title>Introduction</title>
         
         <p>A number of drivers are available to provision and manage bare-metal machines. The drivers are named 
@@ -519,8 +521,72 @@ ssh ubuntu@192.3.15.14 -i ironic_kp.pem
     
 
     
+<section>
+    <title>Create Glance Images using <codeph>diskimage-builder</codeph> (DIB) </title>
     
+    <p>The following sections show you how to create your own images using the OpenStack
+        <codeph>diskimage-builder</codeph> tool - for information on how to install the tool see
+        <xref format="html" scope="external" href="http://docs.openstack.org/developer/diskimage-builder/user_guide/installation.html">http://docs.openstack.org/developer/diskimage-builder/user_guide/installation.html</xref>
+    </p>
+</section>
 
+<section>
+    <title>Creating BIOS images for RHEL</title>
+    
+    <ol>
+        <li>Install <codeph>dib-utils</codeph>:
+<codeblock>pip install dib-utils</codeblock></li>
+        
+        <li id="li2">Download the qcow2 guest image from RHEL portal and define <codeph>DIB_LOCAL_IMAGE</codeph>:
+<codeblock> export DIB_LOCAL_IMAGE=/home/stack/rhel-guest-image-7.2-20151102.0.x86_64.qcow2</codeblock></li>
+        
+        <li>Create a local yum repo and define DIB_YUM_REPO_CONF to be the path to the repo:
+<codeblock>export DIB_YUM_REPO_CONF = &lt;&lt;path_to_repo_file>></codeblock>        
+        </li>
+        <li id="li4">Use <codeph>disk-image-create</codeph> to create the image:
+<codeblock>cd diskimage-builder/bin
+./disk-image-create  -o rhel.qcow2 vm dhcp-all-interfaces  rhel7
+</codeblock>            
+            
+        </li>
+        
+    </ol>
+</section>
+        
+        
+    <section>
+        <title>Creating BIOS images for Ubuntu</title>  
+        
+<codeblock>DIB_RELEASE=trusty ./disk-image-create  -o ubuntu.qcow2 vm dhcp-all-interfaces ubuntu</codeblock>
+
+    </section>
+    
+    <section>
+        <title>Creating UEFI images</title>     
+        
+        <ul>
+            <li>Apply the patch <xref href="https://review.openstack.org/#/c/287784" scope="external" format="html">https://review.openstack.org/#/c/287784</xref>
+                to your cloned <codeph>diskimage-builder</codeph> repository.
+            </li>
+            <li>Install <codeph>diskimage-builder</codeph></li>
+            <li>Set the environment variable <codeph>DIB_UEFI_SUPPORT</codeph> as <codeph>true</codeph></li>
+            <li>Set the OS related environment variables if required.</li>
+            <li>Build the image using command:
+<codeblock>
+disk-image-create -a amd64 -o &lt;image-name> vm dhcp-all-interfaces &lt;OS-name>
+</codeblock>                
+                </li>
+            <li>For OS support, refer to  <codeph><xref href="https://github.com/openstack/diskimage-builder/blob/master/doc/source/user_guide/supported_distros.rst" format="html" scope="external">
+                supported_distributions.rst</xref>  </codeph> in <codeph>diskimage-builder</codeph>  user documentation</li>
+            
+            
+        </ul>
+        
+        <note type="note">For RHEL images, you would need to repeat steps <xref href="#ironic-provisioning/li2">2</xref> to 
+            <xref href="#ironic-provisioning/li4">4</xref>(as mentioned  above in the BIOS image creation)</note>
+        
+    </section>
+    
         
 </body>
 </topic>
