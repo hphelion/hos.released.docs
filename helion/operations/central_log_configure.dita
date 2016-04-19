@@ -17,6 +17,7 @@
   <li><xref href="#central_log_configure/CL_elasticsearch_config">Configuring Elasticsearch</xref></li>
   <li><xref href="central_log_config_level.dita">Configuring the Logging Level for Services</xref></li>
   <li><xref href="#central_log_configure/CL_config_log_rotate">Configuring Log Rotation Settings</xref></li>
+  <li><xref href="#central_log_configure/CL_disable">Enable or Disable Centralized Logging</xref></li>
 </ul>
     </section>
     
@@ -585,32 +586,86 @@
       <p>You can find the configuration files for each service in the following 
         directory:
         <codeblock>.../logging-ansible/logging-common/vars/*</codeblock>
-        Only files that have "centralized logging" enabled are copied to Elasticsearch.</p>
+        Only files that have centralized logging enabled are copied to Elasticsearch.</p>
         
         <p>All of the variables for the logrotate process are found in the following file:
           <codeblock>../logging-ansible/logging-common/defaults/main.yml          
 </codeblock></p>
       
       <p>All of the variables for logging are found in the following file:
-        <codeblock>        .../logging-ansible/kronos-common/defaults/main.yml</codeblock>
+        <codeblock>.../logging-ansible/logging-common/defaults/main.yml</codeblock>
+      </p>
+    </section>
+    
+    <section id="CL_disable">
+      <title>Enable or Disable Centralized Logging For a Service</title>
+      <p>To enable or disable Centralized Logging for a service you need to modify the configuration for the service, set the <b>enabled</b> flag to <b>true</b> of <b>false</b>, and then reconfigure logging.</p>
+      
+      <p>To enable Centralized Logging for a service:</p>
+      <ol>
+        <li>Use the documentation provided with the service to ensure it is configured for logging.</li>
+        <li>To find the Helion Openstack file to edit, run:
+        <codeblock>~/helion/my_cloud/config/logging/vars/*</codeblock>
+        </li>
+        <li>To edit the file, in a text editor, open:
+        <codeblock></codeblock>
+        </li>
+        <li>To enable Centralized Logging, find the following code and change the enabled flag to <b>true</b>:
+        <codeblock>
+          logging options:
+             - centralized_logging:
+                 enabled: true
+                 format : json
+        </codeblock>
+        </li>   
+      </ol>
+      
+     <p>Sample of a BURA file enabled for Centralized logging:
+      <codeblock>
+          ---
+          sub service:
+            name: freezer-api
+            service: freezer
+            logging options:
+             - centralized_logging:
+                 enabled: true
+                 format : json
+        </codeblock>
+     </p>
+      
+      <p>To disable Centralized Logging for a service:</p>
+      <ol>
+        <li>Use the documentation provided with the service to ensure it is not configured for logging.</li>
+        <li>To find the Helion Openstack file to edit, run:
+          <codeblock>~/helion/my_cloud/config/logging/vars/*</codeblock>
+        </li>
+        <li>To edit the file, in a text editor, open:
+          <codeblock></codeblock>
+        </li>
+        <li>To enable Centralized Logging, find the following code and change the enabled flag to <b>false</b>:
+          <codeblock>
+          logging options:
+             - centralized_logging:
+                 enabled: false
+                 format : json
+        </codeblock>
+        </li>   
+      </ol>
+      
+      <p>Sample of a BURA file enabled for Centralized logging:
+        <codeblock>
+          ---
+          sub service:
+            name: freezer-api
+            service: freezer
+            logging options:
+             - centralized_logging:
+                 enabled: false
+                 format : json
+        </codeblock>
       </p>
       
-      <p>Cron uses the following values to determine when to call the logrotate process: <ul>
-        <li>Low watermark:
-          <codeblock>          #The following low watermark will be used to trigger alarms if the /var/log parition size grows over it.
-          #Tuning this to a higher percent may not give sufficient time to free disk space on /var/log before
-          # it reaches 100% full, at which time log rotate will not work.
-          
-          <b>var_log_low_watermark_percent:80</b></codeblock>
-        </li>
-        <li> High watermark:
-          <codeblock>          #The following high watermark will be used to alert the user that when /var/log is 100% full,
-          #log rotate will not work, and to free up space on /var/log.
-          #Don't set it at 100%, as by then alarms may not fire properly.
-          
-          <b>var_log_high_watermark_percent:95</b></codeblock>
-        </li>
-      </ul></p>
     </section>
+    
   </body>
 </topic>
