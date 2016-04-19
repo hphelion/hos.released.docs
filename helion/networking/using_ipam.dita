@@ -3,18 +3,19 @@
 <topic id="ipam">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Using the Internal IPAM Driver in the Network
     Service</title>
-  <body><!--not tested-->
-<section>  This topic explains how to choose and implement an IPAM driver.<p>Starting with the
+  <body>
+    <!--not tested-->
+    <section> This topic explains how to choose and implement an IPAM driver.<p>Starting with the
         Liberty release, OpenStack networking includes a pluggable interface for the IP Address
         Management (IPAM) function. This interface creates a driver framework for the allocation and
         de-allocation of subnets and IP addresses, enabling the integration of alternate IPAM
         implementations or third-party IP Address Management systems.</p><p>In HPE Helion OpenStack
         2.x, no IPAM driver is used (ipam_driver parameter is not specified in neutron.conf or it is
-        specified with the empty string). The result is the non-pluggable ipam is used.</p>To
+        specified with the empty string). The result is the non-pluggable IPAM is used.</p>To
       indicate an IPAM driver, the only internal-driver specific parameter is "ipam_driver." You can
       set it by looking for commented lines in the neutron.conf.j2 template, uncommenting them, and
       committing the file. After following the standard steps to deploy Neutron, Neutron will be
-      configured to run using the "internal" ipam driver</section>
+      configured to run using the "internal" IPAM driver</section>
     <section>The file you must edit is neutron.conf.j2 on the deployer in the directory
       ~stack/helion/my_cloud/config/neutron
       <codeblock>[DEFAULT]
@@ -36,7 +37,7 @@
         database tables and Neutron currently can't make those changes. So <i>reconfiguration </i>of
         Neutron using the default IPAM driver setting to "ipam_driver = internal" is not supported.
       </note></section>
-    
+
     <section>
       <title>Setting up Infoblox-ipam-agent / Neutron DB interface</title>The infoblox-ipam-agent
       receives notification from the Neutron API server. Its notification handler imports Neutron's
@@ -117,14 +118,13 @@
       'compute.instance.create.end',
       'compute.instance.delete.end']</codeblock>
     </section>
-    
+
     <section><title>Configuration for Networking-Infoblox</title> Changes to Existing Parameters in
       Nova</section>
-    <section>
-      <image href="../../media/networking/ipam.png" placement="break" id="image_ul5_vwv_mv"/>The
-      diagram above shows the Nova computes also send notification to the infoblox-ipam-agent.
-      Changes needed are into the notification parameters in nova.conf:  <table
-        id="table_rzp_xwp_mv">
+    <section> The diagram below shows that Nova computes also send notification to the
+        infoblox-ipam-agent<image href="../../media/networking/ipam.png" placement="break"
+        id="image_ul5_vwv_mv"/>Changes needed are into the notification parameters in nova.conf:
+        <table id="table_rzp_xwp_mv">
         <tgroup cols="5">
           <colspec colnum="1" colname="col1"/>
           <colspec colnum="2" colname="col2"/>
@@ -315,22 +315,26 @@
       </table>
     </section>
     <section><title>Configuration steps</title>
-      
-      
-      <ol><li>Create a service component for the infoblox-ipam-agent.  To use the infoblox appliance for IPAM, the agent AND the infoblox IPAM driver are required.
-      </li><li>Add the infoblox-ipam-agent as a service component:
-        mneumonic: NEU-IFBLXA
-        component name: infoblox-ipam-agent
-        
-      </li><li>The user needs to change the control plane definition to add infoblox-ipam-agent as a service in the controller node cluster.
-      </li><li>A new role for the infoblox configuration to be added to neutron-ansible. Name is "neutron-infoblox-ipam-agt".  It handles the configuration, installation, starting and stopping the neutron-ipam-agent as well as configuring the logging for the agent.
-      </li><li>The infoblox ipam agent will be started with be started with configuration files neutron.conf, ml2_conf.ini, and infoblox-ipam-agent.ini.  Infoblox-ipam-agent.ini sets up the json logging file infoblox-ipam-agent-json.log.
-      </li><li>The infoblox-ipam-agent generated logs will have incorporated into logrotation and centralized logging
-      </li><li>The infoblox-ipam-agent needs to be monitored by monasca.
-        
-      </li><li>Neutron.conf.j2: The user needs to modify the neutron.conf.j2 file to comment and uncomment some lines for enabling it to use it with the infoblox appliance:
-        
-        <codeblock outputclass="nomaxheight">[DEFAULT]
+      <ol>
+        <!--<li>Create a service component for the infoblox-ipam-agent. To use the infoblox appliance
+          for IPAM, the agent AND the infoblox IPAM driver are required. </li>
+        <li>Add the infoblox-ipam-agent as a service component: mneumonic: NEU-IFBLXA component
+          name: infoblox-ipam-agent </li>-->
+        <li>Change the control plane definition to add infoblox-ipam-agent as a service in the
+          controller node cluster. </li>
+
+        <!--<li>A new role for the infoblox configuration to be added to neutron-ansible. Name is
+          "neutron-infoblox-ipam-agt". It handles the configuration, installation, starting and
+          stopping the neutron-ipam-agent as well as configuring the logging for the agent. </li>
+        <li>The infoblox ipam agent will be started with be started with configuration files
+          neutron.conf, ml2_conf.ini, and infoblox-ipam-agent.ini. Infoblox-ipam-agent.ini sets up
+          the json logging file infoblox-ipam-agent-json.log. </li>
+        <li>The infoblox-ipam-agent generated logs will have incorporated into logrotation and
+          centralized logging </li>
+        <li>The infoblox-ipam-agent needs to be monitored by monasca. </li>-->
+        <li>Modify the neutron.conf.j2 file to comment and uncomment lines noted below to enable use
+          with the infoblox appliance:
+          <codeblock outputclass="nomaxheight">[DEFAULT]
           ...
           l3_ha_net_cidr = 169.254.192.0/18
           
@@ -367,8 +371,9 @@
             
             [QUOTAS]
             ...</codeblock>
-      </li><li>Change nova.conf.j2 to replace the notification driver "messaging" to "messagingv2"
-        <codeblock> ...
+        </li>
+        <li>Change nova.conf.j2 to replace the notification driver "messaging" to "messagingv2"
+          <codeblock> ...
           
           # Oslo messaging 
           notification_driver = log
@@ -381,8 +386,27 @@
           
           # Policy 
           ...</codeblock>
-      </li></ol>
-        
+        </li>
+      </ol>
+    </section>
+    
+    <section>
+      <title>Limitations</title>
+      <ul>
+      <li>There is no IPAM migration path from non-pluggable to pluggable IPAM driver (<xref
+            href="https://bugs.launchpad.net/neutron/+bug/1516156" format="html" scope="external"
+            >https://bugs.launchpad.net/neutron/+bug/1516156</xref>). This means there no way to
+          automatically reconfigure the neutron database if you decide to change neutron to use a
+          pluggable IPAM driver. Currently, Neutron in HOS by default uses the non-pluggable IPAM
+          configuration. </li><li>Upgrade from previous versions of HPE Helion OpenStack to <keyword keyref="kw-hos-phrase"/>
+          using any pluggable IPAM driver is not supported.</li><li> Recofiguration from <keyword keyref="kw-hos-phrase"/> using non-pluggable IPAM configuration to
+            <keyword keyref="kw-hos-phrase"/> using any pluggable IPAM driver is not supported.</li>
+      <li>Infoblox appliance does not allow for overlapping IPs. For example, only one tenant can
+          have a CIDR of 10.0.0.0/24.</li>
+      <li>The infoblox IPAM driver fails the creation of a subnet when a there is no gateway-ip
+          supplied. For example, the command "neutron subnet-create ... --no-gateway ..." will
+          fail.</li></ul>
+      <!--https://wiki.hpcloud.net/display/core/SPIKE%3A+Neutron+IPAM-->
     </section>
   </body>
 </topic>
