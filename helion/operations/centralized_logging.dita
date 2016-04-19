@@ -46,8 +46,9 @@
         </li>
         <li>
           <p>
-            <b>RabbitMQ</b> is a message broker for collection of logging data across nodes.</p>
+            <b>RabbitMQ</b> RabbitMQ is a messaging broker used by many Openstack services. It is used by Helion Centralized Logging only for backwards compatibility with Helion OpenStack 2.x Helion Development Platform services.</p>
         </li>
+        <li>Kafka is a messaging broker used for collection of Helion OpenStack 3.0 centralized logging data across nodes. It is highly available, scalable and performant. Kafka stores logs in disk instead of memory and is therefore more tolerant to consumer down times.</li>
         <li>
           <p>
             <b>Logstash</b> is a log processing system for receiving, processing and outputting
@@ -68,12 +69,49 @@
       </ul>
       <p>These components are configured to work out-of-the-box and the admin should be able to view
         log data using the default configurations.</p>
-      <p>In an overview of the process, at a high level, the Helion services forward logs to Beaver.
-        Then, Beaver forwards JSON messages to RabbitMQ on the controller0 (management controller)
-        node. Logstash connects to RabbitMQ to read queued messages and process the messages
-        according to the Logstash configuration file. Logstash then forwards the processed log files
-        in Elasticsearch. Users can use the Kibana interface to view and analyze the information, as
-        shown in the following figure:</p>
+      
+      <p>In a high-level overview of the process:
+        <dl>
+          <dlentry>
+            <dt>Steps 1- 2</dt>
+            <dd>Helion services produce and forward log files to Beaver.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 3- 4a</dt>
+            <dd>To maintain a consistent, easy-to-read format accross all log files, Beaver formats log file content into JavaScript Object Notation (JSON). Then Beaver forwards the JSON file on to Kafka on the controller0 (management controller) node.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 5a- 5b</dt>
+            <dd>Logstash connects to Kafka (or RabbitMQ if supported) to read queued messages and process the messages
+              according to the Logstash configuration file.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Step 6</dt>
+            <dd>Logstash forwards the processed log files to Elasticsearch.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 7- 8b</dt>
+            <dd>Administrators can use a Web browser to access a Kibana interface to view and analyze the information.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 9a-9b</dt>
+            <dd>The Apache Website contacts the Kibana server with a request for log file information.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 10a-10b</dt>
+            <dd>Kibana sends a request for information to ElasticSearch.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Step 11</dt>
+            <dd>The Cron process invokes the Curator.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Step 12</dt>
+            <dd>The Curator returns information to ElasticSearch.</dd>
+          </dlentry>
+        </dl>
+ 
+     </p>
       <p>
         <image href="../../media/centralized_logging_diagram.png" placement="break"/>
       </p>
