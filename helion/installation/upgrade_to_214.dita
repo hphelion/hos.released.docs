@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="upgradeto21">
+  <title>Upgrade from HPE Helion 2.x to 2.1.4</title>
+  <body>
+    <!--<p conkeyref="HOS-conrefs/applies-to"/>-->
+    <section id="about">
+      <title>Performing the Upgrade from HPE Helion OpenStack 2.x Versions</title>
+      <note type="warning">The process for upgrading HPE Helion OpenStack to version 2.1.4 might
+        require a reboot which would then prevent core <b>HPE Helion Development Platform</b>
+        services from restarting. Whether or not you need to restart your cloud after upgrade
+        depends upon which version of HPE Helion OpenStack 2.x you are currently running. If you had
+        previously upgraded to HPE Helion OpenStack 2.1, then you do not have to reboot. If you are
+        still on a version earlier than 2.1 (that is, 2.0), then you must reboot. The instructions
+        are below. If, in addition, your environment relies on HPE Helion Development Platform,
+        please follow instructions for the <xref href="/#devplatform/2.0/upgrade_HOS_21.html"
+          format="html" scope="external">HPE Helion Development Platform upgrade
+        process</xref>.</note>
+      <p>When upgrading to HPE Helion OpenStack 2.1.4 you will use the same configuration files in
+        your <codeph>~/helion/my_cloud/definition</codeph> directory as you used when originally
+        installing the software.</p>
+      <p>The configuration you specified will remain unchanged through the upgrade process;
+          <b>however</b>, if you made any configuration changes by passing parameters to any Ansible
+        playbooks using the <codeph>-e</codeph> option, you should find the affected files and make
+        the required changes directly in the files in <codeph>~/helion/my_cloud</codeph> and commit
+        them to the git repository so that those changes are tracked and applied during the upgrade
+        process. Otherwise they will not be applied after the upgrade.</p>
+      <p>You may also install HPE Helion OpenStack 2.1.4 as a full install. Those instructions are
+        found in the installation guide. See <xref href="installation_overview.dita">Installation
+          Overview</xref> for details. If you choose to do a fresh install it is important that you
+        completely wipe your disks prior to performing the installation; otherwise errors may
+        occur.</p>
+    </section>
+
+    <section>
+      <title>DNS Service Restart for Helion Development Platform after All Node Reboots</title>
+      <note>If you are running HPE Helion Development Platform and are performing an upgrade of HPE
+        Helion OpenStack that requires a reboot (that is, you are upgrading from HPE Helion
+        OpenStack <b>2.0 to 2.1.4</b>), then you must restart your HPE Helion Development Platform
+        services after restarting all the nodes mentioned below.</note>
+    </section>
+    <section id="prereqs"><title>Prerequisites</title>
+      <p>These steps assume you have an installed and working HPE Helion OpenStack 2.x cloud, and
+        that you have followed the <xref href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
+          scope="external">HPE Helion Development Platform upgrade process</xref> to gracefully shut
+        down Helion Development Platform Services and instances.</p>
+    </section>
+
+    <section id="mainSteps"><title>Upgrade Overview</title>
+      <p>To perform the upgrade, the workflow will look something like this:</p>
+      <ol>
+        <li>Run the upgrade to apply updates to all nodes in the cloud (including the node hosting
+          the lifecycle manager itself), as per instructions below.</li>
+        <li>If you are currently running version 2.0, reboot all of the nodes in your cloud in order
+          to take in the new kernel changes introduced beginning with versions of <keyword
+            keyref="kw-hos-phrase-21"/> and newer. Instructions on rebooting your cloud nodes are
+          provided below.</li>
+        <li>Note the additional step that is specifically required for upgrading clouds with ESX and
+          a further additional step for ESX after all nodes are rebooted.</li>
+        <!--<li>Note changes specific to anyone running HPE Helion Development Platform. Several of its
+          services require special stopping and restarting.</li>-->
+      </ol></section>
+
+
+    <section id="upgradesteps"><title>Upgrade Instructions</title>
+      <ol>
+        <li>Sign in and download the HPE Helion OpenStack 2.1.4 product and signature files at the
+          links below: <ol>
+            <li><xref
+                href="https://helion.hpwsportal.com/catalog.html#/Category/%7B%22categoryId%22%3A10389%7D/Show"
+                format="html" scope="external">HPE Helion OpenStack Files</xref></li>
+            <li><xref
+                href="https://helion.hpwsportal.com/catalog.html#/Category/%7B%22categoryId%22%3A10507%7D/Show"
+                format="html" scope="external">HPE Helion OpenStack Signature Files</xref></li>
+          </ol></li>
+        <li>You can verify the download was complete via the signature verification process outlined
+            <xref
+            href="https://h20392.www2.hpe.com/portal/swdepot/displayProductInfo.do?productNumber=HPLinuxCodeSigning"
+            scope="external" format="html">here</xref>.</li>
+        <li>To begin the upgrade process, log in to the lifecycle manager as the user you created
+          during the previous HPE Helion OpenStack 2.x deployment, and mount the install media at
+            <codeph>/media/cdrom</codeph>; for example:
+          <codeblock>sudo mount HelionOpenStack-2.1.4.iso /media/cdrom</codeblock></li>
+        <li>Unpack the following
+          tarball:<codeblock>tar faxv /media/cdrom/hos/hos-2.1.4-20160415T155603Z.tar </codeblock></li>
+        <li>Run the included initialization script to update the deployer:
+          <codeblock>~/hos-2.1.4/hos-init.bash</codeblock></li>
+        <li>If you have made any made any changes to your configuration files, ensure that you
+          commit them to your local git and if any merge conflicts are reported, you must resolve
+          them before proceeding:
+          <codeblock>cd ~/helion
+git add –A
+git commit –m "My changes"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Run the ready deployment playbook:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li><b>ESX - additional step</b>: If you are using the Entry-scale with ESX model you will
+          need to edit the file below and uncomment the EON upgrade step from the YAML file below
+          prior to continuing with the upgrade steps.<p>The file to edit is:</p><codeblock>~/scratch/ansible/next/hos/ansible/_hlm-service-upgrade.yml</codeblock>
+          <p>The line to uncomment is:</p>
+          <codeblock>eon-upgrade.yml</codeblock></li>
+
+
+        <li>Get status of all your services, if desired <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
+          <p>If status comes back bad for any service, run the service reconfigure playbook, with
+            naming convention <codeph>&lt;service>-reconfigure.yml</codeph>, for that service, then
+            run the status playbook for that service and see if the issue is resolved.</p>
+          <p>The status playbooks have this naming convention:</p>
+          <codeblock>&lt;service>-status.yml</codeblock>
+          <p>A full list is included at the end of this document.</p></li>
+        <li>Run the upgrade playbook (required for all models/deployments): <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock>
+          <note>You will see an Ansible code style warning: [WARNING]: It is unnecessary to use '{{'
+            in conditionals, leave variables in loop expressions bare. Please ignore.</note>
+          <note>You may run the <codeph>hlm-status.yml</codeph> playbook any time you like for
+            status information.</note></li>
+        <li><b>ESX - additional step:</b> Once the upgrade is complete, skip to the <xref
+            href="upgrade.dita#upgradeto21/esx">Further ESX Model Upgrade Instructions</xref>
+          section.</li>
+      </ol>
+    </section>
+    <section id="rebooting_general"><title>Rebooting Your Nodes - For HPE Helion OpenStack 2.0 to 2.1.4 upgrades</title>
+      <p>If you were running HPE Helion OpenStack 2.0, then to complete the upgrade and for Linux
+        for HPE Helion updates to take effect, you must reboot all your nodes. The instructions for
+        rebooting controller, compute, and storage nodes are found below. Note that you should
+        follow the order prescribed for each type of deployment, for example, Swift, VSA, or
+        Ceph.</p>
+      <p>Expand the sections below for those instructions.</p>
+    </section>
+    <section id="expandCollapse">
+      <sectiondiv outputclass="expandall">Expand All</sectiondiv>
+      <sectiondiv outputclass="collapseall">Collapse All</sectiondiv>
+    </section>
+    <section id="generalOrder">
+      <title outputclass="headerH">Recommended Node Reboot Order</title>
+      <sectiondiv outputclass="insideSection"><p>To ensure that rebooted nodes reintegrate into the
+          cluster, the key is having enough time between controller reboots. </p> The recommended
+        way to achieve this is as follows: <ol>
+          <li>Reboot controller nodes one-by-one with a suitable interval in between. If you
+            alternate between controllers and compute nodes you will gain more time between the
+            controller reboots. </li>
+          <li>Reboot of compute nodes (if present in your cloud).</li>
+          <li>Reboot of Swift nodes (if present in your cloud).</li>
+          <li>Reboot of VSA nodes (if present in your cloud)</li>
+          <li>Reboot of Ceph nodes (if present in your cloud).</li>
+          <li>Reboot of ESX nodes (if present in your cloud).</li>
+        </ol>
+      </sectiondiv></section>
+    <section id="rebootControllers"><title outputclass="headerH">Rebooting Controller Nodes</title>
+      <sectiondiv outputclass="insideSection">
+        <p><b>Migrate Singleton Services First</b></p>
+        <note>If you have previously rebooted your lifecycle manager for any reason, ensure that the
+          apache2 service is running before continuing. To start the apache2 service, use this
+          command: <codeblock>sudo systemctl start apache2</codeblock>
+        </note>
+        <p>The first consideration before rebooting any controller nodes is that there are a few
+          services that run as singletons (non-HA), thus they will be unavailable while the
+          controller they run on is down. Typically this is a very small window, but if you want to
+          retain the service during the reboot of that server you should take special action to
+          maintain service, such as migrating the service.</p>
+        <p>For these steps, if your singleton services are running on controller1 and you move them
+          to controller2, then ensure you move them back to controller1 before proceeding to reboot
+          controller2.</p>
+        <p><b>For the <codeph>cinder-volume</codeph> singleton service:</b></p>
+        <p>Execute the following command on each controller node to determine which node is hosting
+          the cinder-volume singleton. It should be running on only one node: </p>
+        <codeblock>ps auxww | grep cinder-volume | grep -v grep</codeblock>
+        <p>Run the <codeph>cinder-migrate-volume.yml</codeph> playbook specifying the node to
+          migrate to in the <codeph>migrate_host</codeph> argument:</p>
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml --extra-vars "migrate_host=padawan-ccp-c1-m2-mgmt"</codeblock>
+        <p>More details about the Cinder volume and backup migration instructions can be found in
+            <xref href="../blockstorage/singleton_service_cinder.dita#topic_l1p_vpy_jt">Managing
+            Cinder Volume and Backup Services</xref>.   </p>
+        <p><b>For the <codeph>nova-consoleauth</codeph> singleton service:</b></p>
+        <p>The <codeph>nova-consoleauth</codeph> component runs by default on the first controller
+          node, that is, the host with <codeph>consoleauth_host_index=0</codeph>. To move it to
+          another controller node before rebooting controller 0, run the ansible playbook
+            <codeph>nova-start.yml</codeph> and pass it the index of the next controller node. For
+          example, to move it to controller 2 (index of 1), run:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock></p>
+        <note>For the HPE Helion OpenStack versions prior to 2.1.2, manually stop the
+            <codeph>nova-consoleauth</codeph> service on the node which is going to reboot after
+          moving the service to a different controller via the Ansible playbook above. Use
+            <codeph>sudo systemctl stop nova-consoleauth</codeph> to stop the service
+          manually.</note>
+        <p><b>Reboot the Controllers</b></p>
+        <p>In order to reboot the controller nodes, you must first retrieve a list of nodes in your
+          cloud running control plane services.</p>
+        <codeblock>for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); do grep $i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts | grep ansible_ssh_host | awk '{print $1}'; done</codeblock>
+        <p>Then perform the following steps from your lifecycle manager for each of your controller
+          nodes:</p>
+        <ol>
+          <li>If any singleton services are active on this node, they will be unavailable while the
+            node is down. If you want to retain the service during the reboot, you should take
+            special action to maintain the service, such as migrating the service as appropriate as
+            noted above.</li>
+          <li>Stop all services on the controller node that you are rebooting first:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock></li>
+          <li>Reboot the controller node, e.g. run the following command on the controller itself: <codeblock>sudo reboot</codeblock>
+            <p>Note that the current node being rebooted could be hosting the lifecycle manager.</p>
+          </li>
+          <li>Wait for the controller node to become ssh-able and allow an additional minimum of
+            five minutes for the controller node to settle. Start all services on the controller
+            node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock>
+          </li>
+          <li>Verify that the status of all services on that is OK on the controller node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node></codeblock>
+          </li>
+          <li>When above start operation has completed successfully, you may proceed to the next
+            controller node. Ensure that you migrate your singleton services off the node
+            first.</li>
+        </ol>
+        <note>It is important that you not begin the reboot procedure for a new controller node
+          until the reboot of the previous controller node has been completed successfully (i.e. the
+          hlm-status playbook has completed without error). </note>
+        <note>If your system includes VSA nodes, rebooting a controller node will not re-start CMC
+          as it is Java application. You will need to restart it.</note>
+      </sectiondiv>
+    </section>
+
+    <section id="rebootCompute"><title outputclass="headerH">Rebooting Compute Nodes</title>
+      <sectiondiv outputclass="insideSection">
+        <p>To reboot a compute node the following operations will need to be performed:</p>
+        <ul>
+
+          <li>Disable provisioning of the node to take the node offline to prevent further instances
+            being scheduled to the node during the reboot. </li>
+          <li>Gracefully shut down Helion Development Platform services and instances. See <xref
+              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
+              Development Platform upgrade process</xref> for details.</li>
+          <li>Identify instances that exist on the compute node, and then either: <ul>
+              <li>Live migrate the instances off the node before actioning the reboot. OR </li>
+              <li>Stop the instances</li>
+            </ul>
+          </li>
+          <li>Reboot the node </li>
+          <li>Restart the Nova services </li>
+          <li>Restart any instances stopped above, except for Helion Development Platform instances.
+            To gracefully restart Helion Development Platform instances, see the <xref
+              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
+              Development Platform upgrade process</xref>.</li>
+        </ul>
+        <ol>
+          <li>Disable provisioning:
+            <codeblock>nova service-disable --reason "&lt;describe reason>" &lt;node name> nova-compute</codeblock>If
+            the node has existing instances running on it these instances will need to be migrated
+            or stopped prior to re-booting the node.</li>
+          <li> Live migrate existing instances. Identify the instances on the compute node. Note:
+            The following command must be run with nova admin
+            credentials.<codeblock>nova list --host &lt;hostname&gt; --all-tenants</codeblock></li>
+          <li> Migrate or Stop the instances on the compute node. <p> Migrate the instances off the
+              node by running one of the following commands for each of the instances:</p>
+            <!--<p>Until
+              HOS 3.0 that will be based on the Mitaka release, the only live-migration cases that
+              will work are the following:</p> -->
+            <p>If your instance is booted from a volume and has any number of Cinder volume
+              attached, use the nova live-migration
+            command:</p><codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
+            If your instance has local (ephemeral) disk(s) only, you can use the --block-migrate
+            option:<codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
+            Note: The [&lt;target compute host&gt;] option is optional. If you do not specify a
+            target host then the nova scheduler will choose a node for you.<p>OR</p><p>Stop the
+              instances on the node by running the following command for each of the
+            instances:</p><codeblock>nova stop &lt;instance-uuid&gt;</codeblock></li>
+          <li>Stop all services on the Compute node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;compute node></codeblock>
+          </li>
+          <li>SSH to your Compute nodes and reboot them: <codeblock>sudo reboot</codeblock>
+            <p>The operating system cleanly shuts down services and then automatically reboots. If
+              you want to be very thorough, run your backup jobs just before you reboot.</p>
+          </li>
+          <li>Run the hlm-start.yml playbook from the lifecycle manager. If needed, use the
+            bm-power-up.yml playbook to restart the node. Specify just the node(s) you want to start
+            in the 'nodelist' parameter arguments, i.e.
+            nodelist=&lt;node1&gt;[,&lt;node2&gt;][,&lt;node3&gt;].<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;compute node></codeblock>
+          </li>
+          <li>Execute the <b>hlm-start.yml </b>playbook. Specifying the node(s) you want to start in
+            the 'limit' parameter arguments. This parameter accepts wildcard arguments and also
+            '@&lt;filename>' to process all hosts listed in the file.
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></codeblock>
+          </li>
+          <li>Re-enable provisioning on the node:
+            <codeblock>nova service-enable &lt;node-name> nova-compute</codeblock></li>
+          <li> Restart any instances you
+            stopped.<codeblock>nova start &lt;instance-uuid></codeblock>
+          </li>
+        </ol>
+      </sectiondiv>
+    </section>
+
+    <section id="rebootSwift"><title outputclass="headerH">Rebooting Swift Nodes</title>
+      <sectiondiv outputclass="insideSection"><p>If your Swift services are on controller node,
+          please follow the controller node reboot instructions above.</p>
+        <p id="firstp">For a dedicated Swift PAC cluster or Swift Object resource node: </p>For each
+        Swift host <ol>
+          <li>Stop all services on the Swift node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;swift node></codeblock>
+          </li>
+          <li>Reboot the Swift node by running the following command on the Swift node itself:
+            <codeblock>sudo reboot</codeblock>
+          </li>
+          <li>Wait for the node to become ssh-able and then start all services on the Swift node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </codeblock>
+          </li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="vsa"><title outputclass="headerH">Rebooting VSA Nodes</title><sectiondiv
+        outputclass="insideSection">
+        <p>If your cloud is deployed with VSA, then the reboot sequence will be as follows:</p>
+        <ol>
+          <li>Identify all VSA nodes of a given cluster </li>
+          <li>Pick one of the VSA nodes of the cluster and reboot it manually</li>
+          <li>Check VSA VM's status :
+            <codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit &lt;vsa_node name></codeblock></li>
+          <li>Wait for VSA to come up, Check cluster status using CMC ( status should be
+            "normal")</li>
+          <li>Run the following command from your first controller node which will open the HP
+            StoreVirtual Centralized Management Console (CMC) GUI
+            <codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar </codeblock></li>
+          <li>To view the cluster status , go to: management group -&gt; click on the respective
+            cluster -&gt; check for status</li>
+          <li>Repeat steps 2-4 for the other remaining nodes of the same VSA cluster. </li>
+          <li>Go to step 1 and repeat all steps for the other clusters.</li>
+        </ol>
+      </sectiondiv>
+    </section>
+
+    <section id="reboot_ceph"><title outputclass="headerH">Rebooting Ceph</title>
+      <sectiondiv outputclass="insideSection">
+        <!--Note that Ceph has two components: <ul>
+          <li>monitor nodes</li>
+          <li>OSD nodes</li>
+        </ul> If a monitor is deployed on controller node, then the rebooting sequence of the
+        controller takes precedence over monitor nodes. You should reboot the group of nodes in
+        specified order. For a given group (say controller or compute or VSA or ceph OSD etc),
+        reboot should be done one-by-one, in series. For example, if there are three OSD nodes say
+        OSD1, OSD2, OSD3 then you should reboot OSD1 and then OSD2 and so on.<ol>
+          <li>Controller node (reboot of this will take care of the monitor as well) </li>
+          <li>Compute node </li>
+          <li>Standalone storage or dedicated storage, including: <ul>
+
+              <li>VSA</li>
+              <li>Ceph OSD</li>
+              <li>Ceph monitor (if deployed on stand alone node). If monitor is deployed on
+                controller node then rebooting sequence of controller takes precedence over monitor
+                nodes.</li>
+            </ul>
+          </li>
+        </ol>More commonly, the monitor is deployed as a standalone; i.e., as separate set of
+        resource nodes. In this case the reboot sequence will be: <ol>
+          <li>Controller node </li>
+          <li>Compute node </li>
+          <li>Ceph monitor node </li>
+          <li>Ceph OSD nodes </li>
+        </ol> -->
+        <p>There are two categories of ceph nodes:</p>
+        <ul>
+          <li>monitor nodes</li>
+          <li>OSD nodes</li>
+        </ul>
+        <p>Ceph nodes should be rebooted in their position in the overall sequence described in the
+          reboot order section above.</p>
+        <p>You should reboot both categories of ceph nodes in the order: monitor nodes, then OSD
+          nodes. All ceph nodes should reboot one-by-one, in series. </p> If a monitor is deployed
+        on controller node, then the rebooting sequence of the controller caters for the monitor
+        nodes, so you need to additionally reboot only the OSD nodes. <p>If the monitor is deployed
+          as a standalone; i.e., as separate set of resource nodes, you should reboot the monitor
+          nodes before rebooting the OSD nodes.</p> For example, if there are three monitor nodes
+        and three OSD nodes say, MON1, MON2 and MON3, with OSD1, OSD2, OSD3, then you should reboot
+        MON1, then MON2 and then MON3 followed by OSD1, then OSD2 and so on In both cases, please
+        ensure that you are serializing the reboot of a given family (monitor or OSD or controller);
+        that is, don't reboot them all at the same time. This will ensure that each service is up
+        and running and there is no impact on the client side. To reboot Ceph nodes, follow the
+        sequence below to safely reboot the entire Ceph cluster: <ol>
+          <li>Reboot a Ceph monitor node in the cluster. </li>
+          <li>Once the monitor node comes up, wait for a minute and then execute the following
+            command:
+            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostname></codeblock>
+          </li>
+          <li>If the above playbook executes successfully, repeat from step 1 to reboot the next
+            Ceph monitor node in the cluster. </li>
+          <li>Once all the monitor nodes have been rebooted, execute
+            <codeblock>ceph quorum_status </codeblock>on a monitor node and ensure that all the
+            monitors have joined the quorum by observing that in the output, the "quorum_names"
+            section lists all the monitors in the Ceph cluster. </li>
+          <li>Login to the OSD node to be rebooted and execute the following command to avoid the
+            cluster rebalancing itself: <codeblock>ceph osd set noout</codeblock>
+          </li>
+          <li>Stop all the OSD services on the current node by executing below command:
+            <codeblock>sudo systemctl stop  ceph-osd@*</codeblock>
+          </li>
+          <li>Now reboot the OSD node. </li>
+          <li>Once the OSD node is up, log in and execute the following command and observe that a
+            line similar to "osd.0 192.17.11.7:6801/3824 boot" appears for all the OSDs on the node:
+            <codeblock>ceph -w</codeblock> To quit, this command press Ctrl + C </li>
+          <li>Verify that all the OSDs on this node are 'up' by executing following command (and
+            observing that all the OSDs under the current host are reported as 'up')
+            <codeblock>ceph osd tree</codeblock> If any of the OSDs are reported as 'down', please
+            check the logs for the corresponding OSD (in the
+              <codeph>/var/log/ceph/&lt;cluster-name>-osd.&lt;osd_number>.log</codeph> file) for
+            resolving the issue. </li>
+          <li>Now execute the following command from the re-booted OSD node, to unset the cluster
+            from noout : <codeblock>ceph osd unset noout</codeblock>
+          </li>
+          <li>Execute the following playbook from the lifecycle manager node to check the status of
+            the OSDs that have just come up:
+            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname></codeblock>
+          </li>
+          <li>If the above playbook does not report any errors, repeat from step 5 for another Ceph
+            OSD node in the cluster. </li>
+          <li>Once the entire cluster is rebooted, execute this command
+            <codeblock>ceph health detail</codeblock> to ensure that you see HEALTH_OK. </li>
+        </ol>
+      </sectiondiv>
+    </section>
+
+    <section id="freezer"><title outputclass="headerH">Restarting Freezer Backups</title>
+      <p>Follow the steps outlined in <xref href="../operations/restarting_freezer.dita"/> to
+        restart your Freezer backups after the node reboots.</p>
+    </section>
+
+    <section id="checkVersion"><title outputclass="headerH">Checking Version Updates</title>
+      <sectiondiv outputclass="insideSection">
+        <p>To check the Linux for HPE Helion version run from the lifecycle manager node to any
+          other node via its IP address:</p>
+        <codeblock>ssh &lt;IP_address> uname -a</codeblock> The output should be:
+        <codeblock>Linux helion-control-plane-cluster1-m1-mgmt 3.14.57-1-amd64-hlinux #hlinux1 SMP Mon Nov 16 08:12:02 UTC 2015 x86_64 GNU/Linux</codeblock>
+        To check to see if a node has been successfully updated on a control plane node, run from
+        the lifecycle manager node to any other node via its IP address: :
+        <codeblock>ssh &lt;IP_address> cat /etc/HP_Helion_version | grep Helion</codeblock> The
+        output should look like this:
+        <codeblock>HP Helion OpenStack hos-2.1.0 (build 01-291)</codeblock>
+      </sectiondiv>
+    </section>
+
+
+
+    <section id="esx"><title outputclass="headerH">Further ESX Model Upgrade Instructions</title>
+      <sectiondiv outputclass="insideSection"><p>Once you have completed the initial upgrade
+          instructions, you must follow these additional steps for ESX deployments:</p>
+        <ol>
+          <li>The new cluster import can be performed directly with the command below on the already
+            activated Data center (DC):
+            <codeblock>eon cluster-import --vcenter-id &lt;vcenter-id> --cluster-name &lt;cluster-name> --cluster-moid &lt;MOID of cluster></codeblock></li>
+          <li>If the cluster activation is on a new DC, follow the steps below before performing the
+            cluster-import: <note>Provide the correct eth interface details for
+                <codeph>data_interface_order</codeph> and <codeph>trunk_interface_order</codeph>
+              parameters as per the defined input model. Refer to <xref
+                href="install_entryscale_esx.dita#install_esx/register-network" format="dita"
+                >Register ESX Cloud Network Configuration</xref> for more details.</note></li>
+        </ol>
+      </sectiondiv>
+    </section>
+
+    <section id="getStatus">
+      <title outputclass="headerH">Get List of Status Playbooks</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Running the following command will yield a list of status playbooks:</p>
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ls *status*</codeblock> Here is the list:
+        <codeblock>stack@helion-control-plane-cluster1-m1-mgmt:~/scratch/ansible/next/hos/ansible$ ls *status*
+      bm-power-status.yml    eon-status.yml      heat-status.yml      logging-producer-status.yml  monasca-status.yml      rabbitmq-status.yml
+      ceilometer-status.yml  FND-AP2-status.yml  hlm-status.yml       logging-server-status.yml    neutron-status.yml      sherpa-status.yml
+      ceph-status.yml        FND-CLU-status.yml  horizon-status.yml   logging-status.yml           nova-status.yml         swift-status.yml
+      cinder-status.yml      freezer-status.yml  ironic-status.yml    memcached-status.yml         ops-console-status.yml  vsa-status.yml
+      cmc-status.yml         glance-status.yml   keystone-status.yml  monasca-agent-status.yml     percona-status.yml      zookeeper-status.yml</codeblock>
+      </sectiondiv>
+    </section>
+    <p outputclass="hostarget"/>
+    <p>The following are the steps you will take to ensure that Helion Development Platform runs
+      after the Helion OpenStack 2.0 to 2.1.4 upgrade and rebooting process:</p>
+    <ol id="ol_rxd_pry_pv">
+      <li>SSH into the HPE Helion OpenStack lifecycle manager.
+        <codeblock>ssh stack@&lt;dnsaas-deployer-ip></codeblock></li>
+      <li>Navigate to the <codeph>anisble</codeph> directory.
+        <codeblock>cd scratch/ansible/next/hos/ansible/</codeblock></li>
+      <li>Run the following playbooks in this order.
+        <codeblock>ansible-playbook -i hosts/verb_hosts designate-stop.yml
+ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml
+ansible-playbook -i hosts/verb_hosts rabbitmq-start.yml
+ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml
+ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
+    </ol>
+  </body>
+</topic>
