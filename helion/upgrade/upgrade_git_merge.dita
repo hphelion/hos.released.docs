@@ -23,6 +23,14 @@
             is occurring, alternative methods for resolution, and a fallback procedure for 
             the case where the resolution goes wrong and you need to start from scratch.</p>
             
+            <p>For a general overview of how <keyword keyref="kw-hos"/> uses Git, see the 
+            introductory article in the Installation section <xref keyref="using_git">here</xref>.
+            In particular, note how the <codeph>site</codeph> branch is the one most used by
+                the end-user, while the <codeph>hos</codeph> branch contains the "upstream" 
+                 source code corresponding to the contents of the <codeph>~/helion</codeph> directory 
+                on a pristine fresh installation.
+            </p>
+            
         </section>
         
         <section>
@@ -78,12 +86,92 @@ metadata_proxy_shared_secret = {{ neutron_metadata_proxy_shared_secret }}
 neutron_auth_strategy = keystone
 neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
 service_metadata_proxy = True
+</codeblock> 
+            
+            <p>This indicates that <keyword keyref="kw-hos-phrase-30"/> is trying to set the value of
+                <codeph>metadata_proxy_shared_secret</codeph> to be <codeph>{{ neutron_metadata_proxy_shared_secret }}</codeph>
+                while you have previously set its value to <codeph>top_secret_password111</codeph>.                        
+            </p>
+            
+
+        </section>
+        
+        <section>
+            <title>Examining diffs to previous upstream version</title>
+            
+            <p>Typically, the previous upstream version will be the last-but-one commit on the <codeph>hos</codeph> branch.
+               This version will have been created during the initial installation of your cloud 
+               (or perhaps during a previous upgrade). So in total, there are three significant versions of the file:
+               <ul>
+                   <li>the previous "upstream" version on the <codeph>hos</codeph> branch</li>
+                   <li>your edited version on the <codeph>site</codeph> branch</li>
+                   <li>the new "upstream" version on the <codeph>hos</codeph> branch from </li>
+                   
+               </ul>                    
+            </p>
+            
+            <p>You can identify the previous "upstream" version using <codeph>git merge-base</codeph></p>
+            
+<codeblock>
+git merge-base hos site
+<b>2eda1df48e2822533c50f80f5bfd7a9d788bdf73</b>
+</codeblock>      
+            
+            <p>And then use <codeph>git log</codeph> to see whee this commit occurs in the history of 
+            the <codeph>hos</codeph> branch.</p>
+ 
+<codeblock>
+git log hos --
+commit 22cfa83f3526baf30b3697e971a712930f86f611
+Author: Helion git user &lt;helion@hpe.com>
+Date:   Mon Jan 18 00:30:33 2016 +0000
+
+    New drop
+
+commit <b>2eda1df48e2822533c50f80f5bfd7a9d788bdf73</b>
+Author: Helion git user &lt;helion@hp.com>
+Date:   Sun Jan 17 19:14:01 2016 +0000
+
+    New drop
+</codeblock> 
+         
+         
+            <p>In this instance, we can see that the relevant commit is in fact the last-but-one commit
+                and so we can use the simplified name <codeph>hos^1</codeph> to identify that commit.</p>
+            
+            <p>To compare your change with the previous upstream commit on the <codeph>hos</codeph> branch, which
+                probably originated in your original install (or previous upgrade), you can use <codeph>git diff HEAD hos -- &lt;&lt;path/to/file>></codeph>:</p>
+            
+<codeblock>
+git diff HEAD hos -- hos/ansible/roles/nova-common/templates/nova.conf.j2
 </codeblock>            
+            <p>In the diff output, you should be able to see how you changed the value for <codeph>metadata_proxy_shared_secret</codeph>
+                from <codeph>unset</codeph> to <codeph>top_secret_password111</codeph>:
+            </p>
+            
+<codeblock>
+diff --git a/hos/ansible/roles/nova-common/templates/nova.conf.j2 b/hos/ansible/roles/nova-common/templates/nova.conf.j2
+index 597a982..05cb07c 100644
+--- a/hos/ansible/roles/nova-common/templates/nova.conf.j2
++++ b/hos/ansible/roles/nova-common/templates/nova.conf.j2
+@@ -132,7 +132,7 @@ admin_auth_url = {{ neutron_admin_auth_url }}
+ admin_password = {{ neutron_admin_password }}
+ admin_tenant_name = {{ neutron_admin_tenant_name }}
+ admin_username = {{ neutron_admin_username }}
+<b>-metadata_proxy_shared_secret = unset
++metadata_proxy_shared_secret = top_secret_password111</b>
+ neutron_auth_strategy = keystone
+ neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
+ service_metadata_proxy = True
+</codeblock>            
+            
             
         </section>
         
         
- 
+        
+        
+        
 
     </body>
 </topic>
