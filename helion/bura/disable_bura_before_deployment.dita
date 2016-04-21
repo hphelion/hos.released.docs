@@ -52,22 +52,23 @@
       configuration file: <codeblock>/helion/my_cloud/config/freezer/jobs.yml</codeblock>You can
       completely disable the backup of a component by changing the <codeph>enabled</codeph> field
       that corresponds to that service to false in jobs.yml.<p>You can specify where a job will
-        store its backup by altering the <codeph>store_in_swift, store_in_ssh</codeph>,
-          <codeph>store_in_local</codeph> fields.</p>Note that even if <codeph>store_in_ssh</codeph>
-      is set to true, ssh backup job won't be created unless SSH credentials are provided in
+        store its backup by setting <codeph>store_in_swift, store_in_ssh</codeph>,
+          <codeph>store_in_local</codeph> to true or false.</p>Note that even if
+        <codeph>store_in_ssh</codeph> is set to true, SSH backup job won't be created unless SSH
+      credentials are provided in
         <codeph>/helion/my_cloud/config/freezer/ssh_credentials.yml</codeph><p>Please note that when
           <codeph>setting store_in_local</codeph> to <codeph>true</codeph>, the backup job will
         store backups on the server executing the backup. This option is usefull for example if you
         plan to mount an NFS share and want your backup stored on it. You need to provide the path
-        where backup will be stored using <codeph> local_storage_base_dir</codeph>. </p>
-      <p>By default, one backup job per storage medium per component will be created. A
-        corresponding restore job for each of those backup jobs will also be created by default.
-        These jobs can be used to quickly restore the corresponding backup. To disable the creation
-        of these restore jobs, change <codeph>also_create_restore_job </codeph>to
-          <codeph>false</codeph>.</p></section>
+        where backup will be stored using <codeph> local_storage_base_dir</codeph>. </p> By default,
+      one backup job per storage medium per component will be created. A corresponding restore job
+      for each of those backup jobs will also be created by default. These jobs can be used to
+      quickly restore the corresponding backup. To disable the creation of these restore jobs,
+      change <codeph>also_create_restore_job </codeph>to <codeph>false</codeph>.</section>
     <section><title>Activating and deactivating jobs after cloud deployment</title>
     
-    <ol><li>Make modifications in <codeph> /helion/my_cloud/config/freezer/jobs.yml</codeph>-</li><li>Commit modifications to the git repo
+    <ol><li>Make modifications similar to those discussed above in <codeph>
+            /helion/my_cloud/config/freezer/jobs.yml</codeph>-</li><li>Commit modifications to the git repo
       </li><li>Run the configuration processor </li><li>Run the ready deployment playbook<codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock>
         </li><li>Run 
             <codeblock>ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li></ol>
