@@ -11,77 +11,81 @@
       <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
     </section>
     
-    <section id="barbican">
+   <section id="barbican"><title outputclass="headerH">Barbican</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="barbican_table">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1" colwidth="1*"/>
               <colspec colname="c2" colnum="2" colwidth="1*"/>
               <colspec colname="c3" colnum="3" colwidth="1*"/>
-              <colspec colname="c4" colnum="4" colwidth="1*"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
                 <row>
                   <entry morerows="1"><p>Barbican</p></entry>
                   <entry>barbican-api</entry>
-                  <entry><p>INFO</p></entry>
-                  <entry>
-                    <p>To change the logging level:</p>
-                    <ol>
-                      <li>Log in to the lifecycle manager.</li>
-                      <li>Ceilometer service component logging can be changed by modifying the
-                        following file: <codeblock>~/helion/hos/ansible/roles/_CEI-CMN/defaults/main.yml</codeblock></li>
-                      <li>To change the logging level, change from CRITICAL to DEBUG on the
-                        following line:
-                        <codeblock>ceilometer_loglevel:  INFO
-ceilometer_logstash_loglevel:  INFO</codeblock></li>
-                      <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git repo</xref>, as
-                        follows:
-                        <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "My config or other commit message"</codeblock></li>
-                      <li>Run the configuration processor:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                      <li>Update your deployment directory:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                      <li>Complete the changes by running this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
-                    </ol>
+                  <entry><p>INFO</p>
+                  <note type="note">Other options include: <ul>
+                        <li>DEBUG</li>
+                        <li>WARN</li>
+                        <li>ERROR</li>
+                      </ul></note>
                   </entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
         </p>
+        <p><b>To change the logging level:</b></p>
+          <ol>
+            <li>Log in to the lifecycle manager.</li>
+            <li>Open the following file:
+            <codeblock>~/helion/my_cloud/config/barbican/barbican_deploy_config.yml</codeblock></li>
+            <li>To change the logging level, modify the "INFO" setting following lines:
+            <codeblock>barbican_loglevel:  {{helion_loglevel | default('INFO')}}
+barbican_logstash_loglevel:  {{helion_loglevel | default('INFO')}}</codeblock></li>
+            <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git repo</xref>, as
+              follows:
+              <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+            <li>Run the configuration processor:
+              <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+            <li>Update your deployment directory:
+              <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+            <li>Complete the changes by running this playbook:
+              <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
+          </ol>
       </sectiondiv>
     </section>
+    
+    
+    
+    
+    
     
     <section id="ceilometer"><title outputclass="headerH">Ceilometer</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="ceilometertb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1" colwidth="1*"/>
               <colspec colname="c2" colnum="2" colwidth="1*"/>
               <colspec colname="c3" colnum="3" colwidth="1*"/>
-              <colspec colname="c4" colnum="4" colwidth="1*"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -93,67 +97,61 @@ ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
                     <p>ceilometer-agent-central</p>
                     <p>ceilometer-expirer</p></entry>
                   <entry><p>INFO</p></entry>
-                  <entry>
-                    <p>To change the logging level, follow these steps:</p>
-                    <ol>
-                      <li>Log in to the lifecycle manager.</li>
-                      <li>Ceilometer service component logging can be changed by modifying the
-                        following file: <codeblock>~/helion/hos/ansible/roles/_CEI-CMN/defaults/main.yml</codeblock>
-                        <note type="note">You can also change the log level for individual
-                          Ceilometer components by changing one or more of the files
-                          below:<codeblock>~/helion/hos/ansible/roles/CEI-API/templates/api-logging.conf.j2
+                </row>
+                <row>
+                  <entry><p>ceilometer-alarm-evaluator-json</p><note type="attention"/>This alarm
+                    functionality has been disabled.</entry>
+                  <entry><p>INFO</p></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table></p>
+          <p>To change the logging level:</p>
+          <ol>
+            <li>Log in to the lifecycle manager.</li>
+            <li>Ceilometer service component logging can be changed by modifying the following file:
+              <codeblock>~/helion/hos/ansible/roles/_CEI-CMN/defaults/main.yml</codeblock><note
+              type="note">You can also change the log level for individual Ceilometer components by
+              changing one or more of the files
+              below:<codeblock>~/helion/hos/ansible/roles/CEI-API/templates/api-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-COL/templates/collector-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-NAG/templates/agent-notification-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-CAG/templates/agent-central-logging.conf.j2
 ~/helion/hos/ansible/roles/CEI-EXP/templates/expirer-logging.conf.j2</codeblock></note></li>
-                      <li>To change the logging level, change from CRITICAL to DEBUG on the
-                        following line:
-                        <codeblock>ceilometer_loglevel:  INFO
+            <li>To change the logging level, change from CRITICAL to DEBUG on the
+              following line:
+              <codeblock>ceilometer_loglevel:  INFO
 ceilometer_logstash_loglevel:  INFO</codeblock></li>
-                      <li>Commit your configuration to the <xref
-                          href="../installation/using_git.dita">local git repo</xref>, as
-                        follows:
-                        <codeblock>cd ~/helion/hos/ansible
+            <li>Commit your configuration to the <xref
+              href="../installation/using_git.dita">local git repo</xref>, as
+              follows:
+              <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
-                      <li>Run the configuration processor:
-                        <codeblock>cd ~/helion/hos/ansible
+            <li>Run the configuration processor:
+              <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                      <li>Update your deployment directory:
-                        <codeblock>cd ~/helion/hos/ansible
+            <li>Update your deployment directory:
+              <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                      <li>Complete the changes by running this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+            <li>Complete the changes by running this playbook:
+              <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
-                    </ol>
-                  </entry>
-                </row>
-                <row>
-                  <entry><p>ceilometer-alarm-evaluator-json</p></entry>
-                  <entry><p>INFO</p></entry>
-                  <entry><p>This alarm functionality has been disabled.</p></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </table>
-        </p>
+          </ol>
       </sectiondiv>
     </section>
     <section id="ceph"><title outputclass="headerH">Ceph</title>
       <sectiondiv outputclass="insideSection">
-        <p>
           <table frame="all" rowsep="1" colsep="1" id="cephtb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
               <colspec colname="c2" colnum="2"/>
               <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -162,57 +160,55 @@ ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
                   <entry><p>ceph-mon</p>
                     <p>ceph-osd</p></entry>
                   <entry>CRITICAL</entry>
-                  <entry>
-                    <p>To change the logging level, follow these steps:</p>
-                    <ol>
-                      <li>Log in to the lifecycle manager.</li>
-                      <li>Ceph service component logging can be changed by modifying the following
-                        file:
-                        <codeblock>~/helion/hos/ansible/roles/_CEP-CMN/defaults/main.yml</codeblock></li>
-                      <li>To change the logging level, change from CRITICAL to DEBUG on the
-                        following line:
-                        <codeblock>ceph_mon_log_level: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"
-ceph_osd_log_level: "{{ helion_loglevel | default('CRITICAL') }}"
-ceph_rgw_log_level: "{{ helion_loglevel | default('CRITICAL') }}"</codeblock></li>
-                      <li>Commit your configuration to the <xref
-                          href="../installation/using_git.dita">local git repo</xref>, as
-                        follows:
-                        <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "My config or other commit message"</codeblock></li>
-                      <li>Run the configuration processor:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                      <li>Update your deployment directory:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                      <li>Complete the changes by running this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
-                    </ol>
-                  </entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
-        </p>
+          <p>To change the logging level, follow these steps:</p>
+          <ol>
+            <li>Log in to the lifecycle manager.</li>
+            <li>Ceph service component logging can be changed by modifying the following
+              file:
+              <codeblock>~/helion/hos/ansible/roles/_CEP-CMN/defaults/main.yml</codeblock></li>
+            <li>To change the logging level, change from CRITICAL to DEBUG on the
+              following line:
+              <codeblock>ceph_mon_log_level: "{{ helion_loglevel | default('<b>DEBUG</b>') }}"
+ceph_osd_log_level: "{{ helion_loglevel | default('CRITICAL') }}"
+ceph_rgw_log_level: "{{ helion_loglevel | default('CRITICAL') }}"</codeblock></li>
+            <li>Commit your configuration to the <xref
+              href="../installation/using_git.dita">local git repo</xref>, as
+              follows:
+              <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+            <li>Run the configuration processor:
+              <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+            <li>Update your deployment directory:
+              <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+            <li>Complete the changes by running this playbook:
+              <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
+          </ol>
       </sectiondiv>
+      
+      
+      
     </section>
     <section id="cinder"><title outputclass="headerH">Block Storage (Cinder)</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="cindertb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
               <colspec colname="c2" colnum="2"/>
               <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -220,93 +216,105 @@ ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
                   <entry><p>Cinder</p></entry>
                   <entry>cinder (local)<p>cinder-logstash (centralized logging)</p></entry>
                   <entry>DEBUG<p>INFO</p></entry>
-                  <entry>
-                    <p>To change the logging level, follow these steps:</p>
-                    <ol>
-                      <li>Log in to the lifecycle manager.</li>
-                      <li>Cinder service component logging can be changed by modifying the following
-                        file:
-                        <codeblock>~/helion/hos/ansible/roles/_CND-CMN/defaults/main.yml</codeblock></li>
-                      <li>To change the logging level, change from INFO to DEBUG on the following
-                        line: <codeblock>cinder_default_loglevel: DEBUG</codeblock></li>
-                      <li>Commit your configuration to the <xref
-                          href="../installation/using_git.dita">local git repo</xref>, as
-                        follows:
-                        <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "My config or other commit message"</codeblock></li>
-                      <li>Run the configuration processor:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                      <li>Update your deployment directory:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                      <li>Complete the changes by running this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
-                    </ol>
-                  </entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
         </p>
+        <p>To change the logging level:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Cinder service component logging can be changed by modifying the following
+            file:
+            <codeblock>~/helion/hos/ansible/roles/_CND-CMN/defaults/main.yml</codeblock></li>
+          <li>To change the logging level, change from INFO to DEBUG on the following
+            line: <codeblock>cinder_default_loglevel: DEBUG</codeblock></li>
+          <li>Commit your configuration to the <xref
+            href="../installation/using_git.dita">local git repo</xref>, as
+            follows:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Update your deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Complete the changes by running this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+        </ol>
       </sectiondiv>
     </section>
     
-    <section id="designate">
+    
+    
+    
+    
+    
+   <section id="designate"><title outputclass="headerH">Designate</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="designate_table">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1" colwidth="1*"/>
               <colspec colname="c2" colnum="2" colwidth="1*"/>
               <colspec colname="c3" colnum="3" colwidth="1*"/>
-              <colspec colname="c4" colnum="4" colwidth="1*"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
                 <row>
                   <entry morerows="1"><p>Designate</p></entry>
-                  <entry><p>barbican-api</p>
+                  <entry><p>designate-api</p>
                   <p>designate-central</p>
                     <p>designate-mdns</p>
                     <p>designate-pool-manager</p>
                     <p>designate-zone-manager</p>
                   </entry>
                   <entry><p>INFO</p></entry>
-                  <entry>
-                    <p>To change the logging level:</p>
-                    <ol>
-                      <li>Log in to the lifecycle manager.</li>
-                      <li>Designate logging configuration files are linked to the
-                        following directory: <codeblock>~/my_cloud/config/designate</codeblock></li>
-                      <li>To change the logging level, check out the <xref
-                        href="../installation/using_git.dita">local git repo</xref>, using the
-                        following command:
-                        <codeblock>git checkout site</codeblock></li>
-                      <li>Run the configuration processor:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                      <li>Update your deployment directory:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                      <li>Complete the changes by running this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
-                    </ol>
+                </row>
+                <row>
+                  <entry><p>designate-api-json</p>
+                    <p>designate-central-json</p>
+                    <p>designate-mdns-json</p>
+                    <p>designate-pool-manager-json</p>
+                    <p>designate-zone-manager-json</p>
                   </entry>
+                  <entry><p>INFO</p></entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
         </p>
+<p><b>To change the logging level:</b></p>
+          <ol>
+            <li>Log in to the lifecycle manager.</li>
+            <li>Change to the following directory:
+              <codeblock>~/helion/my_cloud/config/designate</codeblock></li>
+            <li>Open the configuration file for the subcomponent that you want to modify.</li>
+            <li>To change the logging level, modify the "INFO" setting following lines:
+              <codeblock>designate_loglevel:  {{helion_loglevel | default('INFO')}}</codeblock></li>
+            <li>Commit your configuration to the <xref href="../installation/using_git.dita">local git repo</xref>, as
+              follows:
+              <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+            <li>Run the configuration processor:
+              <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+            <li>Update your deployment directory:
+              <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+            <li>Complete the changes by running this playbook:
+              <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts designate-reconfigure.yml</codeblock></li>
+          </ol>
       </sectiondiv>
     </section>
     
@@ -315,17 +323,15 @@ ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="esxtb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
               <colspec colname="c2" colnum="2"/>
               <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -333,30 +339,34 @@ ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
                   <entry><p>EON</p></entry>
                   <entry/>
                   <entry/>
-                  <entry><p>See <xref href="../esx/eon_logging.dita">EON Logging</xref> for more
-                      details.</p></entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
         </p>
+        <p><b>To change the logging level:</b></p>
+        <ol>
+          <li>See <xref href="../esx/eon_logging.dita">EON Logging</xref> for more
+            details.</li>
+        </ol>
       </sectiondiv>
     </section>
-    <section id="freezer"><title outputclass="headerH">Freezer</title>
+ 
+
+
+   <section id="freezer"><title outputclass="headerH">Freezer</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="freezertb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
               <colspec colname="c2" colnum="2"/>
               <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -366,29 +376,30 @@ ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
                     <p>freezer-api</p>
                     <p>freezer-scheduler</p></entry>
                   <entry><p>INFO</p></entry>
-                  <entry><p>Currently the freezer service does not support debug logs.</p></entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
         </p>
+        <p>To Change Log Level:</p>
+        <note type="attention">Currently the freezer service does not support debug logs.</note>    
       </sectiondiv>
+      
+      
     </section>
     <section id="glance"><title outputclass="headerH">Image (Glance)</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="glancetb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
               <colspec colname="c2" colnum="2"/>
               <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -396,55 +407,57 @@ ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
                   <entry><p>Glance</p></entry>
                   <entry><p>glance-api</p><p>glance-registry</p></entry>
                   <entry><p>INFO</p></entry>
-                  <entry>
-                    <p>To change the logging level, follow these steps:</p>
-                    <ol>
-                      <li>Log in to the lifecycle manager.</li>
-                      <li>Glance service component logging can be changed by modifying the following
-                        files:
-                        <codeblock>~/helion/my_cloud/config/glance/glance-api-logging.conf.j2
-~/helion/my_cloud/config/glance/glance-registry-logging.conf.j2</codeblock></li>
-                      <li>To change the logging level, change from INFO to DEBUG on the following
-                        line: <codeblock>level: INFO</codeblock></li>
-                      <li>Commit your configuration to the <xref
-                          href="../installation/using_git.dita">local git repo</xref>, as
-                        follows:
-                        <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "My config or other commit message"</codeblock></li>
-                      <li>Run the configuration processor:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                      <li>Update your deployment directory:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                      <li>Complete the changes by running this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
-                    </ol>
-                  </entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
         </p>
+        <p>To change the logging level:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Glance service component logging can be changed by modifying the following
+            files:
+            <codeblock>~/helion/my_cloud/config/glance/glance-api-logging.conf.j2
+~/helion/my_cloud/config/glance/glance-registry-logging.conf.j2</codeblock></li>
+          <li>To change the logging level, change INFO to DEBUG on the following line:
+            <codeblock>level: INFO</codeblock></li>
+          <li>Commit your configuration to the <xref
+            href="../installation/using_git.dita">local git repo</xref>, as
+            follows:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Update your deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Complete the changes by running this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
+        </ol>     
       </sectiondiv>
     </section>
-    <section id="heat"><title outputclass="headerH">Orchestration (Heat)</title>
+    
+   
+   
+   
+   
+   
+   <section id="heat"><title outputclass="headerH">Orchestration (Heat)</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="heattb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
               <colspec colname="c2" colnum="2"/>
               <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -452,58 +465,55 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
                   <entry><p>Heat</p></entry>
                   <entry><p>api-cfn</p><p>api-cloudwatch</p><p>api-logging</p><p>engine</p></entry>
                   <entry><p>INFO</p></entry>
-                  <entry>
-                    <p>To change the logging level, follow these steps:</p>
-                    <ol>
-                      <li>Log in to the lifecycle manager.</li>
-                      <li>Heat service component logging can be changed by modifying the following
-                        files: <codeblock>~/helion/my_cloud/config/heat/api-cfn-logging.conf.j2
-~/helion/my_cloud/config/heat/api-cloudwatch-logging.conf.j2 
-~/helion/my_cloud/config/heat/api-logging.conf.j2
-~/helion/my_cloud/config/heat/engine-logging.conf.j2</codeblock>
-                        <p>Users can edit these files and set the desired log level for both local
-                          as well as centralized logging.</p></li>
-                      <li>To change the logging level, change from WARNING to DEBUG on the following
-                        line: <codeblock>level: WARNING</codeblock></li>
-                      <li>Commit your configuration to the <xref
-                          href="../installation/using_git.dita">local git repo</xref>, as
-                        follows:
-                        <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "My config or other commit message"</codeblock></li>
-                      <li>Run the configuration processor:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                      <li>Update your deployment directory:
-                        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                      <li>Complete the changes by running this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
-                    </ol>
-                  </entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
         </p>
+        <p>To change the logging level:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Heat service component logging can be changed by modifying the following files:
+              <codeblock>~/helion/my_cloud/config/heat/api-cfn-logging.conf.j2
+~/helion/my_cloud/config/heat/api-cloudwatch-logging.conf.j2 
+~/helion/my_cloud/config/heat/api-logging.conf.j2
+~/helion/my_cloud/config/heat/engine-logging.conf.j2</codeblock><p>Users
+              can edit these files and set the desired log level for both local as well as
+              centralized logging.</p></li>
+          <li>To change the logging level, change from WARNING to DEBUG on the following
+            line: <codeblock>level: WARNING</codeblock></li>
+          <li>Commit your configuration to the <xref
+            href="../installation/using_git.dita">local git repo</xref>, as
+            follows:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Update your deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Complete the changes by running this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
+        </ol>
+        
       </sectiondiv>
     </section>
     <section id="keystone"><title outputclass="headerH">Identity (Keystone)</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="identitytb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
               <colspec colname="c2" colnum="2"/>
               <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -511,31 +521,33 @@ ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
                   <entry><p>Keystone</p></entry>
                   <entry><p>key-api</p></entry>
                   <entry><p>INFO</p></entry>
-                  <entry><p>To configure logging levels, see <xref
-                        href="../operations/configuring/identity/identity_reconfigure.dita">Identity Service
-                        Reconfigure</xref></p></entry>
                 </row>
               </tbody>
             </tgroup>
           </table>
         </p>
+   <p>To configure logging levels:
+     <ol>
+       <li>See <xref
+         href="../operations/configuring/identity/identity_reconfigure.dita">Identity Service
+         Reconfigure</xref></li>
+     </ol></p>
       </sectiondiv>
     </section>
-    <section id="monasca"><title outputclass="headerH">Monitoring (Monasca)</title>
+
+   <section id="monasca"><title outputclass="headerH">Monitoring (Monasca)</title>
       <sectiondiv outputclass="insideSection">
         <p>
           <table frame="all" rowsep="1" colsep="1" id="monascatb">
-            <tgroup cols="4">
+            <tgroup cols="3">
               <colspec colname="c1" colnum="1"/>
               <colspec colname="c2" colnum="2"/>
               <colspec colname="c3" colnum="3"/>
-              <colspec colname="c4" colnum="4"/>
               <thead>
                 <row>
                   <entry>Service</entry>
                   <entry>Sub-component(s)</entry>
                   <entry>Expected Default Logging Level</entry>
-                  <entry>Steps to Change Log Level</entry>
                 </row>
               </thead>
               <tbody>
@@ -543,54 +555,61 @@ ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
                   <entry><p>Monitoring (Monasca)</p></entry>
                   <entry><p>monasca-persister</p><p>zookeeper</p><p>storm</p><p>monasca-notification</p><p>monasca-api</p><p>kafka</p><p>monasca-agent</p></entry>
                   <entry><p>WARN</p></entry>
-                  <entry>
-                    <p>All of the Monasca logging is defaulted to WARN. This should provide enough
-                      information in the log files to pinpoint any issues. If you wish to provide
-                      more details, you can change the logging level to INFO level. It is
-                      recommended to avoid using the DEBUG level as that will put high stress on the
-                      controller nodes and could overload the system.</p>
-                    <p>To change the level for individual Monasca components, each of the following
-                      files have the variable that you can set to the desired level:</p>
-                    <ol>
-                      <li>Log in to the lifecycle manager.</li>
-                      <li>Monitoring service component logging can be changed by modifying the
-                        following files:
-                        <codeblock>~/helion/hos/ansible/roles/monasca-persister/defaults/main.yml
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </p>
+        <note type="attention">All Monasca logging is defaulted to WARN. This should provide enough
+          information in the log files to pinpoint any issues. If you wish to provide more details,
+          you can change the logging level to INFO level. It is recommended to avoid using the DEBUG
+          level as that will put high stress on the controller nodes and could overload the
+          system.</note>
+        
+        <p>For individual Monasca components, each of the following
+          files will have the variable that you can set to the desired level. You do not need to edit all of the files, only the ones you want to modify.</p>
+        
+        <p>To change the level:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Monitoring service component logging can be changed by modifying the
+            following files:
+            <codeblock>~/helion/hos/ansible/roles/monasca-persister/defaults/main.yml
 ~/helion/hos/ansible/roles/zookeeper/defaults/main.yml
 ~/helion/hos/ansible/roles/storm/defaults/main.yml
 ~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml
 ~/helion/hos/ansible/roles/monasca-api/defaults/main.yml
 ~/helion/hos/ansible/roles/kafka/defaults/main.yml
 ~/helion/hos/ansible/roles/monasca-agent/defaults/main.yml (For this file, you will need to add the variable)</codeblock></li>
-                      <li>To change the logging level, change from INFO to DEBUG on the following
-                        line: <codeblock>monasca_log_level: WARN</codeblock></li>
-                      <li>Commit your configuration to the <xref
-                          href="../installation/using_git.dita">local git repo</xref>, as
-                        follows:
-                        <codeblock>cd ~/helion/hos/ansible
+          <li>To change the logging level, change INFO to DEBUG on the following
+            line: <codeblock>monasca_log_level: WARN</codeblock></li>
+          <li>Commit your configuration to the <xref
+            href="../installation/using_git.dita">local git repo</xref>, as
+            follows:
+            <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
-                      <li>Run the configuration processor:
-                        <codeblock>cd ~/helion/hos/ansible
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                      <li>Update your deployment directory:
-                        <codeblock>cd ~/helion/hos/ansible
+          <li>Update your deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                      <li>Complete the changes by running this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Complete the changes by running this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml</codeblock></li>
-                      <li>Update the monasca-agent with this playbook:
-                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Update the monasca-agent with this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-agent-reconfigure.yml</codeblock></li>
-                    </ol>
-                  </entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </table>
-        </p>
+        </ol>
       </sectiondiv>
     </section>
+   
+   
+   
+   
+   
+   
     <section id="neutron"><title outputclass="headerH">Networking (Neutron)</title>
       <sectiondiv outputclass="insideSection">
         <p>
