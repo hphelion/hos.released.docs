@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
+<topic xml:lang="en-us" id="CreateHARouter">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Creating a Highly Available Router</title>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="Intro">
+        <title>Creating a High Availability Router</title>
+        <p>You can create a highly available router.</p>
+      
+        <ol>
+          <li>To create the HA router simply add the <codeph>-ha True</codeph> to the 
+          neutron router-create command.  In this example, the router name is 
+          <codeph>routerHA</codeph>.
+          <codeblock>$ neutron router-create routerHA -ha True</codeblock></li>
+          <li>Set the gateway for the external network and add interface
+          <codeblock>$ neutron router-gateway-set routerHA &lt;ext-net-id&gt;
+$ neutron router-interface-add routerHA &lt;private_subnet_id&gt;</codeblock></li>
+          <li>Once the router, gateway and interface are created, you now have a 
+          router with high availability.</li>
+        </ol>
+    </section>
+    
+   
+    <section id="TestRouter">
+      <title>Test Router for High Availability</title>
+      <p>You can demonstrate that the router is HA by running a continuous ping from a VM instance
+        that is running on the private network to an external network such as Googles public DNS. As
+        the ping is running, we identify the L3 agent that is responsible for the router. Induce the
+        failover mechanism by creating a catastrophic event like shutting down the primary router’s
+        node. Once the node is shut down, you will see that the ping from the VM to the external
+        network continues to run as the failover of the agents restores the ping to external
+        network. To make sure the agent has changed, identify the agent of the same router again.
+        You will see a different agent. </p>
+      <ol>
+        <li>Boot an instance on the private network
+        <codeblock>$ nova boot --image &lt;image_id&gt; --flavor &lt;flavor_id&gt; --nic net_id=&lt;private_net_id&gt; VM1</codeblock></li>
+        <li>Log into the VM using ssh with keys</li>
+        <li>Start a ping to 8.8.8.8 (Google).  While pinging, make sure there is no packet loss
+        and leave the ping running.
+        <codeblock>$ ping 8.8.8.8</codeblock></li>
+        <li>Check which agent is active with the router
+        <codeblock>$ neutron l3-agent-list-hosting-router &lt;router_id&gt;</codeblock></li>
+        <li>Shutdown the node where the L3 agent is alive.  See <xref
+            href="../operations/compute/remove_compute_node.dita#remove_compute_node/shutdown_node"
+          /></li>
+        <li>Within 10 seconds, check again to see which L3 agent is hosting the router
+        <codeblock>$ neutron l3-agent-list-hosting-router &lt;router_id&gt;</codeblock></li>
+        <li>You will see a different agent.</li>
+      </ol>
+    </section>
+   
+
+  </body>
+</topic>

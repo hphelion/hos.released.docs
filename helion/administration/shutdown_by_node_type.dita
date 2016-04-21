@@ -78,9 +78,10 @@ ansible-playbook -i hosts/verb_hosts zookeeper-stop.yml</codeblock>
 
     <section id="stopFreezer"><title outputclass="headerH">Stop Freezer</title>
       <sectiondiv outputclass="insideSection"> The Freezer API is the only daemon process that would
-        need to be shut down.
-      To stop Freezer globally, launch the following playbook from the lifecycle manager (this will stop all freezer-api and all freezer-agent running on your clusters):
-      <codeblock>ansible-playbook -i hosts/verb_hosts freezer-stop.yml</codeblock></sectiondiv>
+        need to be shut down. To stop Freezer globally, launch the following playbook from the
+        lifecycle manager (this will stop all freezer-api and all freezer-agent running on your
+        clusters):
+        <codeblock>ansible-playbook -i hosts/verb_hosts freezer-stop.yml</codeblock></sectiondiv>
     </section>
     <section id="stopCompute"><title outputclass="headerH">Stop Compute Nodes</title>
       <sectiondiv outputclass="insideSection">
@@ -88,9 +89,6 @@ ansible-playbook -i hosts/verb_hosts zookeeper-stop.yml</codeblock>
         <ul>
           <li>Disable provisioning of the node to take the node offline to prevent further instances
             being scheduled. </li>
-          <li>Gracefully shut down Helion Development Platform services and instances. See <xref
-              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
-              Development Platform upgrade process</xref> for details.</li>
           <li>Identify instances that exist on the compute node, and then stop the instances </li>
         </ul>
         <ol>
@@ -171,8 +169,10 @@ ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></
     </section>
 
 
-    <section><title>Starting up</title> <note>You must restart the node running the lifecycle manager first so that you can perform all the
-        other required steps.</note> </section>
+    <section><title>Starting up</title>
+      <note>You must restart the node running the lifecycle manager first so that you can perform
+        all the other required steps.</note>
+    </section>
 
     <section id="startControllers"><title outputclass="headerH">Start Controller Nodes</title>
       <sectiondiv outputclass="insideSection">
@@ -208,71 +208,62 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node><
 
     <section id="startRabbit"><title outputclass="headerH">Start Rabbit</title>
       <sectiondiv outputclass="insideSection">
-      <sectiondiv id="startRabbitSection"><p>For each node running RabbitMQ perform the following:</p>
-      
-      <codeblock>$ sudo –s
+        <sectiondiv id="startRabbitSection"><p>For each node running RabbitMQ perform the
+            following:</p>
+          <codeblock>$ sudo –s
 $ systemctl stop rabbitmq-server.service
 $ rm -rf /var/lib/rabbitmq/mnesia/
 $ sudo systemctl start rabbitmq-server.service</codeblock>
-      
-      <p>On the lifecycle manager node</p>
-      
-      <codeblock>$ cd ~/helion/my_cloud/definition/data
+          <p>On the lifecycle manager node</p>
+          <codeblock>$ cd ~/helion/my_cloud/definition/data
 $ vi control_plane.yml</codeblock>
-      
-      <p>Look for the name: entry under control-planes.</p>
-      <codeblock>$ cd ~/scratch/ansible/next/hos/ansible/group_vars</codeblock>
-      <p>You will need to extract the list of RabbitMQ users and passwords from the file whose name ends in the control-plane 
-        name that you have already recovered. If you have supplied an encryption key to the configuration processor you will first need to decrypt the file, for example:</p>
-      <codeblock>$ ansible-vault decrypt &lt;cloud-name>-&lt;control plane name> (e.g. entry-scale-kvm-vsa-control-plane-1)
+          <p>Look for the name: entry under control-planes.</p>
+          <codeblock>$ cd ~/scratch/ansible/next/hos/ansible/group_vars</codeblock>
+          <p>You will need to extract the list of RabbitMQ users and passwords from the file whose
+            name ends in the control-plane name that you have already recovered. If you have
+            supplied an encryption key to the configuration processor you will first need to decrypt
+            the file, for example:</p>
+          <codeblock>$ ansible-vault decrypt &lt;cloud-name>-&lt;control plane name> (e.g. entry-scale-kvm-vsa-control-plane-1)
 Vault password: 
 Decryption successful</codeblock>
-      <p>The "Vault password" is the encryption key that you supplied to the configuration processor.
-        Now extract the set of RabbitMQ users and passwords:</p>
-      <codeblock>$ awk '/rmq_.*/ &amp;&amp; $1 ~ /user|password/ &amp;&amp; $1 !~ /service/ {print $1$2}' &lt;cloud-name>-&lt;control plane name> | sort | uniq</codeblock>
-      <p>This will supply a set of RabbitMQ users and password. Below is example output:</p>
-      <codeblock>ops_mon_rmq_password:Meq9JRKgy5Sj
+          <p>The "Vault password" is the encryption key that you supplied to the configuration
+            processor. Now extract the set of RabbitMQ users and passwords:</p>
+          <codeblock>$ awk '/rmq_.*/ &amp;&amp; $1 ~ /user|password/ &amp;&amp; $1 !~ /service/ {print $1$2}' &lt;cloud-name>-&lt;control plane name> | sort | uniq</codeblock>
+          <p>This will supply a set of RabbitMQ users and password. Below is example output:</p>
+          <codeblock>ops_mon_rmq_password:Meq9JRKgy5Sj
 ops_mon_rmq_user:ops-mon
 rmq_nova_password:jt8ndjxm
 rmq_nova_user:rmq_nova_user</codeblock>
-      <p>If you've had to decrypt the file, remember to re-encrypt it:</p>
-      <codeblock>$ ansible-vault encrypt entry-scale-kvm-vsa-control-plane-1
+          <p>If you've had to decrypt the file, remember to re-encrypt it:</p>
+          <codeblock>$ ansible-vault encrypt entry-scale-kvm-vsa-control-plane-1
 Vault password: 
 Confirm Vault password: 
 Encryption successful</codeblock>
-      <p>Now on the lifecycle manager node run the following from the
-        ~/scratch/ansible/next/hos/ansible directory: </p>
-      <codeblock>$ ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml</codeblock>
-      <p>Once this is complete, log into one of the controller nodes and become sudo user: </p>
-      
-      <codeblock>$ sudo -s</codeblock>
-      <p>Next, recreate the users and there password gathered above: </p>
-      <codeblock>$ rabbitmqctl add_user {username} {password}</codeblock>
-      
-      <p>For example, for ops-mod this would be as follows:</p>
-      
-      
-      <codeblock>ops_mon_rmq_password:Meq9JRKgy5Sj
+          <p>Now on the lifecycle manager node run the following from the
+            ~/scratch/ansible/next/hos/ansible directory: </p>
+          <codeblock>$ ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml</codeblock>
+          <p>Once this is complete, log into one of the controller nodes and become sudo user: </p>
+          <codeblock>$ sudo -s</codeblock>
+          <p>Next, recreate the users and there password gathered above: </p>
+          <codeblock>$ rabbitmqctl add_user {username} {password}</codeblock>
+          <p>For example, for ops-mod this would be as follows:</p>
+          <codeblock>ops_mon_rmq_password:Meq9JRKgy5Sj
 ops_mon_rmq_user:ops-mon</codeblock>
-      
-      <codeblock>$ rabbitmqctl add_user ops-mon Meq9JRKgy5Sj</codeblock>
-      
-      <p>Now add back the Ceilometer user: </p>
-      
-      <codeblock>$ rabbitmqctl add_user ceilometer password</codeblock>
-      
-      <p>Next you must set the user permission for each of the users as follows: </p>
-      <codeblock>$ rabbitmqctl set_permissions -p / ops-mon  ".*" ".*" ".*"
+          <codeblock>$ rabbitmqctl add_user ops-mon Meq9JRKgy5Sj</codeblock>
+          <p>Now add back the Ceilometer user: </p>
+          <codeblock>$ rabbitmqctl add_user ceilometer password</codeblock>
+          <p>Next you must set the user permission for each of the users as follows: </p>
+          <codeblock>$ rabbitmqctl set_permissions -p / ops-mon  ".*" ".*" ".*"
 $ rabbitmqctl set_permissions -p / rmq_nova_user  ".*" ".*" ".*"
 $ rabbitmqctl set_permissions -p / ceilometer  "ceilometer|metering.*|ceilometer-pipe-*" "ceilometer|metering.*|ceilometer-pipe-*" "ceilometer|metering.*|ceilometer-pipe-*"</codeblock>
-      <p>For ops-mon you must set this as an administrator user: </p>
-      <codeblock>$ rabbitmqctl set_user_tags ops-mon administrator</codeblock>
-      <p>To check that you are up and running, run: </p>
-      <codeblock>$ tail -F /var/log/rabbitmq/rabbitmq@&lt;hostname>.log
+          <p>For ops-mon you must set this as an administrator user: </p>
+          <codeblock>$ rabbitmqctl set_user_tags ops-mon administrator</codeblock>
+          <p>To check that you are up and running, run: </p>
+          <codeblock>$ tail -F /var/log/rabbitmq/rabbitmq@&lt;hostname>.log
 </codeblock>
-      <p>If you see an error in your log as follows, repeat the step for the user listed in the
-        error: </p>
-      <codeblock>=ERROR REPORT==== 8-Dec-2015::11:12:41 ===
+          <p>If you see an error in your log as follows, repeat the step for the user listed in the
+            error: </p>
+          <codeblock>=ERROR REPORT==== 8-Dec-2015::11:12:41 ===
 closing AMQP connection &lt;0.14219.3> (192.168.245.3:47921 -> 192.168.245.4:5672):
 {handshake_error,starting,0,
                  {amqp_error,access_refused,
@@ -380,10 +371,6 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
         <ul>
           <li>Reboot the node </li>
           <li>Restart the Nova services </li>
-          <li>Restart any instances stopped above, except for Helion Development Platform instances.
-            To gracefully restart Helion Development Platform instances, see the <xref
-              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
-              Development Platform upgrade process</xref>.</li>
         </ul>
         <ol>
           <li>SSH to your Compute nodes and reboot them: <codeblock>sudo reboot</codeblock>
@@ -413,12 +400,10 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></co
 
 
     <section id="startFreezer"><title outputclass="headerH">Start Freezer</title>
-      <sectiondiv outputclass="insideSection">      
-        To start Freezer globally, launch the following playbook from the lifecycle manager:
-        <codeblock>ansible-playbook -i hosts/verb_hosts freezer-start.yml</codeblock>
-        Note that it is possible to target only specific nodes using the ansible --limit parameter.
-      </sectiondiv>
-
+      <sectiondiv outputclass="insideSection"> To start Freezer globally, launch the following
+        playbook from the lifecycle manager:
+        <codeblock>ansible-playbook -i hosts/verb_hosts freezer-start.yml</codeblock> Note that it
+        is possible to target only specific nodes using the ansible --limit parameter. </sectiondiv>
     </section>
 
     <section id="startMonitoring"><title outputclass="headerH">Start Monitoring</title>

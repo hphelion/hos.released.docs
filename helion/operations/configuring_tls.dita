@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="tls30">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Enabling and Disabling TLS</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring Transport Layer Security
+    (TLS)</title>
+  <abstract><shortdesc outputclass="hdphidden">TLS is enabled by default during the installation of
+        <keyword keyref="kw-hos-phrase-30"/> and additional configuration options are available to
+      secure your environment.</shortdesc>TLS is enabled by default during the installation of
+      <keyword keyref="kw-hos-phrase-30"/> and additional configuration options are available to
+    secure your environment, as described below.</abstract>
   <body>
     <!--not tested-->
 
-
-
-
-
-
     <section>
-      <title>Enabling TLS in the input model</title>
-    </section>
-    <section>Because TLS is enabled by default during installation of <keyword
-        keyref="kw-hos-phrase-30"/>, a test certificate named <codeph>my-public-cert</codeph> is
-      bundled with the release. Having this default cert allows you to bring up a cloud without
-      having to worry about certificates, and this is the recommended way to proceed. The
-      certificate will not match the IP address of your environment's API endpoints, but you can
-      ignore the warnings. <p>When moving into production, you will require a trusted certificate
-        and you must add your own certificate and redeploy following the instructions in <xref
-          href="generate_own_certs.dita#generateCerts"/>.</p><note type="attention">Be sure to
-        install your own certificate for all production clouds after installing and testing your
-        cloud.</note>
+      <title>Configuring TLS in the input model</title>
+      <p>A test certificate named <codeph>my-public-cert</codeph> is bundled with the release.
+        Having this default cert allows you to bring up a cloud without having to worry about
+        certificates, and this is the recommended way to proceed. The certificate will not match the
+        IP address of your environment's API endpoints, but you can ignore the warnings.</p>
+      <p>When moving into production, you will require a trusted certificate and you must add your
+        own certificate and redeploy following the instructions in <xref
+          href="../security/generate_own_certs.dita#generateCerts"/>.</p>
+      <note type="attention">Be sure to install your own certificate for all production clouds after
+        installing and testing your cloud.</note>
       <note>If you ever want to test or troubleshoot later, you will be able to revert to the sample
         certificate to get back to a stable state for testing.</note>
       <note>There are two alarms specific to certificates, 14-days to expiration and 1-day to
-        expiration.</note>You can add your own certificate by following the instructions below. All
-      changes must go into the following file: <codeph>data/network_groups.yml</codeph>
-    </section>
-    <section>Below are the entries for TLS for the internal and admin load balancers:
+        expiration.</note>
+      <p>You can add your own certificate by following the instructions below. All changes must go
+        into the following file:</p>
+      <codeblock>~/helion/my_cloud/definition/data/network_groups.yml</codeblock>
+      <p>Below are the entries for TLS for the internal and admin load balancers:</p>
       <codeblock>- provider: ip-cluster
         name: lb
         tls-components:
@@ -63,7 +63,7 @@
       signer that gets bundled by the system. However, we suggest you include it anyway by copying
       the file into the directory <codeph>config/cacerts/</codeph>. Note that the file extension
       should be .crt or it will not be processed by <keyword keyref="kw-hos"/>.</section>
-    <section> See <xref href="generate_own_certs.dita#generateCerts"/> for detailed certificate
+    <section> See <xref href="../security/generate_own_certs.dita#generateCerts"/> for detailed certificate
       installation instructions.</section>
 
     <section><title>TLS for the key management service on the load balancer back end and service

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="gettingstarted_ops">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Getting Started with Operations</title>
+  <abstract><shortdesc outputclass="hdphidden">A high-level overview of the processes related to
+      operating a <keyword keyref="kw-hos-phrase"/> cloud.</shortdesc></abstract>
+  <body>
+    <!--not tested-->
+    <section><p>This section covers best practices for how to manage and/or troubleshoot your
+          <keyword keyref="kw-hos-phrase"/> cloud.</p>
+      <p><b>What operations should I plan on performing daily, weekly, monthly, or
+          semi-annually?</b></p>
+      <p>You should plan for operations by understanding what tasks you need to do daily, weekly,
+        monthly, or semi-annually. The specific list of tasks that you need to perform depends on
+        your cloud configuration, but should include the following high-level tasks:</p></section>
+    <section><title>Daily tasks</title>
+      <ul id="ul_mx2_z4x_rv">
+        <li><b>Ensure your cloud is running correctly</b>: Helion OpenStack is deployed as a set of
+          highly available services to minimize the impact of failures. That said, hardware and
+          software systems can fail. Detection of failures early in the process will enable you to
+          address issues before they affect the broader system. Helion OpenStack provides a
+          monitoring solution, based on OpenStack’s Monasca, which provides monitoring and metrics
+          for all OpenStack components and much of the underlying system, including service status,
+          performance metrics, compute node, and virtual machine status. Failures are exposed via
+          the Operations Console and/or alarm notifications. In the case where more detailed
+          diagnostics are required, you can use a centralized logging system based on the
+          Elasticsearch, Logstash, and Kibana (ELK) stack. This provides the ability to search
+          service logs to get detailed information on behavior and errors.</li>
+        <li><b>Perform critical maintenance</b>: To ensure your OpenStack installation is running
+          correctly, provides the right access and functionality, and is secure, you must should
+          ongoing adjustments to the environment. Examples of some daily maintenance tasks
+            include:<ul id="ul_nx2_z4x_rv">
+            <li>Add/remove projects and users. The frequency of this task depends on your
+              policy.</li>
+            <li>Apply security patches (if released).</li>
+            <li>Run daily backups.</li>
+          </ul></li>
+      </ul>
+    </section>
+    <section><title>Weekly or monthly tasks</title><ul id="ul_nz4_npx_rv">
+        <li><b>Do regular capacity planning</b>: Your initial deployment will likely reflect the
+          known near to mid-term scale requirements, but at some point your needs will outgrow your
+          initial deployment’s capacity. You can expand Helion OpenStack in a variety of ways, such
+          as by adding compute and storage capacity. </li>
+      </ul>
+      <p>To manage your cloud’s capacity, begin by determining the load on the existing system.
+        OpenStack is a set of relatively independent components and services, so there are multiple
+        subsystems that can affect capacity. These include control plane nodes, compute nodes,
+        object storage nodes, block storage nodes, and an image management system. At the most basic
+        level, you should look at the CPU used, RAM used, I/O load, and the disk space used relative
+        to the amounts available. For compute nodes, you can also evaluate the allocation of
+        resource to hosted virtual machines. This information can be viewed in the Operations
+        Console. You can pull historical information from the monitoring service (OpenStack’s
+        Monasca) by using its client or API. Also, OpenStack provides you some ability to manage the
+        hosted resource utilization by using quotas for projects. You can track this usage over time
+        to get your growth trend so that you can project when you will need to add
+      capacity.</p></section>
+    <section>
+      <title>Semi-annual tasks</title>
+      <ul id="ul_y1v_5sx_rv">
+        <li><b>Perform upgrades</b>: OpenStack releases new versions on a six-month cycle. In
+          general, HPE Helion will release a new version shortly after that. Each new release
+          consists of both new functionality and/or services, as well as bug fixes for existing
+          functionality. </li>
+      </ul>
+      <note>If you are planning to upgrade, this is also an excellent time to evaluate your existing
+        capabilities, especially in terms of capacity (see Capacity Planning above).</note>
+    </section>
+    <section><title>Troubleshooting</title>
+      <p>As part of managing your cloud, you should be ready to troubleshoot issues, as needed. The
+        following are some common troubleshooting scenarios and solutions:</p>
+      <p><b>How do I determine if my cloud is operating correctly now?</b>: Helion OpenStack
+        provides a monitoring solution based on OpenStack’s Monasca service. This service provides
+        monitoring and metrics for all OpenStack components, as well as much of the underlying
+        system. By default, Helion OpenStack comes with a set of alarms that provide coverage of the
+        primary systems. In addition, you can define alarms based on threshold values for any
+        metrics defined in the system. You can view alarm information in the Operations Console. You
+        can also receive or deliver this information to others by configuring email or other
+        mechanisms. Alarms provide information about whether a component failed and is affecting the
+        system, and also what condition triggered the alarm. </p>
+      <p><b>How do I troubleshoot and resolve performance issues for my cloud?</b>: There are a
+        variety of factors that can affect the performance of a cloud system, such as the
+        following:</p>
+      <ul id="ul_vb3_ttx_rv">
+        <li>Health of the control plane</li>
+        <li>Health of the hosting compute node and virtualization layer</li>
+        <li>Resource allocation on the compute node</li>
+      </ul>
+      <p>If your cloud users are experiencing performance issues on your cloud, use the following
+        approach:</p>
+      <ol id="ol_wb3_ttx_rv">
+        <li>View the compute summary page on the Operations Console to determine if any alarms have
+          been triggered. </li>
+        <li>Determine the hosting node of the virtual machine that is having issues.</li>
+        <li>On the compute hosts page, view the status and resource utilization of the compute node
+          to determine if it has errors or is over-allocated.</li>
+        <li>On the compute instances page you can view the status of the VM along with its
+          metrics.</li>
+      </ol>
+      <p><b>How do I troubleshoot and resolve availability issues for my cloud?</b>: If your cloud
+        users are experiencing availability issues, determine what your users are experiencing that
+        indicates to them the cloud is down. For example, can they not access the Dashboard service
+        (Horizon) console or APIs, indicating a problem with the control plane? Or are they having
+        trouble accessing resources? Console/API issues would indicate a problem with the control
+        planes. Use the Operations Console to view the status of services to see if there is an
+        issue. However, if it is an issue of accessing a virtual machine, then also search the
+        consolidated logs that are available in the ELK stack or errors related to the virtual
+        machine and supporting networking.</p>
+    </section>
+  </body>
+</topic>
