@@ -12,10 +12,10 @@
             on top of your existing environment. However, if you have made 
             certain changes to your environment,  <keyword keyref="kw-hos"/>
             cannot automatically determine whether to keep your changes 
-            or drop them in favour of the new or updated configurations
+            or drop them in favour of the new or updated configurations that
             it wants to put in place. This will result in a <codeph>merge conflict</codeph>
             occurring during upgrade and it will be up to you to manually resolve 
-            the conflict before the upgrade can procede.
+            the conflict before the upgrade can proceed.
             </p>
             
             <p>This document gives an overview of how to approach the issue of 
@@ -44,7 +44,45 @@ Auto-merging hos/ansible/roles/nova-api/templates/api-paste.ini.j2
         </section>
             
  
+        <section>
+            <title>Examining Conflicts</title>
+            <p>Use <codeph>git status</codeph> to see the discover the source of the problem:</p>    
+            
+<codeblock>
+...
+        new file:   tech-preview/entry-scale-kvm-vsa-mml/data/swift/rings.yml
+        modified:   tech-preview/mid-scale/README.md
+        modified:   tech-preview/mid-scale/data/control_plane.yml
 
+Unmerged paths:
+  (use "git add/rm &lt;file>..." as appropriate to mark resolution)
+
+        <b>both modified:   hos/ansible/roles/nova-common/templates/nova.conf.j2</b>
+</codeblock>
+            
+            <p>Edit the file <codeph>hos/ansible/roles/nova-common/templates/nova.conf.j2</codeph>
+            to see the merge markers:</p>
+            
+            
+<codeblock>
+[neutron]
+admin_auth_url = {{ neutron_admin_auth_url }}
+admin_password = {{ neutron_admin_password }}
+admin_tenant_name = {{ neutron_admin_tenant_name }}
+admin_username = {{ neutron_admin_username }}
+<b>&lt;&lt;&lt;&lt;&lt;&lt;&lt;HEAD
+metadata_proxy_shared_secret = top_secret_password111
+=======
+metadata_proxy_shared_secret = {{ neutron_metadata_proxy_shared_secret }}
+>>>>>>> hos</b>
+neutron_auth_strategy = keystone
+neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
+service_metadata_proxy = True
+</codeblock>            
+            
+        </section>
+        
+        
  
 
     </body>
