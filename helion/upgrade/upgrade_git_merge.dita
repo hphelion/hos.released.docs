@@ -277,6 +277,71 @@ neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
 </codeblock>     
             
         </section>
+        
+        <section>
+            <title>Resolving the conflict</title>
+            
+            <p>There are two approaches to resolving the conflict:</p>
+            
+            <ol>
+                <li>Edit the file containing the conflcit markers, keeping the change you want to preserve and
+                removing the conflict markers and any chnanges you want to discard.</li>
+                
+                <li>Take the new upstream version of the file and re-apply any changes you would like to keep from
+                your current version.</li>
+                
+            </ol>
+            
+        </section>
+        
+        <section>
+            <title>Resolving the conflict - editing the  file containing the  conflict markers</title>     
+            
+            
+            <p>Edit the file <codeph>hos/ansible/roles/nova-common/templates/nova.conf.j2</codeph> and if you want to maintain 
+                your change, then delete the lines in bold below:</p>
+
+<codeblock>
+[neutron]
+admin_auth_url = {{ neutron_admin_auth_url }}
+admin_password = {{ neutron_admin_password }}
+admin_tenant_name = {{ neutron_admin_tenant_name }}
+admin_username = {{ neutron_admin_username }}
+<b>&lt;&lt;&lt;&lt;&lt;&lt;&lt;HEAD</b>
+metadata_proxy_shared_secret = top_secret_password111
+<b>=======
+metadata_proxy_shared_secret = {{ neutron_metadata_proxy_shared_secret }}
+>>>>>>> hos</b>
+neutron_auth_strategy = keystone
+neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
+service_metadata_proxy = True
+</codeblock> 
+            
+            <p>Your file should now look like this:</p>
+            
+            <codeblock>
+[neutron]
+admin_auth_url = {{ neutron_admin_auth_url }}
+admin_password = {{ neutron_admin_password }}
+admin_tenant_name = {{ neutron_admin_tenant_name }}
+admin_username = {{ neutron_admin_username }}
+metadata_proxy_shared_secret = top_secret_password111
+neutron_auth_strategy = keystone
+neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
+service_metadata_proxy = True
+</codeblock>            
+            
+
+        </section>
+                
+        <section>
+            <title>Resolving the conflict - re-applying changes to new upstream version</title> 
+            
+            
+        </section>
+        
+                
+                
                 
     </body>
 </topic>
