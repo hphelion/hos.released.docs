@@ -7,22 +7,22 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>Backups are enabled by default. Therefore, you must take action if you want backups to
       be disabled for any reason. This topic explains how to disable default backup jobs before
-      completing the installatin of your cloud.</section>
+      completing the installation of your cloud.
+    
+      <note type="remember">Any modification done in the ~/helion/my_cloud/ directory should happen before running the 
+        configuration processor and ready-deployment steps.</note></section>
     <section id="DisableFreezerDeploy">
       <title>Disable backups before installation:</title>
-      <p>To disable Freezer's deployment, comment out the following lines in the following files:
-          <note>This action is required even if you already removed Freezer lines from your model
-          (control_plane.yml).</note></p>
-      <p>In
-        hlm-deploy.yml:<codeblock outputclass="nomaxheight"># - include: freezer-deploy.yml</codeblock></p>
-      <p>In
-        hlm-status.yml:<codeblock outputclass="nomaxheight"># - include: freezer-status.yml</codeblock></p>
-      <p>In
-        hlm-stop.yml:<codeblock outputclass="nomaxheight"># - include: freezer-stop.yml</codeblock></p>
-      <p>In
-        hlm-start.yml:<codeblock outputclass="nomaxheight"># - include: freezer-start.yml</codeblock></p>
-      <p>In
-        hlm-upgrade.yml:<codeblock outputclass="nomaxheight"># - include: freezer-upgrade.yml</codeblock></p>
+      <p>To disable deplyment of the Freezer service, remove the following lines in the
+        control_plane.yml:</p>
+      <p>
+        <ul>
+          <li>freezer-agent</li>
+          <li>freezer-api</li>
+        </ul>
+      </p>
+      <note>This action is required even if you already removed Freezer lines
+        from your model (control_plane.yml).</note>
     </section>
     <section id="DisableFreezerCompletely">
       <title>Deploy Freezer but disable backup/restore job creation:</title>
@@ -35,8 +35,8 @@
           <li>Swift rings</li>
         </ul>
       </p>
-      <p>Before running the config processor, you can prevent Freezer from automatically creating
-        backup and restore jobs by changing the variables
+      <p>Before running the configuration processor, you can prevent Freezer from automatically
+        creating backup and restore jobs by changing the variables
           <codeph>freezer_create_backup_jobs</codeph> and
           <codeph>freezer_create_restore_jobs</codeph> to <codeph>false</codeph> in:
         <codeblock outputclass="nomaxheight">~/helion/my_cloud/config/freezer/activate_jobs.yml</codeblock></p>
@@ -47,8 +47,34 @@
       <p>When using these options, the Freezer infrastructure will still be deployed but will not
         execute any backups.</p>
     </section>
-    <section>
-      <title>Disable the backup/restore jobs of a specific service:</title>
+    <section> Disable the backup/restore jobs of a specific service:To manage which jobs will be
+      deployed, you set various paramters in the <codeph>jobs.yml</codeph> freezer jobs
+      configuration file: <codeblock>/helion/my_cloud/config/freezer/jobs.yml</codeblock>You can
+      completely disable the backup of a component by changing the <codeph>enabled</codeph> field
+      that corresponds to that service to false in jobs.yml.<p>You can specify where a job will
+        store its backup by altering the <codeph>store_in_swift, store_in_ssh</codeph>,
+          <codeph>store_in_local</codeph> fields.</p>Note that even if <codeph>store_in_ssh</codeph>
+      is set to true, ssh backup job won't be created unless SSH credentials are provided in
+        <codeph>/helion/my_cloud/config/freezer/ssh_credentials.yml</codeph><p>Please note that when
+          <codeph>setting store_in_local</codeph> to <codeph>true</codeph>, the backup job will
+        store backups on the server executing the backup. This option is usefull for example if you
+        plan to mount an NFS share and want your backup stored on it. You need to provide the path
+        where backup will be stored using <codeph> local_storage_base_dir</codeph>. </p>
+      <p>By default, one backup job per storage medium per component will be created. A
+        corresponding restore job for each of those backup jobs will also be created by default.
+        These jobs can be used to quickly restore the corresponding backup. To disable the creation
+        of these restore jobs, change <codeph>also_create_restore_job </codeph>to
+          <codeph>false</codeph>.</p></section>
+    <section><title>Activating and deactivating jobs after cloud deployment</title>
+    
+    <ol><li>Make modifications in <codeph> /helion/my_cloud/config/freezer/jobs.yml</codeph>-</li><li>Commit modifications to the git repo
+      </li><li>Run the configuration processor </li><li>Run the ready deployment playbook<codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock>
+        </li><li>Run 
+            <codeblock>ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li></ol>
+    
+    
+    </section>
+      <!--
       <p>If you want to set the default backups specifically, you can edit the following file before
         running the configuration processor and ready deployment scripts:
         <codeblock outputclass="nomaxheight">~/helion/hos/ansible/_freezer_manage_jobs.yml</codeblock></p>
@@ -56,7 +82,7 @@
         jobs. <ul>
           <li>To disable the lifecycle manager's jobs, comment out all localhost paragraphs, as
             follows:
-            <codeblock outputclass="nomaxheight">---
+            <codeblock outputclass="nomaxheight">- - -
  
 - hosts: FRE-AGN
   roles:
@@ -120,7 +146,7 @@
 #    - include: roles/freezer-jobs/tasks/_manage_job.yml template_name=deployer_restore_ssh.json.j2
 #      when: ready_to_upload and freezer_create_restore_jobs and freezer_ssh_ready</codeblock></li>
           <li>To disable MySQL backup jobs, comment out the FND-MDB paragraph, as follows:
-            <codeblock outputclass="nomaxheight">---
+            <codeblock outputclass="nomaxheight">- - -
  
 - hosts: FRE-AGN
   roles:
@@ -185,7 +211,7 @@
       when: ready_to_upload and freezer_create_restore_jobs and freezer_ssh_ready</codeblock></li>
           <li>To disable the Swift Ring backup jobs, comment-out the SWF-PRX[0] paragraph, as
             follows:
-            <codeblock outputclass="nomaxheight">---
+            <codeblock outputclass="nomaxheight">- - -
  
 - hosts: FRE-AGN
   roles:
@@ -258,7 +284,7 @@
       <p>The following example shows how to disable Swift jobs only. You can do this, for example,
         to ensure no space is used in Swift to store backups (in that case, be sure to have some SSH
         backups
-        configured).<codeblock outputclass="nomaxheight">---
+        configured).<codeblock outputclass="nomaxheight">- - -
  
 - hosts: FRE-AGN
   roles:
@@ -320,7 +346,7 @@
      - include: roles/freezer-jobs/tasks/_manage_job.yml template_name=deployer_backup_ssh.json.j2
       when: ready_to_upload and freezer_create_backup_jobs and freezer_ssh_ready
      - include: roles/freezer-jobs/tasks/_manage_job.yml template_name=deployer_restore_ssh.json.j2
-      when: ready_to_upload and freezer_create_restore_jobs and freezer_ssh_ready</codeblock></p>
-    </section>
+      when: ready_to_upload and freezer_create_restore_jobs and freezer_ssh_ready</codeblock></p>-->
+    
   </body>
 </topic>
