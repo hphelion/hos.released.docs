@@ -21,27 +21,30 @@
     <section id="steps"><title>Restarting Your Cloud Environment</title>
       <p>You will do the following steps from your lifecycle manager.</p>
       <ol>
-        <li>If you are shutting down the cluster, run the hlm-stop playbook:
+        <li>Log in to your lifecycle manager.</li>
+        <li>Gracefully shut down your <keyword keyref="kw-hos-phrase"/> cloud by running the <codeph>hlm-stop.yml</codeph>
+          playbook:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml</codeblock></li>
-        <li>Reboot your nodes gracefully. <!-- need steps to do this --></li>
-        <li>Use this playbook to determine the current power status of your nodes before continuing:
+        <li>Shut down/restart or reboot your nodes.</li>
+        <li>Log back in to your lifecycle manager.</li>
+        <li>Determine the current power status of the nodes in your environment:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts bm-power-status.yml</codeblock></li>
-        <li>If necessary, power up your
-          nodes<codeblock>cd ~/scratch/ansible/next/hos/ansible
+        <li>If necessary, power up any nodes that aren't already powered
+          up:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts bm-power-up.yml</codeblock></li>
         <li>Bring the databases back up:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml</codeblock></li>
-        <li>Next, run hlm-start
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+        <li>Gracefully bring up your <keyword keyref="kw-hos-phrase"/> cloud by running the <codeph>hlm-start.yml</codeph>
+          playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-start.yml</codeblock></li>
-        <li>You can run this playbook to get a status of individual services:
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+        <li>Verify the status of the individual services using this
+          playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock></li>
-        <li>If any services did not start properly, you can run playbooks for specific services
-          against specific nodes having issues. <p>For example:</p>
+        <li>If any services did not start properly, you can run playbooks for the specific services
+          having issues. <p>For example:</p>
           <p>If RabbitMQ fails, run:</p>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts rabbitmq-disaster-recovery.yml</codeblock>
@@ -54,12 +57,11 @@ ansible-playbook -i hosts/verb_hosts rabbitmq-deploy.yml</codeblock>
           <p>Each of the other services have playbooks in the
               <codeph>~/scratch/ansible/next/hos/ansible</codeph> directory in the format of
               <codeph>&lt;service>-start.yml</codeph> that you can run. One example, for the compute
-            service, is <codeph>nova-start.yml.</codeph></p></li>
-        <li>Continue checking the status of other HPE Helion OpenStack services until you get an
-          all-clear message:
+            service, is <codeph>nova-start.yml</codeph>.</p></li>
+        <li>Continue checking the status of other <keyword keyref="kw-hos-phrase"/> services until
+          there are no more failed or unreachable nodes:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock></li>
-        <li>Repeat any steps as necessary.</li>
       </ol>
     </section>
   </body>
