@@ -90,21 +90,21 @@ service_metadata_proxy = True
             
             <p>This indicates that <keyword keyref="kw-hos-phrase-30"/> is trying to set the value of
                 <codeph>metadata_proxy_shared_secret</codeph> to be <codeph>{{ neutron_metadata_proxy_shared_secret }}</codeph>
-                while you have previously set its value to <codeph>top_secret_password111</codeph>.                        
+                whereas previously you have set its value to <codeph>top_secret_password111</codeph>.                        
             </p>
             
 
         </section>
         
         <section>
-            <title>Examining diffs to previous upstream version</title>
+            <title>Examining differences between your current version and the previous upstream version</title>
             
             <p>Typically, the previous upstream version will be the last-but-one commit on the <codeph>hos</codeph> branch.
                This version will have been created during the initial installation of your cloud 
                (or perhaps during a previous upgrade). So in total, there are three significant versions of the file:
                <ul>
                    <li>the previous "upstream" version on the <codeph>hos</codeph> branch</li>
-                   <li>your edited version on the <codeph>site</codeph> branch</li>
+                   <li>your current version on the <codeph>site</codeph> branch</li>
                    <li>the new "upstream" version on the <codeph>hos</codeph> branch from </li>
                    
                </ul>                    
@@ -138,17 +138,14 @@ Date:   Sun Jan 17 19:14:01 2016 +0000
          
             <p>In this instance, we can see that the relevant commit is in fact the last-but-one commit
                 and so we can use the simplified name <codeph>hos^1</codeph> to identify that commit.</p>
-            
-            <p>To compare your change with the previous upstream commit on the <codeph>hos</codeph> branch, which
-                probably originated in your original install (or previous upgrade), you can use <codeph>git diff HEAD hos -- &lt;&lt;path/to/file>></codeph>:</p>
-            
 <codeblock>
-git diff HEAD hos -- hos/ansible/roles/nova-common/templates/nova.conf.j2
-</codeblock>            
+git diff hos^1 HEAD -- hos/ansible/roles/nova-common/templates/nova.conf.j2
+</codeblock>
+
+
             <p>In the diff output, you should be able to see how you changed the value for <codeph>metadata_proxy_shared_secret</codeph>
                 from <codeph>unset</codeph> to <codeph>top_secret_password111</codeph>:
             </p>
-            
 <codeblock>
 diff --git a/hos/ansible/roles/nova-common/templates/nova.conf.j2 b/hos/ansible/roles/nova-common/templates/nova.conf.j2
 index 597a982..05cb07c 100644
@@ -163,15 +160,69 @@ index 597a982..05cb07c 100644
  neutron_auth_strategy = keystone
  neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
  service_metadata_proxy = True
+</codeblock>   
+            
+   
+        </section>
+        
+        <section>
+            <title>Examining differences between your current version and the  new upstream version</title>        
+ 
+            <p>To compare your change with the new upstream version 
+                from <keyword keyref="kw-hos-phrase"/>
+                on the <codeph>hos</codeph> branch you can use 
+                <codeph>git diff HEAD hos -- &lt;&lt;path/to/file>></codeph>:</p>
+            
+<codeblock>
+git diff HEAD hos -- hos/ansible/roles/nova-common/templates/nova.conf.j2
+</codeblock>   
+            <p>In the extract of output below, you can see your value <codeph>top_secret_password111</codeph>
+                and the new value <codeph>{{ neutron_metadata_proxy_shared_secret }}</codeph> that 
+                <keyword keyref="kw-hos-phrase"/> wants to set.
+            </p>
+            
+<codeblock>
+..
+ admin_username = {{ neutron_admin_username }}
+<b>-metadata_proxy_shared_secret = top_secret_password111
++metadata_proxy_shared_secret = {{ neutron_metadata_proxy_shared_secret }}</b>
+ neutron_auth_strategy = keystone
+ neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
 </codeblock>            
+ 
+ 
+        </section>
+        
+        <section>
+            <title>Examining differences between the new upstream version and the previous upstream version</title>        
             
+            <p>To compare the new upstream version 
+                from <keyword keyref="kw-hos-phrase"/> with the previous upstream version from
+                your initial install (or previous upgrade):</p>
             
+<codeblock>
+git diff $(git merge-base hos HEAD) hos -- hos/ansible/roles/nova-common/templates/nova.conf.j2
+</codeblock>  
+            
+            <p>In the extract of output below, you can see the new upstream value <codeph>{{ neutron_metadata_proxy_shared_secret }}</codeph> that 
+                <keyword keyref="kw-hos-phrase"/> wants to set and the previous upstream value
+                <codeph>unset</codeph>.
+
+            </p>            
+ 
+ <codeblock>
+ admin_password = {{ neutron_admin_password }}
+ admin_tenant_name = {{ neutron_admin_tenant_name }}
+ admin_username = {{ neutron_admin_username }}
+<b>-metadata_proxy_shared_secret = unset
++metadata_proxy_shared_secret = {{ neutron_metadata_proxy_shared_secret }}</b>
+ neutron_auth_strategy = keystone
+ neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
+</codeblock>
+ 
         </section>
         
         
-        
-        
-        
-
+                
     </body>
 </topic>
