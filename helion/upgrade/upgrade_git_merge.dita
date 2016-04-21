@@ -69,7 +69,7 @@ Unmerged paths:
 </codeblock>
             
             <p>Edit the file <codeph>hos/ansible/roles/nova-common/templates/nova.conf.j2</codeph>
-            to see the merge markers:</p>
+            to see the conflict markers:</p>
             
             
 <codeblock>
@@ -222,7 +222,61 @@ git diff $(git merge-base hos HEAD) hos -- hos/ansible/roles/nova-common/templat
  
         </section>
         
-        
+        <section>
+            <title>Using <codeph>stage markers</codeph> to view clean versions of files (without conflict markers)</title>
+            
+            <p>You can use the <codeph>git show</codeph> command with stage markers to view files
+            without having conflict markers embedded in them. Stage 1 (<b>:1</b>) is the 
+            previous upstream version, stage 2 (<b>:2</b>) is your current version while stage 3 (<b>:3</b>)
+                is the new upstream version.</p>
+            
+            <p><b>Stage 1</b></p>
+            
+<codeblock>
+git show <b>:1</b>:hos/ansible/roles/nova-common/templates/nova.conf.j2 
+</codeblock>     
+
+
+<codeblock>
+...
+admin_username = {{ neutron_admin_username }}
+<b>metadata_proxy_shared_secret = unset</b>
+neutron_auth_strategy = keystone
+neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
+...
+</codeblock>
+
+
+            <p><b>Stage 2</b></p>
+            
+<codeblock>
+git show <b>:2</b>:hos/ansible/roles/nova-common/templates/nova.conf.j2 
+</codeblock>   
+            
+<codeblock>
+...
+admin_username = {{ neutron_admin_username }}
+<b>metadata_proxy_shared_secret = top_secret_password111</b>
+neutron_auth_strategy = keystone
+neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
+...
+</codeblock>  
+            
+            <p><b>Stage 3</b></p>
+<codeblock>
+git show <b>:3</b>:hos/ansible/roles/nova-common/templates/nova.conf.j2 
+</codeblock>             
+            
+<codeblock>
+...
+admin_username = {{ neutron_admin_username }}
+<b>metadata_proxy_shared_secret = {{ neutron_metadata_proxy_shared_secret }}</b>
+neutron_auth_strategy = keystone
+neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt            
+...
+</codeblock>     
+            
+        </section>
                 
     </body>
 </topic>
