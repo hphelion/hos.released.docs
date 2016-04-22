@@ -21,8 +21,78 @@
         environments. We are going to discuss multiple failure scenarios, how it effects RabbitMQ,
         and how you can recover from them if there are issues.</p>
     </section>
-
-
+    <section id="upgrade"><title>How upgrades effect RabbitMQ</title>
+      <p>There are two types of upgrades within HPE Helion OpenStack -- major and minor. The effect
+        that the upgrade process has on RabbitMQ depends on these types.</p>
+      <p>A major upgrade is defined by an erlang change or major version upgrade of RabbitMQ, such
+        as the upgrade from HPE Helion OpenStack 2.x to 3.0. A minor upgrade would be an upgrade
+        where RabbitMQ stays within the same version, such as v3.3.2 to v.3.3.4.</p>
+      <p>During both types of upgrades there may be minor blips in the authentication process of
+        client services as the accounts are recreated.</p>
+      <p><b>RabbitMQ during a major upgrade</b></p>
+      <p>There will be a RabbitMQ service outage while the upgrade is performed.</p>
+      <p>During the upgrade, high availability consistency is compromised -- all but the primary
+        node will go down and will be reset, meaning their database copies are deleted. The primary
+        node is not taken down until the last step and then it is upgrade. The database of users and
+        permissions is maintained during this process. Then the other nodes are brought back into
+        the cluster and resynchronized.</p>
+      <p><b>RabbitMQ during a minor upgrade</b></p>
+      <p>Minor upgrades are performed node by node. This "rolling" process means there should be no
+        overall service outage becauuse each node is taken out of its cluster in turn, it's database
+        is reset, and then it's added back to the cluster and resynchronized.</p>
+    </section>
+    <section id="operations"><title>How RabbitMQ is affected by other operational processes</title>
+      <p>There are operational tasks, such as <xref href="../reboot_cloud_down.dita"/>, where you
+        use the <codeph>hlm-stop.yml</codeph> and <codeph>hlm-start.yml</codeph> playbooks to
+        gracefully restart your cloud. If you use these playbooks, and there are no errors
+        associated with them forcing you to troubleshoot further, then RabbitMQ is brought down
+        gracefully and brought back up. There is nothing special to note regarding RabbitMQ in these
+        normal operational processes.</p>
+      <p>However, there are other scenarios where an understanding of RabbitMQ is important when a
+        graceful shutdown did not occur:</p>
+      <p><b>Your entire control plane cluster goes down</b></p>
+      <p>If you have a scenario where all of your controller nodes went down, either manually or via
+        another process such as a power outage, then an understanding of how RabbitMQ should be
+        brought back up is important. Follow these steps to recover RabbitMQ on your controller node
+        cluster in these cases:</p>
+      <ol>
+        <li>The order in which the nodes went down is key here. Locate the last node to go down as
+          this will be used as the primary node when bringing the RabbitMQ cluster back up. You can
+          review the timestamps in the <codeph>/var/log/rabbitmq</codeph> log file to determine what
+          the last node was. <note>The "primary" status of a node is transient, it only applies for
+            the duration that this process is running. There is no long-term distinction between any
+            of the nodes in your cluster. The primary node is simply the one that owns the RabbitMQ
+            configuration database that will be synchronized across the cluster.</note></li>
+        <li>Run the <codeph>hlm-start.yml</codeph> playbook specifying the primary node (aka the
+          last node down determined in the first step):<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml -e rabbit_primary_hostname=&lt;hostname></codeblock>
+          <note>The <codeph>&lt;hostname></codeph> value will be the "shortname" for your node, as
+            found in the <codeph>/etc/hosts</codeph> file.</note></li>
+      </ol>
+      <p><b>If one of your controller nodes goes down</b></p>
+      <p>First step here is to determine whether the controller that went down is the primary
+        RabbitMQ host or not. You can do this by looking at the <codeph>FND-RMQ</codeph> group in
+        the file below:</p>
+      <codeblock>~/scratch/ansible/next/hos/ansible/hosts/verb_hosts</codeblock>
+      <p>In this example below, <codeph>helion-cp1-c1-m1-mgmt</codeph> would be the primary:</p>
+      <codeblock>[FND-RMQ-ccp-cluster1:children]
+helion-cp1-c1-m1-mgmt
+helion-cp1-c1-m2-mgmt
+helion-cp1-c1-m3-mgmt</codeblock>
+      <p>If your primary RabbitMQ controller node has gone down and you need to bring it back up,
+        you can follow these steps. In this playbook you are using the
+          <codeph>rabbit_primary_hostname</codeph> parameter to specify the hostname for one of the
+        other controller nodes in your environment hosting RabbitMQ, which will service as the
+        primary node in the recovery. You will also use the <codeph>--limit</codeph> parameter to
+        specify the controller node you are attempting to bring back up.</p>
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml -e rabbit_primary_hostname=&lt;new_primary_hostname> --limit &lt;hostname_of_node_you_are_bringing_up></codeblock>
+      <p>If the node you need to bring back is <b>not</b> the primary RabbitMQ node then you can
+        just run the <codeph>hlm-start.yml</codeph> playbook with the <codeph>--limit</codeph>
+        parameter and your node should recover:</p>
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;hostname_of_node_you_are_bringing_up></codeblock>
+    </section>
 
 
   </body>
