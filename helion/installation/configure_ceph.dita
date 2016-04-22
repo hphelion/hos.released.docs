@@ -27,6 +27,37 @@
           pre-existing images in your Glance repo you will want to download them locally prior to
           configuring Ceph as your backend. Once the Ceph configuration is complete you will then
           need to re-upload those to your Glance repo in order for those images to work.</p>
+        <p><b>Ceph and RADOS:</b> The default Helion Entry-scale KVM Ceph input model deploys the
+          Ceph RADOS (Reliable Autonomic Distributed Object Store) service on two dedicated cluster
+          nodes. The deployment includes the RADOS Gateway (radosgw), which is a FastCGI module for
+          interacting with librgw and librados. </p>
+        <p>The RADOS Gateway is an object storage interface which allows end user to perform HTTP
+          based CRUD operations on object. It supports following two REST interfaces:<ul
+            id="ul_i3h_m3f_sv">
+            <li>S3</li>
+            <li>Swift</li>
+          </ul></p>
+        <p>Because the Ceph Object Gateway provides interfaces compatible with OpenStack Swift and
+          Amazon S3, the Ceph Object Gateway has its own user management. Ceph Object Gateway can
+          store data in the same Ceph Storage Cluster used to store data from Ceph Filesystem
+          clients or Ceph Block Device clients. The S3 and Swift APIs share a common namespace, so
+          you may write data with one API and retrieve it with the other.</p>
+        <p>
+          <ul id="ul_cl2_gqd_sv">
+            <li>RADOS Gateway is configured to run in a simple (non-federated or single region)
+              mode.</li>
+            <li>The HAProxy on the HOS controller node acts as a load balancer (in leastconn mode
+              i.e. selects the server with the least number of connections) for RADOS Gateway
+              servers.</li>
+            <li>Provides OpenStack Keystone integration (users having configured set of roles can
+              access Swift APIs served by radosgw).</li>
+            <li>The default HOS configuration is to install RADOS Gateway on standalone nodes
+              (however is an optional component)</li>
+            <li>Amazon S3 APIs can be accessed only by RADOS Gateway users.</li>
+            <li>The RADOS Gateway external and internal endpoints are SSL/TLS enabled by default,
+              and the traffic from Ceph clients to HAProxy is SSL/TLS enabled.</li>
+          </ul>
+        </p>
         <p id="multibackend"><b>Concerning using multiple backends:</b> If you are using multiple
           backend options, ensure that you specify each of the backends you are using when
           configuring your <codeph>cinder.conf.j2</codeph> file using a comma delimited list. An
@@ -77,6 +108,17 @@
 ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codeblock>
       </sectiondiv>
     </section>
+    <section>
+      <title>Alternate installation scenarios</title>
+      <p>By default, the RADOS gateway is installed on two dedicated servers. You can install the
+        RADOS Gateway the node(s) hosting the Ceph Monitor service or on the HPE Helion OpenStack
+        controller nodes. For information on these alternate installation scenarios, see <xref
+          href="#config_ceph/alternate" format="dita"/> before starting the installation.</p>
+      <p>
+        <note> Both of these alternate configurations would lead to a sub-optimal
+          performance.</note>
+      </p>
+    </section>
 
     <section id="config_files">
       <title outputclass="headerH">Edit Your Ceph Environment Input Files</title>
@@ -84,11 +126,105 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
         <ol>
           <li>Log in to the lifecycle manager.</li>
           <li>Copy the example configuration files into the required setup directory and edit them
-            to contain the details of your environment: <codeblock>cp -r ~/helion/examples/entry-scale-kvm-ceph/* ~/helion/my_cloud/definition/</codeblock>
-            <p>Begin inputting your environment information into the configuration files in the
-                <codeph>~/helion/my_cloud/definition</codeph> directory.</p>
-            <p>Full details of how to do this can be found here: <xref keyref="input_model">Input
-                Model</xref>.</p></li>
+            to contain the details of your environment:
+              <codeblock>cp -r ~/helion/examples/entry-scale-kvm-ceph/* ~/helion/my_cloud/definition/</codeblock><p>Begin
+              inputting your environment information into the configuration files in the
+                <codeph>~/helion/my_cloud/definition</codeph> directory.</p><p>Full details of how
+              to do this can be found here: <xref keyref="input_model">Input Model</xref>.</p></li>
+          <li>Edit the <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file and enter
+            details If you are using alternative RADOS gateway deployments, see <xref
+              href="#config_ceph/alternate" format="dita"/> before editing the
+              <codeph>servers.yml</codeph>.<codeblock># Ceph RGW Nodes 
+   - id: rgw1 
+     ip-addr: 192.168.10.12 
+     role: RGW-ROLE 
+     server-group: RACK1 
+     nic-mapping: MY-2PORT-SERVER 
+     mac-addr: "8b:f6:9e:ca:3b:62" 
+     ilo-ip: 192.168.9.12 
+     ilo-password: password 
+     ilo-user: admin 
+
+   - id: rgw2 
+     ip-addr: 192.168.10.13 
+     role: RGW-ROLE 
+     server-group: RACK2 
+     nic-mapping: MY-2PORT-SERVER 
+     mac-addr: "8b:f6:9e:ca:3b:63" 
+     ilo-ip: 192.168.9.13 
+     ilo-password: password 
+     ilo-user: admin </codeblock><table
+              frame="all" rowsep="1" colsep="1" id="table_mgc_2wd_sv">
+              <tgroup cols="2">
+                <colspec colname="c1" colnum="1"/>
+                <colspec colname="c2" colnum="2"/>
+                <thead>
+                  <row>
+                    <entry>Value</entry>
+                    <entry>Description</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>id</entry>
+                    <entry>An administrator-defined identifier for the server. IDs must be unique
+                      and are used to track server allocations. (see <xref
+                        href="http://docs-staging.hpcloud.com/HOS3.0pre-release/helion/architecture/input_model/other_topics/persisteddata.html"
+                        format="html" scope="external">Persisted Data</xref>).</entry>
+                  </row>
+                  <row>
+                    <entry>ip-addr</entry>
+                    <entry>
+                      <p>The IP address is used by the configuration processor to install and
+                        configure the service components on this server.</p>
+                    </entry>
+                  </row>
+                  <row>
+                    <entry>role</entry>
+                    <entry>
+                      <p>Identifies the server-role of the server. (see <xref
+                          href="http://docs-staging.hpcloud.com/HOS3.0pre-release/helion/architecture/input_model/concepts/concepts.html#concept_serverroles"
+                          format="html" scope="external">Server Roles</xref> for a description of
+                        server roles)</p>
+                    </entry>
+                  </row>
+                  <row>
+                    <entry>server-group</entry>
+                    <entry>
+                      <p>Identifies the server-groups entry that this server belongs to. (see <xref
+                          href="http://docs-staging.hpcloud.com/HOS3.0pre-release/helion/architecture/input_model/concepts/concepts.html#concept_servergroups"
+                          format="html" scope="external">Server Groups</xref>)</p>
+                    </entry>
+                  </row>
+                  <row>
+                    <entry>nic-mapping</entry>
+                    <entry>Name of the nic-mappings entry to apply to this server. (see <xref
+                        href="http://docs-staging.hpcloud.com/HOS3.0pre-release/helion/architecture/input_model/configobj/nicmappings.html"
+                        format="html" scope="external">NIC Mappings</xref>)</entry>
+                  </row>
+                  <row>
+                    <entry>mac-addr</entry>
+                    <entry>This identifies the MAC address on the server that will be used to
+                      network install the operating system.</entry>
+                  </row>
+                  <row>
+                    <entry>ilo-ip</entry>
+                    <entry>This provides the IP address of the power management (e.g. IPMI, iLO)
+                      subsystem.</entry>
+                  </row>
+                  <row>
+                    <entry>ilo-password</entry>
+                    <entry>This provides the user name of the power management (e.g. ipmi-ip, iLO)
+                      subsystem.</entry>
+                  </row>
+                  <row>
+                    <entry>ilo-admin</entry>
+                    <entry>This provides the user password of the power management (e.g. ipmi-ip,
+                      iLO) subsystem.</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table></li>
           <li>Edit the <codeph>~/helion/my_cloud/definition/data/disks_osd.yml</codeph> file and
             enter the details for the additional disks meant for OSD data and journal
               filesystems.<p>The following is an example <codeph>disks_osd.yml</codeph> with the OSD
@@ -151,8 +287,8 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
           usage: data    </codeblock>The
             above sample file contains one OSD service, without a separate journal disk. For OSDs
             without separate journal disk, Ceph stores the journal on the OSD's data disk (in a
-            separate partition).<p>The disk model has the following fields:</p>
-            <table frame="all" rowsep="1" colsep="1" id="ceph1">
+            separate partition).<p>The disk model has the following fields:</p><table frame="all"
+              rowsep="1" colsep="1" id="ceph1">
               <tgroup cols="2">
                 <colspec colname="c1" colnum="1"/>
                 <colspec colname="c2" colnum="2"/>
@@ -206,8 +342,7 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
                   </row>
                 </tbody>
               </tgroup>
-            </table>
-            <p>
+            </table><p>
               <note>Ensure that disks designated to be used for the OSD data and journal storage
                 meet the requirements outlined in the prequisites at the beginning of this document.
                 If they do not then Ceph configuration will fail.</note>
@@ -219,8 +354,7 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
             guide. <ul>
               <li><codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph>
                 <p>In the <codeph>settings.yml</codeph> file, you can edit the following
-                  parameters:</p>
-                <table frame="all" rowsep="1" colsep="1" id="table_gc4_c5t_5t">
+                  parameters:</p><table frame="all" rowsep="1" colsep="1" id="table_gc4_c5t_5t">
                   <tgroup cols="2">
                     <colspec colname="c1" colnum="1"/>
                     <colspec colname="c2" colnum="2"/>
@@ -345,9 +479,10 @@ ansible-playbook -i hosts/verb_hosts ceph-client-prepare.yml</codeblock>
           <li>Log in to the lifecycle manager.</li>
           <li>Make the following changes to the
               <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph> file: <ol>
-              <li>Add your Ceph backend to the <codeph>enabled_backends</codeph> section: <codeblock># Configure the enabled backends
-enabled_backends=ceph1</codeblock>
-                <note type="important">If you are using multiple backend types, you can use a comma
+              <li>Add your Ceph backend to the <codeph>enabled_backends</codeph> section:
+                  <codeblock># Configure the enabled backends
+enabled_backends=ceph1</codeblock><note
+                  type="important">If you are using multiple backend types, you can use a comma
                   delimited list here. For example, if you are going to use both VSA and Ceph
                   backends, you would specify something like this:
                     <codeph>enabled_backends=vsa-1,ceph1</codeph>.</note></li>
@@ -359,22 +494,21 @@ enabled_backends=ceph1</codeblock>
                   <note type="important">If you do not specify a default type then your volumes will
                     default to a non-redundant RAID configuration. It is recommended that you create
                     a volume type and specify it here that meets your environments needs.</note>
-                </p>
-                <codeblock>[DEFAULT]
+                </p><codeblock>[DEFAULT]
 # Set the default volume type
 default_volume_type = &lt;your new volume type></codeblock></li>
               <li>Uncomment the <codeph>ceph</codeph> section and fill the values as per your
                 cluster information. If you have more than one cluster, you will need to add another
                 similar section with its respective values. In the following example only one
-                cluster is added. <codeblock>[ceph1]
+                cluster is added.
+                  <codeblock>[ceph1]
 rbd_secret_uuid = &#60;secret-uuid>
 rbd_user = &#60;ceph-cinder-user>
 rbd_pool = &#60;ceph-cinder-volume-pool>
 rbd_ceph_conf = &#60;ceph-config-file>
 volume_driver = cinder.volume.drivers.rbd.RBDDriver
-volume_backend_name = &#60;ceph-backend-name></codeblock>
-                <p>where:</p>
-                <table frame="all" rowsep="1" colsep="1" id="ceph_volume">
+volume_backend_name = &#60;ceph-backend-name></codeblock><p>where:</p><table
+                  frame="all" rowsep="1" colsep="1" id="ceph_volume">
                   <tgroup cols="2">
                     <colspec colname="c1" colnum="1"/>
                     <colspec colname="c2" colnum="2"/>
@@ -447,13 +581,13 @@ pools:
             </ol></li>
           <li>To enable Cinder to backup to Ceph, make the following changes to the
               <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph> file: <ol>
-              <li>Uncomment the <codeph>ceph backup</codeph> section and fill the values: <codeblock>[DEFAULT]
+              <li>Uncomment the <codeph>ceph backup</codeph> section and fill the values:
+                  <codeblock>[DEFAULT]
 backup_driver = cinder.backup.drivers.ceph
 backup_ceph_conf = &#60;ceph-config-file>
 backup_ceph_user = &#60;ceph-backup-user>
-backup_ceph_pool = &#60;ceph-backup-pool></codeblock>
-                <p>where:</p>
-                <table frame="all" rowsep="1" colsep="1" id="ceph_backup">
+backup_ceph_pool = &#60;ceph-backup-pool></codeblock><p>where:</p><table
+                  frame="all" rowsep="1" colsep="1" id="ceph_backup">
                   <tgroup cols="2">
                     <colspec colname="c1" colnum="1"/>
                     <colspec colname="c2" colnum="2"/>
@@ -592,6 +726,242 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
         </ol>
       </sectiondiv>
     </section>
+    <section id="alternate"><title>Alternate RADOS Gateway deployment architecture choices</title>
+      The RADOS Gateway service can also be co-hosted along with other HOS services as listed in the
+      alternatives below. However, the<b> below configurations would lead to a sub-optimal
+        performance</b> (as compared to the default configuration) since the RADOS Gateway service
+      will be sharing server resources with multiple services. <ul id="ul_wmx_w22_sv">
+        <li>Installing RADOS Gateway on (dedicated) cluster node(s) that host Ceph Monitor
+          service</li>
+        <li>Installing RADOS Gateway on controller nodes</li>
+      </ul><p>Each of this requires corresponding change in input model es explained
+        below.</p><b>Installing RADOS Gateway on (dedicated) cluster node(s) that host Ceph Monitor
+        service</b><p>The RADOS Gateway can be configured to install on dedicated cluster node(s)
+        hosting the Ceph Monitor service as follows:</p><ol id="ol_hfp_q22_sv">
+        <li>Remove the sections for servers in
+            <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file having 'role:
+          RGW-ROLE' attribute.</li>
+        <li>Edit the <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file and
+          add the following lines to the <codeph>service-components</codeph> section for the cluster
+          node(s) having 'server-role: MON-ROLE'
+          attribute.<codeblock>- ceph-radosgw
+- apache2</codeblock></li>
+        <li>Edit the <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph> file to
+          remove the RGW-INTERFACES section. This section defines the RADOS agteway network
+          interfaces, which are not required in this configuration:
+          <codeblock> - name: RGW-INTERFACES 
+   network-interfaces: 
+     - name: BOND0 
+       device: 
+          name: bond0 
+       bond-data: 
+          options: 
+             mode: active-backup 
+             miimon: 200 
+             primary: hed3 
+          provider: linux 
+          devices: 
+             - name: hed3 
+             - name: hed4 
+       network-groups: 
+         - MANAGEMENT 
+         - OSD-CLIENT</codeblock></li>
+      </ol><b>Installing RADOS Gateway on controller nodes</b><p>The RADOS Gateway can be configured
+        to install on the controller nodes. The steps outlined below need to be performed to achieve
+        this:</p><ol id="ol_kfp_q22_sv">
+        <li>Remove the sections for servers in
+            <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file having <codeph>role:
+            RGW-ROLE</codeph> attribute.</li>
+        <li>Edit the <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph> file to
+          remove the RGW-INTERFACES section. This section defines the RADOS agteway network
+          interfaces, which are not required in this configuration:
+          <codeblock> - name: RGW-INTERFACES 
+   network-interfaces: 
+     - name: BOND0 
+       device: 
+          name: bond0 
+       bond-data: 
+          options: 
+             mode: active-backup 
+             miimon: 200 
+             primary: hed3 
+          provider: linux 
+          devices: 
+             - name: hed3 
+             - name: hed4 
+       network-groups: 
+         - MANAGEMENT 
+         - OSD-CLIENT</codeblock></li>
+        <li>Edit the <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file and
+          add the below line to the 'service-components:' for the cluster having
+            <codeph>server-role: CONTROLLER-ROLE</codeph>
+          attribute.<codeblock>- ceph-radosgw</codeblock></li>
+      </ol><p><b>Installing more than 2 RADOS Gateway servers</b></p><p>To deploy more than RADOS
+        Gateway servers, you need to add a section to the
+          <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file for each additional
+        RADOS Gateway node.</p></section>
+    <section><title>Consumption of RADOS gateway using Swift and S3-compatible
+        API</title><p>Configuring Ceph Object Gateway with OpenStack Keystone, sets up the gateway
+        to accept Keystone as the users authority. A user that Keystone authorizes to access the
+        gateway will also be automatically created on the Ceph Object Gateway (if didn’t exist
+        beforehand). A token that Keystone validates will be considered as valid by the gateway. A
+        Ceph Object Gateway user is mapped into a Keystone tenant.</p>The RADOS Gateway service
+      offers two types of users:<ul id="ul_iyy_dz2_sv">
+        <li>RADOS Gateway users that can access objects using both S3 and Swift API</li>
+        <li>Keystone users that can access objects ONLY using Swift API</li>
+      </ul><p>When RADOS Gateway is deployed as per the default entry-scale-kvm-ceph model, it
+        exists alongside OpenStack Swift (since the Keystone service type for RADOS Gateway defaults
+        to ceph-object-store). In this (co-existing) mode, the OpenStack Horizon communicates only
+        with OpenStack Swift for all the Object Store operations.</p><p>If you want to allow a
+        Keystone user to access RADOS Gateway functionality using S3, enable the Keystone
+        authentication mechanism for RADOS Gateway. </p><b>Creating a new user and subuser</b><p>You
+        can create a new user for interacting with Ceph Object Gateway services.</p><ul
+        id="ul_qnm_t1f_sv">
+        <li><b>User:</b> A <codeph>user</codeph> can access the S3 interface.</li>
+        <li><b>Subuser:</b> A <codeph>subuser</codeph> can access the Swift interface and is
+          associated to a user . A subuser needs a Swift access key. </li>
+      </ul><p><note>Creating a user also creates an access_key and secret_key entry for use with any
+          S3 API-compatible client.</note>To create a user and subuser:<ol id="ol_jqf_1bf_sv">
+          <li>Log into a RADOS Gateway server.</li>
+          <li>Execute the following command to create a user:
+              <codeblock>sudo radosgw-admin user create --uid="{username}" --display-name="{Display Name}" --email="{email}"</codeblock><p>For
+              example:<codeblock>sudo radosgw-admin user create --uid=rgwuser --display-name="RadosGatewayUser"--email="rgwuser@test.com"</codeblock></p></li>
+          <li>Execute the following command to create sub-user for Swift and generate secret
+              key:<codeblock>sudo radosgw-admin subuser create --uid={username} --subuser={username}:{subusername} --access=full --key-type=swift --gen-secret</codeblock><p>For
+              example:<codeblock>sudo radosgw-admin subuser create --uid="rgwuser"--subuser="rgwuser:rgwswiftuser"--access=full --key-type=swift --gen-secret</codeblock></p><note>A
+              Ceph Object Gateway <codeph>user:subuser</codeph> tuple maps to the
+                <codeph>tenant:user</codeph> tuple expected by Swift. </note></li>
+        </ol></p></section>
+    <section><title>Configure a Keystone user to access the RADOS gateway functionality using Swift
+        API </title>The OpenStack Swift command line interface can be tuned to communicate with both
+      OpenStack Swift and RADOS Gateway <ol id="ol_jkf_2cf_sv">
+        <li>Execute the following command to interact with Swift (default)
+          <codeblock>export OS_SERVICE_TYPE=object-store</codeblock></li>
+        <li>Execute the following command to interact with RADOS Gateway
+          <codeblock>export OS_SERVICE_TYPE=ceph-object-store</codeblock> One can use swift cli to
+          perform object operation like.</li>
+      </ol><p><b>Configure a Keystone user to access the RADOS gateway functionality using S3</b>
+      </p><p>By default, a Keystone user can access the RADOS gateway functionalist using the Swift
+        API. In order to configure a Keystone user to use the S3 API to access the RADOS gateway,
+        perform the following tasks:</p><ol id="ol_wbg_dks_sv">
+        <li>Configure Rados Gateway to use Keystone for authenticating S3 requests</li>
+        <li>Update the Keystone URL in Ceph cluster configuration file on all the Rados Gateway
+          nodes</li>
+        <li>Create ec2 credentials</li>
+      </ol><p>The details to achieve each of the following is explained in the sections
+        below.</p><ol id="ol_qhv_xls_sv">
+        <li>Configure the RADOS Gateway to use Keystone authentication for S3: <ol
+            id="ol_lhg_1ms_sv">
+            <li>Login to lifecycle manager node. </li>
+            <li>Edit the <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file to add the
+              following section (assuming the Rados Gateway user name is default i.e. gateway):
+              <codeblock>extra: 
+  client.radosgw.gateway: 
+    rgw_s3_auth_use_keystone: true</codeblock></li>
+            <li>Commit your configuration changes:
+              <codeblock>cd ~/helion/hos/ansible 
+git add -A 
+git commit -m "&lt;commit message>"</codeblock></li>
+            <li>Execute the ready-deployment step like:
+              <codeblock>cd ~/helion/hos/ansible 
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+            <li>Now execute the ceph-reconfigure playbook as follows:
+              <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
+          </ol></li>
+        <li>Update Ceph cluster configuration file on all Rados Gateway nodes <p>Rados Gateway uses
+            the Keystone V2 API, therefore, user needs to update the Keystone URL to use the admin
+            port instead of public port. The same can be achieved by following the below steps on
+            each Rados Gateway server in the deployment:</p><ol id="ol_lcj_k4s_sv">
+            <li>Login to a RADOS Gateway node. </li>
+            <li>Edit the Ceph cluster configuration file:
+              <codeblock>cat /etc/ceph/ceph.conf</codeblock></li>
+            <li>In the <codeph>radosgw</codeph> section (default:
+                <codeph>client.radosgw.gateway</codeph>) change a the <codeph>rgw keystone url =
+                https://helion-cp1-vip-KEY-API-mgmt:</codeph> port from 5000 to 35357.
+              <codeblock>CHANGE: 
+rgw keystone url = https://helion-cp1-vip-KEY-API-mgmt:5000 
+TO: 
+rgw keystone url = https://helion-cp1-vip-KEY-API-mgmt:35357</codeblock></li>
+            <li>Restart the <codeph>radosgw</codeph> service so that it reloads the configuration
+              changes: <codeblock>sudo service radosgw restart</codeblock><p>
+                <note>The changes made above will be overwritten if you run the
+                    <codeph>ceph-deploy.yml</codeph> and <codeph>ceph-reconfigure.yml</codeph>
+                  playbooks. Perform these configuration tasks each time either of those playbooks
+                  is executed for the RADOS Gateway nodes. </note>
+              </p></li>
+          </ol></li>
+        <li>Create the EC2 credentials. <ol id="ol_qth_qps_sv">
+            <li>Login to a controller node and source the admin user credentials
+              <codeblock>source ~/service.osrc</codeblock></li>
+            <li>Execute the following commands to generate the EC2 credentials for the OpenStack
+              user:
+              <codeblock>openstack ec2 credentials create --project &lt;project-name> --user &lt;user-name></codeblock>
+              For example, to generate the EC2 credentials for user <b>demo</b> for the project
+                <b>demo</b>, execute:
+              <codeblock>openstack ec2 credentials create --project demo --user demo</codeblock></li>
+          </ol></li>
+      </ol></section>
+    <section><title>Uninstall Swift</title><p>If you do not want the Ceph and Swift object storage
+        solutions in the same cloud, you can remove Swift from an existing cloud or deploy a cloud
+        with only the RADOS Gateway.</p><b>Replace swift with rados gateway in pre-deployed Helion
+        cloud </b><p>To replace OpenStack Swift with Ceph RADOS Gateway in a running HOS cloud,
+        perform the steps listed below: </p><ol id="ol_qmq_sgf_sv">
+        <li>Login to controller node. </li>
+        <li>Identify the Swift and Ceph service ids using following commands (look out for Name
+          'swift' and 'ceph'):
+          <codeblock>source ~/keystone.osrc 
+openstack service list </codeblock></li>
+        <li>Delete the Swift and Ceph services using the service ID identified in earlier step:
+          <codeblock>source ~/keystone.osrc
+openstack service delete &lt;swift-service-id> 
+openstack service delete &lt;ceph-service-id></codeblock></li>
+        <li>Update the service type for Ceph service, by logging in to the deployer node and
+          modifying the <codeph>rgw_keystone_service_type</codeph> in file
+            <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows:
+          <codeblock>rgw_keystone_service_type: object-store</codeblock></li>
+        <li>Commit your configuration
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "&lt;commit message>" </codeblock></li>
+        <li>Execute the ready-deployment step like:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml </codeblock></li>
+        <li>Now execute the ceph-reconfigure playbook as follows:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
+        <li>The Swift services can be stopped by executing the swift-stop playbook as follows: <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts swift-stop.yml </codeblock><note>
+            <ul id="ul_wng_jhf_sv">
+              <li>The above process does not migrate the existing objects in the Swift store to the
+                Ceph Object Store. So, existing objects won't be available after migrating a running
+                cluster to Ceph Object Store.</li>
+              <li>The Swift services should be manually uninstalled and its data should be deleted
+                from the node(s), otherwise services like Monasca will report failure for Swift
+                services, logging services will have logs of Swift services, etc.</li>
+            </ul>
+          </note></li>
+      </ol><b>Deploying Ceph RADOS Gateway as a replacement for OpenStack Swift in new cloud</b>
+      <p>The HOS 3.0 cloud can be deployed with Ceph RADOS Gateway as a replacement for OpenStack
+        Swift (i.e. Swift-less HOS cloud). The input model needs to be tuned in the following way to
+        achieve this. </p><ol id="ol_u1f_qhf_sv">
+        <li>Login to the deployer node and remove all the 'swift' components except swift-client
+          from <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file. The Swift
+          service components to be removed are listed below:
+          <codeblock>swift-ring-builder
+swift-proxy 
+swift-account
+swift-container 
+swift-object </codeblock></li>
+        <li>Modify the <codeph>rgw_keystone_service_type</codeph> in file
+            <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph>" as follows:
+          <codeblock>rgw_keystone_service_type: object-store</codeblock></li>
+        <li>Commit your configuration
+          <codeblock>cd ~/helion/hos/ansible
+git add -A 
+git commit -m "&lt;commit message>" </codeblock></li>
+        <li>Proceed with the cloud deployment steps from the Config Processor Run step. </li>
+      </ol></section>
 
     <section id="post_install"><title outputclass="headerH">Post-Installation Tasks</title>
       <sectiondiv outputclass="insideSection">
