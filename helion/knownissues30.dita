@@ -82,6 +82,11 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                   the <codeph>rpc_timeout</codeph> value must be increased to 180.   Increasing
                   the value merely postpones the error and is only meant to be a temporary solution. 
             </p>
+            <!-- DOCS-3033 -->
+            <p>Consistency groups are not supported with VSA backends.</p>
+            <!-- DOCS-3029 -->
+            <p>Cinder volumes on backends connected using native FCoE are not supported.</p>
+
         </section>
         
         <section>
@@ -135,5 +140,21 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                 </ul>
             </p>
         </section>
+        
+        <section>
+            <title>Monitoring (Monasca)</title>
+            <!-- DOCS-3010 -->
+            <p>Whenever a system that is part of the Monasca cluster is rebooted, there is a
+                possibility that the Monasca Threshold Engine will fail to recover. The symptom will
+                be Alarms in the Ops Console that stay red or grey even though they should be green.
+                The Monasca Threshold Engine is what determines the states of the alarms based on
+                the measurements being received from the Monasca agents. </p>
+            <p>The workaround is to restart the Monasca Threshold Engine.  Use the following
+                commands to stop and start the Monasca Threshold Engine:
+                <codeblock>ansible-playbook -i hosts/verb_hosts monasca-stop.yml --tags thresh
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock>
+            </p>
+        </section>
+        
     </body>
 </topic>
