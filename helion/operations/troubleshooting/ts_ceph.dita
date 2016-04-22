@@ -277,5 +277,41 @@ ceph --cluster &lt;cluster-name> osd rm &lt;osd-num></codeblock></li>
         </ol>
       </sectiondiv>
     </section>
+    <section>
+      <title>Troubleshooting RADOS Gateway</title>
+    </section>
+    <section><title>Issue:Rados Gateway service does not come up after node is rebooted
+      </title>After the Rados Gateway node is rebooted, wait for the node to become ssh-able and
+      allow an additional minimum of five minutes for the node to settle. Start the services on the
+      node:
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;radosgw-node></codeblock>
+      Verify the status of all services on the node:
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></codeblock></section>
+    <section>
+      <title>Rados Gateway service is not responding </title>
+      <p>
+        <ol id="ol_zq2_lzs_sv">
+          <li>Verify the status of all services on the Rados Gateway node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></codeblock></li>
+          <li>If the radosgw service is reported down, diagnose the cause of the crash, by checking
+            the radosgw service logs in <codeph>/var/log/ceph/</codeph>. </li>
+          <li>If the radosgw service status is fine, examining the access and error logs for the
+            apache2 web server (in /var/log/apache2/ directory) can help identifying what is going
+            on. If there is nothing bad/suspicious in apache2 logs, the HAProxy service logs (in
+            /var/log/haprpoxy/ directory) on the controller nodes should be diagnosed. </li>
+        </ol>
+      </p>
+    </section>
+    <section>
+      <title>HTTP Request errors </title>
+      <p>Examining the access and error logs for the apache2 web server itself is probably the first
+        step in identifying what is going on. If there is a 500 error, that usually indicates a
+        problem communicating with the radosgw daemon. </p>
+      <p>Ensure the daemon is running:
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node> </codeblock></p>
+    </section>
   </body>
 </topic>
