@@ -82,6 +82,63 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                   the <codeph>rpc_timeout</codeph> value must be increased to 180.   Increasing
                   the value merely postpones the error and is only meant to be a temporary solution. 
             </p>
+            <!-- DOCS-3033 -->
+            <p>Consistency groups are not supported with VSA backends.</p>
+            <!-- DOCS-3029 -->
+            <p>Cinder volumes on backends connected using native FCoE are not supported.</p>
+            <p>Test Matrix for Cinder 
+                <table frame="all" rowsep="1" colsep="1" id="TestMatrixCinder">
+                    <tgroup cols="4">
+                        <colspec colname="c1" colnum="1" colwidth="1.18*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1*"/>
+                        <colspec colname="c3" colnum="3" colwidth="1.13*"/>
+                        <colspec colname="c4" colnum="4" colwidth="1.42*"/>
+                        <thead>
+                            <row>
+                                <entry morerows="1">Vendor / Protocol on 3par Driver</entry>
+                                <entry namest="c2" nameend="c3">Multipath</entry>
+                                <entry morerows="1">Remarks</entry>
+                            </row>
+                            <row>
+                                <entry>hLinux</entry>
+                                <entry>RedHat</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>iSCSI</entry>
+                                <entry/>
+                                <entry>Works</entry>
+                                <entry>3par iSCSI Driver</entry>
+                            </row>
+                            <row>
+                                <entry>Qlogic FC</entry>
+                                <entry>Works</entry>
+                                <entry>Works</entry>
+                                <entry>3par FC Driver on Qlogic HBA</entry>
+                            </row>
+                            <row>
+                                <entry>Emulex FC</entry>
+                                <entry>Works</entry>
+                                <entry/>
+                                <entry>3par FC Driver on Emulex HBA</entry>
+                            </row>
+                            <row>
+                                <entry>Emulex FCoE</entry>
+                                <entry>Works</entry>
+                                <entry/>
+                                <entry>3par Driver on Emulex HBA</entry>
+                            </row>
+                            <row>
+                                <entry>Qlogic / Native-FCoE</entry>
+                                <entry/>
+                                <entry>Not Tested</entry>
+                                <entry>3par FC Driver on Qlogic HBA – Native FCoE is moved out of
+                                    3.0</entry>
+                            </row>
+                        </tbody>
+                    </tgroup>
+                </table></p>
         </section>
         
         <section>
@@ -135,5 +192,21 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                 </ul>
             </p>
         </section>
+        
+        <section>
+            <title>Monitoring (Monasca)</title>
+            <!-- DOCS-3010 -->
+            <p>Whenever a system that is part of the Monasca cluster is rebooted, there is a
+                possibility that the Monasca Threshold Engine will fail to recover. The symptom will
+                be Alarms in the Ops Console that stay red or grey even though they should be green.
+                The Monasca Threshold Engine is what determines the states of the alarms based on
+                the measurements being received from the Monasca agents. </p>
+            <p>The workaround is to restart the Monasca Threshold Engine.  Use the following
+                commands to stop and start the Monasca Threshold Engine:
+                <codeblock>ansible-playbook -i hosts/verb_hosts monasca-stop.yml --tags thresh
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock>
+            </p>
+        </section>
+        
     </body>
 </topic>
