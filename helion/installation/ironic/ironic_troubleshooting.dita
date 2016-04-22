@@ -2,15 +2,16 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="ironic-toubleshooting">
     <title><ph conkeyref="HOS-conrefs/product-title"/>Troubleshooting Ironic Installation</title>
-    <body><!--not tested-->
+    <body>
+        <!--not tested-->
         <p conkeyref="HOS-conrefs/applies-to"/>
-        
-        
-        
-        <p>Sometimes the <codeph>nova boot</codeph> command does not succeed and when you do a <codeph>nova list</codeph>, 
-            you will see output like the following:       </p>
-        
-<codeblock>
+
+
+
+        <p>Sometimes the <codeph>nova boot</codeph> command does not succeed and when you do a
+                <codeph>nova list</codeph>, you will see output like the following: </p>
+
+        <codeblock>
 nova list
 
 +--------------------------------------+--------+--------+------------+-------------+----------------------+
@@ -18,19 +19,20 @@ nova list
 +--------------------------------------+--------+--------+------------+-------------+----------------------+
 | ee08f82e-8920-4360-be51-a3f995624e5f | ubuntu | ERROR  | -          | NOSTATE     |                      |
 +--------------------------------------+--------+--------+------------+-------------+----------------------+           
-</codeblock>     
-        
-        <p>You should execute the <codeph>nova show &lt;nova-node-id></codeph> and <codeph>ironic node-show &lt;ironic-node-id></codeph>
-        commands to get more information about the error.</p>
-        
+</codeblock>
+
+        <p>You should execute the <codeph>nova show &lt;nova-node-id></codeph> and <codeph>ironic
+                node-show &lt;ironic-node-id></codeph> commands to get more information about the
+            error.</p>
+
 
         <section>
             <title>No valid host was found. There are not enough hosts available.</title>
-            
-            <p>This error is typically seen when performing the <codeph>nova boot</codeph> where there is a mismatch between the properties set on the node and the flavor used.
-            For example, the output from a <codeph>nova show</codeph> command may look like this:</p>
-            
-<codeblock>    
+            <p>This error is typically seen when performing the <codeph>nova boot</codeph> where
+                there is a mismatch between the properties set on the node and the flavor used. For
+                example, the output from a <codeph>nova show</codeph> command may look like
+                this:</p>
+            <codeblock>    
 nova show  ee08f82e-8920-4360-be51-a3f995624e5f
 
 +--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -83,14 +85,13 @@ nova show  ee08f82e-8920-4360-be51-a3f995624e5f
 | updated                              | 2016-03-11T11:00:28Z                                                                                                                                                                                                                        |
 | user_id                              | e580c645bfec4faeadef7dbd24aaf990                                                                                                                                                                                                            |
 +--------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-</codeblock>   
-            
-            <p>You can find more information about the error by inspecting the log file at <codeph>/var/log/nova/nova-scheduler.log</codeph> or alternatively by viewing 
-            the error location in the source files listed in the stack-trace (in bold above).</p>
-            
-<p>To find the mis-match, compare the properties of the ironic node:</p>     
-            
-<codeblock>
+</codeblock>
+            <p>You can find more information about the error by inspecting the log file at
+                    <codeph>/var/log/nova/nova-scheduler.log</codeph> or alternatively by viewing
+                the error location in the source files listed in the stack-trace (in bold
+                above).</p>
+            <p>To find the mis-match, compare the properties of the ironic node:</p>
+            <codeblock>
 +------------------------+---------------------------------------------------------------------+
 | Property               | Value                                                               |
 +------------------------+---------------------------------------------------------------------+
@@ -123,11 +124,9 @@ nova show  ee08f82e-8920-4360-be51-a3f995624e5f
 | chassis_uuid           |                                                                     |
 | instance_info          | {}                                                                  |
 +------------------------+---------------------------------------------------------------------+    
-</codeblock>            
-
-<p>with the flavor characteristics:</p>
-            
-<codeblock>
+</codeblock>
+            <p>with the flavor characteristics:</p>
+            <codeblock>
 nova flavor-show 
 
 +----------------------------+-----------------------------------------------------------------------------------------------+
@@ -145,73 +144,55 @@ nova flavor-show
 | swap                       |                                                                                               |
 | vcpus                      | <b>2</b>                                                                                             |
 +----------------------------+-----------------------------------------------------------------------------------------------+        
-</codeblock>         
-            
-            <p>In this instance, the problem is caused by the absence of the <b>"cpu_arch": "x86_64"</b> property on the ironic node.
-                This can be resolved by updating the ironic node, adding the missing property: </p>
-            
-<codeblock>
+</codeblock>
+            <p>In this instance, the problem is caused by the absence of the <b>"cpu_arch":
+                    "x86_64"</b> property on the ironic node. This can be resolved by updating the
+                ironic node, adding the missing property: </p>
+            <codeblock>
 ironic node-update ea7246fd-e1d6-4637-9699-0b7c59c22e67 <b>add properties/cpu_arch=x86_64</b>    
-</codeblock>        
-            
+</codeblock>
             <p>and then re-running the <codeph>nova boot</codeph> command.</p>
-           
-
-            
         </section>
-        
-        
+
+
         <section id="IRONIC-450-power_state">
             <!-- IRONIC-450 -->
-            <title>Deployment to a node fails and in "ironic node-list" command, the power_state column for the node is shown as "None"</title>
-
-
-
-            <p><b>Possible cause: </b> The IPMI commands to the node take longer to change the power state of the server.</p>
-            
-            <p><b>Resolution: </b>
-            Check if the node power state can be changed using the following command  
-            <codeblock>ironic node-set-power-state $NODEUUID on</codeblock>
-            If the above command succeeds and the power_state column is updated correctly, then the following steps are required 
-            to increase the power sync interval time.</p>
-            
-            <p> On the first controller, reconfigure Ironic to increase the power sync interval time. In the example below, it is set to 120 seconds. 
-                This value may have to be tuned based on the setup.</p>
-            
+            <title>Deployment to a node fails and in "ironic node-list" command, the power_state
+                column for the node is shown as "None"</title>
+            <p><b>Possible cause: </b> The IPMI commands to the node take longer to change the power
+                state of the server.</p>
+            <p><b>Resolution: </b> Check if the node power state can be changed using the following
+                command <codeblock>ironic node-set-power-state $NODEUUID on</codeblock> If the above
+                command succeeds and the power_state column is updated correctly, then the following
+                steps are required to increase the power sync interval time.</p>
+            <p> On the first controller, reconfigure Ironic to increase the power sync interval
+                time. In the example below, it is set to 120 seconds. This value may have to be
+                tuned based on the setup.</p>
             <ol>
-                <li>
-                    Go to the <codeph>~/helion/my_cloud/config/ironic/</codeph> directory  and edit <codeph>ironic-conductor.conf.j2</codeph>
-                    to set the <codeph>sync_power_state_interval</codeph> value: 
-                    
-<codeblock>[conductor]
-sync_power_state_interval = 120</codeblock>                  
-                    
+                <li> Go to the <codeph>~/helion/my_cloud/config/ironic/</codeph> directory and edit
+                        <codeph>ironic-conductor.conf.j2</codeph> to set the
+                        <codeph>sync_power_state_interval</codeph> value:
+                    <codeblock>[conductor]
+sync_power_state_interval = 120</codeblock>
                 </li>
-                <li>
-                    Save the file and then run the following playbooks:
- <codeblock>
+                <li> Save the file and then run the following playbooks:
+                    <codeblock>
 cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml 
 ansible-playbook -i hosts/localhost ready-deployment.yml 
 cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts ironic-reconfigure.yml    
- </codeblock>                   
-                    
+ </codeblock>
                 </li>
-                
-            </ol>
 
-    
-            
+            </ol>
         </section>
-        
-          <section id="IRONIC-360-iLO-SSO">
+
+        <section id="IRONIC-360-iLO-SSO">
             <!-- IRONIC-360 -->
             <title>Error Downloading Image</title>
-              
             <p>If you encounter the error below during the deployment:
-                
-<codeblock>              
+                <codeblock>              
 "u'message': u'Error downloading image: Download of image id 77700b53-9e15-406c-b2d5-13e7d9b96551 failed: Image download failed for all URLs.', 
 u'code': 500, 
 u'type': u'ImageDownloadError', 
@@ -219,104 +200,81 @@ u'details': u'Download of image id 77700b53-9e15-406c-b2d5-13e7d9b96551 failed: 
 </codeblock>
                 you should visit the Single Sign-On Settings in the Security page of iLO and change
                 the Single Sign-On Trust Mode setting from the default of "Trust None (SSO
-                disabled)" to "Trust by Certificate". </p>  
-              
-              
-          </section>
-        
+                disabled)" to "Trust by Certificate". </p>
+        </section>
+
 
 
         <section id="IRONIC-450">
             <!-- IRONIC-450 -->
-            <title>Using <codeph>node-inspection</codeph> can cause temporary claim of IP addresses</title>
-            
-            
-            
-            <p><b>Possible cause: </b> Running <codeph>node-inspection</codeph> on a node discovers all the NIC ports including the NICs 
-                that don’t have any connectivity. This causes a temporary consumption of the network IPs and increased 
-                usage of the allocated quota.  As a result, other nodes  are deprived of IP addresses and deployments can fail.</p>
-            
-            <p><b>Resolution: </b>You can add node properties manually added instead of using the inspection tool.
-
+            <title>Using <codeph>node-inspection</codeph> can cause temporary claim of IP
+                addresses</title>
+            <p><b>Possible cause: </b> Running <codeph>node-inspection</codeph> on a node discovers
+                all the NIC ports including the NICs that don’t have any connectivity. This causes a
+                temporary consumption of the network IPs and increased usage of the allocated quota.
+                As a result, other nodes are deprived of IP addresses and deployments can fail.</p>
+            <p><b>Resolution: </b>You can add node properties manually added instead of using the
+                inspection tool. </p>
+            <p>Note: Upgrade <codeph>ipmitool</codeph> to a version >= 1.8.15 or it may not return
+                detailed information about the NIC interface for <codeph>node-inspection</codeph>.
             </p>
-            
-            <p>Note: Upgrade <codeph>ipmitool</codeph> to a version >= 1.8.15 or it may not return detailed information
-                about the NIC interface for <codeph>node-inspection</codeph>. </p>
-            
         </section>
- 
+
         <section id="IRONIC-450-deploying-state">
-            <title>Node permanently stuck in deploying state</title>     
-            
+            <title>Node permanently stuck in deploying state</title>
             <p><b>Possible causes: </b>
                 <ul>
                     <li>Ironic conductor service associated with the node could go down.</li>
-                    <li>There might be a properties mismatch. MAC address registered for the node could be incorrect.</li>
-                    
-                </ul>
-                
-                </p>
-            
-            <p><b>Resolution: </b> 
-                To recover from this condition, set the provision state of the node to <codeph>Error</codeph> and maintenance to <codeph>True</codeph>. 
-                Delete the node and re-register again.
-            </p>
-        </section>
-        
-       
-       
-        <section id="NIC-boot-order">
-            <title>The NICs in the baremetal node should come first in boot order</title>     
-        
-            <p><b>Possible causes: </b> By default, the boot order of baremetal node is set as NIC1, HDD and NIC2. If NIC1 fails, the nodes starts booting from HDD and the provisioning fails.
-            
-            </p>        
-            
-            <p>
-                Set boot order so that all the NICs appear before the hard disk of the baremetal 
-                as NIC1, NIC2…, HDD. 
-                
-            </p>
-        
-        </section>
-        
-        <section id="NIC-boot-order">
-            <title>Increase in the number of nodes can cause power commands to fail</title>   
-            
-            <p><b>Possible causes: </b>Ironic periodically performs a power state sync with all the baremetal nodes. When the number of nodes increase, ironic does not get sufficient time to 
-            perform power operations.</p>
-            
-            <p><b>Resolution: The following procedure gives a way to increase 
-                <codeph>sync_power_state_interval</codeph>:</b>   </p>
-            
-            <ul>
-                <li>Edit the file <codeph>~/helion/my_cloud/config/ironic/ironic-conductor.conf.j2</codeph> and
-                    navigate to the section for <codeph>[conductor]</codeph></li>
-                <li>Set <codeph>sync_power_state_interval = 60</codeph> and save the file. 
-                    
-                    
-                    
-                </li>
-                <li>Execute the following set of commands to reconfigure Ironic:
+                    <li>There might be a properties mismatch. MAC address registered for the node
+                        could be incorrect.</li>
 
- <codeblock>
+                </ul>
+            </p>
+            <p><b>Resolution: </b> To recover from this condition, set the provision state of the
+                node to <codeph>Error</codeph> and maintenance to <codeph>True</codeph>. Delete the
+                node and re-register again. </p>
+        </section>
+
+
+
+        <section id="NIC-boot-order">
+            <title>The NICs in the baremetal node should come first in boot order</title>
+            <p><b>Possible causes: </b> By default, the boot order of baremetal node is set as NIC1,
+                HDD and NIC2. If NIC1 fails, the nodes starts booting from HDD and the provisioning
+                fails. </p>
+            <p><b>Resolution: </b> Set boot order so that all the NICs appear before the hard disk of the baremetal as
+                NIC1, NIC2…, HDD. </p>
+        </section>
+
+        <section id="NIC-boot-order2">
+            <title>Increase in the number of nodes can cause power commands to fail</title>
+            <p><b>Possible causes: </b>Ironic periodically performs a power state sync with all the
+                baremetal nodes. When the number of nodes increase, ironic does not get sufficient
+                time to perform power operations.</p>
+            <p><b>Resolution:</b> The following procedure gives a way to increase
+                        <codeph>sync_power_state_interval</codeph>:
+            </p>
+            <ul>
+                <li>Edit the file
+                        <codeph>~/helion/my_cloud/config/ironic/ironic-conductor.conf.j2</codeph>
+                    and navigate to the section for <codeph>[conductor]</codeph></li>
+                <li>Set <codeph>sync_power_state_interval = 60</codeph> and save the file. </li>
+                <li>Execute the following set of commands to reconfigure Ironic:
+                    <codeblock>
 cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml 
 ansible-playbook -i hosts/localhost ready-deployment.yml 
 cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts ironic-reconfigure.yml    
- </codeblock>  
-                            
+ </codeblock>
                 </li>
-                
-                
+
+
             </ul>
-            
         </section>
-            
-                
-        
+
+
+
     </body>
 
-</topic> 
-    
+</topic>

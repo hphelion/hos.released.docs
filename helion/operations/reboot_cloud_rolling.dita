@@ -3,9 +3,11 @@
 <topic id="rebootNodes">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Bringing Down Your Cloud: Rolling Reboot
     Method</title>
-  <abstract><shortdesc outputclass="hdphidden">If you have a planned maintenance and need to bring down your entire cloud and restart
-    services, while minimizing downtime, follow the steps here to safely restart your cloud.</shortdesc></abstract>
-  <body><!--not tested-->
+  <abstract><shortdesc outputclass="hdphidden">If you have a planned maintenance and need to bring
+      down your entire cloud and restart services, while minimizing downtime, follow the steps here
+      to safely restart your cloud.</shortdesc></abstract>
+  <body>
+    <!--not tested-->
     <section id="about">
       <p>If you have a planned maintenance and need to bring down your entire cloud and restart
         services, while minimizing downtime, follow the steps here to safely restart your cloud. If
@@ -59,10 +61,10 @@
         <p>Run the <codeph>cinder-migrate-volume.yml</codeph> playbook specifying the node to
           migrate to in the <codeph>migrate_host</codeph> argument:</p>
         <codeblock>cd ~/scratch/ansible/next/hos/ansible 
-          ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml --extra-vars "migrate_host=padawan-ccp-c1-m2-mgmt"</codeblock>
+ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml --extra-vars "migrate_host=padawan-ccp-c1-m2-mgmt"</codeblock>
         <p>More details about the Cinder volume and backup migration instructions can be found in
-            <xref href="../blockstorage/singleton_service_cinder.dita#topic_l1p_vpy_jt">Managing
-            Cinder Volume and Backup Services</xref>.</p>
+            <xref href="../operations/blockstorage/singleton_service_cinder.dita">Managing Cinder
+            Volume and Backup Services</xref>.</p>
         <p><b>For the <codeph>nova-consoleauth</codeph> singleton service:</b></p>
         <p>The <codeph>nova-consoleauth</codeph> component runs by default on the first controller
           node, that is, the host with <codeph>consoleauth_host_index=0</codeph>. To move it to
@@ -70,7 +72,7 @@
             <codeph>nova-start.yml</codeph> and pass it the index of the next controller node. For
           example, to move it to controller 2 (index of 1), run:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
-            ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock></p>
+ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock></p>
         <note>For the HPE Helion OpenStack versions prior to 2.1.2, manually stop the
             <codeph>nova-consoleauth</codeph> service on the node which is going to reboot after
           moving the service to a different controller via the Ansible playbook above. Use
@@ -89,7 +91,7 @@
             noted above.</li>
           <li>Stop all services on the controller node that you are rebooting first:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-              ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock></li>
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock></li>
           <li>Reboot the controller node, e.g. run the following command on the controller itself: <codeblock>sudo reboot</codeblock>
             <p>Note that the current node being rebooted could be hosting the lifecycle manager.</p>
           </li>
@@ -97,11 +99,11 @@
             five minutes for the controller node to settle. Start all services on the controller
             node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-              ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock>
           </li>
           <li>Verify that the status of all services on that is OK on the controller node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-              ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node></codeblock>
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node></codeblock>
           </li>
           <li>When above start operation has completed successfully, you may proceed to the next
             controller node. Ensure that you migrate your singleton services off the node
@@ -123,9 +125,6 @@
 
           <li>Disable provisioning of the node to take the node offline to prevent further instances
             being scheduled to the node during the reboot. </li>
-          <li>Gracefully shut down Helion Development Platform services and instances. See <xref
-              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
-              Development Platform upgrade process</xref> for details.</li>
           <li>Identify instances that exist on the compute node, and then either: <ul>
               <li>Live migrate the instances off the node before actioning the reboot. OR </li>
               <li>Stop the instances</li>
@@ -133,10 +132,7 @@
           </li>
           <li>Reboot the node </li>
           <li>Restart the Nova services </li>
-          <li>Restart any instances stopped above, except for Helion Development Platform instances.
-            To gracefully restart Helion Development Platform instances, see the <xref
-              href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
-              Development Platform upgrade process</xref>.</li>
+
         </ul>
         <ol>
           <li>Disable provisioning:
@@ -162,7 +158,7 @@
             instances:</p><codeblock>nova stop &lt;instance-uuid&gt;</codeblock></li>
           <li>Stop all services on the Compute node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-              ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;compute node></codeblock>
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;compute node></codeblock>
           </li>
           <li>SSH to your Compute nodes and reboot them: <codeblock>sudo reboot</codeblock>
             <p>The operating system cleanly shuts down services and then automatically reboots. If

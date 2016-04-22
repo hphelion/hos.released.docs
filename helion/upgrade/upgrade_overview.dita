@@ -4,73 +4,83 @@
     <title><ph conkeyref="HOS-conrefs/product-title"/>Introduction to the Upgrade Procedure</title>
     <body><!--not tested-->
         <p conkeyref="HOS-conrefs/applies-to"/>
+        
+        
         <section id="overview">
-            <title>Before You Start</title>
+            <title>Overview</title>
             
+            <!-- Reasons for Upgrade   Major OS releases, new features like...,  fixes, security  -->
+            <!-- OpenStack Releases -->
+            <!-- Reboot -->
+            <!-- Release Notes what's fixed, known issues -->
+            <!-- Alarm resolutions -->
+            <!--  backup -->
+            <!-- pre-upgrade tasks  VPN -->
+            <!-- POST UPGRADE tasks-->
+            
+            
+            
+            
+        </section>  
+        
+        <section id="reasons">
+            <title>Reasons to Upgrade to <keyword keyref="kw-hos-phrase-30"/></title>       
+            
+            <ul>
+                <li><xref keyref="liberty_features">OpenStack Liberty Features</xref>.</li>
+                <li><xref keyref="newfeatures30">New Features</xref> in <keyword keyref="kw-hos-phrase-30"/> 
+                like Multipath Boot From SAN, RHEL Compute Nodes, Bare metal as a Service (Ironic), etc. </li>
+                <li><xref keyref="fixedissues30">Fixes</xref> for issues that were present in previous releases.</li>
+                <li>Cumulative security patches that have been added in earlier releases.</li>
+            </ul>
+        
+
         </section>
         
-        <section id="addresses_ranges">
-            <title><codeph>start-address</codeph> and <codeph>end-address</codeph> Deprecated in the Input Model (DOCS-2927)</title>
-            
-            <p>                        
-                <xref keyref="configobj_networks/start_address">start-address</xref>  and   
-                <xref keyref="configobj_networks/end_address">end-address</xref> have been deprecated in
-                favour of <xref keyref="configobj_networks/addresses">addresses</xref> in the Input Model.
-                The latter provides more flexibility in specifying ranges and so is the preferred method to use.               
-            </p>
-            
-            <p>An example showing how to use the <codeph>addresses</codeph> parameter is available <xref keyref="configobj_networks/example_addresses">here</xref>.</p>
-            
-            <p>You do not have to update your Input Model to start using <codeph>addresses</codeph>. However, you may see
-            warnings like the following when you run the configuration processor:
-            </p>
-<codeblock>
-"#   networks-2.0  WRN: Network EXTERNAL-API-NET: start-address and end-address are deprecated.  Instead specify an address range in 'addresses'",
-"#   networks-2.0  WRN: Network GUEST-NET: start-address and end-address are deprecated.  Instead specify an address range in 'addresses'",
-"#   networks-2.0  WRN: Network MANAGEMENT-NET: start-address and end-address are deprecated.  Instead specify an address range in 'addresses'",
-</codeblock>            
-            
-        </section>    
-        
-      
         
         
-        
-        <section id="git_merge">
-            <title>Resolving Git Merge Conflicts During Upgrade (DOCS-2891)</title>
+        <section id="preparing">
+            <title>Preparing for Upgrade</title>
             
-        </section>    
-        
-        
-        <section id="post_ipgrade">
-            <title>Post-Upgrade Tasks</title>
-            
-        </section>             
-        
-        <section id="DOCS-2959">
-            <title>Nova Resize and Nova Migrate Features may be Disabled after Upgrade</title>
-            
-            <p>If you had enabled the Nova Resize or the Nova Migrate feature in your <keyword keyref="kw-hos-phrase-21"/> cloud,
-            the features may be disabled after you perform the upgrade procedure. You can re-enable these
-            features by following the steps <xref keyref="enabling_resize">here</xref>.
-            </p>
+            <ul>
+                <li>Read the <xref keyref="releasenotes30">Release Notes</xref>, especially the <xref keyref="knownissues30">Known Issues</xref> for the new version.</li>
+                <li>Ensure you have a Backup strategy in place - see <xref keyref="bura_overview"/></li>
+                <li>Ensure you have a known starting state by <xref keyref="alarm_resolutions">resolving any unexpected alarms</xref>.</li>
+                <li>Determine if you will need to follow the procedure to <xref keyref="upgrade21to30/rebooting_general">reboot your cloud</xref> after upgrading the software. In general, rebooting
+                is only needed if the HPE Linux kernel has changed between versions. In the case of upgrade to 3.0, the kernel has  changed
+                and so a reboot is required.</li>
+                <li>Perform any pre-upgrade tasks you deem necessary, such as:
+                    <ul>
+                        <li>Update your Input Model to <xref keyref="upgrade_deprecated">replace deprecated keys</xref></li>
+                        <li>Prepare for <xref keyref="upgrade_vpnaas">VPN Service Upgrade</xref></li>
+                    </ul>
+                </li>
+                
+                <li>Perform the upgrade:
+                    <ul>
+                        <li><xref keyref="upgrade21to30">Upgrade your Cloud</xref>.</li>
+                        <li><xref keyref="upgrade_git_merge">Resolve any Merge Conflicts.</xref></li>
+                        <li>Reboot your Cloud.</li>                      
+                    </ul>
+                </li>
+                
+                <li>Perform any post-upgrade tasks you deem necessary, such as: 
+                
+                    <ul>
+                        <li><xref keyref="enable_barbican_for_upgrade">Enabling Barbican Support</xref></li>
+                        <li><xref keyref="upgrade_designate">Upgrading DNS Service</xref></li>
+                        <li><xref keyref="upgrade_octavia">Upgrading LBaaS Driver to Octavia</xref></li>
+                        <li>Disk Resizing after Upgrade</li>
+                        <li>Re-enable <xref keyref="upgrade_nova_resize_migrate">Nova Resize and  Migrate Features</xref></li>
+                        <li><xref keyref="upgrade_delete_alarms">Delete Alarms</xref> that are no longer supported</li>
+                        
+                    </ul>
+                
+                </li>
+                
+            </ul>
+         
         </section>
- 
-        <section id="DOCS-2944">
-            <title>Delete Alarms that are no longer supported</title>
-            
-            <p>A number of alarms that were supported in <keyword keyref="kw-hos-phrase-21"/> 
-                have been removed in <keyword keyref="kw-hos-phrase-21"/>. After a successful upgrade, these
-                alarms will be in the UNDETERMINED state. You can delete the obsolete alarms
-                by following the appropriate procedure on the <xref keyref="alarm_resolutions">Alarm Resolutions</xref> page.
-                </p>
-            
-            <p>
-                For example, the alarms for <codeph>ceilometer-agent-central</codeph> and <codeph>ceilometer-collector</codeph> components 
-                can be deleted manually using the <codeph>monasca alarm-delete &lt;alarm-id></codeph> command.                
-            </p>
-        </section>
-            
-        
+  
     </body>
 </topic>
