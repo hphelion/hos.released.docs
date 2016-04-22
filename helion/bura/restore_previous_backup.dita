@@ -12,27 +12,34 @@
      <p>By default, freezer-agent restores only the latest (most recent) backup. Here is a manual procedure to restore from a list of backups
      </p>
      
-     <ol> <li> Obtain list of backups from the Elastic Search database. This command has to be executed on
-          the controller nodes on which the Elastic Search database is deployed <codeblock>python -c 'exec """\nimport json\nimport urllib\nimport datetime\n\n\nr = 
-              urllib.urlopen("http://127.0.0.1:9200/freezer/backups/_search?size=0")\nnumber = json.loads(r.read())\nnumber = 
-              number["hits"]["total"]\n\nr = urllib.urlopen("http://127.0.0.1:9200/freezer/backups/_search?size={}".format(number))\njson_resp = 
-              json.loads(r.read())\nbackups = json_resp["hits"]["hits"]\n\nprint "| hostname | backup name | backup date |"\nfor backup in backups:\n    
-              backup = backup["_source"]["backup_metadata"]\n    ts = backup["time_stamp"]\n    ts = datetime.datetime.fromtimestamp(ts)\n    
-              ts = ts.strftime("%Y-%m-%dT%H:%M:%S")\n    print("| {} | {} | {} |".format(backup["hostname"], backup["backup_name"], str(ts)))\n"""'</codeblock>
-          <note>You can copy the command from
-          here:</note><codeblock>python -c 'exec """\nimport json\nimport urllib\nimport datetime\n\n\nr = urllib.urlopen("http://127.0.0.1:9200/freezer/backups/_search?size=0")\nnumber = json.loads(r.read())\nnumber = number["hits"]["total"]\n\nr = urllib.urlopen("http://127.0.0.1:9200/freezer/backups/_search?size={}".format(number))\njson_resp = json.loads(r.read())\nbackups = json_resp["hits"]["hits"]\n\nprint "| hostname | backup name | backup date |"\nfor backup in backups:\n    backup = backup["_source"]["backup_metadata"]\n    ts = backup["time_stamp"]\n    ts = datetime.datetime.fromtimestamp(ts)\n    ts = ts.strftime("%Y-%m-%dT%H:%M:%S")\n    print("| {} | {} | {} |".format(backup["hostname"], backup["backup_name"], str(ts)))\n"""'</codeblock>
-          Here is an example output
-          <codeblock>| hostname | backup name | backup date |
-| cloud-cp1-c1-m1-mgmt | freezer_mysql_backup | 2015-12-09T10:28:43 |
-| cloud-cp1-c1-m3-mgmt | freezer_mysql_backup | 2015-12-10T10:28:46 |
-| cloud-cp1-cluster0-m1-mgmt | test_swift_BURA | 2015-12-10T16:59:50 |</codeblock>
+     <ol> <li> Obtain the list of backups:
+          <codeblock>freezer-scheduler backup-list
+  [-c &lt;client-id>]
+  [--all]
+  [--long]</codeblock>
+          The optional arguments are:<p><codeph>-c &lt;client-id></codeph> to find documents that
+            have the specified client-id. The default value is
+              <codeph>&lt;tenant-id>_&lt;hostname></codeph>.</p>
+          <p><codeph>--all</codeph> to include documents for all client-ids.</p>
+          <p>
+            <codeph>--long</codeph> to list additional fields in output. </p>
+          <p>The following example illustrates: </p>
+          <codeblock> $ freezer-scheduler backup-list
+    +----------------------------------+------------------------+------------------+---------------------+-------+---------------------+
+    |           backup uuid            |       container        |   backup name    |      timestamp      | level |        path         |
+    +----------------------------------+------------------------+------------------+---------------------+-------+---------------------+
+    | 72792278176b4f388ce5c131a4fba3ae | freezer_backup_storage | test_backup_list | 2016-04-13 16:03:25 |   0   | ~/tests/somedatadir |
+    | 20d5e3dd1fbc4e459a877ad25bfdd4d1 | freezer_backup_storage | test_backup_list | 2016-04-13 17:23:03 |   1   | ~/tests/somedatadir |
+    | f4ad40fca05f4f57aef5fad035085074 | freezer_backup_storage | test_backup_list | 2016-04-13 17:23:10 |   2   | ~/tests/somedatadir |
+    +----------------------------------+------------------------+------------------+---------------------+-------+---------------------+</codeblock>
         </li><li> Use the "restore-from-date" option to restore backup based on data/timestamp. The
           restore-from-data is an option available in freezer-agent. When using the parameter
-          --restore-from-date freezer searches the available backups and select the nearest older
-          backup relative to the provided date. To use this option, the following parameters of the
-          backup need to be provided - storage target details (example, target-name,
-          container-name), backup_name, hostname. Usually these parameters can be obtained from the
-          backup_job. <p> For example, take the following simple backup job:</p>
+            <codeph>--restore-from-date</codeph>, Freezer searches the available backups and select
+          the nearest older backup relative to the provided date. To use this option, the following
+          parameters of the backup must be provided - storage target details (example,
+            <codeph>target-name</codeph>, <codeph>container-name</codeph>), backup_name, hostname.
+          Usually these parameters can be obtained from the backup_job. <p> For example, take the
+            following simple backup job:</p>
           <codeblock>[default]
  action = backup
  backup_name = mystuffbackup
