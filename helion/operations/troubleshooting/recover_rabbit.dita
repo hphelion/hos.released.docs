@@ -143,6 +143,41 @@ helion-cp1-c1-m3-mgmt  : ok=2    changed=0    unreachable=0    failed=0</codeblo
         keyref="kw-hos-phrase"/> is likely to recover automatically without any further action
       needed. However, if yours doesn't and the <codeph>rabbitmq-status.yml</codeph> playbook is
       reporting an issue then use the scenarios below to resolve your issues.</p>
-
+    <p><b>All of your controller nodes have gone down and using other methods have not brought
+        RabbitMQ back up</b></p>
+    <p>If your RabbitMQ cluster is irrecoverable and you need rapid service recovery because other
+      methods either can't resolve the issue or you don't have time to investigate more nuanced
+      approaches then we provide a disaster recovery playbook for you to use. This playbook will
+      tear down and reset any RabbitMQ services. This does have an extreme effect on your services.
+      The process will ensure that the RabbitMQ cluster is recreated.</p>
+    <ol>
+      <li>Log in to your lifecycle manager.</li>
+      <li>Run the RabbitMQ disaster recovery playbook. This generally takes around two minutes.
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts rabbitmq-disaster-status.yml</codeblock></li>
+      <li>Run the reconfigure playbooks for both Cinder (Block Storage) and Heat (Orchestration), if
+        those services are present in your cloud. These services are effected by the fan-out queues
+        not being recovered correctly. This generally takes around five minutes.
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml
+ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
+      <li>If you need to do a safe recovery of all the services in your environment then you can use
+        this playbook. This is a more lengthy process as all services are inspected.
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock></li>
+    </ol>
+    <p><b>One of your controller nodes has gone down and using other methods have not brought
+        RabbitMQ back up</b></p>
+    <p>This disaster recovery procedure has the same caveats as the preceding one, but the steps
+      differ.</p>
+    <p>If your primary RabbitMQ controller node has gone down and you need to perform a disaster
+      recovery, use this playbook from your lifecycle manager:</p>
+    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts rabbitmq-disaster-recovery.yml -e rabbit_primary_hostname=&lt;new_primary_hostname> --limit &lt;hostname_of_node_that_needs_recovered></codeblock>
+    <p>If the controller node is not your primary, you can use this playbook:</p>
+    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts rabbitmq-disaster-recovery.yml --limit &lt;hostname_of_node_that_needs_recovered></codeblock>
+    <p>No reconfigure playbooks are needed because all of the fan-out exchanges are maintained by
+      the running members of your RabbitMQ cluster.</p>
   </body>
 </topic>
