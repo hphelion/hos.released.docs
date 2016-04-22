@@ -103,9 +103,9 @@ service_metadata_proxy = True
                This version will have been created during the initial installation of your cloud 
                (or perhaps during a previous upgrade). So in total, there are three significant versions of the file:
                <ul>
-                   <li>the previous "upstream" version on the <codeph>hos</codeph> branch</li>
-                   <li>your current version on the <codeph>site</codeph> branch</li>
-                   <li>the new "upstream" version on the <codeph>hos</codeph> branch from </li>
+                   <li>The previous "upstream" version on the <codeph>hos</codeph> branch.</li>
+                   <li>Your current version on the <codeph>site</codeph> branch.</li>
+                   <li>The new "upstream" version on the <codeph>hos</codeph> branch. </li>
                    
                </ul>                    
             </p>
@@ -117,7 +117,7 @@ git merge-base hos site
 <b>2eda1df48e2822533c50f80f5bfd7a9d788bdf73</b>
 </codeblock>      
             
-            <p>And then use <codeph>git log</codeph> to see whee this commit occurs in the history of 
+            <p>And then use <codeph>git log</codeph> to see where this commit occurs in the history of 
             the <codeph>hos</codeph> branch.</p>
  
 <codeblock>
@@ -139,7 +139,7 @@ Date:   Sun Jan 17 19:14:01 2016 +0000
             <p>In this instance, we can see that the relevant commit is in fact the last-but-one commit
                 and so we can use the simplified name <codeph>hos^1</codeph> to identify that commit.</p>
 <codeblock>
-git diff hos^1 HEAD -- hos/ansible/roles/nova-common/templates/nova.conf.j2
+git diff <b>hos^1</b> HEAD -- hos/ansible/roles/nova-common/templates/nova.conf.j2
 </codeblock>
 
 
@@ -226,9 +226,9 @@ git diff $(git merge-base hos HEAD) hos -- hos/ansible/roles/nova-common/templat
             <title>Using <codeph>stage markers</codeph> to view clean versions of files (without conflict markers)</title>
             
             <p>You can use the <codeph>git show</codeph> command with stage markers to view files
-            without having conflict markers embedded in them. Stage 1 (<b>:1</b>) is the 
-            previous upstream version, stage 2 (<b>:2</b>) is your current version while stage 3 (<b>:3</b>)
-                is the new upstream version.</p>
+            without having conflict markers embedded in them. Stage 1  is the 
+            previous upstream version (<b>:1</b>), stage 2  is your current version (<b>:2</b>) while stage 3 
+                is the new upstream version (<b>:3</b>).</p>
             
             <p><b>Stage 1</b></p>
             
@@ -284,8 +284,8 @@ neutron_ca_certificates_file = /etc/ssl/certs/ca-certificates.crt
             <p>There are two approaches to resolving the conflict:</p>
             
             <ol>
-                <li>Edit the file containing the conflcit markers, keeping the change you want to preserve and
-                removing the conflict markers and any chnanges you want to discard.</li>
+                <li>Edit the merged file containing the conflict markers, keeping the change you want to preserve and
+                removing the conflict markers and any changes you want to discard.</li>
                 
                 <li>Take the new upstream version of the file and re-apply any changes you would like to keep from
                 your current version.</li>
@@ -335,9 +335,47 @@ service_metadata_proxy = True
         </section>
                 
         <section>
-            <title>Resolving the conflict - re-applying changes to new upstream version</title> 
+            <title>Resolving the conflict - re-applying your changes to new upstream version</title> 
             
-            <p></p>
+            <p>Create a copy of the new upstream version (see Stage 3 above) in you working directory:</p>
+            
+<codeblock>
+git show <b>:3</b>:hos/ansible/roles/nova-common/templates/nova.conf.j2 > \
+hos/ansible/roles/nova-common/templates/nova.conf.j2
+</codeblock>     
+            
+            <p>Now  edit the file <codeph>hos/ansible/roles/nova-common/templates/nova.conf.j2</codeph>
+                and manually re-apply that changes you want.
+            </p>
+            
+        </section>
+        
+        
+        <section>
+            <title>Completing the merge procedure</title>
+            
+            <p>You may want to check that the changes you have applied are correct. Ccompare the 
+            new upstream version with the version in your working directory:</p>
+            
+<codeblock>
+git diff hos -- hos/ansible/roles/nova-common/templates/nova.conf.j2
+</codeblock>            
+            
+            
+            <p>If you are happy with the resolution, you can stage your changes using:</p>
+            
+<codeblock>
+git add hos/ansible/roles/nova-common/templates/nova.conf.j2
+</codeblock>          
+            
+            <p>Apply the above steps to all the merge conflicts you encounter, and when you have
+            them resolved to your satisfaction, complete the merge:</p>
+            
+            
+<codeblock>
+ git merge --continue
+</codeblock>            
+            
             
         </section>
         
