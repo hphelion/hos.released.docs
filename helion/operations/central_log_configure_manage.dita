@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
+<topic xml:lang="en-us" id="central_log_manage">
+  <title>Running the Centralized Logging Service</title>
+  <body>
+    <!--not tested-->
+    <section id="Clog_manage">
+      <title>Overview</title>
+      <p>text</p>
+      <ul>
+        <li><xref href="#central_log_manage/CL_stop_start">How Do I Stop and Start the
+            Service?</xref></li>
+        <li><xref href="#central_log_manage/CL_disable">Can I Disable and Enable Centralized Logging
+            for a Service?</xref></li>
+      </ul>
+    </section>
+<lines>  
+  
+</lines>
+    <section id="CL_stop_start">
+      <title>How Do I Stop and Start the Logging Service?</title>
+      <p>The steps in this section only impact centralized logging. Logrotate is an essential
+        feature that keeps the service log files from filling the disk and will not be affected.
+          <note type="attention">These playbooks must be run from the lifecycle manager.</note></p>
+      <p><b>To stop the Logging service:</b></p>
+      <ol>
+        <li>To change to the directory containing the ansible playbook, run
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock></li>
+        <li>To run the ansible playbook that will stop the logging service, run:
+          <codeblock>ansible-playbook -i hosts/verb_hosts logging-stop.yml</codeblock></li>
+      </ol>
+      <p><b>To start the Logging service:</b></p>
+      <ol>
+        <li>To change to the directory containing the ansible playbook, run
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock></li>
+        <li>To run the ansible playbook that will stop the logging service, run:
+          <codeblock>ansible-playbook -i ansible-playbook -i hosts/verb_hosts logging-start.yml
+</codeblock></li>
+      </ol>
+    </section>
+<lines>
+  
+  
+</lines>
+    <section id="CL_disable">
+      <title>Can I Disable and Enable Centralized Logging For a Service?</title>
+      <p>To enable or disable Centralized Logging for a service you need to modify the configuration
+        for the service, set the <b>enabled</b> flag to <b>true</b> of <b>false</b>, and then
+        reconfigure logging.</p>
+      <p>To enable Centralized Logging for a service:</p>
+      <ol>
+        <li>Use the documentation provided with the service to ensure it is configured for
+          logging.</li>
+        <li>To find the Helion Openstack file to edit, run:
+          <codeblock>~/helion/my_cloud/config/logging/vars/*</codeblock></li>
+        <li>To edit the file, in a text editor, open: <codeblock/></li>
+        <li>To enable Centralized Logging, find the following code and change the enabled flag to
+            <b>true</b>:
+          <codeblock>
+          logging options:
+             - centralized_logging:
+                 enabled: true
+                 format : json
+        </codeblock></li>
+      </ol>
+      <p>Sample of a BURA file enabled for Centralized logging:
+        <codeblock>
+          ---
+          sub service:
+            name: freezer-api
+            service: freezer
+            logging options:
+             - centralized_logging:
+                 enabled: true
+                 format : json
+        </codeblock>
+      </p>
+      <p><b>To disable Centralized Logging for a service:</b></p>
+      <ol>
+        <li>Use the documentation provided with the service to ensure it is not configured for
+          logging.</li>
+        <li>To find the Helion Openstack file to edit, run:
+          <codeblock>~/helion/my_cloud/config/logging/vars/*</codeblock></li>
+        <li>To edit the file, in a text editor, open: <codeblock/></li>
+        <li>To enable Centralized Logging, find the following code and change the enabled flag to
+            <b>false</b>:
+          <codeblock>
+          logging options:
+             - centralized_logging:
+                 enabled: false
+                 format : json
+        </codeblock>
+        </li>
+      </ol>
+      <p>Sample of a BURA file where Centralized logging is disabled:
+        <codeblock>
+          ---
+          sub service:
+            name: freezer-api
+            service: freezer
+            logging options:
+             - centralized_logging:
+                 enabled: false
+                 format : json
+        </codeblock>
+      </p>
+    </section>
+
+  </body>
+</topic>

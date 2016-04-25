@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
+<topic xml:lang="en-us" id="central_log_configure_services">
+  <title>Settings for Other Services</title>
+  <body>
+    <!--not tested-->
+    <section id="Clog_config_services">
+      
+      <p>Text</p>
+      <ul>
+        <li><xref href="#central_log_configure_services/CL_log_level_srv">How Do I Set Logging Levels for Services?</xref></li>
+        <li><xref href="#central_log_configure_services/CL_config_log_rotate">How Do I Change the Length of Time Log Files Are Retained?</xref></li>
+        <li><xref href="#central_log_configure_services/CL_kibana_config">How Do I Configure Kibana for Centralized Logging?</xref></li>
+        <li><xref href="#central_log_configure_services/CL_elasticsearch_config">How Do I Configure Elasticsearch for Centralized Logging?</xref></li>
+      </ul>
+    </section>
+<lines>
+  
+</lines>
+    <section id="CL_log_level_srv">
+      <title>How Do I Set Logging Levels For Services?</title>
+      <p>Text</p>
+    </section>
+<lines>
+  
+</lines>
+    <section id="CL_config_log_rotate">
+      <title>How Do I Change the Length of Time Log Files Are Retained?</title>
+      <p>As you use each service, you might need change the default configuration settings such as: <ul>
+        <li>which files are rotated</li>
+        <li>how often they are rotated</li>
+        <li>how large they can grow before being rotated</li>
+      </ul> Helion Openstack uses the cron process which in turn calls <codeph>logrotate</codeph>
+        to provide rotation, compression, and removal of log files. Each log file can be checked
+        hourly, daily, weekly, or monthly. If no rotation period is set then the log file will only
+        be rotated when it grows too large.</p>
+      <p>You can find the configuration files for each service in the following directory:
+        <codeblock>.../logging-ansible/logging-common/vars/*</codeblock> Only files that have
+        centralized logging enabled are copied to Elasticsearch.</p>
+      <p>All of the variables for the logrotate process are found in the following file:
+        <codeblock>../logging-ansible/logging-common/defaults/main.yml          
+</codeblock></p>
+      <p>All of the variables for logging are found in the following file:
+        <codeblock>.../logging-ansible/logging-common/defaults/main.yml</codeblock>
+      </p>
+      <p><b>To change log rotation settings:</b></p>
+    </section>
+  <lines>
+    
+  </lines>  
+    <section id="CL_kibana_config">
+      <title>How Do I Configure Kibana for Centralized Logging?</title>
+      <p>You can use the Kibana dashboards to view log data. Kibana is a tool developed to create
+        charts, graphs, tables, and histograms based on logs send to Elasticsearch by logstash.</p>
+      <p>While creating Kibana dashboards is beyond the scope of this document, it is important to
+        know that you can use the default Kibana dashboards or create custom dashboards. The
+        dashboards are JSON files that you can modify or create new dashboards based on existing
+        dashboards.</p>
+      <note>Kibana is client-side software. To operate properly, the browser must be able to access
+        port 5601 on the control plane.</note>
+      <p>The access information for Kibana is defined in the
+          <codeph>~/helion/my_cloud/config/logging/main.yml</codeph> file and implemented in the
+        Kibana configuration file
+          <codeph>~/helion/my_cloud/config/logging/kibana-apache2.conf.j2</codeph>.</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_spl_rg5_st">
+        <tgroup cols="3">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
+          <thead>
+            <row>
+              <entry>Ansible Variable</entry>
+              <entry>Default Value</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>kibana_user</entry>
+              <entry>kibana</entry>
+              <entry>Username that will be required for logging into the Kibana UI.</entry>
+            </row>
+            <row>
+              <entry>kibana_pass</entry>
+              <entry>random password is generated</entry>
+              <entry>Password generated during installation that is used to login to the Kibana
+                UI.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <p><b>Logging into Kibana</b></p>
+      <p>To log into Kibana to view data, you must either access Kibana through Operations Console
+        or using a direct link. Then make sure you have the correct login credentials.</p>
+      <p><b>To log into Kibana:</b></p>
+      <ol>
+        <li>Access Kibana using the Operations Console or through a direct link.</li>
+        <li>Verify login credentials.</li>
+      </ol>
+      <p><b>To use Operations Console:</b></p>
+      <ol>
+        <li>Access <xref href="monitoring_service.dita#monitoring/working" type="section">Operations
+            Console</xref>.</li>
+        <li>From the menu, choose <b>Logging Dashboard</b>.</li>
+      </ol>
+      <p><b>To use a direct link:</b></p>
+      <p>This section helps you verify the Horizon virtual IP (VIP) address for Kibana that you
+        should use.</p>
+      <ol>
+        <li>Navigate to and open in a text editor the following file:
+          <codeblock>network_groups.yml</codeblock>
+        </li>
+        <li>Find the following entry: <codeblock><codeph>external-name</codeph></codeblock></li>
+        <li>If your administrator set a hostname value in the <b>external-name</b> field during the
+          configuration process for your cloud, then Kibana will be accessed over port 5601 on that
+          hostname.</li>
+        <li>If your administrator did not set a hostname value, then to determine which IP address
+          to use, from your lifecycle manager, run: <codeblock>grep vip-HZN-WEB /etc/hosts</codeblock>
+          <p>The output of that command will show you the virtual IP address for Kibana that you
+            should use. Access to Kibana will be over port 5601 of that virtual IP address.
+            Example:</p>
+          <codeblock>http://&lt;VIP&gt;:5601</codeblock>
+        </li>
+      </ol>
+      <p><b>Login Credentials</b></p>
+      <p>During the installation of Kibana, a password is automatically set and it is randomized.
+        Therefore, unless an administrator has already changed it, you need to retreive the default
+        password from a file on the control plane node.</p>
+      <p>The default settings for Kibana are:</p>
+      <dl>
+        <dlentry>
+          <dt>username</dt>
+          <dd>kibana</dd>
+        </dlentry>
+        <dlentry>
+          <dt>password</dt>
+          <dd>(randomized)</dd>
+        </dlentry>
+      </dl>
+      <p><b>To find the randomized password:</b></p>
+      <ol>
+        <li>On your lifecycle manager, navigate to the following directory:
+          <codeblock>~/scratch/ansible/next/hos/ansible/group_vars/</codeblock>
+        </li>
+        <li>To GREP for the <codeph>logging_kibana_password</codeph>, run:
+          <codeblock>grep logging_kibana_password &lt;name-of-control-plane&gt;</codeblock>
+        </li>
+      </ol>
+      <note type="note">For example, if you are using the Entry-scale KVM with VSA model and you
+        kept the default naming scheme in the example files then your command would look similar to
+        this:
+        <codeblock>grep logging_kibana_password entry-scale-kvm-vsa-control-plane-1</codeblock>
+      </note>
+    </section>
+
+    <lines>
+      
+    </lines> 
+
+    <section id="CL_elasticsearch_config">
+      <title>How Do I Configure Elasticsearch for Centralized Logging?</title>
+      <p>Elasticsearch includes some tunable options exposed in its configuration. Helion uses these
+        options in Elasticsearch to prioritize indexing speed over search speed. Helion also
+        configures Elasticsearch for optimal performance in low RAM environments. The options that
+        Helion modifies are listed below along with an explanation about why they were modified.</p>
+      <p>These configurations are defined in the
+          <codeph>~/helion/my_cloud/config/logging/main.yml</codeph> file and are implemented in the
+        Elasticsearch configuration file
+          <codeph>~/helion/my_cloud/config/logging/elasticsearch.yml.j2</codeph>.</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_qsd_3h5_st">
+        <tgroup cols="5">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
+          <colspec colname="c4" colnum="4"/>
+          <colspec colname="c5" colnum="5"/>
+          <thead>
+            <row>
+              <entry>Ansible Variable</entry>
+              <entry>Configuration Parameter</entry>
+              <entry>Default Value</entry>
+              <entry>Elasticsearch Default Value</entry>
+              <entry>Comments</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>elasticsearch_cluster_name</entry>
+              <entry>cluster name</entry>
+              <entry>elasticsearch</entry>
+              <entry>elasticsearch</entry>
+              <entry>Name of the Elasticsearch cluster. This variable cannot be changed after the
+                initial deployment. Doing so will reset all Elasticsearch indices.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_fielddata_cache_size</entry>
+              <entry>indices.fielddata.cache.size</entry>
+              <entry>15%</entry>
+              <entry>unbounded</entry>
+              <entry>By default, this setting is <b>unbounded</b>—Elasticsearch will never evict
+                data from fielddata, which is less than ideal when trying to conserve on memory
+                usage.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_breaker_fielddata_limit</entry>
+              <entry>indices.breaker.fielddata.limit</entry>
+              <entry>25%</entry>
+              <entry>60%</entry>
+              <entry>The field data circuit breaker enables Elasticsearch to estimate the amount of
+                memory a field will require to be loaded into memory. This value must be greater
+                than <b>cache.size</b> to evict data properly.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_ttl_bulk_size</entry>
+              <entry>indices.ttl.bulk_size</entry>
+              <entry>100000</entry>
+              <entry>10000</entry>
+              <entry>The number of expired docs to delete at once.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_cache_filter_size</entry>
+              <entry>indices.cache.filter.expire</entry>
+              <entry>6h</entry>
+              <entry>-1</entry>
+              <entry>By default, this setting is -1 (i.e., never expires).</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_memory_index_buffer_size</entry>
+              <entry>indices.memory.index_buffer_size</entry>
+              <entry>50%</entry>
+              <entry>10%</entry>
+              <entry>Slanting performance in favor of heavier indexing usage over search
+                usage.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_memory_min_index_buffer_size</entry>
+              <entry>indices.memory.min_index_buffer_size</entry>
+              <entry>200 MB</entry>
+              <entry>48 MB</entry>
+              <entry>Slanting performance in favor of heavier indexing usage over search
+                usage.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_memory_min_shard_index_buffer_size</entry>
+              <entry>indices.memory.min_shard_index_buffer_size</entry>
+              <entry>12 MB</entry>
+              <entry>4 MB</entry>
+              <entry>Slanting performance in favor of heavier indexing usage over search
+                usage.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_store_throttle_type</entry>
+              <entry>indices.store.throttle.type</entry>
+              <entry>merge</entry>
+              <entry>merge</entry>
+              <entry>Configures store module throttle for merges.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_indices_store_throttle_max_bytes_per_sec</entry>
+              <entry>indices.store.throttle.max_bytes_per_sec</entry>
+              <entry>80 MB</entry>
+              <entry>20 MB</entry>
+              <entry>Slanting performance in favor of heavier indexing usage over search
+                usage.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_index_refresh_interval</entry>
+              <entry>index.refresh_interval</entry>
+              <entry>30s</entry>
+              <entry>1s</entry>
+              <entry>Increasing refresh interval reduces overhead.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_index_merge_scheduler_max_thread_count</entry>
+              <entry>index.merge.scheduler.max_thread_count</entry>
+              <entry>1</entry>
+              <entry>cores/2</entry>
+              <entry>Elasticsearch recommends 1 if using spinning disks.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_index_translog_flush_threashhold_ops</entry>
+              <entry>index.translog.flush_threshhold_ops</entry>
+              <entry>150000</entry>
+              <entry>unlimited</entry>
+              <entry>Each shard has a transaction log or write ahead log associated with it. This
+                setting controls when commits occur.</entry>
+            </row>
+            <row>
+              <entry>elasticsearch_index_translog_flush_threashhold_size</entry>
+              <entry>index.translog.flush_threshhold_size</entry>
+              <entry>1 GB</entry>
+              <entry>512 MB</entry>
+              <entry>Increasing this setting decreases fsync.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  </body>
+</topic>
