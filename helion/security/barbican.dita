@@ -461,32 +461,44 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
       component-endpoints:
       - default</codeblock>
     </section>
-    <section id="troubleshooting"> List of known issues and workarounds. <p><b>False measurement after TLS to non-TLS switch
-    </b></p><p>After reconfiguring VIP to non-TLS (from TLS), monasca measurements for
-      http_status checks are alternating between '0' and '1' </p>
-      <codeblock>stack@padawan-ccp-c1-m1-mgmt:~$ monasca
-        --os-username monasca measurement-list --dimensions
-        component=barbican-api,monitored_host_type=vip,api_endpoint=internal --merge_metrics</codeblock>
+    <section id="troubleshooting"> List of known issues and workarounds. <ol id="ol_l5z_3x4_tv">
+        <li>Make sure that in your Certificate Signing Request (CSR) 'Common Name' matches the
+            <codeph>barbican_kmip_username</codeph> value defined in
+            <codeph>roles/barbican-common/vars/barbican_deploy_config.yml</codeph>. Otherwise you
+          may see an internal server error message in Barbican for create secret request which does
+          not translate well into this issue.</li>
+        <li>Currently Barbican does not return clear related error with regards to client
+          certificate setup and its connectivity with KMIP server. During secret create request,
+          general "Internal Server Error" is returned when the certificate is invalid or missing any
+          of necessary client certificate data (client certificate, key and CA root
+          certificate).</li>
+        <li>After reconfiguring VIP from TLS to non-TLS , false measurements appear in monitoring.
+          Monasca measurements for http_status checks alternate between '0' and '1' as shown
+          below.</li>
+      </ol><!--<codeblock>stack@padawan-ccp-c1-m1-mgmt:~$ monasca
+        - -os-username monasca measurement-list - -dimensions
+        component=barbican-api,monitored_host_type=vip,api_endpoint=internal - -merge_metrics</codeblock>-->
       <codeblock> http_status 2016-02-17T20:17:00
-        +-------------+------------+--------------------------+--------------+------------+
-        | name        | dimensions | timestamp                | value        | value_meta |
-        +-------------+------------+--------------------------+--------------+------------+
-        | http_status |            | 2016-02-17T20:17:28.000Z |        1.000 |            |
-        |             |            | 2016-02-17T20:17:29.000Z |        0.000 |            |
-        |             |            | 2016-02-17T20:17:29.000Z |        1.000 |            |
-        |             |            | 2016-02-17T20:17:31.000Z |        0.000 |            |
-        |             |            | 2016-02-17T20:17:31.000Z |        1.000 |            |
-        |             |            | 2016-02-17T20:17:57.000Z |        0.000 |            |
-        |             |            | 2016-02-17T20:17:57.000Z |        1.000 |            |
-        +---------------------------------------------------------------------------------+</codeblock>Both
-      URLs (http and https) are being monitored after the non-TLS switch. Edit the control plane
-      definition file i.e.
-      <codeblock>~/helion/my_cloud/definition/data/control_plane.yml</codeblock>Make changes to add
-      Barbican service components if not already there (Above sample configuration can be followed)
-      Commit the change in git repository. <codeblock>cd ~/helion/hos/ansible/ ansible-playbook -i hosts/localhost
-        config-processor-run.yml ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
++-------------+------------+--------------------------+--------------+------------+
+| name        | dimensions | timestamp                | value        | value_meta |
++-------------+------------+--------------------------+--------------+------------+
+| http_status |            | 2016-02-17T20:17:28.000Z |        1.000 |            |
+|             |            | 2016-02-17T20:17:29.000Z |        0.000 |            |
+|             |            | 2016-02-17T20:17:29.000Z |        1.000 |            |
+|             |            | 2016-02-17T20:17:31.000Z |        0.000 |            |
+|             |            | 2016-02-17T20:17:31.000Z |        1.000 |            |
+|             |            | 2016-02-17T20:17:57.000Z |        0.000 |            |
+|             |            | 2016-02-17T20:17:57.000Z |        1.000 |            |
++---------------------------------------------------------------------------------+</codeblock>Both
+      URLs (http and https) are being monitored after the non-TLS switch. To remedy this, edit the
+      control plane definition file,
+      <codeph>control_plane.yml</codeph>:<codeblock>~/helion/my_cloud/definition/data/control_plane.yml</codeblock>Make
+      changes to add Barbican service components if not already there, as explained next: </section>
+        <section conref="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade/config"/>
+      <section>Commit the change in git repository. <codeblock>cd ~/helion/hos/ansible/ ansible-playbook -i hosts/localhost
+config-processor-run.yml ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible 
-        ansible-playbook -i hosts/verb_hosts site.yml</codeblock>
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock>
     </section>
   </body>
 </topic>

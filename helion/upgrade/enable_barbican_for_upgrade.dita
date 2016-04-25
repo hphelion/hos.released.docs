@@ -2,23 +2,26 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="barbicanUpgrade">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Enabling Barbican Support When Upgrading</title>
-  <body><!--not tested-->    <p conkeyref="HOS-conrefs/applies-to"/>
-    
-    <section><title>Enabling Barbican in previous versions of HPE Helion OpenStack</title>
-      <p>Barbican is a new service added in <keyword keyref="kw-hos"/> and is not available in 2.x
-        distributions. (Details of the Barbican Key Management Service are discussed in <xref
-          href="../security/barbican.dita#barbican"/>.) Because the service is new, if you upgrade
-        to <keyword keyref="kw-hos"/> with your existing input model configuration files, you will
-        have to include Barbican sections in the relevant input model files <i>after performing the
-          upgrade</i>. There are three service components (barbican-api, barbican-client,
-        barbican-worker) that need to be included in the service-components list. These
-        service-components are provided in the control plane configuration file,<codeph>
-          control_plane.yml</codeph> at
-          <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph>. These three Barbican
-        components need to be defined for clusters that have a server-role of 'CONTROLLER-ROLE' or
-        'CORE-ROLE' in their control plane definitions. Here is an example of the three Barbican
-        components added to <codeph>control_plane.yml</codeph> under CONTROLLER-ROLE:</p>
-      <codeblock>  control-planes:
+  <body>
+    <!--not tested-->
+    <p conkeyref="HOS-conrefs/applies-to"/>
+
+    <section><title>Enabling Barbican in previous versions of HPE Helion OpenStack</title> Barbican
+      is a new service added in <keyword keyref="kw-hos"/> and is not available in 2.x
+      distributions. (Details of the Barbican Key Management Service are discussed in <xref
+        href="../security/barbican.dita#barbican"/>.) Because the service is new, if you upgrade to
+        <keyword keyref="kw-hos"/> with your existing input model configuration files, you will have
+      to include Barbican sections in the relevant input model files <i>after performing the
+        upgrade</i>.</section>
+
+    <section id="config">There are three service components (barbican-api, barbican-client,
+      barbican-worker) that need to be included in the service-components list. These
+      service-components are provided in the control plane configuration file,<codeph>
+        control_plane.yml</codeph> at
+        <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph>. These three Barbican
+      components need to be defined for clusters that have a server-role of 'CONTROLLER-ROLE' or
+      'CORE-ROLE' in their control plane definitions. Here is an example of the three Barbican
+      components added to <codeph>control_plane.yml</codeph> under CONTROLLER-ROLE: <codeblock>  control-planes:
         - name: control-plane-1
         ...
         ...
@@ -43,11 +46,14 @@
         
         ...
         ...</codeblock>
-      <p>After making the changes, you must run site.yml.</p>
-      
-      For
-      further information on the Key Management service, see <xref
-        href="../security/barbican.dita#barbican"/> and <xref
-        href="../security/barbican_admin.dita#barbicanAdmin"/>.</section>
+      <p>After making the changes, you must run site.yml:</p>
+    </section>
+    <section>
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock></section>
+    <section>
+      <p>For further information on the Key Management service, see <xref
+          href="../security/barbican.dita#barbican"/> and <xref
+          href="../security/barbican_admin.dita#barbicanAdmin"/>.</p></section>
   </body>
 </topic>
