@@ -10,15 +10,17 @@
     
     <section>
       <title>Introduction</title> The L2 gateway agent, a non-core feature in <keyword
-        keyref="kw-hos-phrase"/>, is a plugin to the Neutron networking service to allow two L2
+        keyref="kw-hos-phrase"/>, is a plug-in to the Neutron networking service that allows two L2
       networks to be seamlessly connected to create a single L2 broadcast domain. The initial
       implementation provides for the ability to connect a virtual Neutron VxLAN network to a
-      physical vlan or flat network using a vtep capable HP 5930 switch.</section>
+      physical VLAN or flat network using a VTEP-capable HP 5930 switch. </section>
+    <section>To begin L2 gateway agent setup, you need to configure your switch. Here we use an HP
+      5930 Switch.</section>
 
     
     
-    <section><title>Set up HP 5930 Switch</title>
-      <p>Perform HP 5930 Switch set-up by following these steps:</p>
+    <section><title>Setting up an HP 5930 Switch</title>
+      <p>To set up the switch, follow these steps:</p>
       
       <ol>
       <li> Configure the HP 5930 switch. <p/> Get into system-view:
@@ -29,18 +31,14 @@
         <li>Configure a passive TCP connection for OVSDB; here port 6632 is used:
           <codeblock>ovsdb server ptcp port 6632</codeblock>
         </li>
-        <li>Enable OVSDB server:
-      <codeblock>ovsdb server enable</codeblock> 
-          
+        <li>Enable the OVSDB server: <codeblock>ovsdb server enable</codeblock>
         </li>
-        <li>Enable VTEP process:
-      <codeblock>vtep enable</codeblock> 
-          
+        <li>Enable the VTEP process: <codeblock>vtep enable</codeblock>
         </li>
-        <li>Configure IP address as VTEP source IP. For example here we used
-          10.7.31.1<codeblock>tunnel global source-address 10.7.31.1</codeblock>
+        <li>Configure an IP address as the VTEP source IP. For example, here we used
+          10.7.31.1:<codeblock>tunnel global source-address 10.7.31.1</codeblock>
         </li>
-        <li>Configure vtep access port, in this example, Bridge-Aggregation1 is
+        <li>Configure 'vtep access port'. In this example, Bridge-Aggregation1 is
           used:<codeblock>interface Bridge-Aggregation1  
 vtep access port</codeblock>
         </li>
@@ -117,22 +115,24 @@ MAC _uuid ipaddr locator logical_switch
       </ol>
     </section>
     
-    <section><title>Installation of L2 gateway agent</title><p>To enable L2 gateway you need to be
-        installing <keyword keyref="kw-hos-phrase"/>, performing an update on <keyword
-          keyref="kw-hos-phrase"/>, or you could run neutron reconfigure on an existing version 3.0
-        installation.</p>L2 Gateway installation requires the following steps: <ol>
+    <section><title>Installation of the L2 gateway agent</title><p>You can enable the L2 gateway
+        agent either during installation of <keyword keyref="kw-hos-phrase"/>, while performing an
+        upgrade to <keyword keyref="kw-hos-phrase"/>, or later by running neutron reconfigure on any
+        existing <keyword keyref="kw-hos-phrase"/> installation.</p>L2 Gateway agent installation
+      requires the following steps: <ol>
         <li>Update the neutron.conf.j2 file to include the L2GatewayPlugin. Open the file in vi:
           <codeblock>$vi /home/stack/my_cloud/config/neutron/neutron.conf.j2</codeblock> and add the
-          following<codeblock>[DEFAULT]
-...
-service_plugins = {{ ovsvapp_service_plugin }}neutron.services.l3_router.l3_router_plugin.L3RouterPlugin,neutron_fwaas.services.firewall.fwaas_plugin.FirewallPlugin,{{ neutron_lbaas_plugin }}neutron_vpnaas.services.vpn.plugin.VPNDriverPlugin</codeblock>
+          following</li>
+        <li>To enable the L2 gateway, copy the following, beginning with and including the comma (,)
+          <codeblock>,networking_l2gw.services.l2gateway.plugin.L2GatewayPlugin</codeblock> and add
+          it to the end of the service_plugins line neutron.conf.j2 that looks like
+          this:<codeblock>[DEFAULT]
+   ...
+   service_plugins = {{ ovsvapp_service_plugin }}neutron.services.l3_router.l3_router_plugin.L3RouterPlugin,neutron_fwaas.services.firewall.fwaas_plugin.FirewallPlugin,{{ neutron_lbaas_plugin }}neutron_vpnaas.services.vpn.plugin.VPNDriverPlugin</codeblock>
         </li>
-        <li>To enable L2 Gateway, add the following, beginning with and including the comma (,) to
-          the end of the service_plugins line you see
-          above.<codeblock> ,networking_l2gw.services.l2gateway.plugin.L2GatewayPlugin</codeblock></li>
         <li>Update the input model (in <codeph>control_plane.yml</codeph>) to specify where you want
-          to run the neutron-l2gateway-agent. For
-          example:<codeblock>---
+          to run the neutron-l2gateway-agent. For example, see the line in bold
+          below:<codeblock>---
  product:
  version: 2
  control-planes:
@@ -154,12 +154,12 @@ service_plugins = {{ ovsvapp_service_plugin }}neutron.services.l3_router.l3_rout
    allocation-policy: strict
  service-components:
             
- ... 
- - neutron-l2gateway-agent
+ ... <b>
+ - neutron-l2gateway-agent</b>
  ... )</codeblock>
         </li>
-        <li>Update the <codeph>l2gateway_agent.ini.j2</codeph> For example, here 10.7.31.1 must be
-          the IP of your 5930 switch. First open the file in vi:
+        <li>Update the <codeph>l2gateway_agent.ini.j2</codeph>. For example, here the IP address
+          (10.7.31.1) must be the IP address of your 5930 switch. Now, open the file in vi:
           <codeblock>$vi /home/stack/my_cloud/config/neutron/l2gateway_agent.ini.j2</codeblock>Then
           make the
           changes<codeblock>[ovsdb]
