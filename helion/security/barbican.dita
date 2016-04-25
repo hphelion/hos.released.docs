@@ -27,7 +27,7 @@
         Barbican is an OpenStack key management service offering secure storage, provisioning, and
         management of key data. The Barbican service provides management of secrets, keys and
         certificates via multiple storage back ends. The support for various back ends is provided
-        via plug-ins e.g. Key Management Interoperability Protocol (KMIP) or (Public Key
+        via plug-ins including Key Management Interoperability Protocol (KMIP) or (Public Key
         Cryptography Standards) PKCS11 hardware security module (HSM) plugins, Dogtag CA and KRA
         plug-ins. Barbican supports symmetric and asymmetric key generation using various
         algorithms. Barbican is new in this release. Cinder, neutron-lbaas v2 and Nova will
@@ -46,9 +46,10 @@
       <ul>
       <li>The ability to encrypt volumes/disks. In an OpenStack context, this means support for
           encrypting Cinder volumes (Volume Encryption). Cinder has its own key manager interface
-          (KeyMgr) and can use BarbicanClient as one of its implementations. KeyMgr encypts data in
-          the virtualization host before writing data to the remote disk. There are three options
-          available in <keyword keyref="kw-hos"/>
+          (KeyMgr) and can use BarbicanClient as one of its implementations. By default in <keyword
+            keyref="kw-hos-phrase"/>, Cinder uses Barbican as its key manager when Barbican is
+          enabled.  KeyMgr encypts data in the virtualization host before writing data to the remote
+          disk. There are three options available in <keyword keyref="kw-hos"/>
           <ul>
             <li>Tenant-based encryption for block volume storage using Barbican for KMS </li>
             <li>Barbican with KMIP and PKCS11 and external KMS (certified with HPE Atalla ESKM) </li>
@@ -73,16 +74,17 @@
       <p id="config"><b>Configuration</b></p><p>Some Barbican features and service configurations
         can be changed. This is done using the HLM reconfigure Ansible playbook. For example, the
         log level can be changed from INFO to DEBUG and vice-versa. If needed, this change can be
-        restricted to a set of nodes via the playbook's host limit option. </p>
+        restricted to a set of nodes via the playbook's host limit option. For more information, see
+          <xref href="barbican_admin.dita#barbicanAdmin"/></p>
       <p><b>Secret store back ends</b></p><p>Barbican currently supports database and KMIP as its
         secret store back ends. In OpenStack upstream, there are additional back ends available,
         such as the PKCS11 plug-in and dogtag plug-in which are currently not tested or supported by
         HPE Helion OpenStack. </p><p><b>Database plug-in for secret store</b></p><p>In HPE Helion
         Openstack, by default Barbican is configured to use a database as secret (keys) storage back
-        end. This back end encrypts Barbican managed keys with a project level key (kek , key
-        encryption key) before storing it in the database. And project-level keys are encrypted
-        using a master key. As part of the initial Barbican configuration, you must generate and
-        configure this master key.</p>
+        end. This back end encrypts Barbican-managed keys with a project level key (kek (key
+        encryption key)) before storing it in the database. Project-level keys are encrypted using a
+        master key. As part of the initial Barbican configuration, you must generate and configure
+        this master key.</p>
       <ol>
         <li>Generate the master key using the provided python *generate_kek* script on the lifecycle
           manager node:
@@ -92,8 +94,7 @@
           <codeblock>~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock></li>
         <li>Replace existing *barbican_customer_master_key* value with above generated master key if
           present.</li>
-        <li>Commit the change to the git repository:
-  <!--cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/-->
+        <li>Commit the change to the git repository: <!--cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/-->
           <codeblock>ccd ~/helion
 git add -A
 git commit -m "My config"</codeblock></li>
@@ -140,37 +141,38 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>Edit the file ~/helion/my_cloud/definition/cloudConfig.yml. Note that all audit-related
           configuration is defined under the audit-settings section. Please note that you must use
           valid yaml syntax when specifying values.</li>
-        <li>A service name defined under enabled-services or disabled-services will override the
+        <li>A service name listed under enabled-services or disabled-services will override the
           default setting (i.e. default: enabled or default: disabled) To enable auditing, make sure
           that the Barbican service name is within the enabled-services list of the audit-settings
-          section or is not present in disabled-services list when default: is set to enabled. Below
-          is the relevant section of cloudConfig.yml. Note that enabled-services are commented out.
-          The 'default: enabled' setting covers all services. If you then want to disable (or enable
-          a few, whichever is the opposite of the default global setting you used) you can do so in
-          a disabled-services (or the opposite, enabled-services) section below it. Here
-          enabled-services is commented out and you should only have either a default of enabled (or
-          disabled) or a section of disabled (or enabled). In other words, there is no need to
-          repeat the
+          section or is not present in disabled-services list when default: is set to enabled.
+            <p>Below is the relevant section of cloudConfig.yml. Note that enabled-services are
+            commented out.</p>The 'default: enabled' setting covers all services. If you then want
+          to disable (or enable a few, whichever is the opposite of the default global setting you
+          used) you can do so in a disabled-services (or the opposite, enabled-services) section
+          below it. Here enabled-services is commented out and you should only have either a default
+          of enabled (or disabled) or a section of disabled (or enabled). In other words, there is
+          no need to repeat the
           setting.<codeblock>audit-settings:
-            audit-dir: /var/audit
-            default: enabled
-            #enabled-services:
-            #  - keystone
-            #  - barbican
-            disabled-services:
-            - nova
-            - barbican
-            - keystone
-            - cinder
-            - ceilometer
-            - neutron</codeblock>
+    audit-dir: /var/audit
+    default: enabled
+    #enabled-services:
+    #  - keystone
+    #  - barbican
+    disabled-services:
+       - nova
+       - barbican
+       - keystone
+       - cinder
+       - ceilometer
+       - neutron</codeblock>
         </li>
         <li>Once you are satisfied with your settings, copy the files to
-          ~/helion/my_cloud/definition/, and commit the changes in the git repository.
-  <!-- cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/-->
-          <codeblock>cd ~/helion
+          ~/helion/my_cloud/definition/, and commit the changes in the git repository. For example,
+          if you are using the Entry Scale KVM model,
+          <codeblock>cp -r ~/helion/examples/entry-scale-kvm-vsa/* ~/helion/my_cloud/definition/
+cd ~/helion
 git add -A
-git commit -m "My config"</li>
+git commit -m "My config"</codeblock></li>
         <li>Then run the configuration processor and ready-deployment:
           <codeblock>cd ~/helion/hos/ansible/
 ansible-playbook -i hosts/localhost config-processor-run.yml
@@ -180,6 +182,265 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
 ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
         </li>
       </ol>
+    </section>
+    
+    
+    <section>
+      <title>Barbican Key Management Service bootstrap data</title>
+      <p>When the key management service is installed, some of the Keystone-related initial data is
+        bootstrapped as part of its initial deployment. The data added is primarily around Barbican
+        user, roles, service and endpoint definitions and Barbican role assignments. </p>
+      <p><b>User, Roles and Service/ Endpoint Definitions</b></p>
+      <table frame="all" rowsep="1" colsep="1" id="barb">
+        <tgroup cols="4">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
+          <colspec colname="c4" colnum="4"/>
+          <thead>
+            <row>
+              <entry>Type</entry>
+              <entry>Name or key-value pair</entry>
+              <entry>Purpose</entry>
+              <entry>Comments</entry>
+            </row>
+            
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <p>Keystone User Account</p>
+              </entry>
+              <entry>
+                <p>barbican</p>
+              </entry>
+              <entry>
+                <p>Barbican user account associated with administrative privileges.</p>
+              </entry>
+              <entry>
+                <p>Password is randomly generated and made available in barbican client environment
+                  setup script, <i>barbican.osrc,</i> on the lifecycle manager node.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone User Account</p>
+              </entry>
+              <entry>
+                <p>barbican_service</p>
+              </entry>
+              <entry>
+                <p>Service account used for keystone token validation by barbican service.</p>
+              </entry>
+              <entry>
+                <p>Password is randomly generated and stored in barbican paste configuration i.e.
+                  <i>barbican-api-paste.ini</i>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:creator</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has privilege to create/modify/list keys,
+                  certificates. Creator role does not allow modifications (update/delete) in
+                  container's consumer, modifications in transport keys, modification in certificate
+                  authorities (CA), assignment and management of per project CA. User with
+                  <i>admin</i> role can do this.</p>
+              </entry>
+              <entry>
+                <p>This role has the exact same privileges as defined for '<i>creator</i>' role in
+                  upstream barbican. Referenced in the service policy config file,
+                    <i>policy.json</i>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:admin</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has administrative privileges.</p>
+              </entry>
+              <entry>
+                <p>This role has the exact same privileges as defined for '<i>admin</i>' role in
+                  upstream barbican. Referenced in the service policy config file,
+                    <i>policy.json</i>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:observer</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has privileges limited to read/list of keys,
+                  certificates.</p>
+              </entry>
+              <entry>
+                <p>This role has the exact same privileges as defined for '<i>observer</i>' role in
+                  upstream barbican. Referenced in the service policy config file,
+                    <i>policy.json</i>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:auditor</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has privileges limited to reading metadata of keys,
+                  certificates. This role does not allow reading and listing of actual keys and
+                  certificates.</p>
+              </entry>
+              <entry>
+                <p>This role has the exact same privileges as defined for '<i>auditor</i>' role in
+                  upstream barbican. Referenced in the service policy config file,
+                    <i>policy.json</i>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Role</p>
+              </entry>
+              <entry>
+                <p>key-manager:service-admin</p>
+              </entry>
+              <entry>
+                <p>Barbican specific role which has privilege to modify global preferred CA and
+                  modify default project quotas.</p>
+              </entry>
+              <entry>
+                <p>This role has the exact same privileges as defined for
+                    '<i>key-manager:service-admin</i>' role in upstream barbican. Referenced in
+                  service policy config file, <i>policy.json</i>.</p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Service</p>
+              </entry>
+              <entry>
+                <p> name: barbican type: key-manager</p>
+              </entry>
+              <entry>
+                <p>Barbican service definition. Service type is <i>key-manager</i>.</p>
+              </entry>
+              <entry>
+                <p> </p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Endpoint</p>
+              </entry>
+              <entry>
+                <p> interface: internal region: region1</p>
+              </entry>
+              <entry>
+                <p>Barbican internal endpoint. This is load-balanced endpoint exposed for internal
+                  service usage.</p>
+              </entry>
+              <entry>
+                <p> </p>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <p>Keystone Endpoint</p>
+              </entry>
+              <entry>
+                <p> interface: public region: region1</p>
+              </entry>
+              <entry>
+                <p>Barbican public endpoint. This is load-balanced endpoint exposed for
+                  external/public service usage.</p>
+              </entry>
+              <entry>
+                <p> </p>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section>
+      <table frame="all" rowsep="1" colsep="1" id="barb2">
+        <tgroup cols="4">
+          <colspec colname="c1" colnum="1"/>
+          <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
+          <colspec colname="c4" colnum="4"/>
+          <thead>
+            <row>
+              <entry>User name</entry>
+              <entry>Project name</entry>
+              <entry>Role name</entry>
+              <entry>Purpose</entry>
+            </row>
+            
+          </thead>
+          <tbody>
+            <row>
+              <entry>barbican</entry>
+              <entry>admin</entry>
+              <entry>key-manager:admin</entry>
+              <entry>User is assigned barbican administration privileges on keystone defined
+                  <i>admin</i> project. This allows the user to manage barbican resources associated
+                with that project using barbican CLI setup.</entry>
+            </row>
+            <row>
+              <entry>barbican</entry>
+              <entry>admin</entry>
+              <entry>key-manager:service-admin </entry>
+              <entry>User is assigned barbican service administration privileges on keystone defined
+                  <i>admin</i> project. This role and above role allows the user to have full
+                barbican related administration capabilities</entry>
+            </row>
+            <row>
+              <entry>barbican</entry>
+              <entry>admin</entry>
+              <entry>admin</entry>
+              <entry>User assigned keystone defined administrative role on its <i>admin</i> project.
+                This way customer can continue to use barbican CLI and openstack CLI without need to
+                switch when testing or verifying data.</entry>
+            </row>
+            <row>
+              <entry>admin</entry>
+              <entry>admin</entry>
+              <entry>key-manager:admin</entry>
+              <entry> Keystone defined <i>admin</i> user is given barbican related administrative
+                privileges on keystone defined <i>admin</i> project.</entry>
+            </row>
+            <row>
+              <entry>admin</entry>
+              <entry>admin</entry>
+              <entry>key-manager:service-admin</entry>
+              <entry>In lines of above role assignment, barbican specific service admin role is
+                assigned to allow global preferred CA and quotas modifications.</entry>
+            </row>
+            <row>
+              <entry>barbican_service</entry>
+              <entry>services</entry>
+              <entry>service</entry>
+              <entry>Barbican service account is given <i>service</i> role on <i>services</i>
+                project for token validation. API server uses this for creating scoped service token
+                and then includes it as<i> X-Service-Token</i> when requesting customer/client token
+                validation from keystone.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
   </body>
 </topic>
