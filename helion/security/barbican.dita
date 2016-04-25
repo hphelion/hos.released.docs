@@ -16,6 +16,7 @@
               <li><xref href="#barbican/auditing" format="dita">Auditing</xref></li>
             </ul>
           </li>
+          <li><xref href="#barbican/tls" format="dita">Enabling TLS for Barbican</xref></li>
         </ul></li>
     <li><xref href="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade">Enabling Barbican
           when upgrading</xref> from previous versions of <keyword keyref="kw-hos"/> (separate
@@ -36,11 +37,10 @@
         algorithms. Barbican is new in this release. Cinder, neutron-lbaas v2 and Nova will
         integrate with Barbican for their encryption key generation and storage. </p>
       <p>Barbican has two types of core feature sets:</p>
-      <ul><li>The Barbican component,  which exposes a REST API for secrets/containers/orders and is developed as a WSGI application.
-        
-      </li>
-        <li>Barbican workers for asynchronous processing (used for various messaging-event-driven
-          tasks related to certificate generation). </li>
+      <ul><li>The <i>Barbican component,</i>  a WSGI application that exposes a REST API for
+          secrets/containers/orders.</li>
+        <li><i>Barbican workers</i> for asynchronous processing (used for various
+          messaging-event-driven tasks related to certificate generation). </li>
       </ul>
     
     
@@ -48,7 +48,7 @@
     <section id="features"><title>Features and limitations</title>
       <ul>
       <li>The ability to encrypt volumes/disks. In an OpenStack context, this means support for
-          encrypting Cinder volumes (Volume Encryption). Cinder has its own key manager interface
+          encrypting Cinder volumes (volume encryption). Cinder has its own key manager interface
           (KeyMgr) and can use BarbicanClient as one of its implementations. By default in <keyword
             keyref="kw-hos-phrase"/>, Cinder uses Barbican as its key manager when Barbican is
           enabled. KeyMgr encrypts data in the virtualization host before writing data to the remote
@@ -58,7 +58,7 @@
             <li>Barbican with KMIP and PKCS11 and external KMS (certified with HPE Atalla ESKM) </li>
             <li>3PAR StoreServ Data-At-Rest Encryption </li>
           </ul></li>
-      <li>Encrypting container and objects on the server side </li><li>Storage and retrieval of secrets (passwords) </li><li>Certificate management for Load Balancer as a Service V2 (previously known as Neutron-LBaaS) </li><li>Ability to define and manage access policy for key material</li><li>Administrative functionality, ability to control the lifecycle of key material </li><li>Well-defined auditing ability in OpenStack services around key access and lifecycle events </li><li>Key management as a service for PaaS application(s) deployed on an OpenStack cloud</li><li>Ability to effectively scale up key management and be made highly available (handle
+      <li>Encrypting container and objects on the server side </li><li>Storage and retrieval of secrets (passwords) </li><li>Certificate management for Load Balancer as a Service V2 (previously known as Neutron-LBaaS) </li><li>Ability to define and manage access policies for key material</li><li>Administrative functionality, and the ability to control the lifecycle of key material </li><li>Well-defined auditing ability in OpenStack services around key access and lifecycle events </li><li>Key management as a service for PaaS application(s) deployed on an OpenStack cloud</li><li>Ability to effectively scale up key management and make it highly available (handle
           failover)</li></ul>
         <note type="warning">Do not delete the certificate container associated with your load
         balancer listeners before deleting the load balancers themselves. If you delete the
@@ -446,6 +446,20 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
           </tbody>
         </tgroup>
       </table>
+    </section>
+    <section id="tls"><title>TLS configuration</title> You must enable TLS for Barbican on the Loadbalancer
+      backend and service endpoint by adding barbican-api to the
+        <codeph>tls-component-endpoints:</codeph> section of <codeph>network_groups.yml</codeph>, as
+      shown
+      here:<codeblock>- name: MANAGEMENT
+      hostname-suffix: mgmt
+      hostname: true
+      
+      tls-component-endpoints:
+      # The following service endpoint is behind TLS
+      - barbican-api
+      component-endpoints:
+      - default</codeblock>
     </section>
   </body>
 </topic>
