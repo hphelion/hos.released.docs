@@ -2,13 +2,14 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="barbican">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Key Management with the Barbican Service</title>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
 
-  
-  
-  <ul>
-    <li><xref href="#barbican/overview" format="dita">Barbican service overview</xref></li>
-    <li><xref href="#barbican/installation" format="dita">Installation</xref>
+
+
+    <ul>
+      <li><xref href="#barbican/overview" format="dita">Barbican service overview</xref></li>
+      <li><xref href="#barbican/installation" format="dita">Installation</xref>
         <ul>
           <li><xref href="#barbican/config" format="dita">Configuration</xref>
             <ul>
@@ -18,11 +19,11 @@
           </li>
           <li><xref href="#barbican/tls" format="dita">Enabling TLS for Barbican</xref></li>
         </ul></li>
-    <li><xref href="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade">Enabling Barbican
+      <li><xref href="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade">Enabling Barbican
           when upgrading</xref> from previous versions of <keyword keyref="kw-hos"/> (separate
         document)</li>
-  </ul>
-    
+    </ul>
+
     <section id="overview"><title>Barbican service overview</title>
       <title/>
       <p><!--when upgrading to 3.0, use same services so barbican will not be added but in hos 3 barbian
@@ -37,17 +38,16 @@
         algorithms. Barbican is new in this release. Cinder, neutron-lbaas v2 and Nova will
         integrate with Barbican for their encryption key generation and storage. </p>
       <p>Barbican has two types of core feature sets:</p>
-      <ul><li>The <i>Barbican component,</i>  a WSGI application that exposes a REST API for
+      <ul>
+        <li>The <i>Barbican component,</i> a WSGI application that exposes a REST API for
           secrets/containers/orders.</li>
         <li><i>Barbican workers</i> for asynchronous processing (used for various
           messaging-event-driven tasks related to certificate generation). </li>
       </ul>
-    
-    
     </section>
-    <section id="features"><title>Features and limitations</title>
-      <ul>
-      <li>The ability to encrypt volumes/disks. In an OpenStack context, this means support for
+    <section id="features"><title>Key features </title> Following are the major features of the 
+      Barbican key management service: <ul>
+        <li>The ability to encrypt volumes/disks. In an OpenStack context, this means support for
           encrypting Cinder volumes (volume encryption). Cinder has its own key manager interface
           (KeyMgr) and can use BarbicanClient as one of its implementations. By default in <keyword
             keyref="kw-hos-phrase"/>, Cinder uses Barbican as its key manager when Barbican is
@@ -58,14 +58,22 @@
             <li>Barbican with KMIP and PKCS11 and external KMS (certified with HPE Atalla ESKM) </li>
             <li>3PAR StoreServ Data-At-Rest Encryption </li>
           </ul></li>
-      <li>Encrypting container and objects on the server side </li><li>Storage and retrieval of secrets (passwords) </li><li>Certificate management for Load Balancer as a Service V2 (previously known as Neutron-LBaaS) </li><li>Ability to define and manage access policies for key material</li><li>Administrative functionality, and the ability to control the lifecycle of key material </li><li>Well-defined auditing ability in OpenStack services around key access and lifecycle events </li><li>Key management as a service for PaaS application(s) deployed on an OpenStack cloud</li><li>Ability to effectively scale up key management and make it highly available (handle
-          failover)</li></ul>
-        <note type="warning">Do not delete the certificate container associated with your load
+        <li>Encrypting container and objects on the server side </li>
+        <li>Storage and retrieval of secrets (passwords) </li>
+        <li>Certificate management for Load Balancer as a Service V2 (previously known as
+          Neutron-LBaaS) </li>
+        <li>Ability to define and manage access policies for key material</li>
+        <li>Administrative functionality, and the ability to control the lifecycle of key material </li>
+        <li>Well-defined auditing ability in OpenStack services around key access and lifecycle
+          events </li>
+        <li>Key management as a service for PaaS application(s) deployed on an OpenStack cloud</li>
+        <li>Ability to effectively scale up key management and make it highly available (handle
+          failover)</li>
+      </ul>
+      <note type="warning">Do not delete the certificate container associated with your load
         balancer listeners before deleting the load balancers themselves. If you delete the
         certificate first, future operations on your load balancers and failover will cease to
         function.</note>
-      
-      
     </section>
     <section id="installation"><title>Installation</title>
       <p>Barbican is an essential service in <keyword keyref="kw-hos"/> and is installed
@@ -76,11 +84,10 @@
         add Barbican support to a clean deployment.</p><p>However, if you are upgrading from
           <keyword keyref="kw-hos"/> 2.x, you must explicitly enable Barbican, as explained in <xref
           href="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade"/>. </p><p>If you do
-        make configuration changes to your clean install of  <keyword keyref="kw-hos-phrase"/>, you
+        make configuration changes to your clean install of <keyword keyref="kw-hos-phrase"/>, you
         will need to redeploy the service. Please refer to <xref
           href="barbican_admin.dita#barbicanAdmin/updating">Updating Barbican</xref> for more
         details on the available customization options. </p>
-   
       <p><b>Secret store back ends</b></p><p>Barbican currently supports database and KMIP as its
         secret store back ends. In OpenStack upstream, there are additional back ends available,
         such as the PKCS11 plug-in and dogtag plug-in which are currently not tested or supported by
@@ -191,8 +198,8 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
         </li>
       </ol>
     </section>
-    
-    
+
+
     <section>
       <title>Barbican Key Management Service bootstrap data</title>
       <p>When the key management service is installed, some of the Keystone-related initial data is
@@ -212,7 +219,7 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
               <entry>Purpose</entry>
               <entry>Comments</entry>
             </row>
-            
+
           </thead>
           <tbody>
             <row>
@@ -242,7 +249,7 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
               </entry>
               <entry>
                 <p>Password is randomly generated and stored in barbican paste configuration i.e.
-                  <i>barbican-api-paste.ini</i>.</p>
+                    <i>barbican-api-paste.ini</i>.</p>
               </entry>
             </row>
             <row>
@@ -257,7 +264,7 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
                   certificates. Creator role does not allow modifications (update/delete) in
                   container's consumer, modifications in transport keys, modification in certificate
                   authorities (CA), assignment and management of per project CA. User with
-                  <i>admin</i> role can do this.</p>
+                    <i>admin</i> role can do this.</p>
               </entry>
               <entry>
                 <p>This role has the exact same privileges as defined for '<i>creator</i>' role in
@@ -381,7 +388,7 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
         </tgroup>
       </table>
     </section>
-    
+
     <section>
       <table frame="all" rowsep="1" colsep="1" id="barb2">
         <tgroup cols="4">
@@ -396,7 +403,7 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
               <entry>Role name</entry>
               <entry>Purpose</entry>
             </row>
-            
+
           </thead>
           <tbody>
             <row>
@@ -490,17 +497,15 @@ component-endpoints:
       - internal
       - admin
    cert-file: helion-internal-cert </codeblock>
-      
-      Commit the changes
-      
-      Run the following Ansible playbooks:
+      Commit the changes Run the following Ansible playbooks:
       <codeblock>$ ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
         $ ansible-playbook -i hosts/localhost ready-deployment.yml
         $ cd ~/scratch/ansible/next/hos/ansible
         $ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml
         $ ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
     </section>
-    <section id="troubleshooting"><title>Known issues and workarounds</title> <ol id="ol_l5z_3x4_tv">
+    <section id="troubleshooting"><title>Known issues and workarounds</title>
+      <ol id="ol_l5z_3x4_tv">
         <li>Make sure that in your Certificate Signing Request (CSR) 'Common Name' matches the
             <codeph>barbican_kmip_username</codeph> value defined in
             <codeph>roles/barbican-common/vars/barbican_deploy_config.yml</codeph>. Otherwise you
@@ -533,8 +538,8 @@ component-endpoints:
       control plane definition file,
       <codeph>control_plane.yml</codeph>:<codeblock>~/helion/my_cloud/definition/data/control_plane.yml</codeblock>Make
       changes to add Barbican service components if not already there, as explained next: </section>
-        <section conref="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade/config"/>
-      <section>Commit the change in git repository. <codeblock>cd ~/helion/hos/ansible/ 
+    <section conref="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade/config"/>
+    <section>Commit the change in git repository. <codeblock>cd ~/helion/hos/ansible/ 
 ansible-playbook -i hosts/localhost config-processor-run.yml 
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible 
