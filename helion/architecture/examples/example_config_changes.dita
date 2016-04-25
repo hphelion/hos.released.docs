@@ -320,5 +320,210 @@
         
 
 
+        <table frame="all" rowsep="1" colsep="1" id="cloud_config">
+            <tgroup cols="2">
+                <colspec colname="c1" colnum="1" colwidth="2*"/>
+                <colspec colname="c2" colnum="2" colwidth="4*"/>
+                <colspec colname="c3" colnum="3" colwidth="4*"/>                
+                
+                <thead>
+                    <row>
+                        <entry>File</entry>
+                        <entry>Old Value</entry>
+                        <entry>New Value</entry>                        
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry morerows="3">network_groups.yml</entry>
+                        <entry>
+<codeblock>
+          tls-components:
+            - default
+          roles:
+            - public
+          cert-file: my-public-cert
+          # This is the name of the certificate that will be used on load balancer.
+          # Replace this with name of file in "~helion/my_cloud/config/tls/certs/".
+          # This is the certificate that matches your setting for external-name
+          #
+          # Note that it is also possible to have per service certificates:
+          #
+          # cert-file:
+          # default: my-public-cert
+          # horizon: my-horizon-cert
+          # nova-api: my-nova-cert
+          #
+          #
+</codeblock>                            
+                            
+                        </entry>
+                        <entry>
+<codeblock>
+          tls-components:
+            - default
+          roles:
+            - public
+          cert-file: my-public-cert
+          # This is the name of the certificate that will be used on load balancer.
+          # HOS will look for a file with this name in the config/tls/certs directory.
+          # This is the certificate that matches your setting for external-name
+          #
+          # Note that it is also possible to have per service certificates:
+          #
+          # cert-file:
+          # default: my-public-cert
+          # horizon: my-horizon-cert
+          # nova-api: my-nova-cert
+          #
+          # The configuration-processor will also create a request templates for each
+          # named certificates under
+          # "info/cert_reqs/"
+          #
+          # And this will be of the form
+          #
+          # info/cert_reqs/my-public-cert
+          # info/cert_reqs/my-horizon-cert
+          # info/cert_reqs/my-nova-cert
+          #
+          # These request templates contain the subject Alt-names that
+          # the certificates need. A customer can add to this template
+          # before generating their Certificate Signing Request (CSR).
+          # They would then send the CSR to their CA to be signed and
+          # receive the certificate, which can then be dropped into
+          # "config/tls/certs".
+          #
+          # When you bring in your own certificate you may want to bring
+          # in the trust chains (or CA certificate) for this certificate.
+          # This is usually not required if the CA is a public signer that
+          # gets bundled by the system. However, we suggest you include it
+          # into HOS anyway by copying the file into the directory
+          # "config/cacerts/".
+          # Note that the file extension should be .crt or it will not
+          # be processed by HOS.
+          #
+</codeblock>                            
+                            
+                        </entry>
+                    </row>
+                    
+                    <row>
+                        <entry>
+<codeblock>
+   - name: GUEST
+      hostname-suffix: guest
+      tags:
+        - neutron.networks.vxlan
+</codeblock>                            
+                            
+                        </entry>
+                        <entry>
+<codeblock>                            
+    - name: GUEST
+      hostname-suffix: guest
+      tags:
+        - neutron.networks.vxlan
+      <b># Set the mtu to 1550 to allow VMs to use a 1500 MTU without
+      # underlying packet fragmentation.
+      # Note: this requires setting a 1550 mtu (or higher) on any
+      # untagged network group on the same interface as GUEST so
+      # the MANAGEMENT network group must also have the mtu set to 1550.
+      #
+      #mtu: 1550    </b>   
+</codeblock>
+                        </entry>
+                        
+                        
+                    </row>
+                    
+                    <row>
+                        <entry>
+<codeblock>
+    - name: MANAGEMENT
+      hostname-suffix: mgmt
+      hostname: true
+
+      component-endpoints:
+        - default
+
+      routes:
+        - default
+
+      load-balancers:
+        - provider: ip-cluster
+          name: lb
+          components:
+            - default
+          roles:
+            - internal
+            - admin
+</codeblock>                           
+                            
+                        </entry>
+                        <entry>
+<codeblock>
+    - name: MANAGEMENT
+      hostname-suffix: mgmt
+      hostname: true
+
+      <b>tls-component-endpoints:
+      # The following service endpoint is behind TLS
+        - barbican-api</b>
+      component-endpoints:
+        - default
+
+      routes:
+        - default
+        <b>- OCTAVIA-MGMT-NET</b>
+
+      load-balancers:
+        - provider: ip-cluster
+          name: lb
+          <b>tls-components:
+            - default</b>
+          components:
+          # These services do not currently support TLS
+           <b> - vertica
+            - rabbitmq
+            - mysql
+            - nova-metadata</b>
+          roles:
+            - internal
+            - admin
+          <b>cert-file: helion-internal-cert</b>
+          # The helion-internal-cert is a reserved name and
+          # this certificate will be autogenerated. Customer
+          # can bring in their own cert with a different name
+          # and follow the process described for the external
+          # loadbalancer configuration above. See under
+          # my-public-cert. It is important to use the request
+          # template generated by the config processor as there
+          # are more Subject Alt-name entries for the internal
+          # certificate than the external certificate.
+
+</codeblock>                            
+                            
+                        </entry>                        
+                    </row>
+                    
+                    <row>
+                        <entry>&#160;</entry>
+                        <entry>
+<codeblock>
+      <b># Uncomment the following line to accommodate a 1550 MTU for the GUEST network group
+      #mtu: 1550</b>
+</codeblock>                            
+                            
+                        </entry>
+                        
+                    </row>
+                    
+                </tbody>
+            </tgroup>
+        </table>
+        
+                            
+                            
+
     </body>
 </topic>
