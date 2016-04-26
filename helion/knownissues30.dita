@@ -5,17 +5,6 @@
     <body>
         <!--not tested-->
 
-        <section>
-            <title>Fact cache entry isn't valid</title>
-            <p><!--https://jira.hpcloud.net/browse/HLM-3357--> If at the very start of an Ansible
-                run you see a message like the following:
-                <codeblock>
-Fact cache entry for host COMPUTE-0002 isn't valid, deleting and failing
-Fact cache entry for host COMPUTE-0001 isn't valid, deleting and failing
-ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not otherwise contain valid JSON data. They have been removed, so you can re-run your command now.
-</codeblock>
-                Then please just re-run your Ansible command. </p>
-        </section>
 
 
         <section>
@@ -154,6 +143,59 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                 <codeblock>ansible-playbook -i hosts/verb_hosts monasca-stop.yml --tags thresh
 ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock>
             </p>
+        </section>
+        
+        <section id="DOCS-3036">
+            <!-- https://jira.hpcloud.net/browse/DOCS-3036 -->
+            <title>Cannot use wildcards in multipath blacklist on RHEL Boot from SAN nodes</title>
+            
+            <p>You will need to change your input model if your system includes RHEL nodes that are configured to boot from a multipath device (boot from SAN). Otherwise those nodes will not be able to access their boot devices when you reboot them.
+                Most of the example models supplied with HOS 3.0 include a blacklist with wildcards like this:</p>
+            
+            <p><b>~/helion/my_cloud/config/multipath/multipath_settings.yml</b></p>
+<codeblock>
+multipath_blacklist:
+  - device:
+      vendor: ".*"
+      product: ".*"
+</codeblock>            
+            <p>These do not work properly on RHEL 7.2, so you will need to change it to a specific list of devices.
+                In particular, you need to ensure that the device you are booting from is not represented 
+                in the blacklist stanza.
+                For example, you could use the following to blacklist all volumes on the local HP SmartArray:</p>
+            
+            <p><b>Change to a specific list of device types:</b></p>
+<codeblock>
+multipath_blacklist:
+- device:
+vendor: "HP"
+product: "LOGICAL VOLUME"
+</codeblock>
+            
+            <p>The exact list that you need will vary depending on the hardware that is in use. 
+                However, this example is appropriate for most HP servers that use SmartArray technology 
+                for their local disks, assuming you don't want multipath configured on the local devices
+            which is typically the case.
+            </p>
+            
+            <note type="important">If you have a mix of RHEL and HPE Linux nodes in your compute pool, 
+                you need to be aware that any configuration you use for <codeph>multipath_blacklist</codeph>
+                is global and will also apply to the HPE Linux nodes.
+            </note>
+            
+        </section>
+        
+        
+        <section>
+            <title>Fact cache entry isn't valid</title>
+            <p><!--https://jira.hpcloud.net/browse/HLM-3357--> If at the very start of an Ansible
+                run you see a message like the following:
+                <codeblock>
+Fact cache entry for host COMPUTE-0002 isn't valid, deleting and failing
+Fact cache entry for host COMPUTE-0001 isn't valid, deleting and failing
+ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not otherwise contain valid JSON data. They have been removed, so you can re-run your command now.
+</codeblock>
+                Then please just re-run your Ansible command. </p>
         </section>
         
     </body>
