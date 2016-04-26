@@ -64,8 +64,13 @@
             <codeph>enabled-services</codeph> list when default: is set to
           <codeph>disabled</codeph>. You should not specify the service name in both lists. If it is
           specified in both, the enabled-services list takes precedence. </li>
-        <li>Commit the change in git repository.
-          <codeblock>cd ~/helion/hos/ansible/
+        <li>Commit the change in git
+          repository.<codeblock>cd ~/helion
+git add -A
+git commit -m "My config" </codeblock></li>
+        <li>Run the configuration-processor-run and ready-deployment playbooks, followed by the
+          barbican-reconfigure
+          playbook:<codeblock>cd ~/helion/hos/ansible/
 ansible-playbook -i hosts/localhost config-processor-run.yml
 ansible-playbook -i hosts/localhost ready-deployment.yml
 cd ~/scratch/ansible/next/hos/ansible
@@ -102,14 +107,81 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
         </li>
       </ul>
     </section>
-    <section><title>Starting and stoppig the Barbican service</title> <p>You can start or stop the
-      Barbican service from the deployer nodes by running the appropriate Ansible playbooks: </p>To stop
-      the Barbican service:
+    <section><title>Starting and stopping the Barbican service</title>
+      <p>You can start or stop the Barbican service from the deployer nodes by running the
+        appropriate Ansible playbooks: </p>To stop the Barbican service:
       <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
 $ ansible-playbook -i hosts/verb_hosts barbican-stop.yml</codeblock>
       To start the Barbican service:
       <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
 $ ansible-playbook -i hosts/verb_hosts barbican-start.yml</codeblock>
+    </section>
+    
+    <section><title>Changing or resetting a password</title> To change the password for the Barbican
+      administrator, first copy the file
+      below:<codeblock>cp ~/helion/my_cloud/info/private_data_metadata.yml to ~/helion/change_credentials/ </codeblock>
+      Then edit private_data_metadata.yml found
+      here:<codeblock>~/helion/change_credentials/private_data_metadata.yml</codeblock>Next, change
+      credentials for barbican admin user and /or barbican service user. Remove everything else. The
+      file wil look similar to this:
+      <codeblock>barbican_admin_password:
+    value: <b>'testing_123'</b>
+    metadata:
+    - clusters:
+        - cluster1
+        component: barbican-api
+        cp: ccp
+    version: '2.0'
+barbican_service_password:
+    value:<b> 'testing_123'</b>
+    metadata:
+    - clusters:
+        - cluster1
+        component: barbican-api
+        cp: ccp
+    version: '2.0'
+  </codeblock>Note
+      that the value (shown in bold) is optional; it is used to set a user-chosen password. If left
+      blank, the  playbook will generate a random password. </section>
+    <section>Next, execute the following playbooks from
+      helion/hos/ansible/:<codeblock>$ cd ~/helion/hos/ansible/
+$ ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
+$ ansible-playbook -i hosts/localhost ready-deployment.yml
+$ cd ~/scratch/ansible/next/hos/ansible
+$ ansible-playbook -i hosts/verb_hosts barbican-reconfigure-credentials-change.yml</codeblock>Finally,
+      ssh to the controller and make sure the password ha been properly updated in </section>
+    <section><codeblock>/etc/barbican# vi barbican-api-paste.ini </codeblock>You can verify Barbican
+      status by running the <codeph>barbican-status.yml</codeph> Ansible playbook on the lifecycle
+      manager node.
+      <codeblock>ansible-playbook -i hosts/verb_hosts barbican-status.yml</codeblock></section>
+    <section>
+      <note>Make sure you remove/delete ~/helion/change_credentials/private_data_metadata.yml after
+        successfully changing the password. </note>
+    </section>
+    
+    <section><title>Updating Logging Configuration</title> All of the Barbican logging is set to
+      INFO by default.To change the level from the lifecycle manager, there are two options
+      available <ol>
+        <li> Edit the barbican customer facing configuration file i.e. go into the follwing
+          directory and edit
+          <codeph>/barbican_deploy_config.yml</codeph><codeblock>~/helion/my_cloud/config/barbican/</codeblock>To
+          change log level entry (<codeph>barbican_loglevel</codeph>) to DEBUG, edit the entry like
+          so:<codeblock>barbican_loglevel = {{ helion_loglevel | default('DEBUG') }} </codeblock>To
+          change the log level to INFO, edit like
+          so:<codeblock>barbican_loglevel = {{ helion_loglevel | default('INFO') }} </codeblock></li>
+        <li>Edit file <codeph>~/helion/hos/ansible/roles/KEYMGR-API/templates/api-logging.conf.j2
+          </codeph>and update the log level accordingly. </li>
+      </ol> Once the change is made, commit the change to the local git repository
+      <codeblock>cd ~/helion
+git add -A
+git commit -m "My config" </codeblock>Run the
+      configuration-processor-run and ready-deployment playbooks, followed by the
+      barbican-reconfigure
+      playbook:<codeblock>cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
     </section>
   </body>
 </topic>
