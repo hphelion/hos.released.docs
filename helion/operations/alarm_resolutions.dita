@@ -1309,9 +1309,28 @@ ansible -i hosts/verb_hosts LOG-SVR -m shell -a "curl localhost:9200/_nodes/_loc
                   greater than 0.</entry>
                 <entry>Field Data Evictions may be found even though it is nowhere near the limit
                   set.</entry>
-                <entry>The elasticsearch_indices_fielddata_cache_size is tuned out-of-the box, but
-                  if it is insufficient, you may need to increase this configuration parameter and
-                  run a reconfigure.</entry>
+                <entry>The <codeph>elasticsearch_indices_fielddata_cache_size</codeph> is tuned
+                  out-of-the box, see <xref
+                    href="configuring/configure_logging.dita#configure_logging/elasticsearch_config"
+                  /> for details. If you need to change this configuration parameter then use these
+                  steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Edit the configuration file below and change the value for
+                        <codeph>elasticsearch_indices_fielddata_cache_size</codeph> to your desired
+                      value: <codeblock>~/helion/my_cloud/config/logging/main.yml</codeblock></li>
+                    <li>Commit the changes to git:
+                      <codeblock>git add -A
+git commit -a -m "changing Elasticsearch fielddata cache size"</codeblock></li>
+                    <li>Run the configuration processor:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                    <li>Update your deployment directory:
+                      <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                    <li>Run the Logging reconfigure playbook to deploy the change:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts logging-reconfigure.yml</codeblock></li>
+                  </ol></entry>
               </row>
               <row>
                 <entry>Kafka Kronos Consumer Lag</entry>
