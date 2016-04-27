@@ -23,6 +23,15 @@
         the required changes directly in the files in <codeph>~/helion/my_cloud</codeph> and commit
         them to the git repository so that those changes are tracked and applied during the upgrade
         process. Otherwise they will not be applied after the upgrade.</p>
+      
+      <p>
+        After the upgrade process has completed, the Cinder Volume and Backup services 
+        will by default run on the first node in the Cinder Volume host group. 
+        To migrate these services to a different node follow the instructions in 
+        <xref href="../operations/blockstorage/singleton_service_cinder.dita">Managing
+          Cinder Volume and Backup Services</xref>.
+      </p>
+      
       <p>You may also install <keyword keyref="kw-hos-phrase-30"/> as a full install. Those
         instructions are found in the installation guide. See <xref
           href="../installation/installation_overview.dita">Installation Overview</xref> for details. If you choose
@@ -90,21 +99,30 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
             <xref
             href="https://h20392.www2.hpe.com/portal/swdepot/displayProductInfo.do?productNumber=HPLinuxCodeSigning"
             scope="external" format="html">here</xref>.</li>
+        
         <li>To begin the upgrade process, log in to the lifecycle manager as the user you created
           during the <keyword keyref="kw-hos-phrase-21"/> deployment, and mount the install media at
             <codeph>/media/cdrom</codeph>; for example:
           <codeblock>sudo mount Helion-OpenStack-3.0.iso /media/cdrom</codeblock></li>
+        
         <li>Unpack the following tarball:
           <!-- TODO V3 FILENAME -->
           <codeblock>tar faxv /media/cdrom/hos/hos-3.0.0-????????????.tar</codeblock></li>
+        
         <li>Run the included initialization script to update the deployer:
           <codeblock>~/hos-3.0.0/hos-init.bash</codeblock></li>
+        
         <li>If you have made any made any changes to your configuration files, ensure that you
           commit them to your local git and if any merge conflicts are reported, you must resolve
           them before proceeding:
           <codeblock>cd ~/helion
 git add –A
-git commit –m "My changes"</codeblock></li>
+git commit –m "My changes"</codeblock>
+        </li>
+        
+        <li>If you want to install the Rados Gateway service, then follow the instructions 
+          <xref keyref="add_rados_gateway">here</xref>.</li>
+        
         <li>Run the configuration processor:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
@@ -128,10 +146,10 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
           <p>A full list is included at the end of this document.</p></li>
         <li>Run the upgrade playbook (required for all models/deployments): <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock>
-          <note>You will see an Ansible code style warning: [WARNING]: It is unnecessary to use '{{'
-            in conditionals, leave variables in loop expressions bare. Please ignore.</note>
-          <note>You may run the <codeph>hlm-status.yml</codeph> playbook any time you like for
-            status information.</note></li>
+          <!--<note>You will see an Ansible code style warning: [WARNING]: It is unnecessary to use '{{'
+            in conditionals, leave variables in loop expressions bare. Please ignore.</note>-->
+          <!--<note>You may run the <codeph>hlm-status.yml</codeph> playbook any time you like for
+            status information.</note-->></li>
         <li><b>ESX - additional step:</b> Once the upgrade is complete, skip to the <xref
             href="upgrade21to30.dita#upgradeto30/esx">Further ESX Model Upgrade Instructions</xref>
           section.</li>

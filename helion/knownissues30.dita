@@ -5,16 +5,48 @@
     <body>
         <!--not tested-->
 
-        <section>
-            <title>Fact cache entry isn't valid</title>
-            <p><!--https://jira.hpcloud.net/browse/HLM-3357--> If at the very start of an Ansible
-                run you see a message like the following:
-                <codeblock>
-Fact cache entry for host COMPUTE-0002 isn't valid, deleting and failing
-Fact cache entry for host COMPUTE-0001 isn't valid, deleting and failing
-ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not otherwise contain valid JSON data. They have been removed, so you can re-run your command now.
-</codeblock>
-                Then please just re-run your Ansible command. </p>
+        <section id="DOCS-3012">
+            <title>Upgrade from 2.1 to 3.0 fails due to Kibana error</title>
+            
+            <p>The failure results in output similar to:</p>
+            
+<codeblock>
+TASK: [logging-server | status | Checking systemd status for Kibana] **********
+failed: [helion-cp1-c1-m1-mgmt] => {"changed": false, "cmd": ["systemctl", "status", "kibana"], "delta": "0:00:00.023937", "end": "2016-04-14 10:09:20.297810", "rc": 3, "start": "2016-04-14 10:09:20.273873", "warnings": []}
+stdout:  kibana.service - Kibana Service
+   Loaded: loaded (/etc/systemd/system/kibana.service; enabled)
+   Active: failed (Result: exit-code) since Thu 2016-04-14 09:04:45 UTC; 1h 4min ago
+Main PID: 28978 (code=exited, status=143)
+....
+FATAL: all hosts have already failed -- aborting
+
+PLAY RECAP ********************************************************************
+_hlm-upgrade-base | Apply package updates ----------------------------- 204.28s
+neutron-server | start | Restart the neutron-server -------------------- 91.09s
+kafka | kafka | start | stop kafka service ----------------------------- 91.03s
+rabbitmq | configure-users | Create RabbitMQ users --------------------- 70.62s
+monasca-thresh | monasca-thresh | start | restart monasca thresh service -- 64.92s
+CMC-DEP | install | Install CMC ---------------------------------------- 58.84s
+horizon_post_configure | post-configure | Compress static files -------- 51.42s
+horizon_post_configure | post-configure | Compress static files -------- 49.00s
+horizon_post_configure | post-configure | Compress static files -------- 48.22s
+vertica | vertica | upgrade vertica version | start vertica service ---- 46.73s
+-------------------------------------------------------------------------------
+Total: --------------------------------------------------------------- 4362.51s
+           to retry, use: --limit @/home/stack/hlm-upgrade.retry
+
+helion-cp1-c1-m1-mgmt      : ok=2538 changed=860  unreachable=0    failed=1
+helion-cp1-c1-m2-mgmt      : ok=2392 changed=828  unreachable=0    failed=1
+helion-cp1-c1-m3-mgmt      : ok=2392 changed=828  unreachable=0    failed=1
+</codeblock>            
+            
+            <p>To workaround this failure, manually start Kibaba on all the controller nodes
+                and then start the upgrade again.</p>
+            
+<codeblock>
+sudo systemctl start kibana
+</codeblock> 
+ 
         </section>
 
 
@@ -34,9 +66,10 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                 migration, see <xref href="operations/live_migration.dita"/>.</p>
         </section>
 
-        <section><title>Compute (ESX)</title>
-            <p><!-- DOCS-2925 --><b>Unable to Create Instance Snapshot when Instance is
-                Active</b></p>
+        <section>
+            <title>Compute (ESX)</title>
+            <!-- DOCS-2925 -->
+            <p><b>Unable to Create Instance Snapshot when Instance is Active</b></p>
             <p>There is a known issue with VMWare vCenter where if you have a compute instance in
                     <codeph>Active</codeph> state you will receive the error below when attempting
                 to take a snapshot of it:</p>
@@ -44,6 +77,17 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
             <p>The workaround for this issue is to stop the instance prior to taking the snapshot.
                 For details on the workaround, see <xref
                     href="operations/troubleshooting/ts_compute.dita#troubleshootingNova/esx"/>.</p>
+         
+            <!-- DOCS-2999 -->
+            <p><b>Parallel activations and/or deactivations are not allowed for ESX Compute</b></p>
+            <p>You should not attempt parallel activations/deactivations for ESX computes using Eon
+                command-line interface (CLI) . Eon CLI used for activate and deactivate are <codeph>eon
+                    resource-activate</codeph> and <codeph>eon resource-deactivate</codeph>,
+                respectively.</p>
+                <p>You should check if cluster resource has changed to the desired states before 
+                    attempting activation or deactivation of ESX cluster.  The desired states are <i>imported</i>, 
+                    <i>activated</i> and <i>provisioned</i>. The ESX cluster compute states can be 
+                    obtained using <codeph>eon resource-list</codeph> CLI.</p>
         </section>
 
         <section>
@@ -86,7 +130,13 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
             <p>Consistency groups are not supported with VSA backends.</p>
             <!-- DOCS-3029 -->
             <p>Cinder volumes on backends connected using native FCoE are not supported.</p>
-
+            
+            <!-- DOCS-2826 --> 
+            <p>In some configurations where iSCSI targets are configured / enabled and entry 
+                similar to the following may appear frequently in the syslog: 
+                <codeblock>systemd-sysv-generator[&lt;pid&gt;]: Ignoring creation of an alias umountiscsi.service for itself</codeblock>
+                This doesn't indicate a problem and is a result of systemd being overly 
+                verbose for informational messages.</p>
         </section>
         
         <section>
@@ -116,7 +166,31 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                 networking may not be up in time before the DHCP retries timeout. If this occurs,
                 reboot the VM.</p>
         </section>
-
+        
+        <section>
+            <title>NIC-Mapping (Neutron)</title>
+            <!-- DOCS-2799 -->
+            <p>This is only relevant if you are using the NIC mapping feature in your input model, you 
+                are running hLinux and have multi-port cards.</p>
+            <p>During internal testing it has been identified that the udev rules for multi-port NIC cards 
+                generated by earlier versions of <keyword keyref="kw-hos"/> could prevent hLinux 4.4 
+                from booting.</p>
+            <p>For reference these rules are defined in this file:
+                    <codeph>/etc/udev/rules.d/90-helion-nic-mapping.rules</codeph>.</p>
+            <p>During the <keyword keyref="kw-hos"/> upgrade this file will be re-generated with 
+                updated contents. The new udev file fixes the issue that could prevent hLinux 4.4 from 
+                booting while performing the required mapping of devices to device-names.</p>
+        </section>
+        
+        <section>
+            <title>RBAC (Neutron)</title>
+            <!-- DOCS-2836 -->
+            <p>Port creation on a shared network fails if <codeph>--fixed-ip</codeph> is specified
+                in the <codeph>neutron port-create</codeph> command. This is reported in <xref
+                    href="https://bugs.launchpad.net/neutron/+bug/1543756" format="html"
+                    scope="external">https://bugs.launchpad.net/neutron/+bug/1543756</xref>.</p>
+        </section>
+        
         <section>
             <title>VPN Service(Neutron)</title>
             <!--DOCS-2840-->
@@ -154,6 +228,68 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
                 <codeblock>ansible-playbook -i hosts/verb_hosts monasca-stop.yml --tags thresh
 ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock>
             </p>
+        </section>
+        
+        <section id="DOCS-3036">
+            <!-- https://jira.hpcloud.net/browse/DOCS-3036 -->
+            <title>Cannot use wildcards in multipath blacklist on RHEL Boot from SAN nodes</title>
+            
+            <p>You will need to change your input model if your system includes RHEL nodes that are configured to boot from a multipath device (boot from SAN). Otherwise those nodes will not be able to access their boot devices when you reboot them.
+                Most of the example models supplied with HOS 3.0 include a blacklist with wildcards like this:</p>
+            
+            <p><b>~/helion/my_cloud/config/multipath/multipath_settings.yml</b></p>
+<codeblock>
+multipath_blacklist:
+  - device:
+      vendor: ".*"
+      product: ".*"
+</codeblock>            
+            <p>These do not work properly on RHEL 7.2, so you will need to change it to a specific list of devices.
+                In particular, you need to ensure that the device you are booting from is not represented 
+                in the blacklist stanza.
+                For example, you could use the following to blacklist all volumes on the local HP SmartArray:</p>
+            
+            <p><b>Change to a specific list of device types:</b></p>
+<codeblock>
+multipath_blacklist:
+- device:
+vendor: "HP"
+product: "LOGICAL VOLUME"
+</codeblock>
+            
+            <p>The exact list that you need will vary depending on the hardware that is in use. 
+                However, this example is appropriate for most HP servers that use SmartArray technology 
+                for their local disks, assuming you don't want multipath configured on the local devices
+            which is typically the case.
+            </p>
+            
+            <note type="important">If you have a mix of RHEL and HPE Linux nodes in your compute pool, 
+                you need to be aware that any configuration you use for <codeph>multipath_blacklist</codeph>
+                is global and will also apply to the HPE Linux nodes.
+            </note>
+            
+        </section>
+        
+        
+        <section><title>Rapidly Creating VMs</title>
+            
+            <p>If creating large numbers of VMs in a synchronous manner
+            (greater than 3 VMs per minute), VM creation failure of up to 10% may be experienced. To
+            work around this behavior, lower the VM creation rate until consistent success is
+            achieved.</p> <!--docs-1050-->
+        </section>
+        
+        
+        <section>
+            <title>Fact cache entry isn't valid</title>
+            <p><!--https://jira.hpcloud.net/browse/HLM-3357--> If at the very start of an Ansible
+                run you see a message like the following:
+                <codeblock>
+Fact cache entry for host COMPUTE-0002 isn't valid, deleting and failing
+Fact cache entry for host COMPUTE-0001 isn't valid, deleting and failing
+ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not otherwise contain valid JSON data. They have been removed, so you can re-run your command now.
+</codeblock>
+                Then please just re-run your Ansible command. </p>
         </section>
         
     </body>
