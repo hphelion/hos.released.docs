@@ -16,12 +16,12 @@
               <li><xref href="#barbican/kmip" format="dita">KMIP plug-in support</xref></li>
               <li><xref href="#barbican/auditing" format="dita">Auditing</xref></li>
             </ul>
-          </li>
-          <li><xref href="#barbican/tls" format="dita">Enabling TLS for Barbican</xref></li>
+            <xref href="#barbican/tls" format="dita">Enabling TLS for Barbican</xref></li>
         </ul></li>
       <li><xref href="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade">Enabling Barbican
           when upgrading</xref> from previous versions of <keyword keyref="kw-hos"/> (separate
         document)</li>
+      <li><xref href="dar.dita#dar">KMIP configuration</xref> (separate document)</li>
     </ul>
 
     <section id="overview"><title>Barbican service overview</title>
@@ -32,11 +32,10 @@
         Barbican is an OpenStack key management service offering secure storage, provisioning, and
         management of key data. The Barbican service provides management of secrets, keys and
         certificates via multiple storage back ends. The support for various back ends is provided
-        via plug-ins including Key Management Interoperability Protocol (KMIP) or (Public Key
-        Cryptography Standards) PKCS11 hardware security module (HSM) plug-ins, Dogtag CA and KRA
-        plug-ins. Barbican supports symmetric and asymmetric key generation using various
-        algorithms. Barbican is new in this release. Cinder, neutron-lbaas v2 and Nova will
-        integrate with Barbican for their encryption key generation and storage. </p>
+        via a Key Management Interoperability Protocol (KMIP) plug-in. Barbican supports symmetric
+        and asymmetric key generation using various algorithms. Barbican is new in this release.
+        Cinder, neutron-lbaas v2 and Nova will integrate with Barbican for their encryption key
+        generation and storage. </p>
       <p>Barbican has two types of core feature sets:</p>
       <ul>
         <li>The <i>Barbican component,</i> a WSGI application that exposes a REST API for
@@ -58,7 +57,6 @@
             <li>Barbican with KMIP and PKCS11 and external KMS (certified with HPE Atalla ESKM) </li>
             <li>3PAR StoreServ Data-At-Rest Encryption </li>
           </ul></li>
-        <li>Encrypting containers and objects on the server side </li>
         <li>Storage and retrieval of secrets (passwords) </li>
         <li>Certificate management for Load Balancer as a Service V2 (previously known as
           Neutron-LBaaS) </li>
@@ -145,9 +143,10 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         and client certificate information needs to be defined in its configuration. The ESKM KMIP
         server uses a client certificate to validate a KMIP client connection established by the
         Barbican server. As part of that KMIP configuration, playbooks provide a mechanism to upload
-        your client certs to nodes hosting the Barbican API server. </p>
+        your client certs to nodes hosting the Barbican API server. </p><p>KMIP deployment
+        instructions can be found in <xref href="dar.dita#dar"/></p>
       <note>The Installation and deployment of the Atalla ESKM or any other HSM devices and
-        dependent components is out of scope for this document. Please refer the relevant
+        dependent components is beyond the scope of this document. Please refer the relevant
         documentation for your choice of product. For example, you can get more information on
         Atalla ESKM and related Data Security and Encryption Products at <xref
           href="http://www8.hp.com/us/en/software-solutions/data-security-encryption" format="html"
@@ -474,98 +473,8 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
         </tgroup>
       </table>
     </section>
-    <section id="tls"><title>TLS configuration </title>In <keyword keyref="kw-hos-phrase"/> internal
-      and admin VIP endpoints can be secured behind TLS. In addition, TLS support was extended to
-      the Barbican API node/host (which makes it the only service with back-end TLS support in
-        <keyword keyref="kw-hos-phrase"/>). Therefore, you will need to make changes in existing
-      input model files to add TLS for Barbican traffic beyond the internal load balancer. You must
-      enable TLS for Barbican on the load balancer back end and service endpoint by adding
-        <codeph>barbican-api</codeph> to the <codeph>tls-component-endpoints:</codeph> section of
-        <codeph>network_groups.yml</codeph>, as shown next.</section>
-    <section> Go to <codeph>helion/my_cloud/definition/data/</codeph> and edit
-        <codeph>network_groups.yml</codeph>><codeblock>cd ~/helion/my_cloud/definition/data/ </codeblock><codeblock>.......
-.....
-tags:
-  - neutron.networks.vxlan
-  - neutron.networks.vlan:
-      provider-physical-network: physnet1
-  - nova.compute.iscsi
- 
-tls-component-endpoints:
-- barbican-api
-component-endpoints:
-- default
+   
 
- routes:
-    - default
- load-balancers:
-   - provider: ip-cluster
-   load-balancers:
-     - provider: ip-cluster
-   name: lb
-   tls-components:
-     - default
-   components:
-     - vertica
-     - rabbitmq
-     - mysql
-     - nova-metadata
-   roles:
-      - internal
-      - admin
-   cert-file: helion-internal-cert </codeblock>
-      Commit the changes <codeblock>cd ~/helion
-git add -A
-git commit -m "My config"</codeblock>
-      Then run the following Ansible playbooks:
-      <codeblock>$ ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
-$ ansible-playbook -i hosts/localhost ready-deployment.yml
-$ cd ~/scratch/ansible/next/hos/ansible
-$ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml
-$ ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
-    </section>
-    
-    <!--<section><title>Enable NON-TLS for the Barbican endpoint</title> First find network_groups.yml
-      in<codeblock>cd ~/helion/my_cloud/definition/data/</codeblock> Edit network_groups.yml to
-      remove Barbican from
-      <codeblock>  .......
-      .....
-      tags:
-      - neutron.networks.vxlan
-      - neutron.networks.vlan:
-      provider-physical-network: physnet1
-      - nova.compute.iscsi
-      
-      component-endpoints:
-      - default
-      
-      routes:
-      - default
-      load-balancers:
-      - provider: ip-cluster
-      load-balancers:
-      - provider: ip-cluster
-      name: lb
-      tls-components:
-      - default
-      components:
-      - vertica
-      - rabbitmq
-      - mysql
-      - nova-metadata
-      roles:
-      - internal
-      - admin
-      cert-file: helion-internal-cert </codeblock>
-      Commit the changes <codeblock>cd ~/helion
-git add -A
-git commit -m "My config"</codeblock>
-      Execute the Following playbooks
-      <codeblock>$ ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
-$ ansible-playbook -i hosts/localhost ready-deployment.yml
-$ cd ~/scratch/ansible/next/hos/ansible
-$ ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
-    </section>-->
     <section id="troubleshooting"><title>Known issues and workarounds</title>
       <ol id="ol_l5z_3x4_tv">
         <li>Make sure that in your Certificate Signing Request (CSR) 'Common Name' matches the

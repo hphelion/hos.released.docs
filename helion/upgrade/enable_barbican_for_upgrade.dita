@@ -51,6 +51,59 @@
     <section>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible 
 ansible-playbook -i hosts/verb_hosts site.yml</codeblock></section>
+    
+    <section id="tls"><title>TLS configuration </title>In <keyword keyref="kw-hos-phrase"/> internal
+      and admin VIP endpoints can be secured behind TLS. In addition, TLS support was extended to
+      the Barbican API node/host (which makes it the only service with back-end TLS support in
+      <keyword keyref="kw-hos-phrase"/>). Therefore, you will need to make changes in existing
+      input model files to add TLS for Barbican traffic beyond the internal load balancer. You must
+      enable TLS for Barbican on the load balancer back end and service endpoint by adding
+      <codeph>barbican-api</codeph> to the <codeph>tls-component-endpoints:</codeph> section of
+      <codeph>network_groups.yml</codeph>, as shown next.</section>
+    <section> Go to <codeph>helion/my_cloud/definition/data/</codeph> and edit
+        <codeph>network_groups.yml</codeph>><codeblock>cd ~/helion/my_cloud/definition/data/ </codeblock><codeblock>.......
+        .....
+        tags:
+        - neutron.networks.vxlan
+        - neutron.networks.vlan:
+        provider-physical-network: physnet1
+        - nova.compute.iscsi
+        
+        tls-component-endpoints:
+        - barbican-api
+        component-endpoints:
+        - default
+        
+        routes:
+        - default
+        load-balancers:
+        - provider: ip-cluster
+        load-balancers:
+        - provider: ip-cluster
+        name: lb
+        tls-components:
+        - default
+        components:
+        - vertica
+        - rabbitmq
+        - mysql
+        - nova-metadata
+        roles:
+        - internal
+        - admin
+        cert-file: helion-internal-cert </codeblock>
+      Commit the changes <codeblock>cd ~/helion
+git add -A
+git commit -m "My config"</codeblock>
+      Then run the following Ansible playbooks:
+      <codeblock>$ ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
+$ ansible-playbook -i hosts/localhost ready-deployment.yml
+$ cd ~/scratch/ansible/next/hos/ansible
+$ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml
+$ ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
+    </section>
+    
+    
     <section>
       <p>For further information on the Key Management service, see <xref
           href="../security/barbican.dita#barbican"/> and <xref

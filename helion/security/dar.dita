@@ -2,110 +2,142 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="dar">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Data at Rest Encryption</title>
-
-    
+  
+  
   <body><!--not tested-->    <p conkeyref="HOS-conrefs/applies-to"/>
     <section> THIS DOCUMENT IS MERELY A POUR OF THE WIKI AND NEEDS MUCH WORK BEFORE USE OR
       PUBLISHING</section>
-    <section>This section describes the data-at-rest encryption model available in <keyword
-        keyref="kw-hos"/>.<p>The Cinder block storage service will request the creation and
-        attachment of encrypted storage volumes. These volumes are protected with an encryption key
-        that may be stored in a hardware security module (HSM) appliance. The Barbican service
-        supports two methods to store encryption keys: a native database back end and an HSM device
-        (KMIP + Atalla ESKM).</p>
-      <p>The back ends can be configured as described below.</p>
-      <ul>
-        <li>Native database: This is the default configuration in <keyword keyref="kw-hos"/>. </li>
-        <li>KMIP + Atalla ESKM: Access details for your HSM appliance are to be used in steps below.
-            <p> After successful configuration, you should now see Barbican make requests of the HSM
-            for key material as needed. You can also confirm key operations are going to your HSM
-            via its admin portal. </p></li>
+  
+    <section> The Barbican service in <keyword keyref="kw-hos-phrase"/> supports two types of
+      backends to store encryption keys: <ul id="ul_z4c_wkd_5v">
+        <li> Native DB backend</li>
+        <li>HSM device (KMIP + Atalla ESKM)</li>
       </ul>
-      <p><b>KMIP + Atalla ESKM configuration</b></p>
-      <ol>
-        <li>Copy the KMIP plugin certs. On the lifecycle manager node, execute these commands to
-          copy
-          them:<codeblock>stack@localhost:~$ cd ~/stack/scratch/ansible/next/hos/ansible
-stack@localhost:~$ ansible-playbook  -i hosts/verb_hosts barbican-reconfigure.yml -e@/tmp/kmip_plugin_certs.yml</codeblock>
-          Next you will enable KMIP plugin. First open barbican_deploy_config.yml for
-          editing:<codeblock>stack@localhost:~$ vi ~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock></li>
-        <li>In that file, change the value of <codeph>use_kmip_secretstore_plugin</codeph> to True
-          to use the KMIP plugin or False to use the default secret store plugin (store_crypto). </li>
-        <li>Provide KMIP client connection credentials and KMIP server hostname and port:
-          <codeblock>barbican_kmip_username: 'hlm_barbican'
-barbican_kmip_password: 'openstack'
-barbican_kmip_port: 5696
-barbican_kmip_host : 16.103.18.54</codeblock>
-        </li>
-        <li>Commit the change in the git repository:
-          <codeblock>stack@localhost:~$ git add -A
-stack@localhost:~$ git commit -m 'Enable KMIP'
-stack@localhost:~$ cd ~/helion/hos/ansible/
-stack@localhost:~$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
-        </li>
-        <li>Run the Barbican reconfiguration playbook in deployment area:
-          <codeblock>stack@localhost:~$ cd ~/scratch/ansible/next/hos/ansible
-stack@localhost:~$ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
-        </li>
-      </ol>
-      <p><b>Usage Examples</b></p>
-      <ol>
-        <li>Now that Barbican and Cinder services are installed, you need to configure a Cinder
-          volume type for encryption. This will create a new Cinder volume type "LUKS" (Linux
-          Unified Key Setup) that can be selected when creating a new volume. Such volumes will be
-          encrypted with a 512bit AES key: <codeblock>stack@localhost:~$ cinder --os-username admin --os-password openstack type-­create LUKS
-stack@localhost:~$ cinder --os­username admin --os­password openstack encryption-type-create \
-                   --cipher aes-xts-plain64 --key_size 512 --control_location \ 
-                   front-end LUKS nova.volume.encryptors.luks.LuksEncryptor</codeblock>
-          <codeblock>+--------------------------------------+-------------------------------------------+-----------------+----------+------------------+
-|            Volume Type ID            |                  Provider                 |      Cipher     | Key Size | Control Location |
-+--------------------------------------+-------------------------------------------+-----------------+----------+------------------+
-| 99ed804b-7ed9-41a5-9c5e-e2002e9f9bb4 | nova.volume.encryptors.luks.LuksEncryptor | aes-xts-plain64 |   512    |    front-end     |
-+--------------------------------------+-------------------------------------------+-----------------+----------+------------------+</codeblock>
-        </li>
-        <li>You can now create a new volume with the type LUKS. This will initiate a request for a
-          new key from Barbican. Once created you can attach the new volume to an instance.
-          <codeblock>stack@localhost:~$ cinder create --display-name testVolumeEncrypted --volume-type LUKS --availability-zone nova 1</codeblock>
-        </li>
-        <li>The volume list should now show that you have a new volume and that it is encrypted. Run
-          cinder show with the volume
-          ID:<codeblock>stack@localhost:~$ cinder show 2ebf610b-98bf-4914-aee1-9b866d7b1897</codeblock>
-          Here is the
-          output:<codeblock>+---------------------------------------+--------------------------------------+
-|                Property               |                Value                 |
-+---------------------------------------+--------------------------------------+
-|              attachments              |                  []                  |
-|           availability_zone           |                 nova                 |
-|                bootable               |                false                 |
-|          consistencygroup_id          |                 None                 |
-|               created_at              |      2016-03-04T00:17:45.000000      |
-|              description              |                 None                 |
-|               encrypted               |                 True                 |
-|                   id                  | 2ebf610b-98bf-4914-aee1-9b866d7b1897 |
-|                metadata               |                  {}                  |
-|            migration_status           |                 None                 |
-|              multiattach              |                False                 |
-|                  name                 |         testVolumeEncrypted          |
-|         os-vol-host-attr:host         |  ha-volume-manager@lvm-1#LVM_iSCSI   |
-|     os-vol-mig-status-attr:migstat    |                 None                 |
-|     os-vol-mig-status-attr:name_id    |                 None                 |
-|      os-vol-tenant-attr:tenant_id     |   5f3b093c603f4dc8bc377d04e5385d42   |
-|   os-volume-replication:driver_data   |                 None                 |
-| os-volume-replication:extended_status |                 None                 |
-|           replication_status          |               disabled               |
-|                  size                 |                  1                   |
-|              snapshot_id              |                 None                 |
-|              source_volid             |                 None                 |
-|                 status                |              available               |
-|                user_id                |   3bdde5491e174a8aafcbc5a88e01cac7   |
-|              volume_type              |                 LUKS                 |
-+---------------------------------------+--------------------------------------+</codeblock>
-        </li>
-        <li>When using an ESKM appliance for the back end, you can also confirm that key operations
-          are going to your HSM via its admin portal
-          by.….….….….….…...<codeblock>UUID                                    Owner             Object Type      State       Creation Date
-8d54f41d-91dd-4f5e-bcfe-964af8213a8c    hlm_barbican     SymmetricKey     PreActive   2016-03-02 13:58:58</codeblock></li>
-      </ol>
+      <p><b>Configuration</b></p>As part of HLM reconfigure playbook, different backends can be
+      enabled as described below. </section>
+    <section>Native DataBase: This is the default configuration in <keyword keyref="kw-hos-phrase"
+      />. </section>
+    <section>KMIP + Atalla ESKM: For KMIP device, SSL client certificate is needed as generally HSM
+      devices require 2-way SSL for security reasons. You would needed client certificate, client
+      private key and client root CA recognized by your HSM device.. </section>
+    <section>Provide certificate information, by modifying the sample configuration file on the
+      lifecycle manager node
+      ~/helion/hos/ansible/roles/KEYMGR-API/files/samples/barbican_kmip_plugin_config_sample.yml. </section>
+    <section>Copy this file to a temporary directory e.g. /tmp/kmip_plugin_certs.yml. </section>
+    <section>Edit the file to provide either client certificates as absolute file paths
+      (i.e.`client_cert_file_path`, `client_key_file_path`, `client_cacert_file_path`) or pasting
+      certificate content directly into the file (i.e. in `client_cert_content`,
+      `client_key_content`, `client_cacert_content`). </section>
+    <section>File paths takes precedence over content variables if both are provided. Setting file
+      path variables:
+      <codeblock>vi /tmp/kmip_plugin_certs.yml # File paths takes precedance over cert content
+      if both are provided. # Here file path refers to local filesystem path where ansible is #
+      executed. client_cert_file_path: /path/to/cert/file client_key_file_path: /path/to/key/file
+      client_cacert_file_path: /path/to/cacert/file</codeblock>
+      Setting the content variables:
+      <codeblock>vi /tmp/kmip_plugin_certs.yml 
+  # Following are samples which customer needs to replace with their
+  # own content here or via file path approach mentioned above. 
+  client_cert_content: |
+      -----BEGIN CERTIFICATE----- 
+      MIID0jCCArqgAwIBAgICAKQwDQYJKoZIhvcNAQELBQAwgZQxCzAJBgNVBAYTAlVT
+      MQswCQYDVQQIEwJDTzEUMBIGA1UEBxMLRnQuIENvbGxpbnMxGDAWBgNVBAoTD0hl 
+      ...
+      d2xldHQgUGFja2FyZDEMMAoGA1UECxMDQ1RMMRYwFAYDVQQDFA1LTUlQX0xvY2Fs
+      L7x0qB6Zaf3IBkOZqf5bMfAQoKfxww== 
+      -----END CERTIFICATE----- 
+  client_key_content: | 
+      -----BEGIN RSA PRIVATE KEY----- 
+      MIIEowIBAAKCAQEArjYVZzdsSMsk520UD1E94jl0/AZGLlsAB152dEP5E9C3mXzQ
+      ZYvfApMh8PFc53gZwLBCb4joy1r8mZj/e7CwCUuo1cJHR9xnhwdK3RLeRbU3dfW8 
+      ...
+      98DmYxBio8+wQWQdiAPRRthtnvhSWL67oYACPwvWUJJ+D18HfpWCEgCmBU3a8ZHc
+      AaW8rRXtMZzuujGgAbA1hpf5z1lHuiG/X7/XMDVGiRALMyBbHV57 
+      -----END RSA PRIVATE KEY-----
+  client_cacert_content: | 
+      -----BEGIN CERTIFICATE-----
+      MIIEmjCCA4KgAwIBAgIBADANBgkqhkiG9w0BAQsFADCBlDELMAkGA1UEBhMCVVMx
+      CzAJBgNVBAgTAkNPMRQwEgYDVQQHEwtGdC4gQ29sbGluczEYMBYGA1UEChMPSGV3 
+      ...
+      FAimEB/a2E+A0oxwuHmhMg0kOpDuXIWn4BW+Z6z5h1j3PFyg/CZ548Fz0XOgvXC7
+      Ejpkd+5R+24HloruUV1R2EYvmlr8UMFX80og11u+ 
+      -----END CERTIFICATE-----</codeblock>
+      Provide certificate information to Barbican service via reconfigure playbook:
+      <codeblock>cd ~/helion/hos/ansible
+      ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml -e@/tmp/kmip_plugin_certs.yml</codeblock>
+      Provide HSM connection credential for Barbican service. In this step, KMIP plugin connection
+      details are provided to service: Edit the files
+      ~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml Change the value
+      `use_kmip_secretstore_plugin` to True to use KMIP plugin or False to use default secret store
+      plugin (`store_crypto`). Provide KMIP client connection credentials and KMIP server hostname
+      and port. barbican_deploy_config.yml
+      <codeblock>####################################################################### ####################
+      KMIP Plugin Configuration Section ################
+      ####################################################################### # Flag to reflect
+      whether KMIP plugin is to be used as backend for storing secrets use_kmip_secretstore_plugin:
+      True # Note: Connection username needs to match with 'Common Name' provided # in client cert
+      request (CSR). barbican_kmip_username: userName barbican_kmip_password: password
+      barbican_kmip_port: 1234 barbican_kmip_host: 111.222.333.444</codeblock>
+      Commit the changes Run reconfiguration playbook in deployment area:
+      <codeblock>cd ~/helion/hos/ansible/ ansible-playbook -i
+      hosts/localhost ready-deployment.yml cd ~/scratch/ansible/next/hos/ansible ansible-playbook -i
+      hosts/verb_hosts barbican-reconfigure.yml</codeblock>
+    </section><section> DAR usage model in HOS 3.0 Examples This section describes the data-at-rest encryption
+      model available in <keyword keyref="kw-hos-phrase"/>. This model provides support for
+      encrypting Cinder Volumes (Volume Encryption). These encrypted volumes are protected with an
+      encryption key that may be stored in an  HSM appliance.  </section>
+    <section>Now that Barbican and Cinder services are installed, you need to configure a cinder
+      volume type for encryption. This will create a new cinder volume type, "LUKS," that can be
+      selected when creating a new volume. Such volumes will be encrypted with a 512bit AES key:
+      <codeblock>stack@localhost:~$ source  ~/service.osrc
+    stack@localhost:~$ cinder type-­create LUKS
+    stack@localhost:~$ cinder encryption-type-create \
+    ­­                  --cipher aes-xts-plain64 --key_size 512 --control_location \ 
+    front-end LUKS nova.volume.encryptors.luks.LuksEncryptor
+    
+    +--------------------------------------+-------------------------------------------+-----------------+----------+------------------+
+    |            Volume Type ID            |                  Provider                 |      Cipher     | Key Size | Control Location |
+    +--------------------------------------+-------------------------------------------+-----------------+----------+------------------+
+    | 99ed804b-7ed9-41a5-9c5e-e2002e9f9bb4 | nova.volume.encryptors.luks.LuksEncryptor | aes-xts-plain64 |   512    |    front-end     |
+    +--------------------------------------+-------------------------------------------+-----------------+----------+------------------+</codeblock>You
+      should now be able to create a new volume with the type LUKS, which will request a new key
+      from Barbican. Once created you can attach the new volume to an instance.
+      <codeblock>stack@localhost:~$ cinder create --display-name testVolumeEncrypted --volume-type LUKS --availability-zone nova 1</codeblock>
+      The volume list should now show that you have a new volume and that it is encrypted.
+      <codeblock>stack@localhost:~$ cinder show 2ebf610b-98bf-4914-aee1-9b866d7b1897
+    +---------------------------------------+--------------------------------------+
+    |                Property               |                Value                 |
+    +---------------------------------------+--------------------------------------+
+    |              attachments              |                  []                  |
+    |           availability_zone           |                 nova                 |
+    |                bootable               |                false                 |
+    |          consistencygroup_id          |                 None                 |
+    |               created_at              |      2016-03-04T00:17:45.000000      |
+    |              description              |                 None                 |
+    |               encrypted               |                 True                 |
+    |                   id                  | 2ebf610b-98bf-4914-aee1-9b866d7b1897 |
+    |                metadata               |                  {}                  |
+    |            migration_status           |                 None                 |
+    |              multiattach              |                False                 |
+    |                  name                 |         testVolumeEncrypted          |
+    |         os-vol-host-attr:host         |  ha-volume-manager@lvm-1#LVM_iSCSI   |
+    |     os-vol-mig-status-attr:migstat    |                 None                 |
+    |     os-vol-mig-status-attr:name_id    |                 None                 |
+    |      os-vol-tenant-attr:tenant_id     |   5f3b093c603f4dc8bc377d04e5385d42   |
+    |   os-volume-replication:driver_data   |                 None                 |
+    | os-volume-replication:extended_status |                 None                 |
+    |           replication_status          |               disabled               |
+    |                  size                 |                  1                   |
+    |              snapshot_id              |                 None                 |
+    |              source_volid             |                 None                 |
+    |                 status                |              available               |
+    |                user_id                |   3bdde5491e174a8aafcbc5a88e01cac7   |
+    |              volume_type              |                 LUKS                 |
+    +---------------------------------------+--------------------------------------+</codeblock>When
+      using an ESKM appliance as the back end, you can also confirm key operations are going to your
+      HSM via its admin portal.
+      <codeblock>UUID                                    Owner             Object Type      State       Creation Date
+8d54f41d-91dd-4f5e-bcfe-964af8213a8c    hlm_barbican     SymmetricKey     PreActive   2016-03-02 13:58:58</codeblock>
     </section>
   </body>
 </topic>
