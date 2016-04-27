@@ -8,32 +8,35 @@
     <section> THIS DOCUMENT IS MERELY A POUR OF THE WIKI AND NEEDS MUCH WORK BEFORE USE OR
       PUBLISHING</section>
   
-    <section> The Barbican service in <keyword keyref="kw-hos-phrase"/> supports two types of
-      backends to store encryption keys: <ul id="ul_z4c_wkd_5v">
-        <li> Native DB backend</li>
-        <li>HSM device (KMIP + Atalla ESKM)</li>
+    <section> The Barbican service in <keyword keyref="kw-hos-phrase"/> supports two types of back
+      ends to store encryption keys: <ul id="ul_z4c_wkd_5v">
+        <li> A native database back end</li>
+        <li>An HSM device (KMIP + Atalla ESKM)</li>
       </ul>
-      <p><b>Configuration</b></p>As part of HLM reconfigure playbook, different backends can be
-      enabled as described below. </section>
-    <section>Native DataBase: This is the default configuration in <keyword keyref="kw-hos-phrase"
+      <p><b>Configuration</b></p>Using the HLM reconfigure playbook, different back ends can be
+      configured for the Barbican key management service as described below. </section>
+    <section>Native database: This is the default configuration in <keyword keyref="kw-hos-phrase"
       />. </section>
-    <section>KMIP + Atalla ESKM: For KMIP device, SSL client certificate is needed as generally HSM
-      devices require 2-way SSL for security reasons. You would needed client certificate, client
-      private key and client root CA recognized by your HSM device.. </section>
-    <section>Provide certificate information, by modifying the sample configuration file on the
+    <section>KMIP + Atalla ESKM: For a KMIP device, an SSL client certificate is needed as HSM
+      devices generally  require two-way SSL for security reasons. You will need a client
+      certificate, a client private key and client root certificate authority recognized by your HSM
+      device.</section>
+    <section>Provide certificate information by modifying the sample configuration file on the
       lifecycle manager node
       ~/helion/hos/ansible/roles/KEYMGR-API/files/samples/barbican_kmip_plugin_config_sample.yml. </section>
-    <section>Copy this file to a temporary directory e.g. /tmp/kmip_plugin_certs.yml. </section>
+    <section>Copy this file to a temporary directory such as /tmp. </section>
     <section>Edit the file to provide either client certificates as absolute file paths
-      (i.e.`client_cert_file_path`, `client_key_file_path`, `client_cacert_file_path`) or pasting
+      (i.e.`client_cert_file_path`, `client_key_file_path`, `client_cacert_file_path`) or by pasting
       certificate content directly into the file (i.e. in `client_cert_content`,
       `client_key_content`, `client_cacert_content`). </section>
-    <section>File paths takes precedence over content variables if both are provided. Setting file
-      path variables:
-      <codeblock>vi /tmp/kmip_plugin_certs.yml 
+    <section>File paths take precedence over content variables if both are provided. </section>
+    <section>To set file path variables, open kmip_plugin_certs.yml for
+      editing<codeblock>vi /tmp/kmip_plugin_certs.yml 
   # File paths takes precedance over cert content if both are provided. 
   # Here file path refers to local filesystem path where ansible is 
-  # executed. client_cert_file_path: /path/to/cert/file client_key_file_path: /path/to/key/file
+  # executed. 
+  client_cert_file_path: /path/to/cert/file 
+ client_key_file_path: /path/to/key/file
 client_cacert_file_path: /path/to/cacert/file</codeblock>
       Setting the content variables:
       <codeblock>vi /tmp/kmip_plugin_certs.yml 
@@ -68,8 +71,8 @@ client_cacert_file_path: /path/to/cacert/file</codeblock>
 ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml -e@/tmp/kmip_plugin_certs.yml</codeblock>
       Provide HSM connection credential for Barbican service. In this step, KMIP plugin connection
       details are provided to service: Edit the files
-      ~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml Change the value
-      `use_kmip_secretstore_plugin` to True to use KMIP plugin or False to use default secret store
+      <codeblock>~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock> Change the value
+      `use_kmip_secretstore_plugin` to True to use the KMIP plugin or False to use the default secret store
       plugin (`store_crypto`). Provide KMIP client connection credentials and KMIP server hostname
       and port. barbican_deploy_config.yml
       <codeblock>####################################################################### 
@@ -97,8 +100,8 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
       <codeblock>stack@localhost:~$ source  ~/service.osrc
 stack@localhost:~$ cinder type-­create LUKS
 stack@localhost:~$ cinder encryption-type-create \
-    ­­                  --cipher aes-xts-plain64 --key_size 512 --control_location \ 
-    front-end LUKS nova.volume.encryptors.luks.LuksEncryptor
+                  --cipher aes-xts-plain64 --key_size 512 --control_location \ 
+                  front-end LUKS nova.volume.encryptors.luks.LuksEncryptor
     
 +--------------------------------------+-------------------------------------------+-----------------+----------+------------------+
 |            Volume Type ID            |                  Provider                 |      Cipher     | Key Size | Control Location |
