@@ -7,11 +7,16 @@
     <!--not tested-->
     <section id="Clog_config_services">
       
-      <p>Text</p>
+      <p>When you configure settings for the Centralized Logging Service, those changes impact all
+        services that are enabled for centralized logging. However, if you only need to change the
+        logging configuration for one specific service, you will want to modify the service's files
+        instead of changing the settings for the entire Centralized Logging service. This topic
+        helps you complete the following tasks:</p>
       <ul>
         <li><xref href="#central_log_configure_services/CL_log_level_srv">How Do I Set Logging Levels for Services?</xref></li>
         <li><xref href="#central_log_configure_services/CL_config_log_rotate">How Do I Change the Length of Time Log Files Are Retained?</xref></li>
         <li><xref href="#central_log_configure_services/CL_kibana_config">How Do I Configure Kibana for Centralized Logging?</xref></li>
+        <li><xref href="#central_log_configure_services/CL_ironic_config">How Do I Configure Ironic for Centralized Logging?</xref></li>
         <li><xref href="#central_log_configure_services/CL_elasticsearch_config">How Do I Configure Elasticsearch for Centralized Logging?</xref></li>
       </ul>
     </section>
@@ -20,18 +25,1088 @@
 </lines>
     <section id="CL_log_level_srv">
       <title>How Do I Set Logging Levels For Services?</title>
-      <p>Text</p>
+      <p>When it is necessary to increase the logging level for a specific service to troubleshoot an issue, or to decrease logging levels to save disk space, you can edit the service's config file and then reconfigure logging.</p>
+<p>Messages only appear in the log files if they are the same as or more severe than the log level you set. The DEBUG level logs everything. Most services default to the INFO logging level, which lists informational events, plus warnings, errors, and critical errors. Some services provide other logging options which will narrow the focus to help you debug an issue, receive a warning if an operation fails, or if there is a serious issue with the cloud.
+      </p>
+      <table frame="all" rowsep="1" colsep="1" id="table_log_levels">
+        <tgroup cols="3">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="3.11*"/>
+          <colspec colname="c3" colnum="3" colwidth="2.7*"/>
+          <thead>
+            <row>
+              <entry>Level</entry>
+              <entry>Associated Task(s)</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>DEBUG</entry>
+              <entry>
+                <ul>
+                  <li>To review very detailed output for diagnostic purposes.</li>
+                  <li>If a developer needs copious details to understand what is going on with the
+                    service.</li>
+                </ul>
+              </entry>
+              <entry>Every message is logged including those that are only for debugging. Provides
+                detailed information, typically of interest only when diagnosing problems. The
+                information can be used to diagnose problems by developers, IT, and system
+                administrators.</entry>
+            </row>
+            <row>
+              <entry>INFO</entry>
+              <entry>
+                <ul>
+                  <li>To confirm that things are working as expected, if you want to report events
+                    that occur during the normal operation of a program.</li>
+                  <li>For example: status monitoring or fault investigation.</li>
+                </ul>
+              </entry>
+              <entry>This is the default log level. It includes main events. For example, this
+                includes information about when the service starts and stops, and service
+                configuration assumptions.</entry>
+            </row>
+            <row>
+              <entry>WARN</entry>
+              <entry>
+                <ul>
+                  <li>To confirm that things are working as expected, if you want to report events
+                    that occur during the normal operation of a program.</li>
+                  <li>For example: status monitoring or fault investigation.</li>
+                </ul>
+              </entry>
+              <entry>This is the default log level. It includes main events. For example, this
+                includes information about when the service starts and stops, and service
+                configuration assumptions.</entry>
+            </row>
+            <row>
+              <entry>ERROR</entry>
+              <entry>
+                <ul>
+                  <li>To force a user to respond. For example, if a connection string is
+                    incorrect.</li>
+                  <li>To immediately notify an administrator by email or pager when there is a
+                    serious issue with the cloud.</li>
+                  <li>To report suppression of an error without raising an exception. For example,
+                    an error handler in a long-running server process.</li>
+                </ul>
+              </entry>
+              <entry>Indicates that due to a more serious problem, the software has not been able to
+                perform some function. Entries include any error which is fatal to the operation but
+                not the service or application. Examples: Can't open a required file, or missing
+                data.</entry>
+            </row>
+            <row>
+              <entry>CRITICAL</entry>
+              <entry>To be alerted when a critical error occurs that can lead to service
+                interruption or degradation.</entry>
+              <entry>Identifies an unrecoverable error with a service. Entries indicate a serious
+                error where the program itself may be unable to continue running.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
+    <section id="Loglvl_intro">
+      <title>To configure the logging level for a specific service:</title>
+        <p>If you want to increase or decrease the amount of details that are logged by a service,
+        you can change the current logging level in the configuration files. Most services support,
+        at a minimum, the DEBUG and INFO logging levels. For more information about what levels are
+        supported by a service, check the documentation or Website for the specific service.</p>
+    </section>
+
+
+      <section id="Loglvl_barb">
+        <title>Barbican</title>
+        <p>
+          <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl__barb">
+            <tgroup cols="3">
+              <colspec colname="c1" colnum="1"/>
+              <colspec colname="c2" colnum="2"/>
+              <colspec colname="c3" colnum="3"/>
+              <thead>
+                <row>
+                  <entry>Service</entry>
+                  <entry>Sub-component</entry>
+                  <entry>Supported Logging Levels</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>Barbican</entry>
+                  <entry>barbican-api</entry>
+                  <entry>INFO (default)<p>DEBUG</p></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </p>
+        
+      <p>To change the Barbican logging level:</p>
+<ol>
+  <li>Log in to the lifecycle manager (deployer).</li>
+  <li>Open the following file: 
+<codeblock>~/helion/my_cloud/config/logging/vars/barbican-clr.yml_*</codeblock></li>
+  <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level
+          in the following lines:
+          <codeblock>barbican_loglevel:  {{helion_loglevel | default('INFO')}}
+barbican_logstash_loglevel:  {{helion_loglevel | default('INFO')}}</codeblock></li>
+  <li>Save the changes to the file. </li>
+  <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+  <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+  <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+  <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock></li>
+</ol>        
+    </section>
+    
+    
+    <section id="Loglvl_ceilo">
+      <title>Ceilometer</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl__ceilo">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Ceilometer</entry>
+                <entry>ceilometer-api
+                    <p>ceilometer-collector</p><p>ceilometer-agent-notification</p><p>ceilometer-agent-central</p><p>ceilometer-expirer</p></entry>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the Ceilometer logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Open the following file:
+            <codeblock>~/helion/my_cloud/config/logging/vars/CEI-clr.yml_*</codeblock><note
+            type="note">You can also change the log level for individual Ceilometer components by
+            changing one or more of the files below:
+            ~/helion/hos/ansible/roles/CEI-API/templates/api-logging.conf.j2
+            ~/helion/hos/ansible/roles/CEI-COL/templates/collector-logging.conf.j2
+            ~/helion/hos/ansible/roles/CEI-NAG/templates/agent-notification-logging.conf.j2
+            ~/helion/hos/ansible/roles/CEI-CAG/templates/agent-central-logging.conf.j2
+            ~/helion/hos/ansible/roles/CEI-EXP/templates/expirer-logging.conf.j2</note></li>
+<li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in
+          the following lines:
+          <codeblock>ceilometer_loglevel:  INFO
+ceilometer_logstash_loglevel:  INFO</codeblock>
+        </li>   
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_Ceph">
+      <title>Ceph</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl__ceph">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Ceph</entry>
+                <entry>ceph-mon<p>ceph-osd</p></entry>
+                <entry>DEBUG<p>CRITICAL (default)</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the Ceph logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/CEPH-clr.yml_*</codeblock></li>
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired
+          level in the following lines:
+          <codeblock>ceph_mon_log_level: "{{ helion_loglevel | default('DEBUG') }}"
+ceph_osd_log_level: "{{ helion_loglevel | default('CRITICAL') }}"
+ceph_rgw_log_level: "{{ helion_loglevel | default('CRITICAL') }}"</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_Cinder">
+      <title>Block Storage (Cinder)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_cinder">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Cinder</entry>
+                <entry>cinder-local
+                <p>cinder-logstash</p></entry>
+                <entry>INFO<p>DEBUG (default)</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the Cinder logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/_CND-clr.yml_*</codeblock></li>
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following line: 
+          <codeblock>cinder_default_loglevel: DEBUG</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_Designate">
+      <title>Designate</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_designate">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Designate</entry>
+                <entry>designate-api
+                    <p>designate-central</p><p>designate-mdns</p><p>designate-pool-manager</p><p>designate-zone-manager</p><p>designate-api-json</p><p>designate-central-json</p><p>designate-mdns-json</p><p>designate-pool-manager-json</p><p>designate-zone-manager-json</p></entry>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the Designate logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/designate.yml_*</codeblock></li>
+        <li>Open one or more of the configuration files for the subcomponent that you want to
+          modify:
+          <codeblock>designate-api.log
+designate-api-json.log
+designate-central.log
+designate-central-json.log
+designate-mdns.log
+designate-mdns-json.log
+designate-pool-manager.log
+designate-pool-manager-json.log
+designate-zone-manager.log
+designate-zone-manager-json.log</codeblock></li> 
+          <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following line: 
+          <codeblock>designate_loglevel:  {{helion_loglevel | default('INFO')}}</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts designate-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_esx">
+      <title>ESX (EON)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_esx">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>EON</entry>
+                <entry/>
+                <entry/>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the EON logging level:</p>
+      <ol>
+        <li>See EON logging for more details.</li>
+      </ol>        
+    </section>
+    
+    <section id="Loglvl_freezer">
+      <title>Freezer</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_frz">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Freezer</entry>
+                <entry>freezer-agent <p>freezer-api</p><p>freezer-scheduler</p>
+                </entry>
+                <entry>INFO (default)</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the Freezer logging level:</p>
+      <ol>
+        <li>Currently the freezer service does not support any level other than INFO.</li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_glance">
+      <title>Image (Glance)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_glance">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Glance</entry>
+                <entry>glance-api
+                  <p>glance-registry</p></entry>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the Glance logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/glance.yml_*</codeblock></li> 
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following line: 
+          <codeblock>level: INFO</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_hlm-ux-services">
+      <title>Image (Glance)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_hlmuxs">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>HLM-UX-Services</entry>
+                <entry/>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the HLM-UX-Services logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/hlm-ux-services-clr.yml_*</codeblock></li> 
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following line: 
+          <codeblock>hux_svc_default_log_level: INFO</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-ux-services-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_heat">
+      <title>Orchestration (Heat)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_heat">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>heat</entry>
+                <entry>api-cfn <p>api-cloudwatch</p><p>api-logging</p><p>engine</p></entry>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the Heat logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/heat-clr.yml_*</codeblock></li> 
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following line: 
+          <codeblock>level: INFO</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section> 
+    
+    <section id="Loglvl_keystone">
+      <title>Identity(Keystone)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_keystone">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Keystone</entry>
+                <entry>key-api</entry>
+                <entry>INFO (default)
+                <p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <p>To change the Keystone logging level:</p>
+      <ol>
+        <li>See Identity Service Reconfigure for more details.</li>
+      </ol>        
+    </section>
+    
+    <section id="Loglvl_monasca">
+      <title>Monitoring (Monasca)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_monasca">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>monasca</entry>
+                <entry>monasca-persister
+                    <p>zookeeper</p><p>storm</p><p>monasca-notification</p><p>monasca-api</p><p>kafka</p><p>monasca-agent</p></entry>
+                <entry>WARN (default)<p>INFO</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      <note type="note"> All Monasca logging is defaulted to WARN. This should provide enough information in the log files to pinpoint any issues. If you want to provide more details, you can change the logging level to INFO. It is recommended to avoid using the DEBUG level as that will put high stress on the controller nodes and could overload the system.</note>
+      
+      <p>To change the Monasca logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Monitoring service component logging can be changed by modifying the following files: 
+        <codeblock>~/helion/hos/ansible/roles/monasca-persister/defaults/main.yml
+        ~/helion/hos/ansible/roles/zookeeper/defaults/main.yml
+        ~/helion/hos/ansible/roles/storm/defaults/main.yml
+        ~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml
+        ~/helion/hos/ansible/roles/monasca-api/defaults/main.yml
+        ~/helion/hos/ansible/roles/kafka/defaults/main.yml
+        ~/helion/hos/ansible/roles/monasca-agent/defaults/main.yml (For this file, you will need to add the variable)</codeblock></li>
+<li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following line: 
+  <codeblock>monasca_log_level: WARN</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_neutron">
+      <title>Networking (Neutron)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_neutron">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>neutron</entry>
+                <entry>neutron-server
+                    <p>dhcp-agent</p><p>l3-agent</p><p>lbaas-agent</p><p>metadata-agent</p><p>openvswitch-agent</p><p>vpn-agent</p></entry>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+
+      
+      <p>To change the Neutron logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Open the following file:
+            <codeblock>~/helion/my_cloud/config/logging/vars/neutron-clr.yml_*</codeblock><note
+            type="note">All other Neutron service component log levels are configurable in the
+            following files:
+            <codeblock>~/helion/my_cloud/config/neutron/vpn-agent-logging.conf.j2
+~/helion/my_cloud/config/neutron/dhcp-agent-logging.conf.j2
+~/helion/my_cloud/config/neutron/lbaas-agent-logging.conf.j2
+~/helion/my_cloud/config/neutron/metadata-agent-logging.conf.j2
+~/helion/my_cloud/config/neutron/openvswitch-agent-logging.conf.j2
+~/helion/my_cloud/config/neutron/l3-agent-logging.conf.j2</codeblock></note></li>
+<li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following lines: 
+  <codeblock>level: INFO</codeblock></li>    
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    <section id="Loglvl_nova">
+      <title>Compute (Nova)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_nova">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>nova</entry>
+                <entry/>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      
+      <p>To change the Nova logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/nova-clr.yml_*</codeblock>
+        <note type="note">Nova service component logging levels can be configured by modifying the
+            following files:
+            <codeblock>~/helion/my_cloud/config/nova/novncproxy-logging.conf.j2
+~/helion/my_cloud/config/nova/api-logging.conf.j2
+~/helion/my_cloud/config/nova/compute-logging.conf.j2
+~/helion/my_cloud/config/nova/conductor-logging.conf.j2
+~/helion/my_cloud/config/nova/consoleauth-logging.conf.j2
+~/helion/my_cloud/config/nova/scheduler-logging.conf.j2</codeblock></note></li>
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following lines: 
+          <codeblock>level: INFO</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    
+    <section id="Loglvl_octavia">
+      <title>Octavia</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_octavia">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>octavia</entry>
+                <entry>Octavia-api <p>Octavia-worker</p><p>Octavia-hk</p><p>Octavia-hm</p></entry>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      
+      <p>To change the Octavia logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/octavia-clr.yml_*</codeblock></li>
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following lines: 
+          <codeblock>octavia_default_log_level: INFO</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts octavia-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>
+    
+    <section id="Loglvl_opsconsole">
+      <title>Operations Console</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_opsconsole">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>opsconsole</entry>
+                <entry>ops-web <p>ops-mon</p></entry>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      
+      <p>To change the Ops Console logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/ops_console-clr.yml_*</codeblock></li>
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following lines: 
+          <codeblock>ops_console_loglevel: "{{ helion_loglevel | default('INFO') }}"</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ops_console-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section> 
+    
+    
+    <section id="Loglvl_sherpa">
+      <title>Sherpa</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_sherpa">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>sherpa</entry>
+                <entry/>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      
+      <p>To change the Sherpa logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/sherpa-clr.yml_*</codeblock></li>
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following lines: 
+          <codeblock>'sherpa': {'level': 'INFO', 'handlers': ['file', 'json']},</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts sherpa-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>  
+    
+    <section id="Loglvl_swift">
+      <title>Object Storage (Swift)</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_swift">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>swift</entry>
+                <entry/>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      
+      <p>To change the Swift logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/swift-clr.yml_*</codeblock></li>
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following lines: 
+          <codeblock>log_level=INFO</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>   
+    
+    
+    <section id="Loglvl_vsa">
+      <title>VSA</title>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="loglvl_tbl_vsa">
+          <tgroup cols="3">
+            <colspec colname="c1" colnum="1"/>
+            <colspec colname="c2" colnum="2"/>
+            <colspec colname="c3" colnum="3"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Sub-component</entry>
+                <entry>Supported Logging Levels</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>VSA</entry>
+                <entry>vsa-installer</entry>
+                <entry>INFO (default)<p>DEBUG</p></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+      
+      <p>To change the VSA logging level:</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/vars/vsa-clr.yml_*</codeblock></li>
+        <li>To change the logging level, change the current log level, in ALL CAPS, to the desired level in the following lines: 
+          <codeblock>vsa_installer_log_level: "{{ helion_loglevel | default('INFO') }}"</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts vsa-reconfigure.yml</codeblock></li>
+      </ol>        
+    </section>  
+    
+    
+   
+    
+    
+    
 <lines>
   
 </lines>
     <section id="CL_config_log_rotate">
       <title>How Do I Change the Length of Time Log Files Are Retained?</title>
       <p>As you use each service, you might need change the default configuration settings such as: <ul>
-        <li>which files are rotated</li>
-        <li>how often they are rotated</li>
-        <li>how large they can grow before being rotated</li>
-      </ul> Helion Openstack uses the cron process which in turn calls <codeph>logrotate</codeph>
+          <li>which files are rotated</li>
+          <li>how often they are rotated</li>
+          <li>how large they can grow before being rotated</li>
+        </ul>Helion Openstack uses the cron process which in turn calls <codeph>logrotate</codeph>
         to provide rotation, compression, and removal of log files. Each log file can be checked
         hourly, daily, weekly, or monthly. If no rotation period is set then the log file will only
         be rotated when it grows too large.</p>
@@ -39,12 +1114,119 @@
         <codeblock>.../logging-ansible/logging-common/vars/*</codeblock> Only files that have
         centralized logging enabled are copied to Elasticsearch.</p>
       <p>All of the variables for the logrotate process are found in the following file:
-        <codeblock>../logging-ansible/logging-common/defaults/main.yml          
-</codeblock></p>
+        <codeblock>../logging-ansible/logging-common/defaults/main.yml          </codeblock></p>
       <p>All of the variables for logging are found in the following file:
         <codeblock>.../logging-ansible/logging-common/defaults/main.yml</codeblock>
       </p>
-      <p><b>To change log rotation settings:</b></p>
+      <p><b>To change log rotation settings for a service:</b></p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Change to the sub-directory for the service you want to modify:
+          <codeblock>.../logging-ansible/logging-common/vars/*</codeblock>
+          <p>Using BURA as an example: 
+            <codeblock>.../logging-ansible/logging-common/vars/BURA</codeblock></p></li>
+       <li>Open the *.yml file for the service or sub-component that you want to modify.
+         <p>Using BURA as an example: 
+           <codeblock>.../logging-ansible/logging-common/vars/BURA/freezer-agent-clr.yml</codeblock></p></li>
+        <li>Verify logging is enabled by locating the following line:
+            <codeblock>---
+- centralized_logging:      
+enabled: true</codeblock><p>Using BURA as an
+            example:
+            <codeblock>---
+         sub_service:
+         name: freezer-agent
+         service: freezer
+         logging_options:
+         - centralized_logging:
+         enabled: true</codeblock></p></li>
+        <li>To change the frequency, which is the timing of when the logs are rotated, change the
+          following line: <codeblock>log_rotate:
+      - daily </codeblock><note type="note">Options
+            include: Hourly, Daily, Weekly, Monthly</note></li>
+        <li>To rotate a file based on its size, set the maximum size the log file can be before it is rotated out:
+       <codeblock>- maxsize 80M</codeblock></li>
+        <li>To change the number of log files that are rotated, change the following line:
+        <codeblock>rotate 14</codeblock></li>
+        <li>Save the changes to the file. </li>
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To run the logging reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts bura-reconfigure.yml</codeblock></li>
+      </ol>        
+     
+     <p>Using BURA as an example, I want to change the log rotation settings to the following:
+      <ul>
+        <li>the freezer-agent service to create log entries</li>
+        <li>the log files to be created on a daily basis</li>
+        <li>the maximum size the file can grow before it is rotated out to be 80MB.</li>
+        <li>the number of updated copies of an original log file that are kept locally on the server and will continue to be rotated to be 14 files. </li>        
+        <li>the files to be indexed by Elasticsearch and available for searching</li>
+      </ul></p>
+       <p>
+         To create this scenario I would use the following steps:
+         <ol>
+           <li>Log in to the lifecycle manager.</li>
+             <li>Change to the directory:
+               <codeblock>.../logging-ansible/logging-common/vars/BURA</codeblock></li>
+             <li>Open the following file: 
+                 <codeblock>.../logging-ansible/logging-common/vars/BURA/freezer-agent-clr.yml</codeblock></li>
+           <li>Enable logging by editing the following line to <b>true</b>:
+            <codeblock>---
+- centralized_logging:      
+enabled: false</codeblock></li>
+             <li>Configure the frequency by changing the following line:
+               <codeblock>log_rotate:
+      - daily</codeblock></li>
+             <li>Set the maximum size the log file can be before it is rotated out:
+               <codeblock>- maxsize 80M</codeblock></li>
+             <li>Change the number of log files that are rotated to 14:
+               <codeblock>rotate 14</codeblock></li>
+             <li>Save the changes to the file. </li>
+             <li>To commit the changes to your local git repository:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+             <li>To run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+             <li>To create a deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+             <li>To run the logging reconfigure playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts bura-reconfigure.yml</codeblock></li>
+         </ol>
+       </p>
+
+<p>Sample file created by the above steps:</p>
+      <codeblock>---
+sub_service:
+  name: freezer-agent
+service: freezer
+logging_options:
+- centralized_logging:
+enabled: false
+format: json
+files:
+      - /var/log/freezer-agent/freezer-agent.log
+      log_rotate:
+      - daily
+      - compress
+      - missingok
+      - notifempty
+      - copytruncate
+      - maxsize 80M
+      - rotate 14</codeblock>
     </section>
   <lines>
     
@@ -109,18 +1291,17 @@
         should use.</p>
       <ol>
         <li>Navigate to and open in a text editor the following file:
-          <codeblock>network_groups.yml</codeblock>
-        </li>
+          <codeblock>network_groups.yml </codeblock></li>
         <li>Find the following entry: <codeblock><codeph>external-name</codeph></codeblock></li>
         <li>If your administrator set a hostname value in the <b>external-name</b> field during the
           configuration process for your cloud, then Kibana will be accessed over port 5601 on that
           hostname.</li>
         <li>If your administrator did not set a hostname value, then to determine which IP address
-          to use, from your lifecycle manager, run: <codeblock>grep vip-HZN-WEB /etc/hosts</codeblock>
-          <p>The output of that command will show you the virtual IP address for Kibana that you
-            should use. Access to Kibana will be over port 5601 of that virtual IP address.
-            Example:</p>
-          <codeblock>http://&lt;VIP&gt;:5601</codeblock>
+          to use, from your lifecycle manager, run:
+            <codeblock>grep vip-HZN-WEB /etc/hosts</codeblock><p>The output of that command will
+            show you the virtual IP address for Kibana that you should use. Access to Kibana will be
+            over port 5601 of that virtual IP address.
+          Example:</p><codeblock>http://&lt;VIP&gt;:5601</codeblock>
         </li>
       </ol>
       <p><b>Login Credentials</b></p>
@@ -141,11 +1322,9 @@
       <p><b>To find the randomized password:</b></p>
       <ol>
         <li>On your lifecycle manager, navigate to the following directory:
-          <codeblock>~/scratch/ansible/next/hos/ansible/group_vars/</codeblock>
-        </li>
+          <codeblock>~/scratch/ansible/next/hos/ansible/group_vars/*</codeblock></li>
         <li>To GREP for the <codeph>logging_kibana_password</codeph>, run:
-          <codeblock>grep logging_kibana_password &lt;name-of-control-plane&gt;</codeblock>
-        </li>
+          <codeblock>grep logging_kibana_password &lt;name-of-control-plane&gt;</codeblock></li>
       </ol>
       <note type="note">For example, if you are using the Entry-scale KVM with VSA model and you
         kept the default naming scheme in the example files then your command would look similar to
@@ -157,6 +1336,13 @@
     <lines>
       
     </lines> 
+    
+    <section id="CL_ironic_config">
+      <title>How Do I Configure Ironic for Centralized Logging?</title>
+      
+      <p>Coming Soon!</p>
+      
+    </section>
 
     <section id="CL_elasticsearch_config">
       <title>How Do I Configure Elasticsearch for Centralized Logging?</title>
@@ -170,11 +1356,11 @@
           <codeph>~/helion/my_cloud/config/logging/elasticsearch.yml.j2</codeph>.</p>
       <table frame="all" rowsep="1" colsep="1" id="table_qsd_3h5_st">
         <tgroup cols="5">
-          <colspec colname="c1" colnum="1"/>
-          <colspec colname="c2" colnum="2"/>
-          <colspec colname="c3" colnum="3"/>
-          <colspec colname="c4" colnum="4"/>
-          <colspec colname="c5" colnum="5"/>
+          <colspec colname="c1" colnum="1" colwidth="2.54*"/>
+          <colspec colname="c2" colnum="2" colwidth="1.93*"/>
+          <colspec colname="c3" colnum="3" colwidth="1*"/>
+          <colspec colname="c4" colnum="4" colwidth="1*"/>
+          <colspec colname="c5" colnum="5" colwidth="1*"/>
           <thead>
             <row>
               <entry>Ansible Variable</entry>

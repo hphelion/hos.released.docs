@@ -6,8 +6,14 @@
   <body>
     <!--not tested-->
     <section id="Clog_manage">
-      <title>Overview</title>
-      <p>text</p>
+      <p>Although you might not need to stop and start the logging service very often, you may need to if, for example, one of the logging services is not behaving as expected or not working. </p>
+        
+<p>You cannot enable or disable centralized logging across all services unless you stop all
+        centralized logging. Instead, it is recommended that you enable or disable individual log
+        files in the &lt;service&gt;-clr.yml files and then reconfigure logging. You would enable
+        centralized logging for a file when you want to make sure you are able to monitor those logs
+        in Kibana.</p>
+      <p>This section provides steps for the following tasks:</p>
       <ul>
         <li><xref href="#central_log_manage/CL_stop_start">How Do I Stop and Start the
             Service?</xref></li>
@@ -48,6 +54,7 @@
       <p>To enable or disable Centralized Logging for a service you need to modify the configuration
         for the service, set the <b>enabled</b> flag to <b>true</b> of <b>false</b>, and then
         reconfigure logging.</p>
+      <note type="attention">There are consequences if you enable too many logging files for a service. If there isn’t enough storage to support the increased logging, the retention period of logs in elasticsearch is decreased. Alternatively, if you wanted to increase the retention period of log files or if you didn’t want those logs to show up in Fibana, you would disable centralized logging for a file. </note>
       <p>To enable Centralized Logging for a service:</p>
       <ol>
         <li>Use the documentation provided with the service to ensure it is configured for
@@ -57,24 +64,20 @@
         <li>To edit the file, in a text editor, open: <codeblock/></li>
         <li>To enable Centralized Logging, find the following code and change the enabled flag to
             <b>true</b>:
-          <codeblock>
-          logging options:
-             - centralized_logging:
-                 enabled: true
-                 format : json
-        </codeblock></li>
+          <codeblock>logging options:
+ - centralized_logging:
+        enabled: true
+        format : json</codeblock></li>
       </ol>
       <p>Sample of a BURA file enabled for Centralized logging:
-        <codeblock>
-          ---
+        <codeblock>          ---
           sub service:
             name: freezer-api
             service: freezer
             logging options:
              - centralized_logging:
                  enabled: true
-                 format : json
-        </codeblock>
+                 format : json</codeblock>
       </p>
       <p><b>To disable Centralized Logging for a service:</b></p>
       <ol>
@@ -83,27 +86,23 @@
         <li>To find the Helion Openstack file to edit, run:
           <codeblock>~/helion/my_cloud/config/logging/vars/*</codeblock></li>
         <li>To edit the file, in a text editor, open: <codeblock/></li>
-        <li>To enable Centralized Logging, find the following code and change the enabled flag to
+        <li>To disable Centralized Logging, find the following code and change the enabled flag to
             <b>false</b>:
-          <codeblock>
-          logging options:
-             - centralized_logging:
-                 enabled: false
-                 format : json
-        </codeblock>
+          <codeblock>logging options:
+   - centralized_logging:
+        enabled: false
+        format : json</codeblock>
         </li>
       </ol>
       <p>Sample of a BURA file where Centralized logging is disabled:
-        <codeblock>
-          ---
+        <codeblock>          ---
           sub service:
             name: freezer-api
             service: freezer
             logging options:
              - centralized_logging:
                  enabled: false
-                 format : json
-        </codeblock>
+                 format : json</codeblock>
       </p>
     </section>
 

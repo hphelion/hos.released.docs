@@ -6,19 +6,22 @@
   <body>
     <!--not tested-->
     <section id="Clog_config_settings">
-      <p>Text</p>
+      <p>You can adjust the settings for centralized logging when you are troubleshooting problems
+        with a service or to decrease log size and retention to save on disk space. For steps on how
+        to configure logging settings, refer to the following tasks:</p>
       <ul>
         <li><xref href="#central_log_configure_settings/CL_config_files">Where Can I Find the Configuration Files?</xref></li>
-        <li><xref href="#central_log_configure_settings/CL_general_config">How Do I Set Disk Space Limits?</xref></li>
+        <li><xref href="#central_log_configure_settings/CL_general_config">How Do I Set Disk Space
+            Requirements?</xref></li>
         <li><xref href="#central_log_configure_settings/CL_BU_Elasticsearch">How Do I Back-Up the Files to Elasticsearch?</xref></li>
       </ul>
     </section>
 
 
     <section id="CL_config_files"><title>Where Can I Find the Configuration Files?</title>
-      <p>Centralized Logging can be configured via the configuration files in the
-          <codeph>~/helion/my_cloud/config/logging/</codeph> directory on the lifecycle manager.
-        These files and their use are described below:</p>
+      <p>Centralized Logging settings are stored in the configuration files in the following directory on the lifecycle manager:
+          <codeph>~/helion/my_cloud/config/logging/</codeph></p>
+      <p>The configuration files and their use are described below:</p>
       <table frame="all" rowsep="1" colsep="1" id="table_wtv_rc5_st">
         <tgroup cols="2">
           <colspec colname="c1" colnum="1"/>
@@ -75,7 +78,7 @@
   
 </lines>
     <section id="CL_general_config">
-      <title>How Do I Set Disk Space Limits?</title>
+      <title>How Do I Set Disk Space Requirements?</title>
       <p>The Centralized Logging service needs to have enough resources available to it to perform
         adequately for different scale environments. The base logging levels are tuned during
         installation according to the amount of RAM allocated to your control plane nodes to ensure
@@ -136,7 +139,7 @@
         a reconfigure of the Centralized Logging service if changes are made.</p>
       <note type="warning">The total process memory consumption for Elasticsearch will be the above
         allocated heap value plus any Java Virtual Machine (JVM) overhead.</note>
-      <p><b>Disk Size Requirements</b></p>
+      <p><b>Setting Disk Size Requirements</b></p>
       <p>In the entry-scale models, the disk partition sizes on your controller nodes for the
         logging and elasticsearch data are set as a percentage of your total disk size. You can see
         these in the following file on the lifecycle manager (deployer):
@@ -189,14 +192,104 @@
           </tbody>
         </tgroup>
       </table>
+      <p>To set disk sizes:</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+          <li>Open the following file: 
+          <codeblock>~/helion/my_cloud/config/logging/main.yml</codeblock></li>
+          <li>To set the disk size, change the amount of MB or GB to the desired size in the
+          following lines:
+          <codeblock>  elasticsearch_heap_size: 8 GB
+  logstash_heap_size: 2 GB
+  logstash_num_workers: 10 threads</codeblock></li>
+<li>Save the changes to the file.</li>  
+<li>To commit the changes to your local git repository: 
+          <codeblock>cd ~/helion/hos/ansible
+          git add -A git 
+          commit -m "My config or other commit message"</codeblock></li>
+          <li>To run the configuration processor: 
+          <codeblock>cd ~/helion/hos/ansible
+          ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li> 
+<li>To create a deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+<li>To run the logging reconfigure playbook: 
+    <codeblock>cd ~/scratch/ansible/next/hos/ansible
+          ansible-playbook -i hosts/verb_hosts kronos-reconfigure.yml</codeblock></li>
+      </ol>
     </section>
 <lines>
   
   
 </lines>
     <section id="CL_BU_Elasticsearch">
-      <title>How Do I Back-Up the Files to Elasticsearch?</title>
-      <p>Text</p>
+      <title>How Do I Back-Up the Files to Elasticsearch?</title>      
+      <p>The log filess that are centrally collected in Helion OpenStack are stored by Elasticsearch on disk in the <codeph>/var/lib/elasticsearch</codeph> partition. However, this is distributed across each of the Elasticsearch cluster nodes as shards. If the disk partition runs low on space, a cron job runs curator to delete the old log indices to make room for new logs. This deletion is permanent and the logs are lost forever. If you want to backup old logs, for example to comply with certain regulations, you can configure automatic backup of Elasticsearch indices.</p>
+      
+      <p>Before enabling automatic back-ups, make sure you understand how much disk space you will
+        need, and configure the disks that will store the data. Use the following table to prepare
+        your deployment for enabling automatic backups:</p>
+      
+        <p>
+          <table frame="all" rowsep="1" colsep="1" id="table_ckx_rd4_ht">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="25pt"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>&#9744;</entry>
+                  <entry>Item</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry/>
+                  <entry>Add a shared disk partition to each of the Elasticsearch controller nodes.
+                    <p>The default partition name used for backup is
+                    <codeblock>/var/lib/esbackup</codeblock></p><p>You can change this by:</p><ol>
+                    <li>Open the following file:
+                      <codeph>my_cloud/config/logging/main.yml</codeph></li>
+                    <li>Edit the following variable <codeph>curator_es_backup_partition
+                      </codeph></li>
+                  </ol></entry>
+                </row>
+                <row>
+                  <entry/>
+                  <entry>Ensure the shared disk has enough storage to retain backups for the desired retention period.</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </p>
+      
+      <p>To enable automatic back-up of centralized logs to Elasticsearch:</p>
+      <ol>
+<li>Log in to the lifecycle manager (deployer node).</li>
+<li>Open the following file in a text editor:
+  <codeblock>~/helion/my_cloud/config/logging/main.yml</codeblock></li>
+<li>Find the following variables:
+          <codeblock>curator_backup_repo_name: "es_{{host.my_dimensions.cloud_name}}"
+curator_es_backup_partition: /var/lib/esbackup
+      </codeblock></li>
+<li>To enable backup, add the following line to the curator section:
+      <codeblock>curator_enable_backup: true</codeblock></li>
+<li>To save your changes and re-run the configuration processor:
+          <codeblock>$ cd ~/helion
+$ git add -A
+# Verify the added files
+$ git status
+$ git commit -m "Enabling Elasticsearch Backup"
+   
+$ cd ~/helion/hos/ansible
+$ ansible-playbook -i hosts/localhost config-processor-run.yml
+$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li> 
+<li>To re-configure logging:
+          <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
+$ ansible-playbook -i hosts/verb_hosts kronos-server-reconfigure.yml</codeblock></li>
+ <li>To verify that the indices are backed up, check the contents of the following partition: 
+ <codeblock>/var/lib/esbackup partition</codeblock>
+</li>
+      </ol>
     </section>
 
   </body>

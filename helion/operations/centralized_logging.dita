@@ -18,19 +18,20 @@
       <li>syslog</li>
       <li>keepalived</li>
     </ul>
-    <p>This topic describes the following concepts related to the Centralized Logging feature:</p>
+    <p>The following are common questions related to the Centralized Logging feature:</p>
     <ul>
       <li><xref href="#centralized_logging/components">What Components are Part of
         Logging?</xref></li>
+      <li><xref href="#centralized_logging/types">What Data is Collected by Helion?</xref></li>
       <li><xref href="#centralized_logging/retaining_logs">How Long are Log Files
         Retained?</xref></li>
-      <li><xref href="#centralized_logging/types">What Data is Collected by Helion?</xref></li>
       <li><xref href="#centralized_logging/rotating_logs">How are Logs Rotated?</xref></li>
+      <li><xref href="#centralized_logging/BUElasticsearch">Are Log Files Backed-Up To Elasticsearch?</xref></li>
       <li><xref href="#centralized_logging/info">Where Can I Find More Information?</xref></li>
     </ul>
-    <p>For steps on how to administer and troubleshoot logging, refer to the following topics:</p>
+    <p>For steps on how to administer and troubleshoot logging, refer to the following tasks:</p>
     <ul>
-      <li><xref href="central_log_configure.dita">Configuring Logging</xref>
+      <li><xref href="central_log_configure.dita">What Can I Configure?</xref>
       </li>
       <li><xref href="central_log_troubleshoot.dita"></xref>Troubleshooting</li>
     </ul>
@@ -279,12 +280,24 @@
             <dd>The name of the service that creates the log entries.</dd>
           </dlentry>
           <dlentry>
-            <dt>Node Type</dt>
-            <dd>The type of virtual machine (VM) instance that is running the service.</dd>
-          </dlentry>
-          <dlentry>
             <dt>Rotated Log Files</dt>
             <dd>Updated copies of an original log file. These files are kept locally on the server and will continue to be rotated. If the file is also listed as Centrally Logged, it will also be copied to Elasticsearch.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Frequency</dt>
+            <dd>The timing of when the logs are rotated. Options include:hourly, daily, weekly, or monthly.</dd>
+          </dlentry>
+<dlentry>
+  <dt>Max Size</dt>
+    <dd>The maximum file size the log can be before it is rotated out.</dd>
+</dlentry>
+<dlentry>
+  <dt>Rotation</dt>
+  <dd>The number of log files that are rotated.</dd>
+</dlentry>
+              <dlentry>
+                <dt>Centrally Logged Files</dt>
+                <dd>These files will be indexed by Elasticsearch and will be available for searching in the Kibana user interface.</dd>
           </dlentry>
         </dl>
       </p>
@@ -382,8 +395,24 @@ freezer-scheduler.log.7.gz at 123K        </codeblock>
       <p>Cron runs logrotate hourly. Every 5 minutes another process is run called "logrotate_if_needed" which uses a watermark value to determine if the logrotate process needs to be run. If the "high watermark" has been reached, and the /var/log partition is more than 95% full (by default - this can be adjusted), then logrotate will be run within 5 minutes.</p>
     </section>
     
+    <section id="BUElasticsearch">
+      <title>Are Log Files Backed-Up To Elasticsearch?</title>
+      <p>While centralized logging is enabled out of the box, the backup of these logs are not. The reason is because Centralized Logging relies on the Elasticsearch FileSystem Repository plugin, which in turn requires shared disk partitions to be configured and accessible from each of the Elasticsearch nodes. Since there are multiple ways to setup a shared disk partition, Helion allows you to choose an approach that works best for your deployment before enabling the back-up of logging files to Elasticsearch.</p>
+      <p>If you enable automatic back-up of centralized log files, then all the logs collected from
+        the cloud nodes will be backed-up to Elasticsearch. Every hour, in the management controller
+        nodes where Elasticsearch is setup, a cron job runs to check if Elastisearch is running low
+        on disk space. If the check succeeds, it further checks if the backup feature is enabled. If
+        enabled, the cron job saves a snapshot of the Elasticsearch indices to the configured shared
+        disk partition using curator. Next, the script starts deleting the oldest index and moves
+        down from there checking each time if there is enough space for Elasticsearch. A check is
+        also made to ensure that the backup runs only once a day.</p>
+      
+      <p>For steps on how to enable automatic back-up, refer to the <xref href="central_log_configure_CL.dita">Settings for Centralized Logging</xref> topic.</p>
+      
+    </section>
+    
     <section id="info">
-      <title>Where Can I Find More Information</title>
+      <title>Where Can I Find More Information?</title>
       <p>For information the centralized logging components, see the following sites:</p>
       <ul>
         <li><xref href="https://www.elastic.co/guide/en/logstash/current/introduction.html"
