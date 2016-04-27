@@ -38,6 +38,31 @@
         </section>
         
         <section conref="installation/upgrade_to_214.dita#upgradeto21/recover_rabbit"/>
+        
+        <section id="no_module_named_yaml">
+            <!-- https://jira.hpcloud.net/browse/DOCS-3023 -->
+            <title>"No module named yaml" Error during Upgrade</title>
+            
+            <p>If you see an error similar to the following during upgrade, re-deploy cobbler and 
+            re-run upgrade.</p>
+            
+<codeblock>
+TASK: [cobbler | set variables | Get baremetal server information] ************ 
+failed: [hlm201-cp1-cluster0-m1-mgmt -> 127.0.0.1] => {"failed": true, "parsed": false}
+Traceback (most recent call last):
+  File "/home/stack/.ansible/tmp/ansible-tmp-1460995124.97-42543074272233/bmconfig", line 44, in &lt;module>
+    import yaml
+ImportError: No module named yaml
+</codeblock>            
+            
+            <p><b>Resolution:</b></p>
+            
+<codeblock>
+ansible-playbook -i hosts/localhost cobbler-deploy.yml
+ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml
+</codeblock>            
+            
+        </section>
 
     </body>
 </topic>
