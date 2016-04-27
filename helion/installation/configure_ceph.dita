@@ -13,9 +13,12 @@
       <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
       <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
     </section>
-    <section id="notes">
-      <title outputclass="headerH">Notes</title>
-      <sectiondiv outputclass="insideSection">
+    <section id="notes"><title outputclass="headerH">Notes</title>Ceph implements distributed object
+      storage. Ceph’s software libraries provide client applications with direct access to the
+      reliable autonomic distributed object store (RADOS) object-based storage system, and also
+      provide a foundation for some of Ceph’s features, including <i>RADOS Block Device</i> (RBD),
+        <i>RADOS Gateway</i>, and the <i>Ceph File System</i>.<sectiondiv
+        outputclass="insideSection">
         <p>The Ceph cluster expects the network group that will be used for management network
           traffic within the cloud to be left to its default value i.e. MANAGEMENT. Altering the
           name will lead to failures in the cloud deployment, therefore it should be avoided.</p>
@@ -24,9 +27,9 @@
             href="../operations/blockstorage/ceph/deploy_monitor_standalone_node.dita">Install a
             monitor service on a dedicated resource node</xref>.</p>
         <p>The following steps describe how to configure Ceph as your Glance backend. This process
-          replaces Swift which is the default backend option in HPE Helion OpenStack. So if you have
-          any pre-existing images in your Glance repository you should download them locally prior
-          to configuring Ceph as your backend. Once the Ceph configuration is complete you will then
+          replaces Swift as is the default backend option in HPE Helion OpenStack. If you have any
+          pre-existing images in your Glance repository you should download them locally prior to
+          configuring Ceph as your backend. Once the Ceph configuration is complete you will then
           need to re-upload the images to your Glance repository in order for those images to
           work.</p>
         <p><b>Ceph and RADOS:</b> The default Helion Entry-scale KVM Ceph input model deploys the
@@ -37,12 +40,11 @@
           HTTP based CRUD operations on object. It supports both the OpenStack Swift and Amazon S3
           REST APIs.</p>
         <p>Because the Ceph RADOS Gateway provides interfaces compatible with Swift and S3, the
-          gateway has its own user management. Ceph Object Gateway can store data in the same Ceph
+          gateway has its own user management. Ceph RADOS Gateway can store data in the same Ceph
           Storage Cluster used to store data from Ceph Filesystem clients or Ceph Block Device
           clients. The S3 and Swift APIs share a common namespace, so you may write data with one
           API and retrieve it with the other.</p>
-      </sectiondiv>
-      <sectiondiv outputclass="insideSection">
+      </sectiondiv><sectiondiv outputclass="insideSection">
         <p>The HP Helion OpenStack deployment of the RADOS Gateway features include:</p>
         <p>
           <ul id="ul_cl2_gqd_sv">
@@ -68,8 +70,7 @@
           to our documentation, you can also read the OpenStack documentation at <xref
             href="http://docs.openstack.org/admin-guide-cloud/blockstorage_multi_backend.html"
             scope="external" format="html">Configure multiple storage backends</xref> as well.</p>
-      </sectiondiv>
-    </section>
+      </sectiondiv></section>
     <section id="prereqs">
       <title outputclass="headerH">Prerequisites</title>
       <sectiondiv outputclass="insideSection">
@@ -97,7 +98,9 @@
           <p>Ceph OSD journal size defaults to 5120MB (i.e. 5GB) in HPE Helion OpenStack. This value
             can be changed, however, it does not apply to any existing journal partitions. It will
             be effective on any new OSDs created after the journal size is changed (whether the
-            journal is on same disk or separate disk than the data disk).</p>
+            journal is on same disk or separate disk than the data disk).  To change the journal
+            size, edit the <codeph>osd_journal_size</codeph> parameter in the
+              <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file. <!--DOCS-2833--></p>
         </sectiondiv>
       </sectiondiv>
     </section>
@@ -359,9 +362,10 @@
                     <tbody>
                       <row>
                         <entry>fsid</entry>
-                        <entry>A unique identifier for the Ceph cluster that you should generate
-                          prior to deploying a cluster (use the <codeph>uuidgen</codeph> command to
-                          generate a new FSID). Once set, this value cannot be changed.</entry>
+                        <entry>A unique identifier, File System ID, for the Ceph cluster that you
+                          should generate prior to deploying a cluster (use the
+                            <codeph>uuidgen</codeph> command to generate a new FSID). Once set, this
+                          value cannot be changed.</entry>
                       </row>
                       <row>
                         <entry>ceph_cluster</entry>
@@ -395,6 +399,29 @@
                 follows:<codeblock>extra:
   osd:
     journal_max_write_entries: 200</codeblock></li>
+              <li><codeph>ceph-ansible/roles/_CEP-CMN/defaults/main.yml</codeph>
+                <p>In the <codeph>main.yml</codeph> file, you can edit the following
+                  parameters:</p><table frame="all" rowsep="1" colsep="1" id="table_n3k_lrc_5v">
+                  <tgroup cols="2">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <thead>
+                      <row>
+                        <entry>Value</entry>
+                        <entry>Description</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry>fsid</entry>
+                        <entry>A unique identifier, File System ID, for the Ceph cluster that you
+                          should generate prior to deploying a cluster (use the
+                            <codeph>uuidgen</codeph> command to generate a new FSID). Once set, this
+                          value cannot be changed.</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </table></li>
               <li>
                 <p><codeph>~/helion/my_cloud/config/ceph/user_model.yml</codeph></p>
                 <p>The <codeph>user_model.yml</codeph> has the editable values for the different
@@ -510,8 +537,7 @@ volume_backend_name = &#60;ceph-backend-name></codeblock><p>where:</p><table
 pools:
     - name: volumes</codeblock>
                           <note type="important">You should generate and use your own secret ID. You
-                            can utilize the <codeph>uuidgen</codeph> command to achieve
-                          this.</note></entry>
+                            can use any UUID generation tool.</note></entry>
                       </row>
                       <row>
                         <entry>rbd_user</entry>
@@ -627,8 +653,8 @@ default_store = {{ glance_default_store }}</codeblock></li>
             </ol>
           </li>
           <li><b>IMPORTANT:</b> If you have pre-existing images in your Glance repo and want to use
-            exclusively Ceph as a backend, you will need to do the following steps prior to
-            configuring Ceph as your Glance backend: <ol>
+            exclusively Ceph as a backend, use the Glance CLI or other tool back-up your images
+            prior to configuring Ceph as your Glance backend: <ol>
               <li>Snapshot or delete all Nova instances using those images.</li>
               <li>Download the images locally that you want to save.</li>
               <li>Delete all of the images from Glance.</li>
@@ -707,7 +733,7 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
     <section id="alternate">
       <title outputclass="headerH">Alternate RADOS Gateway deployment architecture choices</title>
       <sectiondiv outputclass="insideSection"> The RADOS Gateway service can also be co-hosted along
-        with other HOS services as listed in the following alternatives below. <ul
+        with other HPE Helion OpenStack services as listed in the following alternatives below. <ul
           id="ul_wmx_w22_sv">
           <li>Configure the Lifecycle Manager as a Ceph Client</li>
           <li>Installing RADOS Gateway on (dedicated) cluster node(s) that host Ceph Monitor
@@ -846,8 +872,8 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
           <li>Execute the following command to interact with Swift (default):
             <codeblock>export OS_SERVICE_TYPE=object-store</codeblock></li>
           <li>Execute the following command to interact with RADOS Gateway:
-            <codeblock>export OS_SERVICE_TYPE=ceph-object-store</codeblock> One can use swift cli to
-            perform object operation like.</li>
+            <codeblock>export OS_SERVICE_TYPE=ceph-object-store</codeblock> You can use Swift CLI to
+            perform object operations on Ceph.</li>
         </ol>
         <p><b>Configure a Keystone user to access the RADOS Gateway functionality using S3</b>
         </p>
@@ -869,7 +895,7 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
                 <codeblock>cd ~/helion/hos/ansible 
 git add -A 
 git commit -m "&lt;commit message>"</codeblock></li>
-              <li>Execute the ready-deployment step:
+              <li>Execute the ready-deployment playbook:
                 <codeblock>cd ~/helion/hos/ansible 
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
               <li>Execute the ceph-reconfigure playbook:
@@ -913,67 +939,45 @@ rgw keystone url = https://helion-cp1-vip-KEY-API-mgmt:35357</codeblock></li>
     </section>
     <section>
       <title outputclass="headerH">Uninstall Swift</title>
-      <sectiondiv outputclass="insideSection"><p>If you do not want the Ceph and Swift object
-          storage solutions in the same cloud, you can remove Swift from an existing cloud or deploy
-          a cloud with only the RADOS Gateway.</p><b>Replace swift with rados gateway in
-          pre-deployed Helion cloud </b><p>To replace OpenStack Swift with Ceph RADOS Gateway in a
-          running HOS cloud, perform the steps listed below: </p><ol id="ol_qmq_sgf_sv">
-          <li>Login to controller node. </li>
-          <li>Identify the Swift and Ceph service IDs using following commands. Look for Name
-              <codeph>swift</codeph> and <codeph>ceph</codeph> and note the associated ID for eac:
-            <codeblock>source ~/keystone.osrc 
-openstack service list </codeblock></li>
-          <li>Delete the Swift and Ceph services using the service ID identified in earlier step:
-            <codeblock>source ~/keystone.osrc
-openstack service delete &lt;swift-service-id> 
-openstack service delete &lt;ceph-service-id></codeblock></li>
-          <li>Update the service type for Ceph service, by logging in to the deployer node and
-            modifying the <codeph>rgw_keystone_service_type</codeph> in file
-              <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows:
-            <codeblock>rgw_keystone_service_type: object-store</codeblock></li>
-          <li>Commit your configuration
-            <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "&lt;commit message>" </codeblock></li>
-          <li>Execute the ready-deployment step:
-            <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml </codeblock></li>
-          <li>Execute the ceph-reconfigure playbook:
-            <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li>
-          <li>Execute the <codeph>swift-stop playbook</codeph> to stop the Swift service: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts swift-stop.yml </codeblock><note>
-              <ul id="ul_wng_jhf_sv">
-                <li>The above process does not migrate the existing objects in the Swift store to
-                  the Ceph Object Store. So, existing objects will not be available after migrating
-                  a running cluster to Ceph Object Store.</li>
-                <li>The Swift services should be manually uninstalled and its data should be deleted
-                  from the node(s), otherwise services like Monasca will report failure for Swift
-                  services, logging services will have logs of Swift services, etc.</li>
-              </ul>
-            </note></li>
-        </ol><b>Deploying Ceph RADOS Gateway as a replacement for OpenStack Swift in new cloud</b>
-        <p>The HOS 3.0 cloud can be deployed with Ceph RADOS Gateway as a replacement for OpenStack
-          Swift (i.e. Swift-less HOS cloud). The input model needs to be tuned in the following way
-          to achieve this. </p><ol id="ol_u1f_qhf_sv">
-          <li>Login to the deployer node and remove all the <codeph>swift</codeph> components except
-              <codeph>swift-client</codeph> from
-              <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file. Remove the
-            following Swift service components:
-            <codeblock>swift-ring-builder
+      <sectiondiv outputclass="insideSection">
+        <p>If you do not want the Ceph and Swift object storage solutions in the same cloud, you can
+          deploy a cloud with only the RADOS Gateway.</p>
+        
+            <p><b>Deploying Ceph RADOS Gateway as a replacement
+                for OpenStack Swift in new cloud</b></p>
+              <p>HPE Helion OpenStack 3.0 cloud can be deployed with Ceph RADOS Gateway as a
+                replacement for OpenStack Swift. The input model needs to be tuned in the following
+                way to achieve this. </p><ol id="ol_pzz_w4c_5v">
+                <li>Login to the deployer node and remove all the <codeph>swift</codeph> components
+                  except <codeph>swift-client</codeph> from
+                    <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file.
+                  Remove the following Swift service components:
+                  <codeblock>swift-ring-builder
 swift-proxy 
 swift-account
 swift-container 
 swift-object </codeblock></li>
-          <li>Modify the <codeph>rgw_keystone_service_type</codeph> in file
-              <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows:
-            <codeblock>rgw_keystone_service_type: object-store</codeblock></li>
-          <li>Commit your configuration
-            <codeblock>cd ~/helion/hos/ansible
+                <li>Modify the <codeph>rgw_keystone_service_type</codeph> in file
+                    <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows:
+                  <codeblock>rgw_keystone_service_type: object-store</codeblock></li>
+                <li>Commit your configuration
+                  <codeblock>cd ~/helion/hos/ansible
 git add -A 
 git commit -m "&lt;commit message>" </codeblock></li>
-          <li>Proceed with the cloud deployment steps from the Config Processor Run step. </li>
-        </ol></sectiondiv>
+                <li>Proceed with the cloud deployment steps from the Config Processor Run step.
+                </li>
+              </ol>
+    
+        <!--<b>Replace swift with rados gateway in pre-deployed Helion cloud </b><p>To replace OpenStack Swift with Ceph RADOS Gateway in a running HOS cloud, perform the steps listed below: </p><ol id="ol_qmq_sgf_sv"><li>Login to controller node. </li><li>Identify the Swift and Ceph service IDs using following commands. Look for Name <codeph>swift</codeph> and <codeph>ceph</codeph> and note the associated ID for eac: <codeblock>source ~/keystone.osrc 
+openstack service list </codeblock></li><li>Delete the Swift and Ceph services using the service ID identified in earlier step: <codeblock>source ~/keystone.osrc
+openstack service delete &lt;swift-service-id> 
+openstack service delete &lt;ceph-service-id></codeblock></li><li>Update the service type for Ceph service, by logging in to the deployer node and modifying the <codeph>rgw_keystone_service_type</codeph> in file <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows: <codeblock>rgw_keystone_service_type: object-store</codeblock></li><li>Commit your configuration <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "&lt;commit message>" </codeblock></li><li>Execute the ready-deployment playbook: <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml </codeblock></li><li>Execute the ceph-reconfigure playbook: <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-reconfigure.yml</codeblock></li><li>Execute the <codeph>swift-stop playbook</codeph> to stop the Swift service: <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts swift-stop.yml </codeblock><note><ul id="ul_wng_jhf_sv"><li>The above process does not migrate the existing objects in the Swift store to the Ceph Object Store. So, existing objects will not be available after migrating a running cluster to Ceph Object Store.</li><li>The Swift services should be manually uninstalled and its data should be deleted from the node(s), otherwise services like Monasca will report failure for Swift services, logging services will have logs of Swift services, etc.</li></ul></note></li></ol>-->
+      </sectiondiv>
     </section>
     <section id="post_install">
       <title outputclass="headerH">Post-Installation Tasks</title>
