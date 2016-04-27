@@ -39,6 +39,42 @@
         OpenStack <b>2.0 to 2.1.4</b>), then you must restart your HPE Helion Development Platform
         services after restarting all the nodes mentioned below.</note>
     </section>
+    
+    
+    <section>
+      <title>Recovering RabbitMQ after Failure during Upgrade</title>
+      
+      <p>If, during upgrade, you encounter an error similar to the following, you should run the RabbitMQ disaster 
+        recovery playbook and start the upgrade again.</p>
+      
+      <codeblock>
+TASK: [rabbitmq | _reset-host | Stop the RabbitMQ application to enable reset] *** 
+failed: [hpeit1-cp1-c1-m3-mgmt] =>
+{"changed": true, "cmd": ["timeout", "5m", "rabbitmqctl", "stop_app"], "delta": "0:05:00.029892", 
+"end": "2016-04-26 20:13:52.622088", "rc": 124, "start": "2016-04-26 20:08:52.592196", "warnings": []}
+</codeblock>
+      
+      <p><b>Recovering RabbitMQ:</b></p>
+      
+      <ol>
+        <li>Run rabbitmq-disaster-recovery:
+          
+          <codeblock>ansible-playbook -i hosts/verb_hosts rabbitmq-disaster-recovery</codeblock>  
+          
+          <p>This will tear down and reset any running RabbitMQ nodes. This has an extreme effect on 
+            services. This should take roughly two minutes to complete, at which point the 
+            RabbitMQ cluster will have been recreated from scratch with service credentials 
+            reprovisioned into it.</p>
+        </li>
+        
+        <li> Re-run hlm-upgrade:     
+          <codeblock>ansible-playbook -i hosts/verb_hosts hlm-upgrade</codeblock>            
+        </li>
+        
+      </ol>
+      
+    </section>
+    
     <section id="prereqs"><title>Prerequisites</title>
       <p>These steps assume you have an installed and working HPE Helion OpenStack 2.x cloud, and
         that you have followed the <xref href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
