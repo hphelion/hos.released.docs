@@ -6,6 +6,50 @@
         <!--not tested-->
 
 
+        <section id="DOCS-3012">
+            <title>Upgrade from 2.1 to 3.0 fails due to Kibana error</title>
+            
+            <p>The failure results in output similar to:</p>
+            
+<codeblock>
+TASK: [logging-server | status | Checking systemd status for Kibana] **********
+failed: [helion-cp1-c1-m1-mgmt] => {"changed": false, "cmd": ["systemctl", "status", "kibana"], "delta": "0:00:00.023937", "end": "2016-04-14 10:09:20.297810", "rc": 3, "start": "2016-04-14 10:09:20.273873", "warnings": []}
+stdout:  kibana.service - Kibana Service
+   Loaded: loaded (/etc/systemd/system/kibana.service; enabled)
+   Active: failed (Result: exit-code) since Thu 2016-04-14 09:04:45 UTC; 1h 4min ago
+Main PID: 28978 (code=exited, status=143)
+....
+FATAL: all hosts have already failed -- aborting
+
+PLAY RECAP ********************************************************************
+_hlm-upgrade-base | Apply package updates ----------------------------- 204.28s
+neutron-server | start | Restart the neutron-server -------------------- 91.09s
+kafka | kafka | start | stop kafka service ----------------------------- 91.03s
+rabbitmq | configure-users | Create RabbitMQ users --------------------- 70.62s
+monasca-thresh | monasca-thresh | start | restart monasca thresh service -- 64.92s
+CMC-DEP | install | Install CMC ---------------------------------------- 58.84s
+horizon_post_configure | post-configure | Compress static files -------- 51.42s
+horizon_post_configure | post-configure | Compress static files -------- 49.00s
+horizon_post_configure | post-configure | Compress static files -------- 48.22s
+vertica | vertica | upgrade vertica version | start vertica service ---- 46.73s
+-------------------------------------------------------------------------------
+Total: --------------------------------------------------------------- 4362.51s
+           to retry, use: --limit @/home/stack/hlm-upgrade.retry
+
+helion-cp1-c1-m1-mgmt      : ok=2538 changed=860  unreachable=0    failed=1
+helion-cp1-c1-m2-mgmt      : ok=2392 changed=828  unreachable=0    failed=1
+helion-cp1-c1-m3-mgmt      : ok=2392 changed=828  unreachable=0    failed=1
+</codeblock>            
+            
+            <p>To workaround this failure, manually start Kibaba on all the controller nodes
+                and then start the upgrade again.</p>
+            
+<codeblock>
+sudo systemctl start kibana
+</codeblock> 
+ 
+        </section>
+
 
         <section>
             <title>Compute (Nova)</title>
