@@ -169,20 +169,26 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
     </body>
     
     <topic id="install_boot_from_san">
-        <title>Installing the <keyword keyref="kw-hos-phrase"/> iso on a node that supports Boot from SAN</title>
+        <title>Installing the <keyword keyref="kw-hos-phrase"/> iso for nodes that supports Boot from SAN</title>
         
         
         
         <body><!--not tested-->
 
             <section>
-                <p>This sections describes how to install the iso with the following configurations:</p>
+                <p>This sections describes how to install the iso on the Lifecycle Manager 
+                    to support the following configurations:</p>
                 <sl>
                     <sli><xref href="#install_boot_from_san/uefi"/></sli>
                     <sli><xref href="#install_boot_from_san/uefi_fcoe"/></sli>
                     <sli><xref href="#install_boot_from_san/bios"/></sli>
                     <sli><xref href="#install_boot_from_san/bios_fcoe"/></sli>
                 </sl>
+                
+                <p>The lifecycle manager will then automatically handle the installation on nodes that supports Boot from SAN 
+                    based on the configuration information in <codeph>servers.yml</codeph> and the disk models, as described
+                    in the preceding section.
+                </p>
                     
                     
             </section>
@@ -190,17 +196,28 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
             <section id="uefi">
                 <title>UEFI Boot Mode</title>
                 
-                <p>Select the options to edit the kernel command line and insert <codeph>multipath=true</codeph> into the command line arguments</p>
-                               
+                <p>On the installer boot menu, type a lower-case "e" to enter the <codeph>Edit Selection</codeph> screen.</p>
+                <image keyref="uefi_installer_menu"/>
+
+
+                <p>This brings up the <codeph>Edit Selection</codeph> screen.</p>
+                <image keyref="uefi_edit_selection"/>
+                
+                <p>Enter the text <codeph>multipath=true</codeph> before <codeph>--- quiet</codeph>:</p>
+                <image keyref="uefi_multipath_true"/>  
+                
+                <p>Press <codeph>Ctrl-X</codeph> or <codeph>F10</codeph> to proceed with the install.</p>
+                
             </section>      
  
              <section id="uefi_fcoe">
                 <title>UEFI Boot Mode with Native FCoE</title>
                 
-                <p>Select the options to edit the kernel command line. In addition to inserting <codeph>multipath=true</codeph>,
+                 <p>At the installer boot menu, type a lower-case "e" to enter the <codeph>Edit Selection</codeph> screen
+                     as described in the preceding section. In addition to inserting <codeph>multipath=true</codeph>,
                 it is necessary to supply details of the FCoE network interfaces. For example, <codeph>partman-fcoe/interfaces=eth2,eth3</codeph>.</p>
-                
-                
+
+                 <p>Press <codeph>Ctrl-X</codeph> or <codeph>F10</codeph> to proceed with the install.</p>
                 
             </section>    
             
