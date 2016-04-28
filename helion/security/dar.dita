@@ -23,14 +23,14 @@
       device.</section>
     <section>Provide certificate information by modifying the sample configuration file on the
       lifecycle manager node
-      ~/helion/hos/ansible/roles/KEYMGR-API/files/samples/barbican_kmip_plugin_config_sample.yml. </section>
+      <codeblock>~/helion/hos/ansible/roles/KEYMGR-API/files/samples/barbican_kmip_plugin_config_sample.yml</codeblock>. </section>
     <section>Copy this file to a temporary directory such as /tmp. </section>
     <section>Edit the file to provide either client certificates as absolute file paths
       (i.e.`client_cert_file_path`, `client_key_file_path`, `client_cacert_file_path`) or by pasting
       certificate content directly into the file (i.e. in `client_cert_content`,
       `client_key_content`, `client_cacert_content`). </section>
     <section>File paths take precedence over content variables if both are provided. </section>
-    <section>To set file path variables, open kmip_plugin_certs.yml for
+    <section>To set file path variables, open <codeph>kmip_plugin_certs.yml </codeph>for
       editing<codeblock>vi /tmp/kmip_plugin_certs.yml 
   # File paths takes precedance over cert content if both are provided. 
   # Here file path refers to local filesystem path where ansible is 
@@ -38,9 +38,9 @@
   client_cert_file_path: /path/to/cert/file 
  client_key_file_path: /path/to/key/file
 client_cacert_file_path: /path/to/cacert/file</codeblock>
-      Setting the content variables:
-      <codeblock>vi /tmp/kmip_plugin_certs.yml 
-  # Following are samples which customer needs to replace with their
+      Set the content variables by opening <codeph>/tmp/kmip_plugin_certs.yml</codeph> for
+      editing<codeblock>vi /tmp/kmip_plugin_certs.yml 
+  # Following are samples you need to replace with your
   # own content here or via file path approach mentioned above. 
   client_cert_content: |
       -----BEGIN CERTIFICATE----- 
@@ -66,16 +66,18 @@ client_cacert_file_path: /path/to/cacert/file</codeblock>
       FAimEB/a2E+A0oxwuHmhMg0kOpDuXIWn4BW+Z6z5h1j3PFyg/CZ548Fz0XOgvXC7
       Ejpkd+5R+24HloruUV1R2EYvmlr8UMFX80og11u+ 
       -----END CERTIFICATE-----</codeblock>
-      Provide certificate information to Barbican service via reconfigure playbook:
+      Provide certificate information to the Barbican service via the
+        <codeph>barbican-reconfigure.yml</codeph>  playbook:
       <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml -e@/tmp/kmip_plugin_certs.yml</codeblock>
-      Provide HSM connection credential for Barbican service. In this step, KMIP plugin connection
-      details are provided to service: Edit the files
-      <codeblock>~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock> Change the value
-      `use_kmip_secretstore_plugin` to True to use the KMIP plugin or False to use the default secret store
-      plugin (`store_crypto`). Provide KMIP client connection credentials and KMIP server hostname
-      and port. barbican_deploy_config.yml
-      <codeblock>####################################################################### 
+ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml -e@/tmp/kmip_plugin_certs.yml</codeblock>Provide
+      HSM connection credentials for the Barbican service. In this step, the KMIP plug-in connection
+      details are provided to service: Edit the file <codeph>barbican_deploy_config.yml</codeph>
+      found
+      here:<codeblock>~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock>Change
+      the value `use_kmip_secretstore_plugin` to True to use the KMIP plug-in or False to use the
+      default secret store plugin (`store_crypto`). Provide KMIP client connection credentials and
+      KMIP server hostname and port in <codeph>barbican_deploy_config.yml
+      </codeph><codeblock>####################################################################### 
 #################### KMIP Plugin Configuration Section ################
 ####################################################################### 
 # Flag to reflect  whether KMIP plugin is to be used as backend for 
@@ -85,15 +87,18 @@ use_kmip_secretstore_plugin: True
 # in client cert request (CSR). 
 barbican_kmip_username: userName barbican_kmip_password: password
 barbican_kmip_port: 1234 barbican_kmip_host: 111.222.333.444</codeblock>
-      Commit the changes Run reconfiguration playbook in deployment area:
+      Commit the changes to git and run the <codeph>barbican-reconfigure.yml </codeph>playbook in
+      deployment area:
       <codeblock>cd ~/helion/hos/ansible/ 
 ansible-playbook -i hosts/localhost ready-deployment.yml 
 cd ~/scratch/ansible/next/hos/ansible 
 ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
-    </section><section> DAR usage model in HOS 3.0 Examples This section describes the data-at-rest encryption
-      model available in <keyword keyref="kw-hos-phrase"/>. This model provides support for
-      encrypting Cinder Volumes (Volume Encryption). These encrypted volumes are protected with an
-      encryption key that may be stored in an  HSM appliance.  </section>
+    </section><section><b> DAR usage model Examples</b>
+    </section>
+    <section>This section describes the data-at-rest encryption model available in <keyword
+        keyref="kw-hos-phrase"/>. This model provides support for encrypting Cinder Volumes (Volume
+      Encryption). These encrypted volumes are protected with an encryption key that may be stored
+      in an HSM appliance. </section>
     <section>Now that Barbican and Cinder services are installed, you need to configure a cinder
       volume type for encryption. This will create a new cinder volume type, "LUKS," that can be
       selected when creating a new volume. Such volumes will be encrypted with a 512bit AES key:
@@ -147,5 +152,6 @@ stack@localhost:~$ cinder encryption-type-create \
       <codeblock>UUID                                    Owner             Object Type      State       Creation Date
 8d54f41d-91dd-4f5e-bcfe-964af8213a8c    hlm_barbican     SymmetricKey     PreActive   2016-03-02 13:58:58</codeblock>
     </section>
+  
   </body>
 </topic>
