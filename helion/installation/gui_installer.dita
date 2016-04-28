@@ -58,6 +58,7 @@
             <li>PXE interfaces </li>
             <li>IPMI/iLO IP address, username, password </li>
           </ul></li>
+    
         <li>Choose your <xref keyref="example_configurations">cloud model/example</xref> template.
           No action other than an understanding of your needs is necessary at this point. You will
           indicate which model you wish to deploy in a GUI screen. Note, however, that the only VSA
@@ -96,7 +97,87 @@
             href="install_entryscale_esx.dita#install_esx/optional-eon">Step 4
             here</xref>. They are optional steps to enable centralized logging for the EON
           service.</li>
-      </ol>
+      
+      <li> You may create a CSV file for import into the GUI, indicating your server information
+          rather than entering it directly into the GUI. The following table shows the fields you
+          need and those that are optional.<table id="table_e5h_wnk_5v">
+            <tgroup cols="4">
+              <colspec colnum="1" colname="col1"/>
+              <colspec colnum="2" colname="col2"/>
+              <colspec colnum="3" colname="col3"/>
+              <colspec colnum="4" colname="col4"/>
+              <tbody>
+                <row>
+                  <entry><b>Field</b></entry>
+                  <entry><b>Optional</b></entry>
+                  <entry><b>OS Install Only?</b></entry>
+                  <entry><b>Aliases</b></entry>
+                </row>
+                <row>
+                  <entry>Server ID</entry>
+                  <entry>NO</entry>
+                  <entry>NO</entry>
+                  <entry>server_id, id</entry>
+                </row>
+                <row>
+                  <entry>IP Address</entry>
+                  <entry>NO</entry>
+                  <entry>NO</entry>
+                  <entry>ip, ip_address, address</entry>
+                </row>
+                <row>
+                  <entry>MAC Address</entry>
+                  <entry>NO</entry>
+                  <entry>YES</entry>
+                  <entry>mac, mac_address, mac_addr</entry>
+                </row>
+                <row>
+                  <entry>IPMI IP Address</entry>
+                  <entry>NO</entry>
+                  <entry>YES</entry>
+                  <entry>ipmi_ip, ilo_ip</entry>
+                </row>
+                <row>
+                  <entry>IPMI User</entry>
+                  <entry>NO</entry>
+                  <entry>YES</entry>
+                  <entry>ipmi_user, ilo_user, user</entry>
+                </row>
+                <row>
+                  <entry>IPMI Password</entry>
+                  <entry>NO </entry>
+                  <entry>YES</entry>
+                  <entry>Ipmi_password, ilo_password, password</entry>
+                </row>
+                <row>
+                  <entry>Server Role</entry>
+                  <entry>NO</entry>
+                  <entry>NO</entry>
+                  <entry>server_role, role</entry>
+                </row>
+                <row>
+                  <entry>Server Group</entry>
+                  <entry>YES</entry>
+                  <entry>NO</entry>
+                  <entry>server_group, group</entry>
+                </row>
+                <row>
+                  <entry>NIC Mapping</entry>
+                  <entry>NO</entry>
+                  <entry>NO</entry>
+                  <entry>server_nic_map, nic_map, nic_mapping</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table><p> </p><p>Here “OS Install Only?” indicates that this field is ONLY needed if you
+            have indicated that you want the installer to install HPE Linux on the
+            servers.</p><p>The aliases are all the valid names that can be used in the CSV file for
+            the column header for a given field. Note field names are not case sensitive and that
+            you can use either ‘ ‘ (space) or ‘-‘ (hyphen) in place of underscore for a field
+            name.</p><p> So, an example header line in the CSV file could be:</p><p>
+            <codeblock>Server ID, ip address, mac-address, IPMI_ip, password, user, server-role, server-GROUP, nic mapping</codeblock>
+          </p><p> The order of the fields does NOT have to match the order in the table
+          above.</p></li></ol>
     </section>
     <section><title>Run the GUI to install your cloud</title>
       <p>After the OS, HPE Linux for HPE Helion, is installed on all your servers (nodes) if you
@@ -112,7 +193,7 @@
       <codeblock>ssh -v -N -L 8080:&lt;lifecycle manager_IP>:79 &lt;Username>@&lt;lifecycle manager_IP></codeblock>
       <p>Then on your local machine, the one you are tunneling from, point your web browser to:
           <b>http://localhost:8080/dayzero</b></p> As you proceed through the GUI, you need only
-      supply your server names and IP addresses. </section>
+      supply your server names and IP addresses if you have not supplied a CSV file. </section>
     <section>In the Assign network groups: External VM network fields, <b>do not</b> add entries for
       CIDR, Gateway, or IP Range, only VLAN ID. Neutron will assign these.<p>When the installation
         is complete, the Ansible log will be displayed on the final page.</p>

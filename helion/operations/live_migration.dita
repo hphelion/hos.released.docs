@@ -5,7 +5,8 @@
   <abstract><shortdesc outputclass="hdphidden">Live migration allows you to move active Compute
       instances between Compute nodes, allowing for less downtime during
     maintenance.</shortdesc></abstract>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <!--suggested edit: <p>You can use the Helion OpenStack Compute service (Nova) to move compute instances, or compute virtual machines,
         between compute nodes with no downtime. This feature is called live migration.</p>-->
     <!--question: How do you want to work in the concept of virtual machine to relate this to the ops questions? In the ops questions (rows 31, 32) are they talking about a virtual environment, or are they talking about compute virtual machines? And does this topic work for either?-->
@@ -38,6 +39,10 @@
         <li>If you are using both Linux for HPE Helion (KVM) and RHEL compute hosts, you cannot live
           migrate instances between them. Instances on KVM hosts can only be live migrated to other
           KVM hosts and the same for RHEL hosts. </li>
+        <li>Block live-migration between RHEL compute hosts is not supposed due to Red Hat not
+          supporting the necessary packages needed for this operation. The only forms of live
+          migration that are supported between RHEL hosts are ones where block storage volumes are
+          used exclusively or if shared storage is being used.</li>
       </ul>
     </section>
     <section id="notes"><title>Notes about the Difference between Nova Migrate and Nova Live
@@ -55,7 +60,9 @@
     <section id="liveMigrate"><title>Performing a Live Migration</title>
       <p>Cloud administrators can perform a live migration on an instance using either the Horizon
         dashboard, API, or CLI. The instance must be in an <codeph>Active</codeph> or
-          <codeph>Paused</codeph> status prior and during the live migration.</p>
+          <codeph>Paused</codeph> status prior and during the live migration. Instances in a
+          <codeph>Paused</codeph> state cannot be live migrated using the Horizon GUI. You will need
+        to utilize the CLI to perform these.</p>
       <p>We have documented both single-instance live migration and also the method to use if you
         wish to live migrate all of the instances off of a single Compute host:</p>
       <ul>

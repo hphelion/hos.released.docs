@@ -6,7 +6,7 @@
         <p conkeyref="HOS-conrefs/applies-to"/>
         
 
-      <p>This example provides a KVM-based cloud using Ceph for block and object storage.</p>
+      <p>This example provides a KVM-based cloud using Ceph for both block and object storage.</p>
       <ul>
         <li><b>Management traffic</b> - primarily includes all admin related operations such as pool
           creation, crush map modification, user creation, etc.</li>
@@ -58,13 +58,9 @@
       <p><image href="../../../media/hos.docs/entry_scale_kvm_ceph_three_network.png"/></p>
       <p><xref href="../../../media/hos.docs/entry_scale_kvm_ceph_three_network_lg.png" scope="external"
           format="html">Download a high-resolution version</xref></p>
-      <p>This configuration is based on the entry-scale-kvm-ceph cloud input model which is included
-        with the HPE Helion OpenStack distro. You will need to make the changes outlined below prior
-        to the deployment of your Ceph cluster with three networks. Note that if you already have a
-        Ceph cluster deployed with a single network these steps cannot be used to migrate to a
-        three-network setup. The recommendation in these cases will be that you make a clean
-        installation which will result in the loss of your existing data unless you make
-        arrangements to have it backed up beforehand.</p>
+      <p>This configuration is based on the <codeph>entry-scale-kvm-ceph</codeph> cloud input model
+      which is included with the HPE Helion OpenStack distro. You will need to make the changes
+      outlined below prior to the deployment of your Ceph cluster.</p>
         
     <section id="ceph3_nicmappings"><title>nic_mappings.yml</title>
       <p>Ensure that your baremetal server NIC interfaces are correctly specified in the
@@ -199,7 +195,7 @@
     - name: ETH2
       device:
         name: hed3
-      forced-network-groups:
+      network-groups:
         - OSD-CLIENT
         
 - name: COMPUTE-INTERFACES
@@ -209,15 +205,15 @@
          name: hed3
       network-groups:
          - EXTERNAL-VM
-          - GUEST
-          - MANAGEMENT
+         - GUEST
+         - MANAGEMENT
 ## This interface is used to connect the compute node
 ## to the Ceph cluster so that a workload VM can route
 ## data traffic to the Ceph cluster over this interface.
     - name: HETH4
        device:
           name: hed4
-       forced-network-groups:
+       network-groups:
           - OSD-CLIENT
         
 - name: OSD-INTERFACES
