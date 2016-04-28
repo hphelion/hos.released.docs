@@ -31,7 +31,7 @@
       <title> Changes in <keyword keyref="kw-hos-phrase"/>: </title>
       <ul>
         <li>API endpoints in the internal and admin VIPs can now be secured by TLS</li>
-        <li>Barbican-api can be secured by TLS from the load balancer to service endpoint</li>
+        <li>Barbican-api can be secured by TLS from the load balancer to the service endpoint</li>
         <li>Support for multiple trust chains (CA certificates) </li>
 
         <li>All API services are behind TLS </li>
@@ -47,13 +47,14 @@
         address of your environment's API endpoints, but you can ignore the warnings. Later, in
         production when you require a trusted certificate, you can add your own certificate and
         redeploy using the instructions below.</p>
-      <p>You will need to choose if you want TLS on or off. We recommend keeping TLS on. But if you
-        want it disabled you need to change "tls-components" to "components" in
-          <codeph>network_groups.yml</codeph> and comment out the cert-file. By default, Horizon is
-        configured with TLS in the input model (hlm-input-model). Note that you should not disable
-        TLS in the input model for Horizon. You should keep all services behind TLS, but in the
-        input model you are able to turn TLS off for a service for troubleshooting or debugging. TLS
-        should always be enabled for production environments.</p>
+      <p>You will need to choose if you want TLS enabled or disabled. You should leave TLS enabled
+        in production. However, if you need to disable it for any reason, you need to change
+        "tls-components" to "components" in <codeph>network_groups.yml</codeph> and comment out the
+        cert-file. By default, Horizon is configured with TLS in the input model. Note that you
+        should not disable TLS in the input model for Horizon as that is a public endpoint and is
+        required. You should keep all services behind TLS, but in the input model you may turn TLS
+        off for a service for troubleshooting or debugging. TLS should always be enabled for
+        production environments.</p>
       <p>For more details about the input model, see <xref
           href="../input_model.dita#input_model/co_networkgroups">Input Model - Network
           Groups</xref> and <xref
@@ -66,28 +67,28 @@
         of <keyword keyref="kw-hos"/> and then install it by following the installation in the next
         section.</p>
       <note type="important">Self-signed certificates should not be used in a production
-        environment, they are meant for testing only.</note>
+        environment; they are meant for testing only.</note>
       <p>The domain name in the certificate signing request in step 1 below and the DNS entry in
         step 2 must match, although the domain does not have to exist.</p>
       <p>In step 2 you need the same IP address listed for both the DNS and the IP entries. Note
         that as you examine the certificate output, the issuer will match the subject because the
         cert is self-signed. The requirement for the DNS entry stems from a low-level Python
         bug.</p>
-      <p>The example below shows you how to create a self-signed certificate named
-          <codeph>my-public-cert</codeph>:</p>
+      <p>The example below shows you how to create a self-signed certificate, if preferred to a
+        public CA. Here the certificate is named <codeph>my-public-cert</codeph>:</p>
       <ol>
-        <li>Create a Certificate Signing Request (CSR) with a defined subject:
+        <li>Create a certificate signing request (CSR) with a defined subject:
           <codeblock>openssl req -nodes -newkey rsa:2048 -keyout my-public-cert.key -out my-public-cert.csr -text \
 -subj '/C=US/O=Helion Test Certificate/CN=your.domain.com/emailAddress=test@ficticious.org/'</codeblock>
         </li>
-        <li>Create a file containing v3 extensions Ensure that the DNS entry matches any CN entry
+        <li>Create a file containing v3 extensions. Ensure that the DNS entry matches any CN entry
           above and provide your IP
-          <codeblock>cat > v3_ext.cnf &lt;&lt; *EOF*
+          address:<codeblock>cat > v3_ext.cnf &lt;&lt; *EOF*
 [ v3_req ]
 subjectAltName=DNS:your.domain.com,DNS:10.0.0.1, IP:10.0.0.1
 *EOF*</codeblock>
         </li>
-        <li>Self-sign your certificate
+        <li>Self-sign your certificate:
           <codeblock>openssl x509 –days 365 -extfile v3_ext.cnf -extensions v3_req -in my-public-cert.csr -signkey my-public-cert.key -req -text -out my-public-cert.crt</codeblock>
         </li>
         <li>You will need to combine the contents of the <codeph>my-public-cert.key</codeph> and
@@ -96,7 +97,7 @@ subjectAltName=DNS:your.domain.com,DNS:10.0.0.1, IP:10.0.0.1
           section.</li>
       </ol>
     </section>
-    <section id="install_cert"><title>Installing your SSL certificate</title>
+    <section id="install_cert"><title>Installing an SSL certificate</title>
       <p><b>Prerequisites</b></p>
       <p>These steps assume you have already created or obtained a valid SSL certificate for your
         environment that references either the FQDN you chose or the IP address for the public API
@@ -214,7 +215,7 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-deploy.yml</codeblock>
           <p>To deploy the CA chain:</p>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts horizon-deploy.yml</codeblock></li>
-        <li>If you have utilized a FQDN for your public Identity endpoint, you will need to
+        <li>If you have utilized a FQDN for your public identity endpoint, you will need to
           reconfigure the Nova service using the playbook below to ensure that the VNC proxy system
           picks up this change:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
