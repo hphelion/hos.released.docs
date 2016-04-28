@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
+<topic xml:lang="en-us" id="central_log_GS">
+  <title>Getting Started with Centralized Logging Service</title>
+  <body><!--not tested-->
+    <p>A typical cloud consists of multiple servers which makes locating
+      a specific log from a single server difficult. The Centralized
+      Logging feature helps the administrator evaluate and troubleshoot the distributed cloud
+      deployment from a single location.</p>
+    <p>The Centralized Logging feature collects logs on a central system, rather than leaving the
+      logs scattered across the network. The administrator can use a single Kibana interface to view
+      log information in charts, graphs, tables, histograms, and other forms.</p>
+    <p>In addition to each of the services, Centralized Logging also
+      processes logs for the following features:</p>
+    <ul>
+      <li>HAProxy</li>
+      <li>syslog</li>
+      <li>keepalived</li>
+    </ul>
+    <p>The following are common questions related to the Centralized Logging feature:</p>
+    <ul>
+      <li><xref href="#centralized_logging/components">What Components are Part of
+        Logging?</xref></li>
+      <li><xref href="#centralized_logging/types">What Data is Collected by Helion?</xref></li>
+      <li><xref href="#centralized_logging/retaining_logs">How Long are Log Files
+        Retained?</xref></li>
+      <li><xref href="#centralized_logging/rotating_logs">How are Logs Rotated?</xref></li>
+      <li><xref href="#centralized_logging/BUElasticsearch">Are Log Files Backed-Up To Elasticsearch?</xref></li>
+      <li><xref href="#centralized_logging/info">Where Can I Find More Information?</xref></li>
+    </ul>
+    <p>For steps on how to administer and troubleshoot logging, refer to the following tasks:</p>
+    <ul>
+      <li><xref href="#centralized_logging/what_configure">What Can I Configure?</xref>
+      </li>
+      <li><xref href="central_log_troubleshoot.dita"></xref>Troubleshooting</li>
+    </ul>
+   
+    
+    
+    
+    <section id="components">
+      <title>What Components are Part of Centralized Logging?</title>
+      <p>Centralized logging consists of several components, detailed below:</p>
+      <ul>
+        <li>
+          <p>
+            <b>Beaver</b> is a python daemon that takes information in log files and sends the
+            content to RabbitMQ.</p>
+        </li>
+        <li>
+          <p>
+            <b>RabbitMQ</b> RabbitMQ is a messaging broker used by many Openstack services. <!--It is used by Helion Centralized Logging only for backwards compatibility with Helion OpenStack 2.x Helion Development Platform services.--></p>
+        </li>
+        <li><b>Kafka</b> is a messaging broker used for collection of Helion OpenStack 3.0 centralized logging data across nodes. It is highly available, scalable and performant. Kafka stores logs in disk instead of memory and is therefore more tolerant to consumer down times.</li>
+        <li>
+          <p>
+            <b>Logstash</b> is a log processing system for receiving, processing and outputting
+            logs. Logstash retrieves logs from RabbitMQ, processes and enriches the data, then
+            stores the data in Elasticsearch.</p>
+        </li>
+        <li>
+          <p>
+            <b>Elasticsearch</b> is a data store offering fast indexing and querying.</p>
+        </li>
+        <li>
+          <p>
+            <b>Kibana</b> is a client/server application with rich dashboards to visualize the data in Elasticsearch through a web browser. Kibana enables you to create charts and graphs using the log data.</p>
+        </li>
+        <li><b>Curator</b> is a tool provided by Elasticsearch to manage indices.</li>
+      </ul>
+      <p>These components are configured to work out-of-the-box and the admin should be able to view
+        log data using the default configurations.</p>
+      
+      <p>In a high-level overview of the process:
+        <dl>
+          <dlentry>
+            <dt>Steps 1- 2</dt>
+            <dd>Helion services produce and forward log files to Beaver.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 3- 4a</dt>
+            <dd>To maintain a consistent, easy-to-read format accross all log files, Beaver formats log file content into JavaScript Object Notation (JSON). Then Beaver forwards the JSON file on to Kafka on the controller0 (management controller) node.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 5a- 5b</dt>
+            <dd>Logstash connects to Kafka (or RabbitMQ if supported) to read queued messages and process the messages
+              according to the Logstash configuration file.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Step 6</dt>
+            <dd>Logstash forwards the processed log files to Elasticsearch.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 7- 8b</dt>
+            <dd>Administrators can use a Web browser to access a Kibana interface to view and analyze the information.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 9a-9b</dt>
+            <dd>The Apache Website contacts the Kibana server with a request for log file information.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Steps 10a-10b</dt>
+            <dd>Kibana sends a request for information to ElasticSearch.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Step 11</dt>
+            <dd>The Cron process invokes the Curator.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Step 12</dt>
+            <dd>The Curator returns information to ElasticSearch.</dd>
+          </dlentry>
+        </dl>
+ 
+     </p>
+      <p>
+        <image href="../../media/centralized_logging_diagram.png" placement="break"/>
+      </p>
+      <note>The arrows come <b>from</b> the active (requesting) side <b>to</b> the passive
+        (listening) side. The active side is always the one providing credentials, so the arrows may
+        also be seen as coming from the credential holder to the application requiring
+        authentication.</note>
+    </section>
+    
+    
+    <section id="retaining_logs"><title>How Long are Log Files Retained?</title>
+      <p>The logs that are centrally stored are saved to persistent storage as Elasticsearch
+        indices. These indices are stored in the partition <codeph>/var/lib/elasticsearch</codeph>
+        on each of the Elasticsearch cluster nodes. Out of the box, each day&apos;s worth of logs is
+        stored in one Elasticsearch index. As more days go by, the number of indices stored in this
+        disk partition grows. Eventually the partition fills up. If they are "open," each of these
+        indices takes up CPU and memory. If these indicies are left unattended they will continue to
+        consume system resources and eventually deplete them.</p>
+      <p>Elasticsearch, by itself, doesn't prevent this from happening.</p>
+      <p>Helion OpenStack uses a tool called <b>curator</b> that is developed by the
+        Elasticsearch community to handle these situations. Helion installs and
+        uses a curator in conjunction with several configurable settings. This curator is called
+          <b>cron</b> and perfoms the following checks:</p>
+      <ul>
+        <li><b>First Check.</b> The hourly cron job checks to see if the currently used
+          Elasticsearch partition size is over the value set in:
+          <codeblock>curator_low_watermark_percent</codeblock> If it is higher than this value, the
+          curator deletes old indices according to the value set in:
+          <codeblock>curator_num_of_indices_to_keep</codeblock></li>
+        <li><b>Second Check.</b> Another check is made to verify if the partition size is below the
+          high watermark percent. If it is still too high, curator will delete all indices except
+          the current one that is over the size as set in:
+          <codeblock>curator_max_index_size_in_gb</codeblock></li>
+        <li><b>Third Check.</b> A third check verifies if the partition size is still too high. If
+          it is, curator will delete all indices except the current one.</li>
+        <li><b>Final Check.</b> A final check verifies if the partition size is still high. If it
+          is, an error message is written to the log file but the current index is NOT deleted.</li>
+      </ul>
+      <p>In the case of an extreme network issue, log files can run out of disk space in under an
+        hour. To avoid this Helion uses a shell script called
+          <codeph>logrotate_if_needed.sh</codeph>. The cron process runs this script every 5 minutes
+        to see if the value in <codeph>/var/log</codeph> is at 95% or more of its default. If it is
+        at or above this level, cron runs the <codeph>logrotate_if_needed.sh</codeph> script to
+        rotate logs and to free up extra space. This script helps to minimize the chance of running
+        out of disk space on <codeph>/var/log</codeph>.</p>
+    </section>
+    <section id="types">
+      <title>What Data is Collected by Helion?</title>
+      <p>The following table lists the types of data collected by Centralized Logging and provides
+        information on how the logs are maintained.</p>
+      <table>
+        <tgroup cols="6">
+          <colspec colname="col1" colwidth="1.41*"/>
+          <colspec colname="col2" colwidth="1.59*"/>
+          <colspec colname="col3" colwidth="1*"/>
+          <colspec colname="col4" colwidth="1.29*"/>
+          <colspec colname="col5" colwidth="1*"/>
+          <colspec colname="col6" colwidth="4.17*"/>
+          <thead>
+            <row>
+              <entry>Data name</entry>
+              <entry>Confidentiality</entry>
+              <entry>Integrity</entry>
+              <entry>Availability</entry>
+              <entry>Backup?</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>Log records</entry>
+              <entry>Restricted</entry>
+              <entry>High</entry>
+              <entry>Medium</entry>
+              <entry>No</entry>
+              <entry>Log records have a limited life, and are not archived. The log file on the
+                local filesystem provides a fallback source of logging data (up to 20GB or 45 days)
+                if the logging system fails.</entry>
+            </row>
+            <row>
+              <entry>Log metadata</entry>
+              <entry>Restricted</entry>
+              <entry>High</entry>
+              <entry>Medium</entry>
+              <entry>No</entry>
+              <entry>Elasticsearch indexes logged data to allow flexible searching.</entry>
+            </row>
+            <row>
+              <entry>Credentials</entry>
+              <entry>Confidential</entry>
+              <entry>High</entry>
+              <entry>Medium</entry>
+              <entry>No</entry>
+              <entry>Credentials for access to Elasticsearch and RabbitMQ are stored in
+                configuration files owned by root with mode 0600.</entry>
+            </row>
+            <row>
+              <entry>Kibana metadata</entry>
+              <entry>Confidential</entry>
+              <entry>High</entry>
+              <entry>High</entry>
+              <entry>No</entry>
+              <entry>Kibana stores its search queries, visualizations and dashboards in the index
+                called ".kibana" . This index is replicated across Elasticsearch cluster nodes and
+                is highly available.</entry>
+            </row>
+            <row>
+              <entry>Monitoring metrics</entry>
+              <entry>Restricted</entry>
+              <entry>High</entry>
+              <entry>High</entry>
+              <entry>Yes</entry>
+              <entry>Monasca Server stores and manages the various logging metrics and
+                alarm-definitions.</entry>
+            </row>
+            <row>
+              <entry>Beaver configuration</entry>
+              <entry>Restricted</entry>
+              <entry>High</entry>
+              <entry>High</entry>
+              <entry>Yes</entry>
+              <entry>These settings are backed up as part of lifecycle manager repo changes
+                maintained by the administrator.</entry>
+            </row>
+            <row>
+              <entry>Logrotate configuration</entry>
+              <entry>Restricted</entry>
+              <entry>High</entry>
+              <entry>High</entry>
+              <entry>Yes</entry>
+              <entry>These are backed up as part of lifecycle manager repo changes maintained by the
+                administrator.</entry>
+            </row>
+            <row>
+              <entry>Curator configuration</entry>
+              <entry>Restricted</entry>
+              <entry>High</entry>
+              <entry>Medium</entry>
+              <entry>Yes</entry>
+              <entry>Cron job to periodically run and keep the old Elasticsearch indices
+                pruned/closed. These are backed up as part of lifecycle manager repos changes
+                maintained by the administrator.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section id="rotating_logs"><title>How Are Logs Rotated?</title>
+      <p>Helion Openstack uses the cron process which in turn calls <b>logrotate</b> to provide
+        rotation, compression, and removal of log files. Each log file can be rotated hourly, daily,
+        weekly, or monthly. If no rotation period is set then the log file will only be rotated when
+        it grows too large.</p>
+      <p>Rotating a file means that the logrotate process creates a copy of the log file with a new
+        extension, for example, the <b>.1</b> extension, then empties the contents of the
+        original file. If a .1 file already exists, then that file is first renamed with a .2 extension. If a .2 file already exists, it is renamed to .3, etc., up to the maximum number of rotated files specified in the settings file. When logrotate reaches the last possible file extension, it will delete the last file first on the next roation. By the time the logrotate process needs to delete a file, the results will have been copied to Elasticsearch, the central logging database.</p> 
+      
+      <p>The log rotation setting files can be found in the following directory 
+        <codeblock>.../logging-ansible/logging-common/vars/*</codeblock>
+        This file allows you to set the following options:
+        <dl>
+          <dlentry>
+            <dt>Service</dt>
+            <dd>The name of the service that creates the log entries.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Rotated Log Files</dt>
+            <dd>Updated copies of an original log file. These files are kept locally on the server and will continue to be rotated. If the file is also listed as Centrally Logged, it will also be copied to Elasticsearch.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>Frequency</dt>
+            <dd>The timing of when the logs are rotated. Options include:hourly, daily, weekly, or monthly.</dd>
+          </dlentry>
+<dlentry>
+  <dt>Max Size</dt>
+    <dd>The maximum file size the log can be before it is rotated out.</dd>
+</dlentry>
+<dlentry>
+  <dt>Rotation</dt>
+  <dd>The number of log files that are rotated.</dd>
+</dlentry>
+              <dlentry>
+                <dt>Centrally Logged Files</dt>
+                <dd>These files will be indexed by Elasticsearch and will be available for searching in the Kibana user interface.</dd>
+          </dlentry>
+        </dl>
+      </p>
+      <p>As an example, the Backup and Restore (BURA) service may be configured to create log files
+        by setting the <b>Rotated Log Files</b> variable to
+        <codeblock>/var/log/freezer-agent/freezer-scheduler.log</codeblock>This configuration means
+        that in the <codeph>/var/log/freezer-agent</codeph> directory, in a live environment, there
+        should be a file called <codeph>freezer-scheduler.log</codeph>. As the log file grows, the
+        cron process runs every hour to check the log file size against the settings in the
+        configuration files. The example freezer-agent settings are described below. </p>
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="table_itd_tjh_ht">
+          <tgroup cols="7">
+            <colspec colname="c1" colnum="1" colwidth="1.32*"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <colspec colname="c3" colnum="3" colwidth="3.26*"/>
+            <colspec colname="c4" colnum="4" colwidth="1.46*"/>
+            <colspec colname="c5" colnum="5" colwidth="1.05*"/>
+            <colspec colname="c6" colnum="6" colwidth="1.4*"/>
+            <colspec colname="c7" colnum="7" colwidth="3.38*"/>
+            <thead>
+              <row>
+                <entry>Service</entry>
+                <entry>Node Type</entry>
+                <entry>Rotated Log Files</entry>
+                <entry>Frequency</entry>
+                <entry>Max Size</entry>
+                <entry>Rotation</entry>
+                <entry>Centrally Logged Files</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <p>BURA (Backup and Restore)</p>
+                </entry>
+                <entry>
+                  <p>Control</p>
+                </entry>
+                <entry>
+                  <p>/var/log/freezer-agent/freezer-scheduler.log</p>
+                  <p>/var/log/freezer-agent/freezer-agent-json.log</p>
+                </entry>
+                <entry>
+                  <p>Daily</p>
+                </entry>
+                <entry>
+                  <p>32 MB</p>
+                </entry>
+                <entry>
+                  <p>7</p>
+                </entry>
+                <entry>
+                  <p>/var/log/freezer-agent/freezer-agent-json.log</p>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      <p>For the <codeph>freezer-scheduler.log</codeph> file specifically, the information in the
+        table tells the cron and logrotate processes that the log file is to be rotated daily, and
+        it can have a maximum size of 32 MB. After a week of log rotation, you would see something
+        similar to this list:
+        <codeblock>freezer-scheduler.log at 10K
+freezer-scheduler.log.1 at 123K
+freezer-scheduler.log.2.gz at 13K
+freezer-scheduler.log.3.gz at 17K
+freezer-scheduler.log.4.gz at 128K
+freezer-scheduler.log.5.gz at 22K
+freezer-scheduler.log.6.gz at 323K
+freezer-scheduler.log.7.gz at 123K        </codeblock>
+        
+        <note type="note">The log files beyond .1 are compressed so they have a .gz for a file extension.</note>
+        
+        Since the Rotation value is set to 7 for this log file, there will never be a
+          <codeph>freezer-scheduler.log8</codeph>. When the cron process runs its checks, if the
+          <codeph>freezer-scheduler.log</codeph> size is more than 32 MB, then logrotate rotates the
+        file.</p>
+      <p>In this example, the following log files are rotated:
+        <codeblock>/var/log/freezer-agent/freezer-scheduler.log
+/var/log/freezer-agent/freezer-agent-json.log      </codeblock>
+      </p>
+      <p>However, in this example, only the following file is centrally logged with Elasticsearch:
+        <codeblock>/var/log/freezer-agent/freezer-agent-json.log        </codeblock> Only files that
+        are listed in the <b>Centrally Logged Files</b> variable are copied to Elasticsearch. </p>
+      
+        <p>You can find the configuration files for each service in the following directory:
+        <codeblock>.../logging-ansible/logging-common/vars/*</codeblock>
+        Only files that have "centralized logging" enabled are copied to Elasticsearch.</p>
+        
+        <p>All of the variables for the logrotate process are found in the following file:
+        <codeblock>../logging-ansible/logging-common/defaults/main.yml          </codeblock>
+      </p>
+      <p>Cron runs logrotate hourly. Every 5 minutes another process is run called "logrotate_if_needed" which uses a watermark value to determine if the logrotate process needs to be run. If the "high watermark" has been reached, and the /var/log partition is more than 95% full (by default - this can be adjusted), then logrotate will be run within 5 minutes.</p>
+    </section>
+    
+    <section id="BUElasticsearch">
+      <title>Are Log Files Backed-Up To Elasticsearch?</title>
+      <p>While centralized logging is enabled out of the box, the backup of these logs are not. The reason is because Centralized Logging relies on the Elasticsearch FileSystem Repository plugin, which in turn requires shared disk partitions to be configured and accessible from each of the Elasticsearch nodes. Since there are multiple ways to setup a shared disk partition, Helion allows you to choose an approach that works best for your deployment before enabling the back-up of logging files to Elasticsearch.</p>
+      <p>If you enable automatic back-up of centralized log files, then all the logs collected from
+        the cloud nodes will be backed-up to Elasticsearch. Every hour, in the management controller
+        nodes where Elasticsearch is setup, a cron job runs to check if Elastisearch is running low
+        on disk space. If the check succeeds, it further checks if the backup feature is enabled. If
+        enabled, the cron job saves a snapshot of the Elasticsearch indices to the configured shared
+        disk partition using curator. Next, the script starts deleting the oldest index and moves
+        down from there checking each time if there is enough space for Elasticsearch. A check is
+        also made to ensure that the backup runs only once a day.</p>
+      
+      <p>For steps on how to enable automatic back-up, refer to the <xref href="central_log_configure_CL.dita">Settings for Centralized Logging</xref> topic.</p>
+      
+    </section>
+    
+    <section id="what_configure">
+      <title>What Can I Configure?</title>
+   
+        <p>The Centralized Logging feature is automatically installed as part of Helion installation.
+          The base logging levels will be set during installation according to the amount of RAM
+          allocated to your control plane nodes to ensure optimum performance.</p>
+        <p>No specific configuration is required to use Centralized Logging. However, you can
+          configure the individual components as needed for your environment. This topic provides
+          information on how to configure the following settings:</p>
+        <dl>
+          <dlentry>
+            <dt><xref href="central_log_configure_manage.dita">Running the Centralized Logging Service</xref></dt>
+            <dd>
+              <ul>
+                <li>How Do I Stop and Start the Service?</li>
+                <li>Can I Disable and Enable Centralized Logging for a Service?</li>
+              </ul>
+            </dd>
+          </dlentry>
+          <dlentry>
+            <dt><xref href="central_log_configure_CL.dita">Settings for Centralized Logging</xref></dt>
+            <dd>
+              <ul>
+                <li>Where Can I Find the Log Files?</li>
+                <li>How Do I Set Disk Space Requirements?</li>
+                <li>How Do I Back-Up Log Files to Elasticsearch?</li>
+              </ul>
+            </dd>
+          </dlentry>
+          <dlentry>
+            <dt><xref href="central_log_configure_services.dita"/></dt>
+            <dd>
+              <ul>
+                <li>How Do I Set Logging Levels?</li>
+                <li>How Do I Change the Length of Time Log Files Are Retained?</li>
+                <li>How Do I Configure Kibana for Centralized Logging?</li>
+                <li>How Do I Configure Elasticsearch for Centralized Logging?</li>
+              </ul>
+            </dd>
+          </dlentry>
+        </dl>
+      
+    </section>
+    
+    <section id="info">
+      <title>Where Can I Find More Information?</title>
+      <p>For information the centralized logging components, see the following sites:</p>
+      <ul>
+        <li><xref href="https://www.elastic.co/guide/en/logstash/current/introduction.html"
+          format="html" scope="external">Logstash</xref></li>
+        <li><xref href="http://www.elasticsearch.org/guide" scope="external" format="html"
+          >Elasticsearch</xref></li>
+        <li><xref href="http://www.elasticsearch.org/blog/scripting-security" scope="external"
+          format="html">Elasticsearch Scripting and Security</xref></li>
+        <li><xref href="https://media.readthedocs.org/pdf/beaver/latest/beaver.pdf" format="pdf"
+          scope="external">Beaver</xref></li>
+        <li><xref href="http://www.rabbitmq.com/" scope="external" format="html"
+          >RabbitMQ</xref></li>
+        <li><xref href="http://www.elasticsearch.org/guide/en/kibana/current/index.html"
+          scope="external" format="html">Kibana Dashboard</xref></li>
+      </ul>
+    </section>
+  </body>
+</topic>
