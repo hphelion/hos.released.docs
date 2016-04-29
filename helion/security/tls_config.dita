@@ -84,12 +84,11 @@
       <p>A test certificate named <codeph>my-public-cert</codeph> is bundled with the release.
         Having this default cert allows you to bring up a cloud without having to worry about
         certificates, and this is the recommended way to proceed. The certificate will not match the
-        IP address of your environment's API endpoints, but you can ignore the warnings.</p>
-      <p>When moving into production, you will require a trusted certificate and you must add your
-        own certificate and redeploy following the instructions in <xref
-          href="../security/tls_config.dita#tlsConfig"/></p>
-      <note type="attention">Be sure to install your own certificate for all production clouds after
-        installing and testing your cloud.</note>
+        IP address of your environment's API endpoints, but you can ignore the warnings.</p>When
+      moving into production, you will require a trusted certificate and you must add your own
+      certificate and redeploy following the instructions below. <note type="attention">Be sure to
+        install your own certificate for all production clouds after installing and testing your
+        cloud.</note>
       <note>If you ever want to test or troubleshoot later, you will be able to revert to the sample
         certificate to get back to a stable state for testing.</note>
       <note>There are two alarms specific to certificates, 14-days to expiration and 1-day to
@@ -119,7 +118,7 @@
         # cert-file: customer-provided-internal-cert
         # replace this with name of file in "config/tls/certs/"</codeblock>The
       configuration-processor will also create a request template for each named certificate under
-      <codeph>info/cert_reqs/</codeph> This will be of the form
+        <codeph>info/cert_reqs/</codeph> This will be of the form
       <codeblock>info/cert_reqs/customer-provided-internal-cert</codeblock></section>
     <section>These request templates contain the subject <codeph>Alt-names</codeph> that the
       certificates need. You can add to this template before generating your certificate signing
@@ -132,20 +131,6 @@
       the file into the directory <codeph>config/cacerts/</codeph>. Note that the file extension
       should be .crt or it will not be processed by <keyword keyref="kw-hos"/>.</section>
     <section> See below for detailed certificate installation instructions.</section>
-    
-    <section><title>TLS for the key management service on the load balancer back end and service
-      endpoint</title>
-      <p>Here are the entries specific to the Barbican key management service</p>
-      <codeblock>- name: MANAGEMENT
-        hostname-suffix: mgmt
-        hostname: true
-        
-        tls-component-endpoints:
-        # The following service endpoint is behind TLS
-        - barbican-api
-        component-endpoints:
-        - default </codeblock>
-    </section>
     
     
     <section><title>User-provided certificates and trust chains</title>
@@ -174,22 +159,11 @@
             keyref="kw-hos"/>. </li>
       </ol></section>
     <section><title>Edit the input model to include your cert files</title>
-      
-      <p><b>TLS for the key management service on the load balancer back end and service
-        endpoint</b></p>
-        <p>Here are the entries specific to the Barbican key management service</p>
-        <codeblock>- name: MANAGEMENT
-          hostname-suffix: mgmt
-          hostname: true
-          
-          tls-component-endpoints:
-          # The following service endpoint is behind TLS
-          - barbican-api
-          component-endpoints:
-          - default </codeblock>
-      
-      <p>Edit the load balancer configuration in
-        <codeph>definition/data/network_groups.yml</codeph></p>
+      <note>If you are upgrading and plan to use the <xref href="barbican.dita#barbican">Barbican
+          key management service</xref>, there are instructions for configring Barbican with TLS in
+          <xref href="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade">Enabling Barbican
+          When Upgrading</xref>.</note>Edit the load balancer configuration in
+        <codeph>definition/data/network_groups.yml</codeph>
       <codeblock>load-balancers:
  - provider: ip-cluster
  name: lb
@@ -323,8 +297,7 @@ openssl req -newkey rsa:2048 -nodes -keyout "$EXAMPLE_SERVER_KEY_FILE" -out "$EX
         to your IT department. But in this example you are your own CA, so sign and generate a
         server certificate.</p>
     </section>
-    <section><title>Generate a server certificate</title>
-      <p>
+    <section><title>Generate a server certificate</title><p>
         <note>In a production setting you will not perform this step. You will send the CSR created
           in the previous section to your company CA or a to a valid public CA and have them sign
           and send you back the certificate.</note>
@@ -438,8 +411,8 @@ subjectKeyIdentifier = hash
 [ alt_names ]
 
 ######### end of openssl.cnf #########</codeblock>
-      <p><b>Sign and create a server certificate</b></p>
-      <p>Now you can sign the server certificate with your CA.</p>
+      <p><b>Sign and create a server certificate</b></p><p>Now you can sign the server certificate
+        with your CA.</p>
       <codeblock>export EXAMPLE_SERVER_CERT_FILE='example-internal-cert.crt'
 export EXAMPLE_SERVER_CSR_FILE='example-internal-cert.csr'
 export EXAMPLE_CA_KEY_FILE='example-CA.key'
@@ -459,16 +432,14 @@ openssl ca -batch -notext -md sha256 -in "$EXAMPLE_SERVER_CSR_FILE" \
       that you have only created the internal-cert in this example. Repeat the above sequence for
       example-public-cert. Make sure you use the appropriate certificate request generated by the
       configuration processor. </section>
-    <section><title>Upload to the lifecycle manager</title>
-      <p>The following two files created from the example run above will need to be uploaded to the
-        lifecycle manager and copied under config/tls.</p>
-      <ul id="ul_zcc_v1c_5v">
+    <section><title>Upload to the lifecycle manager</title><p>The following two files created from
+        the example run above will need to be uploaded to the lifecycle manager and copied under
+        config/tls.</p><ul id="ul_zcc_v1c_5v">
         <li>example-internal-cert</li>
         <li>example-CA.crt</li>
-      </ul>
-      <p>Once on the lifecycle manager, execute the following two copy commands to copy to the
-        following directories.</p>
-      <codeblock>cp example-internal-cert example-public-cert ~/helion/my_cloud/config/tls/certs/
+      </ul><p>Once on the lifecycle manager, execute the following two copy commands to copy to the
+        following
+        directories.</p><codeblock>cp example-internal-cert example-public-cert ~/helion/my_cloud/config/tls/certs/
 cp example-CA.crt ~/helion/my_cloud/config/tls/cacerts/</codeblock><b>Continue
         with the deployment</b>
     </section>
@@ -487,14 +458,7 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Then
         <codeph>site.yml</codeph>
       <codeblock>ansible-playbook -i hosts/verb_hosts site.yml</codeblock>Or
         <codeph>hlm-reconfigure.yml</codeph><codeblock>ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
-      <p>You will need to choose if you want TLS enabled or disabled. You should leave TLS enabled
-        in production. However, if you need to disable it for any reason, you need to change
-        "tls-components" to "components" in <codeph>network_groups.yml</codeph> and comment out the
-        cert-file. By default, Horizon is configured with TLS in the input model. Note that you
-        should not disable TLS in the input model for Horizon as that is a public endpoint and is
-        required. You should keep all services behind TLS, but in the input model you may turn TLS
-        off for a service for troubleshooting or debugging. TLS should always be enabled for
-        production environments.</p></section>
+    </section>
     
     <section id="configure_cipher">
       <title>Configuring the cipher suite </title>
@@ -537,12 +501,18 @@ Verify return code: 0 (ok) </codeblock>The
       first command shows error 21 which is then fixed by providing the CA certificate file. This
       verifies that the CA certificate matches the server certificate. </section>
     
-    <section><title>Turning TLS on or off</title> If you don't want to use TLS, then you should
-      change "tls-components" to "components" in <codeph>network_groups.yml</codeph>. Additionally,
-      if you have a <codeph>network_groups.yml</codeph> file from a previous installation, you won't
-      have TLS enabled unless you change "components" to "tls-components" in that file.<p>If you are
-        using an example input model on a clean install, all supported TLS services will be enabled
-        before deployment of your cloud. If you want to change this setting later, for example, when
+    <section><title>Turning TLS on or off</title> You should leave TLS enabled in production.
+      However, if you need to disable it for any reason, you need to change "tls-components" to
+      "components" in <codeph>network_groups.yml</codeph> and comment out the cert-file.
+      Additionally, if you have a <codeph>network_groups.yml</codeph> file from a previous
+      installation, you won't have TLS enabled unless you change "components" to "tls-components" in
+      that file. By default, Horizon is configured with TLS in the input model. Note that you should
+      not disable TLS in the input model for Horizon as that is a public endpoint and is required.
+      Additionally, you should keep all services behind TLS, but using the input model file
+        <codeph>network_groups.yml</codeph>  you may turn TLS off for a service for troubleshooting
+      or debugging. TLS should always be enabled for production environments.<p>If you are using an
+        example input model on a clean install, all supported TLS services will be enabled before
+        deployment of your cloud. If you want to change this setting later, for example, when
         upgrading, you can change the input model and reconfigure the system. The process is
       to:</p>Edit the input model <codeph>network_groups.yml</codeph> file appropriately, as
       described above. Then, commit the changes to the git
