@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="multipath_boot_from_san">
-    <title><ph conkeyref="HOS-conrefs/product-title"/>Multipath Boot from SAN</title>
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Boot from SAN and Multipath Configuration</title>
     
     <body><!--not tested-->
         <p conkeyref="HOS-conrefs/applies-to"/>
@@ -11,22 +11,17 @@
             
                <sectiondiv id="multipath_overview">
                 
-               <p>
-                   <keyword keyref="kw-hos-phrase"/> includes support for multipath boot from SAN for FC and FCoE devices.
-                   
-                   The supported FCoE device families are those from 650FLB family with an Emulex network processor 
-                   (these present the FCoE LUNs directly into the node) and the 536FLB family with a 
-                   QLogic/Broadcom network processor that present the LUNs as "native FCoE" to the operating system.
-               </p>
+                   <sectiondiv conkeyref="hardware/multipath_hardware"/>
                
-                   <note type="important" id="boot-from-san-native-fcoe">Boot from SAN support for Native-FCoE cards is latent in <keyword keyref="kw-hos-phrase"/>  
-                       but our testing has shown an issue which we were unable to address in the 3.0 
-                       release and therefore we advise <keyword keyref="kw-hos-phrase"/>  customers to not use that configuration. 
-                       The aim is to fix this outstanding issue in a patch to <keyword keyref="kw-hos-phrase"/>  in the near future.    
-                       Native-FCoE is for cards and configurations that need additional installer and Operating System support over 
-                       and above what is provided for on the FCoE card.   
-                       All QLogic FCoE cards fall into this category. 
-                  </note>
+                   <note type="important" id="boot-from-san-native-fcoe">
+                       Boot from SAN support using QLogic-based FlexFabric adapters is latent in <keyword keyref="kw-hos-phrase"/> but 
+                       our testing has shown an issue which we were unable to address by the 3.0 release date and therefore we advise
+                       <keyword keyref="kw-hos-phrase"/> customers to not use that configuration. The aim is to fix this outstanding 
+                       issue in a patch to <keyword keyref="kw-hos-phrase"/> in the near future.
+                   </note>
+                   
+                   <p>iSCSI boot from SAN is not supported. For more information on the use of Cinder with multipath, see
+                       <xref keyref="configure_3par/multipath">3PAR Configuration - Multipath</xref>.</p>
                
                <p>
                    In order to allow <keyword keyref="kw-hos-phrase"/> use volumes from a SAN,
@@ -47,7 +42,7 @@
 			</p>
 			
 			<ol>
-				<li>In each stanza of the servers.yml insert a line stating the boot-from-san: true
+				<li>In each stanza of the servers.yml insert a line stating  <b>boot-from-san: true</b>
 <codeblock>
     - id: controller2
       ip-addr: 192.168.10.4
@@ -58,7 +53,7 @@
       ilo-ip: 192.168.9.4
       ilo-password: password
       ilo-user: admin
-      boot-from-san: true
+      <b>boot-from-san: true</b>
 </codeblock>				
 				This uses the disk <codeph>/dev/mapper/mpatha</codeph> as the default device on which to install the OS.
 				</li>
@@ -91,12 +86,12 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
 
 		</section>
         
-        <section>
+        <!--  <section>
         	<title>Native FCoE restrictions and additional configurations</title>
             
-            <note conkeyref="multipath_boot_from_san/boot-from-san-native-fcoe"/>
+        <note conkeyref="multipath_boot_from_san/boot-from-san-native-fcoe"/>
             
-<!--        	<p>
+      	<p>
 				If you are using network cards such as the 536FLB where the devices are being presented as
 				"native fcoe" then there are additional configuration steps as well as some restrictions on
 				supported configurations.
@@ -160,9 +155,9 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
             - EXTERNAL-VM
             - GUEST
             - MANAGEMENT
-</codeblock>-->
+</codeblock>
 
-        </section>
+        </section>-->
         
 
         
@@ -180,9 +175,9 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
                     to support the following configurations:</p>
                 <sl>
                     <sli><xref href="#install_boot_from_san/uefi"/></sli>
-                    <sli><xref href="#install_boot_from_san/uefi_fcoe"/></sli>
+                    <!--<sli><xref href="#install_boot_from_san/uefi_fcoe"/></sli>-->
                     <sli><xref href="#install_boot_from_san/bios"/></sli>
-                    <sli><xref href="#install_boot_from_san/bios_fcoe"/></sli>
+                    <!--<sli><xref href="#install_boot_from_san/bios_fcoe"/></sli>-->
                 </sl>
                 
                 <p>The lifecycle manager will then automatically handle the installation on nodes that supports Boot from SAN 
@@ -210,7 +205,7 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
                 
             </section>      
  
-             <section id="uefi_fcoe">
+<!--             <section id="uefi_fcoe">
                 <title>UEFI Boot Mode with Native FCoE</title>
                 
                  <p>At the installer boot menu, type a lower-case "e" to enter the <codeph>Edit Selection</codeph> screen
@@ -219,7 +214,7 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
 
                  <p>Press <codeph>Ctrl-X</codeph> or <codeph>F10</codeph> to proceed with the install.</p>
                 
-            </section>    
+            </section>   --> 
             
             <section id="bios">
                 <title>Legacy BIOS Boot Mode</title>
@@ -233,7 +228,7 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
                <p>Navigate to the <codeph>Multipath install</codeph> entry and press Enter to start the installation.</p>              
             </section>
  
-           <section id="bios_fcoe">
+  <!--         <section id="bios_fcoe">
                 <title>Legacy BIOS Boot Mode with Native FCoE</title>
                 
                 <p>On the installer boot menu, navigate (using the Down Arrow) to the <codeph>Advanced options</codeph> entry and then press Enter </p>
@@ -248,7 +243,7 @@ multipath names (which will be of the form <codeph>/dev/mapper/mpatha</codeph>, 
                
                <image keyref="multipath_install_edit"/>
                
-               <p>Edit the kernel command line to add the FCoE network interfaces before the <codeph>---</codeph>. 
+               <p>Edit the kernel command line to add the FCoE network interfaces before the <codeph>-\-\-</codeph>. 
                    In the example below, the interfaces are specified as:
                
 <codeblock>
@@ -263,6 +258,9 @@ partman-fcoe/interfaces=eth2,eth3
                 
                 
             </section>  
+ 
+        -->
+        
         </body>
     </topic>
     
