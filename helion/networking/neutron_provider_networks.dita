@@ -4,7 +4,8 @@
 <topic xml:lang="en-us" id="neutron_provider_networks">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Neutron Provider Networks</title>
 
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <section>
       <p>This topic explains how to create a Neutron provider network. </p>
       <title>Provider Networks Overview</title>
@@ -36,7 +37,7 @@
     │   ├── network_groups.yml
     │   ├── networks.yml
     │   ├── neutron
-    │   │   └── provider_net.yml
+    │   │   └── neutron_config.yml
     │   ├── nic_mappings.yml
     │   ├── server_groups.yml
     │   ├── server_roles.yml
@@ -44,12 +45,12 @@
     │   ├── swift
     │   │   └── rings.yml
     │   └── octavia
-    │       └── provider_net.yml
+    │       └── octavia_config.yml
     ├── README.html
     └── README.md</codeblock>
     </section>
-    <section><title>Network/Subnet Specification</title> <p>The elements required in the input model
-      for you to define a network are: </p><ul>
+    <section><title>Network/Subnet Specification</title>
+      <p>The elements required in the input model for you to define a network are: </p><ul>
         <li>name </li>
         <li>network_type </li>
         <li>physical_network</li>
@@ -68,252 +69,228 @@
     <section>
       <title>Network Details</title>
       <p>The following table outlines the network values to be set, and what they represent.</p>
- 
-    <table frame="all" rowsep="1" colsep="1" id="table_lnv_y5n_2v">
-      <tgroup cols="4">
-        <colspec colname="c1" colnum="1" colwidth="1.02*"/>
-        <colspec colname="c2" colnum="2" colwidth="1*"/>
-        <colspec colname="c3" colnum="3" colwidth="1.05*"/>
-        <colspec colname="c4" colnum="4" colwidth="1.72*"/>
-        <thead>
-          <row>
-            <entry>Attribute</entry>
-            <entry>Required/optional</entry>
-            <entry>Allowed Values</entry>
-            <entry>Usage</entry>
-          </row>
-        </thead>
-        <tbody>
-          <row>
-            <entry>name</entry>
-            <entry>Required</entry>
-            <entry/>
-            <entry/>
-          </row>
-          <row>
-            <entry>network_type</entry>
-            <entry>Required</entry>
-            <entry>flat, vlan, vxlan</entry>
-            <entry>The type of desired network</entry>
-          </row>
-          <row>
-            <entry>physical_network</entry>
-            <entry>Required</entry>
-            <entry>Valid</entry>
-            <entry>Name of physical network that is overlayed with the virtual network</entry>
-          </row>
-          <row>
-            <entry>segmentation_id</entry>
-            <entry>Optional</entry>
-            <entry>vlan or vxlan ranges</entry>
-            <entry>VLAN id for vlan or tunnel id for vxlan</entry>
-          </row>
-          <row>
-            <entry>shared</entry>
-            <entry>Optional</entry>
-            <entry>True</entry>
-            <entry>Shared by all projects or private to a single project</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+      <table frame="all" rowsep="1" colsep="1" id="table_lnv_y5n_2v">
+        <tgroup cols="4">
+          <colspec colname="c1" colnum="1" colwidth="1.02*"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <colspec colname="c3" colnum="3" colwidth="1.05*"/>
+          <colspec colname="c4" colnum="4" colwidth="1.72*"/>
+          <thead>
+            <row>
+              <entry>Attribute</entry>
+              <entry>Required/optional</entry>
+              <entry>Allowed Values</entry>
+              <entry>Usage</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>name</entry>
+              <entry>Required</entry>
+              <entry/>
+              <entry/>
+            </row>
+            <row>
+              <entry>network_type</entry>
+              <entry>Required</entry>
+              <entry>flat, vlan, vxlan</entry>
+              <entry>The type of desired network</entry>
+            </row>
+            <row>
+              <entry>physical_network</entry>
+              <entry>Required</entry>
+              <entry>Valid</entry>
+              <entry>Name of physical network that is overlayed with the virtual network</entry>
+            </row>
+            <row>
+              <entry>segmentation_id</entry>
+              <entry>Optional</entry>
+              <entry>vlan or vxlan ranges</entry>
+              <entry>VLAN id for vlan or tunnel id for vxlan</entry>
+            </row>
+            <row>
+              <entry>shared</entry>
+              <entry>Optional</entry>
+              <entry>True</entry>
+              <entry>Shared by all projects or private to a single project</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
     <section>
       <p>The following table outlines the subnet values to be set, and what they represent. </p>
       <title>Subnet Details</title>
-    <table frame="all" rowsep="1" colsep="1" id="table_pzw_3wn_2v">
-      <tgroup cols="4">
-        <colspec colnum="1" colname="col1"/>
-        <colspec colnum="2" colname="col2"/>
-        <colspec colnum="3" colname="col3"/>
-        <colspec colnum="4" colname="col4"/>
-        <thead>
-          <row>
-            <entry>Attribute</entry>
-            <entry>Req/Opt</entry>
-            <entry>Allowed Values</entry>
-            <entry>Usage</entry>
-          </row>
-        </thead>
-        <tbody>
-          <row>
-            <entry>cidr</entry>
-            <entry>Required</entry>
-            <entry>Valid CIDR range</entry>
-            <entry>e.g. 172.30.0.0/24</entry>
-          </row>
-          <row>
-            <entry>allocation_pools</entry>
-            <entry>Optional</entry>
-            <entry>See allocation_pools table below</entry>
-            <entry> </entry>
-          </row>
-          <row>
-            <entry>host_routes</entry>
-            <entry>Optional</entry>
-            <entry>See host_routes table below</entry>
-            <entry> </entry>
-          </row>
-          <row>
-            <entry>gateway_ip</entry>
-            <entry>Optional</entry>
-            <entry>Valid IP addr</entry>
-            <entry>Subnet gateway to other nets</entry>
-          </row>
-          <row>
-            <entry>no_gateway</entry>
-            <entry>Optional</entry>
-            <entry>True</entry>
-            <entry>No distribution of gateway</entry>
-          </row>
-          <row>
-            <entry>enable-dhcp</entry>
-            <entry>Optional</entry>
-            <entry>True</entry>
-            <entry>Enable dhcp for this subnet</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+      <table frame="all" rowsep="1" colsep="1" id="table_pzw_3wn_2v">
+        <tgroup cols="4">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <thead>
+            <row>
+              <entry>Attribute</entry>
+              <entry>Req/Opt</entry>
+              <entry>Allowed Values</entry>
+              <entry>Usage</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>cidr</entry>
+              <entry>Required</entry>
+              <entry>Valid CIDR range</entry>
+              <entry>e.g. 172.30.0.0/24</entry>
+            </row>
+            <row>
+              <entry>allocation_pools</entry>
+              <entry>Optional</entry>
+              <entry>See allocation_pools table below</entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>host_routes</entry>
+              <entry>Optional</entry>
+              <entry>See host_routes table below</entry>
+              <entry> </entry>
+            </row>
+            <row>
+              <entry>gateway_ip</entry>
+              <entry>Optional</entry>
+              <entry>Valid IP addr</entry>
+              <entry>Subnet gateway to other nets</entry>
+            </row>
+            <row>
+              <entry>no_gateway</entry>
+              <entry>Optional</entry>
+              <entry>True</entry>
+              <entry>No distribution of gateway</entry>
+            </row>
+            <row>
+              <entry>enable-dhcp</entry>
+              <entry>Optional</entry>
+              <entry>True</entry>
+              <entry>Enable dhcp for this subnet</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
     <section>
       <title>ALLOCATION_POOLS Details</title>
       <p>The following table explains allocation pool settings.</p>
-    <table frame="all" rowsep="1" colsep="1" id="table_h5p_5wn_2v">
-      <tgroup cols="4">
-        <colspec colnum="1" colname="col1"/>
-        <colspec colnum="2" colname="col2"/>
-        <colspec colnum="3" colname="col3"/>
-        <colspec colnum="4" colname="col4"/>
-        <thead>
-          <row>
-            <entry>Attribute</entry>
-            <entry>Req/Opt</entry>
-            <entry>Allowed Values</entry>
-            <entry>Usage</entry>
-          </row>
-        </thead>
-        <tbody>
-          <row>
-            <entry>start</entry>
-            <entry>Required</entry>
-            <entry>Valid IP addr</entry>
-            <entry>First ip address in pool</entry>
-          </row>
-          <row>
-            <entry>end</entry>
-            <entry>Required</entry>
-            <entry>Valid IP addr</entry>
-            <entry>Last ip address in pool</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+      <table frame="all" rowsep="1" colsep="1" id="table_h5p_5wn_2v">
+        <tgroup cols="4">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <thead>
+            <row>
+              <entry>Attribute</entry>
+              <entry>Req/Opt</entry>
+              <entry>Allowed Values</entry>
+              <entry>Usage</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>start</entry>
+              <entry>Required</entry>
+              <entry>Valid IP addr</entry>
+              <entry>First ip address in pool</entry>
+            </row>
+            <row>
+              <entry>end</entry>
+              <entry>Required</entry>
+              <entry>Valid IP addr</entry>
+              <entry>Last ip address in pool</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
     <section>
       <title>HOST_ROUTES Details</title>
       <p>The following table explains host route settings.</p>
-    <table frame="all" rowsep="1" colsep="1"  id="table_gfj_dxn_2v">
-      <tgroup cols="4">
-        <colspec colnum="1" colname="col1"/>
-        <colspec colnum="2" colname="col2"/>
-        <colspec colnum="3" colname="col3"/>
-        <colspec colnum="4" colname="col4"/>
-        <thead>
-          <row>
-            <entry>Attribute</entry>
-            <entry>Req/Opt</entry>
-            <entry>Allowed Values</entry>
-            <entry>Usage</entry>
-          </row>
-        </thead>
-        <tbody>
-          <row>
-            <entry>destination</entry>
-            <entry>Required</entry>
-            <entry>Valid CIDR</entry>
-            <entry>Destination subnet</entry>
-          </row>
-          <row>
-            <entry>nexthop</entry>
-            <entry>Required</entry>
-            <entry>Valid IP addr</entry>
-            <entry>Hop to take to destination subnet</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-      
-    <note>Multiple destination/nexthop may be used</note>
+      <table frame="all" rowsep="1" colsep="1" id="table_gfj_dxn_2v">
+        <tgroup cols="4">
+          <colspec colnum="1" colname="col1"/>
+          <colspec colnum="2" colname="col2"/>
+          <colspec colnum="3" colname="col3"/>
+          <colspec colnum="4" colname="col4"/>
+          <thead>
+            <row>
+              <entry>Attribute</entry>
+              <entry>Req/Opt</entry>
+              <entry>Allowed Values</entry>
+              <entry>Usage</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>destination</entry>
+              <entry>Required</entry>
+              <entry>Valid CIDR</entry>
+              <entry>Destination subnet</entry>
+            </row>
+            <row>
+              <entry>nexthop</entry>
+              <entry>Required</entry>
+              <entry>Valid IP addr</entry>
+              <entry>Hop to take to destination subnet</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <note>Multiple destination/nexthop may be used</note>
     </section>
     <section><title>Examples</title>
-      <p>The following examples show provider_net.yml settings for neutron and octavia</p>
-      data/octavia/provider_net.yml <codeblock>---
-  product:
-    version: 2
-  configuration-data:
-    - name:  OCTAVIA-CONFIG-CP1
-      services:
-        - octavia 
-      data:
-        neutron_broker_net: OCTAVIA-BROKER-VM-NET</codeblock>
-      <!--data/cue/provider_net.yml
-      <codeblock>- - -
-  product:
-    version: 2
-  configuration-data:
-    - name:  CUE-CONFIG-CP1
-      services:
-        - cue 
-      data:
-        neutron_broker_net: CUE-BROKER-VM-NET</codeblock>-->
-      <p>data/neutron/provider_net.yml</p>
+      <p>The following examples show the configuration file settings for Neutron and Octavia.</p>
+      <p><b>Octavia Configuration</b></p>
+      <p>This file defines the mapping. It doesn't need to be edited unless you want to change the
+        name of your VLAN.</p>
+      <p>Path: <codeph>~/helion/my_cloud/definition/data/octavia/octavia_config.yml</codeph></p>
       <codeblock>---
   product:
     version: 2
+
+  configuration-data:
+    - name: OCTAVIA-CONFIG-CP1
+      services:
+        - octavia
+      data:
+        amp_network_name: OCTAVIA-MGMT-NET</codeblock>
+      <p><b>Neutron Configuration</b></p>
+      <p>It's in this file that you input your network configuration information for your provider
+        VLANs.</p>
+      <p>Path: <codeph>~/helion/my_cloud/definition/data/neutron/neutron_config.yml</codeph></p>
+      <codeblock>---
+  product:
+    version: 2
+
   configuration-data:
     - name:  NEUTRON-CONFIG-CP1
       services:
         - neutron
       data:
         neutron_provider_networks:
-<!--        - name: CUE-BROKER-VM-NET
+        - name: OCTAVIA-MGMT-NET
           provider:
             - network_type: vlan
               physical_network: physnet1
-              segmentation_id: 104
-          cidr: 172.17.0.0/24
+              segmentation_id: 2754
+          cidr: 10.13.189.0/24
           no_gateway:  True
-          enable_dhcp: False
+          enable_dhcp: True
           allocation_pools:
-            - start: 172.17.0.128
-              end: 172.17.0.250
+            - start: 10.13.189.4
+              end: 10.13.189.252
           host_routes:
-            # route to MANAGEMENT-NET-1
-            - destination: 192.168.245.0/24
-              nexthop:  172.17.0.1
-            # route to MANAGEMENT-NET-2
-            - destination: 192.168.246.0/24
-              nexthop:  172.17.0.1-->
-        - name: OCTAVIA-BROKER-VM-NET
-          provider:
-            - network_type: vlan
-              physical_network: physnet1
-              segmentation_id: 105
-          cidr: 172.18.0.0/24
-          no_gateway:  True
-          enable_dhcp: False
-          allocation_pools:
-            - start: 172.18.0.128
-              end: 172.18.0.250
-          host_routes:
-            # route to MANAGEMENT-NET-1
-            - destination: 192.168.245.0/24
-              nexthop:  172.18.0.1
-            # route to MANAGEMENT-NET-2
-            - destination: 192.168.246.0/24
-              nexthop:  172.18.0.1</codeblock>
+            # route to MANAGEMENT-NET
+            - destination: 10.13.111.128/26
+              nexthop:  10.13.189.5</codeblock>
     </section>
-  
+
   </body>
 </topic>
