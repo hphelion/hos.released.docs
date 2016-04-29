@@ -35,8 +35,8 @@
         </dlentry>
         <dlentry>
           <dt>SAN (subject-alt-name)</dt>
-          <dd>The set of IP addresses and domain names in a server certificate certificate request:
-            A template for a server certificate. This would include SANs among other things. </dd>
+          <dd>The set of IP addresses and domain names in a server certificate request: A template
+            for a server certificate. This would include SANs among other things. </dd>
         </dlentry>
         <dlentry>
           <dt>CSR (Certificate Signing Request)</dt>
@@ -336,8 +336,7 @@ subjectKeyIdentifier = hash
 [ alt_names ]
 
 ######### end of openssl.cnf #########</codeblock>
-    </section>
-    <section><title>Sign and create a server certificate</title>
+    <p><b>Sign and create a server certificate</b></p>
       <p>Now you can sign the server certificate with your CA.</p>
       <codeblock>export EXAMPLE_SERVER_CERT_FILE='example-internal-cert.crt'
 export EXAMPLE_SERVER_CSR_FILE='example-internal-cert.csr'
@@ -411,11 +410,11 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Then
         To do so, open <codeph>config/haproxy/defaults.yml</codeph> and edit it. The parameters can
         be found under haproxy_globals list.</p>
       <codeblock>- "ssl-default-bind-ciphers HIGH:!aNULL:!eNULL:!DES:!3DES"
-        - "ssl-default-server-ciphers HIGH:!aNULL:!eNULL:!DES:!3DES"</codeblock>
+- "ssl-default-server-ciphers HIGH:!aNULL:!eNULL:!DES:!3DES"</codeblock>
       <p>Make the changes as needed. It's best to keep the two options identical.</p>
     </section>
     <section><title>Testing</title> To check if an endpoint is behind TLS, run the following command
-      which probes a keystone endpoint (as an exampe) which is behind
+      which probes a keystone endpoint (as an example) which is behind
       TLS:<codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.5:5000 | openssl x509 -fingerprint -noout 
         depth=0 CN = helion-vip
         verify error:num=20:unable to get local issuer certificate
@@ -428,17 +427,17 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Then
         verify return:1
         DONE
         SHA1 Fingerprint=C6:46:1E:59:C6:11:BF:72:5E:DD:FC:FF:B0:66:A7:A2:CC:32:1C:B8 </codeblock>
-      The next command probes a mysql endpoint that is not behind TLS
+      The next command probes a MySQL endpoint that is not behind TLS
       <codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.5:3306 | openssl x509 -fingerprint -noout 
-        140448358213264:error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol:s23_clnt.c:795:
-        unable to load certificate
-        140454148159120:error:0906D06C:PEM routines:PEM_read_bio:no start line:pem_lib.c:703:Expecting: TRUSTED CERTIFICATE</codeblock>
+140448358213264:error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol:s23_clnt.c:795:
+unable to load certificate
+140454148159120:error:0906D06C:PEM routines:PEM_read_bio:no start line:pem_lib.c:703:Expecting: TRUSTED CERTIFICATE</codeblock>
     </section>
     <section><title>Checking if the trust chain is correctly deployed</title>
       <codeblock>stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5000 2>/dev/null | grep code 
-        Verify return code: 21 (unable to verify the first certificate)
-        stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5000 -CAfile /usr/local/share/ca-certificates/helion_frontend_cacert.crt 2>/dev/null | grep code 
-        Verify return code: 0 (ok) </codeblock>The
+Verify return code: 21 (unable to verify the first certificate)
+stack@padawan-ccp-c0-m1-mgmt:~$ echo | openssl s_client -connect 192.168.245.9:5000 -CAfile /usr/local/share/ca-certificates/helion_frontend_cacert.crt 2>/dev/null | grep code 
+Verify return code: 0 (ok) </codeblock>The
       first command shows error 21 which is then fixed by providing the CA certificate file. This
       verifies that the CA certificate matches the server certificate. </section>
   </body>
