@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="OctaviaInstall">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Octavia Installation</title>
-  <body><!--not tested-->
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring Load Balancer as a Service</title>
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="Overview">
-      <title>Octavia Installation</title>
-      <p>The <keyword keyref="kw-hos"/> Neutron LBaaS service supports several Load 
-        Balancing providers. <keyword keyref="kw-hos"/> support both Octavia and the namespace 
-        haproxy driver.  A user can specify which provider to use with the 
-        <codeph>--provider</codeph> flag upon load balancer creation:
-        <codeblock>neutron lbaas-loadbalancer-create --name &lt;name&gt; --provider [octavia|haproxy] &lt;subnet&gt;</codeblock>
-      </p>
-      <p>If you don't specify the provider it will automatically default to Octavia. The Octavia
-        driver provides more functionality than the haproxy namespace driver which is deprecated.
-        The haproxy namespace driver will be retired in a future version of <keyword keyref="kw-hos"
-        />.</p>
-      
-      <p>There are additional drivers for 3rd party hardware load balancers. Please refer to the vendor directly. You can see a 
-        list of available load balancing providers as follows:
+      <p>The <keyword keyref="kw-hos"/> Neutron LBaaS service supports several load balancing
+        providers. By default, both Octavia and the namespace haproxy driver are configured to be
+        used. A user can specify which provider to use with the <codeph>--provider</codeph> flag
+        upon load balancer creation.</p>
+      <p>Example:</p>
+      <codeblock>neutron lbaas-loadbalancer-create --name &lt;name&gt; --provider [octavia|haproxy] &lt;subnet&gt;</codeblock>
+      <p>If you don't specify the <codeph>--provider</codeph> option it will default to Octavia. The
+        Octavia driver provides more functionality than the haproxy namespace driver which is
+        deprecated. The haproxy namespace driver will be retired in a future version of <keyword
+          keyref="kw-hos"/>.</p>
+      <p>There are additional drivers for 3rd party hardware load balancers. Please refer to the
+        vendor directly. You can see a list of available load balancing providers as follows:
         <codeblock>$ neutron service-provider-list
 +----------------+----------+---------+
 | service_type   | name     | default |
@@ -33,29 +32,27 @@
       <note>In the example above, the providers are listed twice. This is a limitation in <keyword
           keyref="kw-hos-phrase-30"/>. Also note that the Octavia load balancer provider is listed
         as the default.</note>
-
     </section>
 
-  <section id="ExternalNetwork">
-    <title>Create External Network</title>
-      <p>You will need to create an external network and register an image to test LBaaS functionality.  If you have already created
-        an external network and registered and image, this step can be skipped.</p>
-      
+    <section id="ExternalNetwork">
+      <title>Create External Network</title>
+      <p>You will need to create an external network and register an image to test LBaaS
+        functionality. If you have already created an external network and registered and image,
+        this step can be skipped.</p>
       <ol>
-        <li>You can run commands from the lifecycle manager or from a shell with access to the API nodes.
-          Run the playbook which registers a Cirros image and creates a public network under
+        <li>You can run commands from the lifecycle manager or from a shell with access to the API
+          nodes. Run the playbook which registers a Cirros image and creates a public network under
           Neutron. <note>Running this step configures 172.16.0.0/16 by default as the external
-            network with name <i>ext-net</i> and registers a Cirros image.  You will need to
-            change the IP for your external network.</note>
+            network with name <i>ext-net</i> and registers a Cirros image. You will need to change
+            the IP for your external network.</note>
           <codeblock>ansible-playbook -i hosts/verb_hosts hlm-cloud-configure.yml</codeblock></li>
       </ol>
-    
-  </section>
+    </section>
 
 
-  <section id="OctaviaProvider">
-    <title>Octavia Load Balancing Provider</title>
-    <p>The Octavia Load balancing provider bundled with <keyword keyref="kw-hos-phrase-30"/> is an
+    <section id="OctaviaProvider">
+      <title>Octavia Load Balancing Provider</title>
+      <p>The Octavia Load balancing provider bundled with <keyword keyref="kw-hos-phrase-30"/> is an
         operator grade load balancer for OpenStack. It is based on the Liberty version of Octavia.
         It differs from the namespace driver by starting a new nova virtual machine to house the
         haproxy performing the load balancing for each load balancer requested. A virtual machine
@@ -63,15 +60,13 @@
         tenants and makes it easier to grow load balancing capacity alongside compute node growth.
         Additionally, if the virtual machine fails for any reason Octavia will replace it with a new
         VM from a pool of spare VM's, assuming that the feature is configured.</p>
-    
-    <p><b>Prerequisites</b></p>
-    <p>The Octavia Load Balancing Provider requires a provider network. This needs to be set up and
-        configured in the hlm-input model prior to installing Octavia. Please refer to the
+      <p><b>Prerequisites</b></p>
+      <p>The Octavia Load Balancing Provider requires a provider network. This needs to be set up
+        and configured in the hlm-input model prior to installing Octavia. Please refer to the
         corresponding Neutron document, <xref
           href="../networking/neutron_provider_networks.dita#neutron_provider_networks"/> for more
-        information. 
-    </p>
-    <p>Octavia uses two-way SSL encryption to communicate with the amphora. There are demo
+        information. </p>
+      <p>Octavia uses two-way SSL encryption to communicate with the amphora. There are demo
         Certificate Authority (CA) certificates included with <keyword keyref="kw-hos-phrase-30"/>
         in <codeph>/home/stack/scratch/ansible/next/hos/ansible/roles/octavia-common/files</codeph>
         on the lifecycle manager. For additional security in production deployments, all certificate
@@ -84,30 +79,28 @@ openssl req -x509 -passin pass:foobar -new -nodes -key cakey.pem -out serverca_0
       </p>
       <p>For more details refer to the openssl man page. <note> If you change the certificate
           authority and have amphora running with an old CA you won’t be able to control the
-          amphora.  The Amphora's will need to be failed over so they can utilize the new
+          amphora. The Amphora's will need to be failed over so they can utilize the new
           certificate. If you change the CA password for the server certificate you need to change
           that in the Octavia configuration files as well. See the <xref
-            href="../networking/octavia_admin.dita#OctaviaAdmin/Tuning"> Octavia Administration</xref> 
-        guide for more information.</note>
+            href="../networking/octavia_admin.dita#OctaviaAdmin/Tuning"> Octavia
+            Administration</xref> guide for more information.</note>
       </p>
-   
-    <p><b>Installing the Amphora Image</b></p>
-    <p>Octavia is utilizing Nova VMs for it's load balancing function and HPE provides images used
+      <p><b>Installing the Amphora Image</b></p>
+      <p>Octavia is utilizing Nova VMs for it's load balancing function and HPE provides images used
         to boot those VM's called <codeph>octavia-amphora-haproxy</codeph>. <note type="warning"
           >Without these images the Octavia load balancer will not work.</note></p>
-    <!-- Need download link and instructions to run it -->
-      
-    <p>You can download those images form the software depot. Once the image is downloaded 
-      it needs to be placed on the lifecycle manager node and the image registered. </p>
-    <ol>
-      <li>Switch to the ansible directory and register the image by giving the full path and 
-        name (e.g. <codeph>/tmp/octavia-amphora-haproxy-guest-image.tgz</codeph>) as 
-        argument to service_package:
-        <codeblock>$ cd ~/scratch/ansible/next/hos/ansible/
+      <!-- Need download link and instructions to run it -->
+      <p>You can download those images form the software depot. Once the image is downloaded it
+        needs to be placed on the lifecycle manager node and the image registered. </p>
+      <ol>
+        <li>Switch to the ansible directory and register the image by giving the full path and name
+          (e.g. <codeph>/tmp/octavia-amphora-haproxy-guest-image.tgz</codeph>) as argument to
+          service_package:
+          <codeblock>$ cd ~/scratch/ansible/next/hos/ansible/
 $ ansible-playbook -i hosts/verb_hosts -e service_package=&lt;image path/name&gt; service-guest-image.yml</codeblock></li>
-      <li>Source the service user (this can be done on a different computer)
-        <codeblock>$ . service.osrc</codeblock></li>
-      <li>Verify that the image was uploaded and registered (this can be done on a computer with
+        <li>Source the service user (this can be done on a different computer)
+          <codeblock>$ . service.osrc</codeblock></li>
+        <li>Verify that the image was uploaded and registered (this can be done on a computer with
           access to the glance CLI client)
             <codeblock>$ glance image-list
 +--------------------------------------+---------------------------------------+
@@ -118,10 +111,10 @@ $ ansible-playbook -i hosts/verb_hosts -e service_package=&lt;image path/name&gt
 +--------------------------------------+---------------------------------------+
     </codeblock><note>In
             rare circumstances the image won't be registered and you will have to run the whole
-            registration again.  If you run it the registration by accident, the system will only
+            registration again. If you run it the registration by accident, the system will only
             upload a new image if the underlying image has been changed.</note></li>
-      <li>Check the status of the image by running <codeph>glance image-show &lt;image-id&gt;</codeph>. 
-        <codeblock>$ glance image-show e64cb914-15d2-4ad8-a63c-b7c60a6c232e
+        <li>Check the status of the image by running <codeph>glance image-show
+            &lt;image-id&gt;</codeph>. <codeblock>$ glance image-show e64cb914-15d2-4ad8-a63c-b7c60a6c232e
 +------------------+---------------------------------------+
 | Property         | Value                                 |
 +------------------+---------------------------------------+
@@ -142,38 +135,34 @@ $ ansible-playbook -i hosts/verb_hosts -e service_package=&lt;image path/name&gt
 | virtual_size     | None                                  |
 | visibility       | private                               |
 +------------------+---------------------------------------+</codeblock>
-        <note type="important">In the example above, the status of the image is <i>active</i> 
-        which means the image was successfully registered.  If a status of the images is <i>queued</i>, 
-          you must run the image registration again.</note>
-      </li>
-    </ol>
-    
-    <p>Please be aware that if you have already created load balancers they won't receive the new
+          <note type="important">In the example above, the status of the image is <i>active</i>
+            which means the image was successfully registered. If a status of the images is
+              <i>queued</i>, you must run the image registration again.</note>
+        </li>
+      </ol>
+      <p>Please be aware that if you have already created load balancers they won't receive the new
         image. Only load balancers created after the image has been successfully installed will use
         the new image. If existing load balancers need to be switched to the new image please follow
         the instructions in the <xref href="../networking/octavia_admin.dita#OctaviaAdmin/Tuning">
           Octavia Administration</xref> guide.</p>
- 
     </section>
 
-   <section id="TestingOctavia">
-    
-    <p><b>Testing the Octavia Load Balancer</b></p>
-
-    <note>You should perform the following steps from a node that has a route to the private
-      network. Using the examples from above, 10.1.0.0/24 should be reachable. </note>
-    <ol>
-      <li>SSH into both vm1 and vm2 in two separate windows and make them listen on your
-        configured port. </li>
-      <li>From one
-        window.<codeblock>ssh cirros@&lt;ip address vm1>
+    <section id="TestingOctavia">
+      <p><b>Testing the Octavia Load Balancer</b></p>
+      <note>You should perform the following steps from a node that has a route to the private
+        network. Using the examples from above, 10.1.0.0/24 should be reachable. </note>
+      <ol>
+        <li>SSH into both vm1 and vm2 in two separate windows and make them listen on your
+          configured port. </li>
+        <li>From one
+          window.<codeblock>ssh cirros@&lt;ip address vm1>
           pass: &lt;password&gt;</codeblock></li>
-      <li>From another window.
-        <codeblock>ssh cirros@&lt;ip address vm2>
+        <li>From another window.
+          <codeblock>ssh cirros@&lt;ip address vm2>
           pass: &lt;password&gt;</codeblock></li>
-      <li>Start running web servers on both of the virtual machines.  Create a webserv.sh 
-        script with below contents. In this example, the port is
-        80.<codeblock>$ vi webserv.sh
+        <li>Start running web servers on both of the virtual machines. Create a webserv.sh script
+          with below contents. In this example, the port is
+          80.<codeblock>$ vi webserv.sh
           
 #!/bin/bash
           
@@ -187,15 +176,15 @@ $ chmod 755 webserv.sh
           
 ## Start webserver
 $ ./webserv.sh</codeblock></li>
-      <li>Open a separate window. From the respective source node in external network (in case of
+        <li>Open a separate window. From the respective source node in external network (in case of
           accessing LBaaS VIP thorough its FIP) or in private network (in case of no FIP), add the
           respective VIP address to the no_proxy env variable, if required. You can get the
             <i>VIP</i> from the <codeph>neutron lbaas-loadbalancer-list</codeph> for LBaaS v2 and
             <codeph>neutron lb-vip-list</codeph> for LBaaS v1.</li>
-      <li>Run the following commands to test load balancing from a node with access to the private 
-        network. . In this example, the VIP IP address is 10.1.0.7 and when executing curl against the 
-        VIP, the responses are returned from the load balanced services.
-        <codeblock>$ export no_proxy=$no_proxy,10.1.0.7
+        <li>Run the following commands to test load balancing from a node with access to the private
+          network. . In this example, the VIP IP address is 10.1.0.7 and when executing curl against
+          the VIP, the responses are returned from the load balanced services.
+          <codeblock>$ export no_proxy=$no_proxy,10.1.0.7
           
 ## Curl the VIP
 $ curl 10.1.0.7
@@ -206,10 +195,9 @@ Welcome to 10.1.0.5
           
 $ curl 10.1.0.7
 Welcome to 10.1.0.4</codeblock></li>
-    </ol>
-    
-  </section>
-    
+      </ol>
+    </section>
+
 
 
   </body>
