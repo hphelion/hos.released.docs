@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="config_ceph">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring for Ceph Block Storage
-    Backend</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring for Ceph Storage Backend</title>
   <abstract><shortdesc outputclass="hdphidden">Installation and configuration steps for your Ceph
       backend.</shortdesc>This page describes how to configure your Ceph backend for the Helion
     Entry-scale with Ceph cloud model. It consists of the following steps:</abstract>
@@ -13,12 +12,13 @@
       <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
       <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
     </section>
-    <section id="notes"><title outputclass="headerH">Notes</title>Ceph implements distributed object
-      storage. Ceph’s software libraries provide client applications with direct access to the
-      reliable autonomic distributed object store (RADOS) object-based storage system, and also
-      provide a foundation for some of Ceph’s features, including <i>RADOS Block Device</i> (RBD),
-        <i>RADOS Gateway</i>, and the <i>Ceph File System</i>.<sectiondiv
+    <section id="notes"><title outputclass="headerH">Notes</title>
+      <sectiondiv
         outputclass="insideSection">
+      <p>Ceph implements distributed object storage. Ceph’s software libraries provide client
+          applications with direct access to the reliable autonomic distributed object store (RADOS)
+          object-based storage system, and also provide a foundation for some of Ceph’s features,
+          including RADOS Block Device (RBD), RADOS Gateway, and the Ceph File System.</p>
         <p>The Ceph cluster expects the network group that will be used for management network
           traffic within the cloud to be left to its default value i.e. MANAGEMENT. Altering the
           name will lead to failures in the cloud deployment, therefore it should be avoided.</p>
@@ -44,7 +44,7 @@
           Storage Cluster used to store data from Ceph Filesystem clients or Ceph Block Device
           clients. The S3 and Swift APIs share a common namespace, so you may write data with one
           API and retrieve it with the other.</p>
-      </sectiondiv><sectiondiv outputclass="insideSection">
+      
         <p>The HP Helion OpenStack deployment of the RADOS Gateway features include:</p>
         <p>
           <ul id="ul_cl2_gqd_sv">
@@ -104,6 +104,18 @@
         </sectiondiv>
       </sectiondiv>
     </section>
+    <section>
+      <title outputclass="headerH">Set Up the Lifecycle Manager as a Ceph Client</title>
+      <sectiondiv outputclass="insideSection">
+        <p>If you have a separate lifecycle manager node or if you want to set up the lifecycle
+          manager as a Ceph client, then the lifecycle manager node should have the Ceph client
+          installed on it along with the necessary configuration and keyring files required to
+          access to the Ceph cluster. Use the <codeph>ceph-setup-deployer-as-client.yml</codeph>
+          playbook to use the lifecycle manager node to access the Ceph cluster:</p>
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codeblock>
+      </sectiondiv>
+    </section>
     <section><title outputclass="headerH">Installing Ceph and RADOS</title><sectiondiv
         outputclass="insideSection">
         <p>In HPE Helion OpenStack 3.0, the Ceph is installed on two dedicated cluster nodes
@@ -115,8 +127,8 @@
           <note> Both of these alternate configurations would lead to a sub-optimal
             performance.</note>
         </p>
-      </sectiondiv><b>Edit Your Ceph Environment Input Files</b><sectiondiv
-        outputclass="insideSection">
+      </sectiondiv><sectiondiv
+        outputclass="insideSection"><b>Edit Your Ceph Environment Input Files</b>
         <ol id="ol_xpb_svc_5v">
           <li>Log in to the lifecycle manager.</li>
           <li>Copy the example configuration files into the required setup directory and edit them
@@ -353,13 +365,6 @@
                     </thead>
                     <tbody>
                       <row>
-                        <entry>fsid</entry>
-                        <entry>A unique identifier, File System ID, for the Ceph cluster that you
-                          should generate prior to deploying a cluster (use the
-                            <codeph>uuidgen</codeph> command to generate a new FSID). Once set, this
-                          value cannot be changed.</entry>
-                      </row>
-                      <row>
                         <entry>ceph_cluster</entry>
                         <entry> The name of the Ceph clusters. The default cluster name is
                             <codeph>ceph</codeph>, but you may specify a different cluster name.
@@ -384,6 +389,22 @@
                         <entry>The time interval in seconds to wait between data_disk_poll_attempts
                           (default value 12) </entry>
                       </row>
+                      <row>
+                        <entry>radosgw_admin_email </entry>
+                        <entry>The email address for the server administrator. Default:
+                          admin@hpe.com</entry>
+                      </row>
+                      <row>
+                        <entry>rgw_keystone_service_type</entry>
+                        <entry>If user wishes to replace Swift with Ceph radosgw, this parameter
+                          value should be changed to 'object-store'. Default: ceph-object-store
+                        </entry>
+                      </row>
+                      <row>
+                        <entry>rgw_keystone_accepted_roles </entry>
+                        <entry>Only users having either of the roles listed here will be able to
+                          access the Swift APIs of radosgw. Default: admin, <i>member</i></entry>
+                      </row>
                     </tbody>
                   </tgroup>
                 </table>Add any additional configuration parameters for Ceph in the same file
@@ -391,7 +412,7 @@
                 follows:<codeblock>extra:
   osd:
     journal_max_write_entries: 200</codeblock></li>
-              <li><codeph>ceph-ansible/roles/_CEP-CMN/defaults/main.yml</codeph>
+              <li><codeph>~/helion/hos/ansible/roles/_CEP-CMN/defaults/main.yml</codeph>
                 <p>In the <codeph>main.yml</codeph> file, you can edit the following
                   parameters:</p><table frame="all" rowsep="1" colsep="1" id="table_n3k_lrc_5v">
                   <tgroup cols="2">
@@ -726,7 +747,6 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
       <sectiondiv outputclass="insideSection"> The RADOS Gateway service can also be co-hosted along
         with other HPE Helion OpenStack services as listed in the following alternatives below. <ul
           id="ul_wmx_w22_sv">
-          <li>Configure the Lifecycle Manager as a Ceph Client</li>
           <li>Installing RADOS Gateway on (dedicated) cluster node(s) that host Ceph Monitor
             service</li>
           <li>Installing RADOS Gateway on controller nodes</li>
@@ -738,18 +758,6 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
         below.</p></sectiondiv>
     </section>
     <section>
-      <title outputclass="headerH">Set Up the Lifecycle Manager as a Ceph Client</title>
-      <sectiondiv outputclass="insideSection">
-        <p>If you have a separate lifecycle manager node or if you want to set up the lifecycle
-          manager as a Ceph client, then the lifecycle manager node should have the Ceph client
-          installed on it along with the necessary configuration and keyring files required to
-          access to the Ceph cluster. Use the <codeph>ceph-setup-deployer-as-client.yml</codeph>
-          playbook to use the lifecycle manager node to access the Ceph cluster:</p>
-        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codeblock>
-      </sectiondiv>
-    </section>
-    <section>
       <sectiondiv outputclass="insideSection"><b>Installing RADOS Gateway on (dedicated) cluster
           node(s) that host Ceph Monitor service</b><p>The RADOS Gateway can be configured to
           install on dedicated cluster node(s) hosting the Ceph Monitor service as follows:</p><ol
@@ -759,7 +767,7 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
               <codeph>role: RGW-ROLE</codeph> attribute.</li>
           <li>Edit the <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file and
             add the following lines to the <codeph>service-components</codeph> section for the
-            cluster node(s) having  the <codeph>server-role: MON-ROLE</codeph>
+            cluster node(s) having the <codeph>server-role: MON-ROLE</codeph>
             attribute.<codeblock>- ceph-radosgw
 - apache2</codeblock></li>
           <li>Edit the <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph> file to
@@ -815,28 +823,31 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
         </ol><p><b>Installing more than 2 RADOS Gateway servers</b></p><p>To deploy more than RADOS
           Gateway servers, you need to add a section to the
             <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file for each additional
-          RADOS Gateway node.</p></sectiondiv>
+          RADOS Gateway node.</p><note>Installing additional RADOS Gateway servers is possible only
+          if the RADOS Gateway is installed on dedicated cluster nodes or on dedicated cluster nodes
+          that host Ceph Monitor service. Additional RADOS Gateway servers cannot be added if the
+          RADOS Gateway is installed on a controller node.</note></sectiondiv>
     </section>
     <section>
       <title outputclass="headerH">Consumption of RADOS gateway using Swift and S3-compatible
         API</title>
-      <sectiondiv outputclass="insideSection"> Configuring the RADOS Gateway with OpenStack
-        Keystone, sets up the gateway to accept Keystone as the users authority. A user that
-        Keystone authorizes to access the gateway will also be automatically created for the Ceph
-        RADOS Gateway (if one doesn't already exist). A token that Keystone validates will be
-        considered as valid by the gateway. A Ceph Object Gateway user is mapped into a Keystone
-        tenant.The RADOS Gateway service offers two types of users:<ul id="ul_iyy_dz2_sv">
+      <sectiondiv outputclass="insideSection">Configuring the RADOS Gateway with OpenStack Keystone,
+        sets up the gateway to accept Keystone as the users authority. A user that Keystone
+        authorizes to access the gateway will also be automatically created for the Ceph RADOS
+        Gateway (if one doesn't already exist). A token that Keystone validates will be considered
+        as valid by the gateway. A Ceph Object Gateway user is mapped into a Keystone tenant.The
+        RADOS Gateway service offers two types of users:<ul id="ul_iyy_dz2_sv">
           <li>RADOS Gateway users that can access objects using both S3 and Swift API</li>
           <li>Keystone users that can access objects ONLY using Swift API</li>
         </ul><p>When the RADOS Gateway is deployed in the Entry Scale KVM Ceph model, by default,
           the RADOS Gateway exists alongside OpenStack Swift (since the Keystone service type for
           RADOS Gateway defaults to <codeph>ceph-object-store</codeph>). In this mode, the Horizon
-          interface works only with Swift for all the Object Store operations.</p><p>To use the
-          Horizon interface to use the RADOS Gateway though Horizon, you must create a Keystone user
-          that will user S3 to access the RADOS Gateway functionality and also enable the Keystone
-          authentication mechanism for RADOS Gateway. The following sections describe how to perform
-          these tasks. </p><b>Creating a new user and subuser</b><p>You can create a new user for
-          interacting with Ceph Object Gateway services.</p><ul id="ul_qnm_t1f_sv">
+          interface works only with Swift for all the Object Store operations.</p><p>A RADOS Gateway
+          native user can access both the Swift and S3 APIs provided by Ceph RADOS Gateway. To
+          achieve this, create a RADOS Gateway user (only has S3 access) and a subuser to get Swift
+          API access. The following sections describe how to perform these tasks. </p><b>Creating a
+          new user and subuser</b><p>You can create a new user for interacting with Ceph Object
+          Gateway services.</p><ul id="ul_qnm_t1f_sv">
           <li><b>User:</b> A <codeph>user</codeph> can access the S3 interface.</li>
           <li><b>Subuser:</b> A <codeph>subuser</codeph> can access the Swift interface and is
             associated to a user . A subuser needs a Swift access key. </li>
@@ -866,13 +877,14 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
             <codeblock>export OS_SERVICE_TYPE=ceph-object-store</codeblock> You can use Swift CLI to
             perform object operations on Ceph.</li>
         </ol>
-        <p><b>Configure a Keystone user to access the RADOS Gateway functionality using S3</b>
-        </p>
-        <p>By default, a Keystone user can access the RADOS Gateway functionality using the Swift
-          API. In order to configure a Keystone user for S3 API access the RADOS Gateway, perform
-          the following tasks:</p>
-        <p>The details to achieve each of the following is explained in the sections below.</p>
-        <ol id="ol_qhv_xls_sv">
+      </sectiondiv>
+    </section>
+    <section>      <title outputclass="headerH">Configure a Keystone user to access the RADOS Gateway
+      functionality using S3</title>
+      <sectiondiv outputclass="insideSection"><p>By default, a Keystone user can access the RADOS Gateway
+          functionality using the Swift API. In order to configure a Keystone user for S3 API access
+          the RADOS Gateway, perform the following tasks:</p><p>The details to achieve each of the
+          following is explained in the sections below.</p><ol id="ol_qhv_xls_sv">
           <li>Configure the RADOS Gateway to use Keystone authentication for S3: <ol
               id="ol_lhg_1ms_sv">
               <li>Login to lifecycle manager node. </li>
@@ -925,40 +937,36 @@ rgw keystone url = https://helion-cp1-vip-KEY-API-mgmt:35357</codeblock></li>
                   <b>demo</b>:
                 <codeblock>openstack ec2 credentials create --project demo --user demo</codeblock></li>
             </ol></li>
-        </ol>
-      </sectiondiv>
+        </ol></sectiondiv>
     </section>
     <section>
-      <title outputclass="headerH">Uninstall Swift</title>
+      <title>Replacing Swift with RADOS Gateway for Cloud Object Storage</title>
       <sectiondiv outputclass="insideSection">
         <p>If you do not want the Ceph and Swift object storage solutions in the same cloud, you can
-          deploy a cloud with only the RADOS Gateway.</p>
-        
-            <p><b>Deploying Ceph RADOS Gateway as a replacement
-                for OpenStack Swift in new cloud</b></p>
-              <p>HPE Helion OpenStack 3.0 cloud can be deployed with Ceph RADOS Gateway as a
-                replacement for OpenStack Swift. The input model needs to be tuned in the following
-                way to achieve this. </p><ol id="ol_pzz_w4c_5v">
-                <li>Login to the deployer node and remove all the <codeph>swift</codeph> components
-                  except <codeph>swift-client</codeph> from
-                    <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file.
-                  Remove the following Swift service components:
-                  <codeblock>swift-ring-builder
+          deploy a cloud with only the Ceph RADOS Gateway.</p>
+        <p><b>Deploying Ceph RADOS Gateway as a replacement for OpenStack Swift in new cloud</b></p>
+        <p>HPE Helion OpenStack 3.0 cloud can be deployed with Ceph RADOS Gateway as a replacement
+          for OpenStack Swift. The input model needs to be tuned in the following way to achieve
+          this. </p>
+        <ol id="ol_pzz_w4c_5v">
+          <li>Login to the deployer node and remove all the <codeph>swift</codeph> components except
+              <codeph>swift-client</codeph> from
+              <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file. Remove the
+            following Swift service components:
+            <codeblock>swift-ring-builder
 swift-proxy 
 swift-account
 swift-container 
 swift-object </codeblock></li>
-                <li>Modify the <codeph>rgw_keystone_service_type</codeph> in file
-                    <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows:
-                  <codeblock>rgw_keystone_service_type: object-store</codeblock></li>
-                <li>Commit your configuration
-                  <codeblock>cd ~/helion/hos/ansible
+          <li>Modify the <codeph>rgw_keystone_service_type</codeph> in file
+              <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows:
+            <codeblock>rgw_keystone_service_type: object-store</codeblock></li>
+          <li>Commit your configuration
+            <codeblock>cd ~/helion/hos/ansible
 git add -A 
 git commit -m "&lt;commit message>" </codeblock></li>
-                <li>Proceed with the cloud deployment steps from the Config Processor Run step.
-                </li>
-              </ol>
-    
+          <li>Proceed with the cloud deployment steps from the Config Processor Run step. </li>
+        </ol>
         <!--<b>Replace swift with rados gateway in pre-deployed Helion cloud </b><p>To replace OpenStack Swift with Ceph RADOS Gateway in a running HOS cloud, perform the steps listed below: </p><ol id="ol_qmq_sgf_sv"><li>Login to controller node. </li><li>Identify the Swift and Ceph service IDs using following commands. Look for Name <codeph>swift</codeph> and <codeph>ceph</codeph> and note the associated ID for eac: <codeblock>source ~/keystone.osrc 
 openstack service list </codeblock></li><li>Delete the Swift and Ceph services using the service ID identified in earlier step: <codeblock>source ~/keystone.osrc
 openstack service delete &lt;swift-service-id> 
