@@ -108,6 +108,20 @@ ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li
             system is needed. Do not change the credentials for one or more clusters using CMC as it
             will make the cluster automation playbook ignore those clusters for
             reconfiguration.</note></li>
+        <li>In the output of the Ansible playbook you will see different steps where you can locate
+          the values for your VSA cluster name, the virtual IP address, and the IP addresses of each
+          of the VSA hosts in the cluster. You will use these values later when configuring your
+            backend.<p>Here are some examples below, with the important information
+            bolded.</p><p>This step displays the VSA cluster name and the virtual IP address of the
+            cluster:<codeblock>TASK: [vsalm | _create_cluster | Display the status of cluster creation performed in above step] ***
+ok: [helion-cp1-vsa0001-mgmt] => {
+    "msg": "Created cluster - Name=<b>cluster-vsa</b>, IP=<b>10.13.111.142</b>"
+}</codeblock></p>
+          <p>This step displays each of the IP addresses for the VSA hosts in the cluster:</p>
+          <codeblock>TASK: [vsalm | vsalm-configure-cluster | Display the status of validation step performed in above step] ***
+ok: [helion-cp1-vsa0001-mgmt] => {
+    "msg": "No change in VSA nodes; cluster_node_list: ['<b>10.13.111.141</b>', '<b>10.13.111.143</b>', '<b>10.13.111.144</b>'], cp_node_list: ['10.13.111.141', '10.13.111.143', '10.13.111.144']"
+}</codeblock></li>
         <!--<li>Run the following command from your first controller node which will open the HPE
           StoreVirtual Centralized Management Console (CMC) GUI on your local machine:
           <codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar</codeblock></li>
