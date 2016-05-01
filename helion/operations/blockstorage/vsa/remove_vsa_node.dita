@@ -79,8 +79,27 @@ ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li
         <li>Confirm in the output of the playbook that your node was removed.</li>
       </ol>
       <p outputclass="expandcode"><b>Open | Close</b> Using the CMC Utility</p>
-      <p outputclass="hiddencode"> Refer to the HPE StoreVirtual Storage Online help in CMC for more
-        details. </p>
+      <p outputclass="hiddencode">
+        <ol>
+          <li>Launch the CMC utility. You will likely want to use the same method you used when you
+            did your initial VSA cluster configuration. See <xref
+              href="../../../installation/configure_vsa.dita#config_vsa/launch_cmc">Launching the
+              CMC utility GUI</xref> for more details.</li>
+          <li>[OPTIONAL] If manager is running on the VSA node you want to remove from the cluster then
+            you have to first stop manager. 
+            <p>To stop manager, right-click on the VSA node and select <codeph>Stop
+            Manager</codeph>. It will give a pop-up warning stating "Are you sure you want to stop the manager running on
+            ..". Go ahead and click OK to stop manager. Start a manager on a different VSA node
+            where manager is not already running to maintain quorum and the best fault tolerance, if
+            necessary. To start manager, Right click on VSA node and select Start Manager. Please
+            ensure there is an odd number of managers running to avoid split brain syndrome.</p></li>
+          <li>Remove the VSA node from the cluster, using these steps:
+          <ol>
+            <li>Right click on the VSA node and select <codeph>Remove from Cluster</codeph>
+              <p><image href="../../../../media/hos.docs/vsa/remove_vsa_node_30_1.jpg"/></p></li>
+          </ol></li>
+        </ol>
+      </p>
     </section>
 
     <section id="remove_monitoring"><title>How to remove a VSA node from your monitoring
@@ -112,7 +131,7 @@ ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li
           <codeblock>monasca alarm-list --metric-dimensions hostname=helion-cp1-vsa0001-mgmt</codeblock></li>
         <li>You can then delete the alarm with this command:
           <codeblock>monasca alarm-delete &#60;alarm ID></codeblock></li>
-        
+
       </ol>
     </section>
 
