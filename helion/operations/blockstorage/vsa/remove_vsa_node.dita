@@ -100,18 +100,19 @@ ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li
         <li>Once you have removed the references on each of your Monasca API servers you then need
           to restart the monasca-agent on each of those servers with this command:
           <codeblock>sudo service monasca-agent restart</codeblock></li>
-        <li>With the VSA node references removed and the monasca-agent restarted, you can then
-          delete the corresponding alarm to finish this process. To do so we recommend using the
-          Monasca CLI which should be installed on each of your Monasca API servers by default.
-            <p>This command will list out all the associated alarms for the VSA node you
-            removed:</p>
+        <li>Repeat steps 2-3 for each of your Monasca API servers.</li>
+        <li>With the VSA node references removed and the monasca-agent restarted on each of your
+          Monasca API hosts, you can then delete the corresponding alarm to finish this process. To
+          do so we recommend using the Monasca CLI which should be installed on each of your Monasca
+          API servers by default. <p>This command will list out all the associated alarms for the
+            VSA node you removed:</p>
           <codeblock>monasca alarm-list --metric-dimensions hostname=&#60;vsa node deleted></codeblock>
           <p>For example, if your VSA node looked like the example above then you would use this
             command to get the alarm ID:</p>
           <codeblock>monasca alarm-list --metric-dimensions hostname=helion-cp1-vsa0001-mgmt</codeblock></li>
         <li>You can then delete the alarm with this command:
           <codeblock>monasca alarm-delete &#60;alarm ID></codeblock></li>
-        <li>Repeat steps 2-5 for each of your Monasca API servers.</li>
+        
       </ol>
     </section>
 
