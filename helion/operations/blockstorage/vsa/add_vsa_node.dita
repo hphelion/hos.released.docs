@@ -16,20 +16,19 @@
           Support Matrix</xref>.</p>
     </section>
 
-    <section id="steps"><title>Adding a VSA Node</title>
-      <p>These steps will show you how to add the new VSA node to your <codeph>servers.yml</codeph>
-        file and then run the playbooks that update your cloud configuration. You will run these
-        playbooks from the lifecycle manager.</p>
+    <section id="steps"><title>How to add an additional VSA node to your cloud</title>
+      <p>Follow these steps to add additional VSA nodes to your cloud environment.</p>
       <ol>
         <li>Log in to your lifecycle manager.</li>
         <li>Checkout the <codeph>site</codeph> branch of your local git so you can begin to make the
           necessary edits:
           <codeblock>cd ~/helion/my_cloud/definition/data
 git checkout site</codeblock></li>
-        <li>In the same directory, edit your <codeph>servers.yml</codeph> file to include the
-          details about your new VSA node(s). <p>For example, if you already had a cluster of three
-            VSA nodes and needed to add a fourth one you would add your details to the bottom of the
-            file in this format:</p>
+        <li>Edit your servers.yml file in the directory indicated below to include the details about
+          your new VSA
+            node(s).<codeblock>~/helion/my_cloud/definition/data/servers.yml</codeblock><p>For
+            example, if you already had a cluster of three VSA nodes and needed to add a fourth one
+            you would add your details to the bottom of the file in this format:</p>
           <codeblock># VSA Storage Nodes
 
    - id: vsa4
@@ -49,23 +48,22 @@ git checkout site</codeblock></li>
               <codeph>~/helion/my_cloud/info/address_info.yml</codeph> file on your lifecycle
             manager.</note>
         </li>
-        <li>In your <codeph>control_plane.yml</codeph> file you will need to check the values for
-            <codeph>member-count</codeph>, <codeph>min-count</codeph>, and
-            <codeph>max-count</codeph>, if you specified them, to ensure that they match up with
-          your new total node count. So for example, if you had previously specified
-            <codeph>member-count: 3</codeph> and are adding a fourth VSA node, you will need to
-          change that value to <codeph>member-count: 4</codeph>. <p>See <xref
-              keyref="configobj_controlplane">Input Model - Control Plane</xref> for more
+        <li>In your <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file you
+          will need to check the values for <codeph>member-count</codeph>,
+            <codeph>min-count</codeph>, and <codeph>max-count</codeph>, if you specified them, to
+          ensure that they match up with your new total node count. <p>For example, if you had
+            previously specified <codeph>member-count: 3</codeph> and are adding a fourth VSA node,
+            you will need to change that value to <codeph>member-count: 4</codeph>.</p>
+          <p>See <xref keyref="configobj_controlplane">Input Model - Control Plane</xref> for more
             details.</p></li>
         <li>Commit the changes to git:
           <codeblock>git commit -a -m "Add node &lt;name>"</codeblock></li>
         <li>Run the configuration processor:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-        <li>Run the ready deployment playbook:
+        <li>Update your deployment directory:
           <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
-        </li>
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>Add the new node into Cobbler:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
@@ -77,42 +75,47 @@ ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></
               <b>~/helion/my_cloud/info/server_info.yml</b> to see if the assignment of the node you
             have added is what you expect. It may not be, as nodes will not be numbered
             consecutively if any have previously been removed. This is to prevent loss of data; the
-            config processor retains data about removed nodes and keeps their ID numbers from being
-            reallocated. See the Persisted Server Allocations section in <xref
+            configuration processor retains data about removed nodes and keeps their ID numbers from
+            being reallocated. See the Persisted Server Allocations section in <xref
               keyref="persisteddata/persistedserverallocations"><keyword keyref="kw-hos-phrase"/>
               Input Model</xref> for information on how this works.</p></li>
-        <li>Run the following command:
+        <li>Run the following command to configure the operating system on the new node(s):
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts osconfig-run.yml</codeblock></li>
-        <li>Run this command to complete the deployment of your new node, ensuring you use the
+        <li>Complete the deployment of your new node with this playbook, ensuring you use the
             <codeph>--limit</codeph> option to specify your new node: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit &#60;host_var name></codeblock>
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit &#60;hostname></codeblock>
           <note>If you don't know the <codeph>&#60;host_var name></codeph> already, you can get it
             by looking in the <codeph>~/scratch/ansible/next/hos/ansible/host_vars</codeph>
             directory.</note></li>
       </ol>
     </section>
 
-    <section id="monitoring"><title>Adding a New VSA Node to Monitoring</title>
+    <section id="monitoring"><title>How to add an additional VSA node to your monitoring
+        checks</title>
       <p>If you want to add a new VSA node to the monitoring service checks, there is an additional
         playbook that must be run to ensure this happens:</p>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-deploy.yml --tags active_ping_checks</codeblock>
     </section>
 
-    <section id="cmc"><title>Adding a New VSA Node to your CMC Management Cluster</title><p>You can
-        add VSA nodes to an existing cluster using either the CMC utility or an Ansible
-        playbook.</p><b>Using Ansible</b><p>If you <xref
-          href="../../../installation/configure_vsa.dita#config_vsa/create_cluster">created the VSA
-          cluster using Ansible</xref>, you can add nodes to that cluster using the same playbook.
-        Using playbook to perform cluster operations is highly recommended. Perform the following
-        steps:</p><ol id="ol_gfz_1rn_qv">
+    <section id="cmc"><title>How to add an additional VSA node to your management group and
+        cluster</title>
+      <p>You can add VSA nodes to an existing cluster using either the CMC utility or an Ansible
+        playbook.</p>
+      <p><b>Using Ansible</b></p>
+      <p>If you <xref href="../../../installation/configure_vsa.dita#config_vsa/create_cluster"
+          >created the VSA cluster using Ansible</xref>, you can add nodes to that cluster using the
+        same playbook. Using playbook to perform cluster operations is highly recommended. Perform
+        the following steps:</p><ol id="ol_gfz_1rn_qv">
         <li>Run the following command from your first controller node:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible/
 ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li>
         <li>When prompted, enter an administrative user name and password you will use to administer
           the CMC utility.</li>
-      </ol><p><b>Using the CMC Utility</b></p><ol>
+      </ol>
+      <p><b>Using the CMC Utility</b></p>
+      <ol>
         <li>On your lifecycle manager, collect the IP addresses of the VSA virtual machines that you
           added from the <codeph>~/scratch/ansible/next/my_cloud/stage/info/net_info.yml</codeph>
           file. This file is generated as part of output of the configuration processor during
