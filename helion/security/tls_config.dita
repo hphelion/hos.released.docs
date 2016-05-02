@@ -133,11 +133,12 @@
           least one cert-name associated with it. </li>
         <li>Run the configuration processor. Note that you may or may not have the certificate file
           at this point. The configuration processor would create certificate request file artefacts
-          under info/cert_reqs/ for each of the cert-name(s) in the network_groups.yml file. While
-          there's no special reason to use the request file created for an external endpoint VIP
-          certificate, it is important to use the request files created for internal certificates
-          since the canonical names for the internal VIP can be many and service specific and each
-          of these need to be in the Subject Alt Names attribute of the certificate. </li>
+          under <codeph>info/cert_reqs/</codeph> for each of the cert-name(s) in the
+            <codeph>network_groups.yml</codeph> file. While there's no special reason to use the
+          request file created for an external endpoint VIP certificate, it is important to use the
+          request files created for internal certificates since the canonical names for the internal
+          VIP can be many and service specific and each of these need to be in the Subject Alt Names
+          attribute of the certificate. </li>
         <li>Create a certificate signing request for this request file and send it to your internal
           CA or a public CA to get it certified and issued with a certificate. You will now have a
           server certificate and possibly a trust chain or CA certificate. </li>
@@ -175,8 +176,8 @@
  - default
  roles:
  - public
- cert-file: example-public-cert #&lt;&lt;&lt;-------- Certificate name for the external VIP</codeblock>
-      Commit your changes to the local git repository and run the configuration processor:
+ cert-file: example-public-cert #&lt;&lt;&lt;-------- Certificate name for the external VIP</codeblock>Commit
+      your changes to the local git repository and run the configuration processor:
       <codeblock>cd ~/helion
 git add -A
 git commit -m "changed VIP certificates"
@@ -191,7 +192,7 @@ example-internal-cert example-public-cert</codeblock>
     <section><title>Generate a self-signed CA</title>
       <note>In a production setting you will not perform this step. You will use your company's  CA
         or a valid public CA.</note>
-      <p>This section demonstrates to how you can create your own self-signed CA and then use this
+      <p id="self-signed">This section demonstrates to how you can create your own self-signed CA and then use this
         CA to sign server certificates. This CA can be your organization's IT internal CA that is
         self-signed and whose CA certificates are deployed on your organization's machines. This way
         the server certificate becomes legitimate.</p>
@@ -207,7 +208,7 @@ openssl req -x509 -batch -newkey rsa:2048 -nodes -out "${EXAMPLE_CA_CERT_FILE}" 
       <codeph>info/cert_reqs/</codeph>:<codeblock>stack@deployerincloud-ccp-c0-m1-mgmt:~/helion/my_cloud$ cat info/cert_reqs/example-internal-cert</codeblock>Then
       copy this file to your working directory and appended a <codeph>.req</codeph> extension to it.
       Expand the following headline to see a request file: </section>
-    <section id="privateMetadata"><title outputclass="headerH">Cert request file</title>
+    <section id="privateMetadata"><title outputclass="headerH">Certificate request file</title>
       <sectiondiv outputclass="insideSection">
         <codeblock outputclass="nomaxheight">
 [req]
@@ -296,7 +297,7 @@ openssl req -newkey rsa:2048 -nodes -keyout "$EXAMPLE_SERVER_KEY_FILE" -out "$EX
         signing CA's certificate (called CA certificate or trust chain) on the client machine, you
         are telling the client to trust this CA, and thereby implicitly trusting any server
         certificates that are signed by this CA, thus creating a trust anchor.</p><p><b>CA
-          configuration file </b></p><p>When the CA signs the certificate, it uses a configuration
+          configuration file</b></p><p>When the CA signs the certificate, it uses a configuration
         file that tells it to verify the CSR. Note that in a production scenario the CA takes care
         of this for you. </p><p>Create a file called <codeph>openssl.cnf</codeph> and add the
         following contents to it. </p><codeblock outputclass="nomaxheight"># Copyright 2010 United States Government as represented by the
@@ -432,8 +433,8 @@ openssl ca -batch -notext -md sha256 -in "$EXAMPLE_SERVER_CSR_FILE" \
 cp example-CA.crt ~/helion/my_cloud/config/tls/cacerts/</codeblock><b>Continue
         with the deployment</b>
     </section>
-    <section>Now you can log into the lifecycle manager node, and save and commit the changes to the
-      local git repository:
+    <section>Next, log into the lifecycle manager node, and save and commit the changes to the local
+      git repository:
       <codeblock>cd ~/helion
 git add -A
 git commit -m "updated certificate and CA"</codeblock>Next,
