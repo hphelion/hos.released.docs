@@ -5,7 +5,8 @@
     with VSA Model</title>
   <body><!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <p>This document describes the procedure for the deployment of an </p>
+    <p>This document describes the procedure for the deployment of an ESX cloud using input model
+      and adding more ESX hosts to an already activated cluster.</p>
     <p> It contains the following topics:<ul id="ul_wrs_dwq_lt">
         <li><xref href="#install_esx/prereqs" format="dita">Prerequisites</xref></li>
         <li><xref href="#install_esx/deployCloud" format="dita">Deploy ESX Cloud</xref></li>
@@ -70,11 +71,11 @@
       <title>Prepare and Deploy Cloud Controllers</title>
       <ol id="ol_c1w_pfl_ft">
         <li>See a sample set of configuration files in the
-            <codeph>~/helion/examples/entry-scale-esx</codeph> directory. The accompanying README.md
-          file explains the contents of each of the configuration files. </li>
+            <codeph>~/helion/examples/entry-scale-esx-kvm-vsa</codeph> directory. The accompanying
+          README.md file explains the contents of each of the configuration files. </li>
         <li>Copy the example configuration files into the required setup directory and edit them as
           required:
-          <codeblock>cp -r ~/helion/examples/entry-scale-esx/* ~/helion/my_cloud/definition/</codeblock></li>
+          <codeblock>cp -r ~/helion/examples/entry-scale-esx-kvm-vsa/* ~/helion/my_cloud/definition/</codeblock></li>
         <!--The configuration files for editing are available at <codeph>~/helion/my_cloud/definition/</codeph>. Refer to the <b><xref href="input_model.dita">Helion OpenStack 2.0 Input Model</xref></b> document for assistance with the configuration files. <note type="important">If you chose to use your first controller node as your deployer, ensure that your <codeph>servers.yml</codeph> file contains the <codeph>is-deployer: true</codeph> notation in your controller options. If you are using a dedicated deployer node you can omit this. Here is an example snippet of a <codeph>servers.yml</codeph> file where a user is using their first controller node as their deployer: <codeblock># Controllers
 - id: controller1
   ip-addr: 192.168.10.3
@@ -86,31 +87,19 @@
   ilo-password: password
   ilo-user: admin
   <b>is_deployer: true</b></codeblock></note>-->
-        <li>Modify <codeph>~/helion/hos/ansible/hlm-deploy.yml</codeph> to uncomment the line
-          containing <codeph>eon-deploy.yml</codeph>. You must comment the line containing
-            <codeph>ceph-deploy.yml</codeph>, <codeph>vsa-deploy.yml</codeph>, and
-            <codeph>cmc-deploy.yml</codeph>.
-            <p><!--<li>Modify the <codeph>neutron.conf.j2</codeph> at <codeph>~/helion/my_cloud/config/<codeph>neutron/neutron.conf.j2</codeph></codeph>with the following values:<codeblock>router_distributed = False</codeblock><p> And add <codeph>mechanism_drivers = ovsvapp</codeph> at the end of the <codeph>neutron.conf.j2</codeph>.</p></li><li>Modify <codeph>ml2_conf.ini.j2</codeph> at <codeph>~/helion/my_cloud/config/<codeph>neutron/ml2_conf.ini.j2</codeph></codeph>with the following values:<codeblock>[ml2]
+        <li>
+          <!--Modify <codeph>~/helion/hos/ansible/hlm-deploy.yml</codeph> to uncomment the line containing <codeph>eon-deploy.yml</codeph>. You must comment the line containing <codeph>ceph-deploy.yml</codeph>, <codeph>vsa-deploy.yml</codeph>, and <codeph>cmc-deploy.yml</codeph>. remove per DOCS2776-->
+          <p><!--<li>Modify the <codeph>neutron.conf.j2</codeph> at <codeph>~/helion/my_cloud/config/<codeph>neutron/neutron.conf.j2</codeph></codeph>with the following values:<codeblock>router_distributed = False</codeblock><p> And add <codeph>mechanism_drivers = ovsvapp</codeph> at the end of the <codeph>neutron.conf.j2</codeph>.</p></li><li>Modify <codeph>ml2_conf.ini.j2</codeph> at <codeph>~/helion/my_cloud/config/<codeph>neutron/ml2_conf.ini.j2</codeph></codeph>with the following values:<codeblock>[ml2]
 mechanism_drivers = ovsvapp, openvswitch, l2population
 [agent]
-enable_distributed_routing = False</codeblock></li>--></p></li>
-        <li>(<b>Optional</b>) To enable L3 High Availability VRRP:<ol id="ol_k1k_twf_4v">
-            <li>Change your directory to: <codeblock>~/helion/my_cloud/definition/</codeblock></li>
-            <li>Edit <codeph>passthrough.yml</codeph> file to set the value of <b>esx_cloud</b> to
-                <b>true</b> as shown in the following
-              sample:<codeblock>product:
+enable_distributed_routing = False</codeblock></li>--></p>
+        </li>
+        <!--<li>(<b>Optional</b>) To enable L3 High Availability VRRP:<ol id="ol_k1k_twf_4v"><li>Change your directory to: <codeblock>~/helion/my_cloud/definition/</codeblock></li><li>Edit <codeph>passthrough.yml</codeph> file to set the value of <b>esx_cloud</b> to <b>true</b> as shown in the following sample:<codeblock>product:
   version: 2
 pass-through:
   global:
-    esx_cloud: true</codeblock></li>
-          </ol></li>
-        <li id="optional-eon">(<b>Optional</b>) To enable centralized logging for EON service, do
-          the following:<ol id="ol_ykv_czv_st">
-            <li>Change your directory to
-              <codeblock>~/helion/my_cloud/config/logging/vars</codeblock></li>
-            <li>Edit <codeph>eon-api-clr.yml</codeph> file to set the value of
-                <b>centralized_logging</b> to <b>true</b> as shown in the following
-              sample:<codeblock> - centralized_logging:
+    esx_cloud: true</codeblock></li></ol></li> removed per DOCS-2776-->
+        <!--<li id="optional-eon">(<b>Optional</b>) To enable centralized logging for EON service, do the following:<ol id="ol_ykv_czv_st"><li>Change your directory to <codeblock>~/helion/my_cloud/config/logging/vars</codeblock></li><li>Edit <codeph>eon-api-clr.yml</codeph> file to set the value of <b>centralized_logging</b> to <b>true</b> as shown in the following sample:<codeblock> - centralized_logging:
         enabled: true
         format: rawjson
       files:
@@ -123,10 +112,7 @@ pass-through:
       - copytruncate
       - maxsize 45M
       - rotate 5
-      - create 640 eon eon </codeblock></li>
-            <li>Edit <codeph>eon-conductor-clr.yml</codeph> file to set the value of
-                <b>centralized_logging</b> to <b>true</b> as shown in the following
-              sample:<codeblock> - centralized_logging:
+      - create 640 eon eon </codeblock></li><li>Edit <codeph>eon-conductor-clr.yml</codeph> file to set the value of <b>centralized_logging</b> to <b>true</b> as shown in the following sample:<codeblock> - centralized_logging:
         enabled: true
         format: rawjson
       files:
@@ -139,8 +125,7 @@ pass-through:
       - copytruncate
       - maxsize 45M
       - rotate 5
-      - create 640 eon eon </codeblock></li>
-          </ol></li>
+      - create 640 eon eon </codeblock></li></ol></li> removed per DOCS-2776-->
         <li>Commit your cloud deploy configuration to the<xref href="using_git.dita"> local git
             repo</xref>, as follows: <codeblock>cd ~/helion/hos/ansible
 git add -A
@@ -185,7 +170,7 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
         </p><p>Perform the following steps to deploy a template:<ol id="ol_qdt_ljs_ft">
           <li>Import the <codeph>hlm-shell-vm.ova</codeph> in the vCenter using the vSphere client.
             The <codeph>hlm-shell-vm.ova</codeph> template is present in the following
-            location:<codeblock>location /media/cdrom/hos-3.0.0/ hlm-shell-vm.ova</codeblock></li>
+            location:<codeblock>location /media/cdrom/hos/ hlm-shell-vm.ova</codeblock></li>
           <li>In the vSphere Client, click <b>File</b> and then click <b>Deploy OVF
             Template</b></li>
           <li>Follow the instructions in the wizard to specify the data center, cluster, and node to
@@ -220,324 +205,198 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
     <p>vCenter provides centralized management of virtual host and virtual machines from a single
         console.<ol id="ol_xdj_5js_ft">
         <li>Add a vCenter using EON python
-            client.<codeblock><codeph># eon vcenter-add --name &lt;vCenter Name> --ip-address &lt;vCenter IP address> --username &lt;vCenter Username> --password &lt;vCenter Password> --port &lt;vCenter Port></codeph></codeblock><p>where:
+            client.<codeblock># eon resource-manager-add [--name &lt;RESOURCE_MANAGER_NAME>] --ip-address &lt;RESOURCE_MANAGER_IP_ADDR> --username &lt;RESOURCE_MANAGER_USERNAME> --password &lt;RESOURCE_MANAGER_PASSWORD> [--port &lt;RESOURCE_MANAGER_PORT>] --type &lt;RESOURCE_MANAGER_TYPE></codeblock><p>where:
               <ul id="ul_bp3_yjs_ft">
-              <li>vCenter Name - the identical name of the vCenter server.</li>
-              <li>vCenter IP address - the IP address of the vCenter server.</li>
-              <li>vCenter Username - the admin privilege username for the vCenter.</li>
-              <li>vCenter Password - the password for the above username.</li>
-              <li>vCenter Port - the vCenter server port. By default it is 443. <note
-                  type="important">Please do not change the vCenter Port unless you are certain it
-                  is required to do so.</note></li>
+              <li>Resource Manager Name - the identical name of the vCenter server.</li>
+              <li>Resource Manager IP address - the IP address of the vCenter server.</li>
+              <li>Resource Manager Username - the admin privilege username for the vCenter.</li>
+              <li>Resource Manager Password - the password for the above username.</li>
+              <li>Resource Manager Port - the vCenter server port. By default it is 443.</li>
+              <li> Resource Manager Type - specify <codeph>vcenter</codeph>.<note type="important"
+                  >Please do not change the vCenter Port unless you are certain it is required to do
+                  so.</note></li>
             </ul></p><p><b>Sample
-            Output:</b><codeblock><codeph># eon vcenter-add --name vc01 --ip-address 10.1.200.41 --username administrator@vsphere.local --password password --port 443</codeph>
-+------------+--------------------------------------+
-| Property   | Value                                |
-+------------+--------------------------------------+
-| created_at | 2015-08-20T12:08:09.000000           |
-| deleted    | False                                |
-| deleted_at | None                                 |
-| id         | BC9DED4E-1639-481D-B190-2B54A2BF5674 |
-| ip_address | 10.1.200.41                          |
-| name       | vc01                                 |
-| password   | &lt;SANITIZED>                          |
-| port       | 443                                  |
-| type       | vcenter                              |
-| updated_at | 2015-08-20T12:08:09.000000           |
-| username   | administrator@vsphere.local          |
-+------------+--------------------------------------+</codeblock></p></li>
+            Output:</b><codeblock><codeph># eon resource-manager-add --name vc01 --ip-address 10.1.200.38 --username administrator@vsphere.local --password init123# --port 443 --type vcenter</codeph>
++-------------+--------------------------------------+
+| Property    | Value                                |
++-------------+--------------------------------------+
+| ID          | BC9DED4E-1639-481D-B190-2B54A2BF5674 |
+| IPv4Address | 10.1.200.38                          |
+| Name        | vc01                                 |
+| Password    | &lt;SANITIZED>                          |
+| Port        | 443                                  |
+| Type        | vcenter                              |
+| Username    | administrator@vsphere.local          |
++-------------+--------------------------------------+</codeblock></p></li>
       </ol></p>
     <section><b>Show vCenter</b><ol id="ol_wh5_rsb_lt">
         <li>Show vCenter using EON python
-              client.<codeblock># eon vcenter-show &lt;vCenter ID></codeblock><p><b>Sample
-              Output:</b><codeblock><codeph># eon vcenter-show BC9DED4E-1639-481D-B190-2B54A2BF5674 </codeph>
-+------------+--------------------------------------+
-| Property   | Value                                |
-+------------+--------------------------------------+
-| created_at | 2015-08-20T12:08:09.000000           |
-| datacenters| DC1                                  |
-| deleted    | False                                |
-| deleted_at | None                                 |
-| id         | BC9DED4E-1639-481D-B190-2B54A2BF5674 |
-| ip_address | 10.1.200.41                          |
-| name       | vc01                                 |
-| password   | &lt;SANITIZED>                          |
-| port       | 443                                  |
-| type       | vcenter                              |
-| updated_at | 2015-08-20T12:08:09.000000           |
-| username   | administrator@vsphere.local          |
-+------------+--------------------------------------+</codeblock></p></li>
+              client.<codeblock># eon resource-manager-show &lt;RESOURCE_MANAGER_ID></codeblock><p><b>Sample
+              Output:</b><codeblock><codeph># eon resource-manager-show BC9DED4E-1639-481D-B190-2B54A2BF5674</codeph>
++-------------+--------------------------------------+
+| Property    | Value                                |
++-------------+--------------------------------------+
+| Clusters    | Cluster1, virtClust, Cluster2        |
+| Datacenters | DC1, DC2                             |
+| ID          | BC9DED4E-1639-481D-B190-2B54A2BF5674 |
+| IPv4Address | 10.1.200.38                          |
+| Name        | vc01                                 |
+| Password    | &lt;SANITIZED>                          |
+| Port        | 443                                  |
+| Type        | vcenter                              |
+| Username    | administrator@vsphere.local          |
++-------------+--------------------------------------+</codeblock></p></li>
       </ol></section>
-    <section id="register-network"><b>Register ESX Cloud Network Configuration</b>
-      <p>This involves getting a sample network information template. Fill the details of the
-        template and use that template to register the cloud network configuration for the
-        vCenter.</p>
-      <p>
+    <section id="register-network"><b>Create and edit an activation template</b>
+      <p>This involves getting a sample network information template and modifying the details of
+        the template. You will use the template to register the cloud network configuration for the
+        vCenter.</p><p>
         <ol>
-          <li>Execute the following command to get the network information
-              template:<codeblock><codeph># eon get-network-info-template --filename &lt;<b>NETWORK_CONF_FILENAME</b>></codeph></codeblock><p>For
-              example:<codeblock># eon get-network-info-template --filename net_conf.json</codeblock></p><p>Sample file of <codeph>net_conf.json</codeph> is shown
-              below:<codeblock>{
-    # Don't modify this value
-    "hlm_version": "3.0",
-
-	# 1. Minimum of two switch entries are required of which one switch is OVSvApp trunk DVS With no Physical_nics
-	# 3. "physical_nics" can be a single or comma separated names. Physical NIC(s) must be unassigned to other uplinks.
-	# 4. Provide "mtu" value within the range 1500 to 9000 to enable Jumbo Frames.
-
-    "switches": [
-        {
-            "type": "dvSwitch",
-            "name": "MGMT-DVS",
-            "physical_nics": "vmnic1",
-            "mtu": "1500"
-        },
-
-        {
-		    # OVSvApp trunk without any "physical_nics"
-            "type": "dvSwitch",
-            "name": "TRUNK-DVS",
-			"physical_nics": "",
-            "mtu": "1500"
-        }
-    ],
-
-	# 1. Minimum three portgroup entries are required.
-
-	# 2. Portgroups that will carry data traffic should have the "cloud_network_type" attribute.
-	# 3. "cloud_network_type" should have either "vlan" or "vxlan" value.
-
-	# 4. "vlan_type" "trunk" supports non null values and ranges. Eg: 33 or 300-500 or 300-500, 600, 700-800
-	#    "vlan_type" "vlan" supports non null single vlan id and not range.
-	#    "vlan_type" "none" supports 0 or empty values
-
-	# 5. "nic_teaming" explaination of the keys and their respective values:
- 	    # "network_failover_detection"
-            # 1 -> Link Status. (Relies solely on the link status that the network adapter provides. This option detects failures,
-            #such as cable pulls and physical switch power failures, but not configuration errors, such as a physical switch port
-            #being blocked by spanning tree or that is misconfigured to the wrong VLAN or cable pulls on the other side of a physical switch.
-
-            # 2-> Beacon Probing. (Sends out and listens for beacon probes on all NICs in the team and uses this information, in addition to
-            #link status, to determine link failure. This detects many of the failures previously mentioned that are not detected by link status alone.
-
-		# "notify_switches"
-            #If you select "Yes", whenever a virtual NIC is connected to the Switch or whenever that virtual NIC?s traffic would be routed over
-            #a different physical NIC in the team because of a failover event, a notification is sent out over the network to update the lookup
-            #tables on physical switches. In almost all cases, this process is desirable for the lowest latency of failover occurrences and
-            #migrations with vMotion.
-
-		# "load_balancing"
-			# 1 -> Route based on the originating virtual port
-			#(Choose an uplink based on the virtual port where the traffic entered the virtual switch)
-
-			# 2 -> Route based on IP hash
-			#(Choose an uplink based on a hash of the source and destination IP addresses of each packet.
-			#For non-IP packets, whatever is at those offsets is used to compute the hash)
-
-			# 3 -> Route based on source MAC hash (Choose an uplink based on a hash of the source Ethernet.)
-
-			# 4 -> Route based on physical NIC load (Choose an uplink based on the current loads of physical NICs)
-
-			# 5 -> Use explicit failover order (Always use the highest order uplink, from the list of Active adapters,
-			#which passes failover detection criteria)
-
-		# "active_nics"
-            #Provided "physical_nics" from the respective switch entry will be configured as active uplinks.
-            #If not provided then the first entry in the "physical_nics"  will be configured as active and
-            #the remaining as standby uplinks.
-
-    "portGroups": [
-        {
-            "name": "ESX-CONF",
-            "vlan": "33",
-            "vlan_type": "trunk",
-            "switchName": "MGMT-DVS",
-            "nic_teaming": {
-                "network_failover_detection": "1",
-                "notify_switches": "yes",
-                "load_balancing": "1",
-                "active_nics": "vmnic1"
-            }
-        },
-
-        {
-            "name": "MGMT",
-            "vlan": "",
-            "vlan_type": "none",
-            "switchName": "MGMT-DVS",
-            "nic_teaming": {
-                "network_failover_detection": "1",
-                "notify_switches": "yes",
-                "load_balancing": "1",
-                "active_nics": "vmnic1"
-            },
-            "cloud_network_type": "vxlan"
-        },
-
-        {
-		    # For OVSvApp trunk any change in the "vlan" and "vlan_type" will be ignored.
-			# The OVSvApp trunk network has no uplinks. That's why there is no "nic_teaming" section.
-			# Provided "nic_teaming" section will be ignored.
-            "name": "TRUNK",
-            "vlan": "1-4094",
-            "vlan_type": "trunk",
-            "switchName": "TRUNK-DVS"
-        }
-    ],
-
-	# 1. ESX Compute Proxy should have two "nics" connecting to ESX-CONF &amp; MGMT network.
-	# 2. "device" values need not be in order but should start with 0 and increase based on requirement.
-	# 3. Eg: I can configure the nics as eth3, eth1, eth0, eth2 But I cannot configure it as eth4, eth1, eth0, eth2
-	#    For best practice, arrange your nics allways in order.
-
-    "vm_config": [
-        {
-            "server_role": "ESX-COMPUTE-ROLE",
-            "template_name": "hlm-shell-vm",
-            "cpu": "4",
-            "memory_in_mb": "4096",
-            "nics": [
-                {
-                    "device": "eth0",
-                    "portGroup": "ESX-CONF",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                },
-                {
-                    "device": "eth1",
-                    "portGroup": "MGMT",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                }
-            ]
-        },
-
-        {
-            "server_role": "OVSVAPP-ROLE",
-            "template_name": "hlm-shell-vm",
-            "cpu": "4",
-            "memory_in_mb": "4096",
-            "nics": [
-                {
-                    "device": "eth0",
-                    "portGroup": "ESX-CONF",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                },
-                {
-                    "device": "eth1",
-                    "portGroup": "MGMT",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                },
-                {
-                    "device": "eth2",
-                    "portGroup": "TRUNK",
-                    "type": "vmxnet3",
-                    "pci_id": ""
-                }
-            ]
-        }
-    ],
-
-	# ESX CONF network configuration
-	# 1. "portGroup" value should point the ESX CONF portgroup name
-	# 2. It is mandatory to provide "cidr"
-	# 3. "start_ip" &amp; "end_ip" are optional. Either provide both values or don't provide at all.
-
-    "esx_conf_net": {
-        "portGroup": "ESX-CONF",
-        "cidr": "10.20.18.0/23",
-        "start_ip": "",
-        "end_ip": "",
-        "gateway": "10.20.18.1"
-    },
-
-	# "ip_address" is the IP of deployer node
-	# Provide "user" name to configure a different user than inbuilt stack user.
-
-    "lifecycle_manager": {
-        "ip_address": "10.20.16.2",
-        "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EA stack@company.org",
-        "user": "stack"
-    },
-
-    # Set to true if playbooks need to be run automatically on completing the installation of service VM’s(OVSvApp and Compute proxy) and updating of input model
-    # Set it to false if playbooks will be manually run.
-    "run_playbook": True
-
-}</codeblock></p></li>
-          <li>Modify the template (json file) as per your
-              environment.<codeblock>vi &lt;<b>NETWORK_CONF_FILENAME</b>></codeblock><p>For
-              example:<codeblock>vi net_conf.json</codeblock></p></li>
-          <li>Use the template to register Cloud Network Configuration. This sets the network
-            information for a vCenter which is used to deploy and configure compute proxy and
-            OVSvAPP VMs during the cluster activation.
-              <codeblock><codeph># eon set-network-info --vcenter-id &lt;vCenter ID> --datacenter-name &lt;datacenter name> --config-json &lt;NETWORK_CONF_FILENAME></codeph></codeblock><p>For
-              example:
-              <codeblock># eon set-network-info --vcenter-id BC9DED4E-1639-481D-B190-2B54A2BF5674 --datacenter DC1 --config-json net_conf.json</codeblock></p><p>
-              <note>The vcenter ID is generated when you register a vCenter.</note>
+          <li>Execute the following command to generate a sample activation
+                template:<codeblock>eon get-activation-template [--filename &lt;ACTIVATION_JSON_NAME>] --type &lt;RESOURCE_TYPE></codeblock><p><b>Sample
+                Output:</b></p><p>
+              <codeblock>eon get-activation-template --filename activationtemplate.json --type esxcluster
+---------------------------------------------------------------
+Saved the sample network file in /home/user/activationtemplate.json
+---------------------------------------------------------------</codeblock>
             </p></li>
-          <li>Execute the following command to view the list of clusters for the given
-              vCenter.<codeblock><codeph># eon cluster-list --vcenter-id &lt;vCenter ID></codeph></codeblock><b>Sample
-              Output</b><codeblock># eon cluster-list --vcenter-id BC9DED4E-1639-481D-B190-2B54A2BF5674
-+------------+----------+------------+---------------+
-| MOID       | Name     | Datacenter | Import Status |
-+------------+----------+------------+---------------+
-| domain-c21 | Cluster1 | DC1        | not_imported  |
-+------------+----------+------------+---------------+</codeblock></li>
+          <li>Change to the <codeph>/home/user/</codeph>
+            directory:<codeblock>cd /home/user/</codeblock></li>
+          <li>Modify the template (json file) as per your environment. Edit the following
+              sections:<ul id="ul_clz_wrn_vv">
+              <li><b>server_group</b>: This key takes values specified in server_groups.yml defined
+                in input model. Default server groups defined in input model are "RACK1", "RACK2",
+                "RACK3" based on different network definitions. This implies that all the member
+                hosts in the cluster are part of same RACK.</li>
+              <li><b>run_playbook</b>: This key takes boolean values true (or) false. For manual
+                execution of the ansible playbooks set the to false. By default this is set to
+                true.</li>
+            </ul><codeblock>vi &lt;<b>NETWORK_CONF_FILENAME</b>></codeblock><p>For
+              example:<codeblock>vi activationtemplate.json
+
+{
+ "input_model": {
+  "server_group": ""
+ }, 
+ "run_playbook": true, 
+ "network_properties": {
+  "portGroups": [
+   {
+    "nic_teaming": {
+     "network_failover_detection": "1", 
+     "notify_switches": "yes", 
+     "load_balancing": "1", 
+     "active_nics": "vmnic1"
+    }, 
+    "vlan_type": "trunk", 
+    "vlan": "33", 
+    "name": "ESX-CONF", 
+    "switchName": "MGMT-DVS"
+   }, 
+   {
+    "vlan": "", 
+    "name": "MGMT", 
+    "vlan_type": "none", 
+    "switchName": "MGMT-DVS", 
+    "nic_teaming": {
+     "network_failover_detection": "1", 
+     "notify_switches": "yes", 
+     "load_balancing": "1", 
+     "active_nics": "vmnic1"
+    }, 
+    "cloud_network_type": "vxlan"
+   }, 
+   {
+    "vlan_type": "trunk", 
+    "vlan": "1-4094", 
+    "name": "TRUNK", 
+    "switchName": "TRUNK-DVS"
+   }
+  ], 
+  "switches": [
+   {
+    "type": "dvSwitch", 
+    "name": "MGMT-DVS", 
+    "physical_nics": "vmnic1", 
+    "mtu": "1500"
+   }, 
+   {
+    "type": "dvSwitch", 
+    "name": "TRUNK-DVS", 
+    "physical_nics": "", 
+    "mtu": "1500"
+   }
+  ], 
+  "esx_conf_net": {
+   "start_ip": "", 
+   "cidr": "10.20.18.0/23", 
+   "end_ip": "", 
+   "gateway": "10.20.18.1", 
+   "portGroup": "ESX-CONF"
+  }, 
+  "hlm_version": "3.0", 
+  "lifecycle_manager": {
+   "ip_address": "10.20.16.2", 
+   "ssh_key": "ssh-rsa AAAAB3NzaC1yc2EA stack@company.org", 
+   "user": "stack"
+  }, 
+  "vm_config": [
+   {
+    "server_role": "ESX-COMPUTE-ROLE", 
+    "template_name": "hlm-shell-vm", 
+    "cpu": "4", 
+    "memory_in_mb": "4096", 
+    "nics": [
+     {
+      "device": "eth0", 
+      "type": "vmxnet3", 
+      "pci_id": "", 
+      "portGroup": "ESX-CONF"
+     }, 
+     {
+      "device": "eth1", 
+      "type": "vmxnet3", 
+      "pci_id": "", 
+      "portGroup": "MGMT"
+     }
+    ]
+   }, 
+   {
+    "server_role": "OVSVAPP-ROLE", 
+    "template_name": "hlm-shell-vm", 
+    "cpu": "4", 
+    "memory_in_mb": "4096", 
+    "nics": [
+     {
+      "device": "eth0", 
+      "type": "vmxnet3", 
+      "pci_id": "", 
+      "portGroup": "ESX-CONF"
+     }, 
+     {
+      "device": "eth1", 
+      "type": "vmxnet3", 
+      "pci_id": "", 
+      "portGroup": "MGMT"
+     }, 
+     {
+      "device": "eth2", 
+      "type": "vmxnet3", 
+      "pci_id": "", 
+      "portGroup": "TRUNK"
+     }
+    ]
+   }
+  ]
+ }
+}</codeblock></p></li>
         </ol>
-      </p></section>
-    <section id="import-cluster"><b>Import Cluster </b><p>You can use one or more ESX clusters for
-        ESX Cloud Deployment. When an Import Cluster is invoked, required ESX Compute Proxy and
-        OVSvApp nodes are deployed.</p><p>vCenter can have multiple clusters, but the current
-        release of <keyword keyref="kw-hos"/> supports only sequential import of clusters
-        (one-by-one). Therefore, you can import only one cluster at a time using the <codeph>eon
-          cluster-import</codeph> command.</p><p>
-        <ol>
-          <li> Import the cluster for the EON database under the given vCenter. <codeblock><codeph># eon cluster-import --vcenter-id &lt;vCenter ID> --cluster-name &lt;Cluster Name> --cluster-moid &lt;Cluster Moid></codeph></codeblock>where:<p>
-              <ul id="ul_r4g_rjs_ft">
-                <li>vCenter ID - ID of the vcenter containing the cluster.</li>
-                <li>Cluster Name - the name of the cluster that needs to be imported.</li>
-                <li>Cluster Moid - Moid of the cluster that needs to be imported.</li>
-              </ul>
-            </p><p><b>Sample
-              Output</b><codeblock># eon cluster-import --vcenter-id BC9DED4E-1639-481D-B190-2B54A2BF5674 --cluster-name Cluster1 --cluster-moid domain-c21
-+--------------+---------------------------+
-| Property     | Value                     |
-+--------------+---------------------------+
-| cpu_free     | 83071.73                  |
-| cpu_total    | 83072                     |
-| cpu_used     | 0.27                      |
-| datacenter   | DC1                       |
-| disk_free    | 1022.79                   |
-| disk_total   | 1023.75                   |
-| errors       | []                        |
-| memory_free  | 496.82                    |
-| memory_total | 511.76                    |
-| memory_used  | 14.94                     |
-| name         | Cluster1                  |
-| state        | importing                 |
-| switches     | ['TRUNK-DVS', 'MGMT-DVS'] |
-+--------------+---------------------------+</codeblock></p><p>One
-              vCenter can have multiple clusters. But it allows you to import only one cluster at a
-              time.</p></li>
-          <li> Execute the following command to view the list of clusters for the given
-              vCenter.<codeblock><codeph># eon cluster-list --vcenter-id &lt;vCenter ID></codeph></codeblock><b>Sample
-              Output</b><codeblock># eon cluster-list --vcenter-id BC9DED4E-1639-481D-B190-2B54A2BF5674
-+------------+----------+------------+---------------+
-| MOID       | Name     | Datacenter | Import Status |
-+------------+----------+------------+---------------+
-| domain-c22 | Cluster2 | DC1        | imported      |
-+------------+----------+------------+---------------+</codeblock></li>
-        </ol>
-      </p></section>
-    <section id="activate-cluster"><b>Activate Clusters</b><note>You can activate the cluster only
-        after the import status of the cluster is changed to <b>imported</b>.</note>
-      <p>When you execute the active cluster command, the <codeph>server.yml</codeph> of the input
-        model is updated with IP Addresses of compute proxy and OVSvApp.
-        <!--VMs correspesponding to the clusters are being activated.--></p>
-      <p>
+      </p><p/></section>
+    <section id="activate-cluster"><b>Activate Clusters</b><p>This involves using the activation
+        template to register the cloud network configuration for the vCenter.</p><p>When you execute
+        the active cluster command, the <codeph>server.yml</codeph> of the input model is updated
+        with IP Addresses of compute proxy and OVSvApp.
+        <!--VMs correspesponding to the clusters are being activated.--></p><p>
         <ol>
           <li>Activate the cluster for the selected
                 vCenter.<codeblock><codeph># eon cluster-activate --vcenter-id &lt;vCenter ID> --cluster-moid &lt;Cluster Moid> </codeph></codeblock><p><b>Sample
