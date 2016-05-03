@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="recover_vertica">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Recovering from Vertica File System
+    Issues</title>
+  <body>
+    <p>In <keyword keyref="kw-hos-phrase"/>, the monitoring service uses Vertica as its database. If
+      it is configured incorrectly, or if a higher than expected load is experienced, and the file
+      system fills up then Vertica may fall over and need to be recreated.</p>
+    <p>Prior to getting to that point you may see the <codeph>Disk Usage</codeph> alarm trigger,
+      which is a sign that the file system is filling up. If you can resolve this issue quickly
+      using the steps below then you can prevent the Vertica database failure.</p>
+    <p>This page describes this scenario and how to resolve it.</p>
+
+    <section id="changing_retention"><title>Changing the Vertica retention period</title>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Edit the configuration file noted below to edit the retention period. <p>The
+            configuration file to edit is:</p>
+          <codeblock>~/helion/hos/ansible/roles/monasca-variables/defaults/main.yml</codeblock>
+          <p>Change the <codeph>vertica_retention_period</codeph> value to the number of days you
+            want to hold Monasca data in Vertica. If your Vertica file system just filled up, or is
+            close to doing so, make sure you are lowering it to a value less than the amount of days
+            it took to fill in the first place.</p>
+          <p>The section looks like this, bolded for emphasis:</p>
+          <codeblock># Retention variables
+kafka_low_disk_retention: 1800000 # 30 minutes in milliseconds
+kafka_log_retention_hours: "{{ monasca_tunings.kafka_log_retention_hours }}"
+<b>vertica_retention_period: 45 # 45 day default retention</b></codeblock>
+        </li>
+
+      </ol>
+    </section>
+  </body>
+</topic>
