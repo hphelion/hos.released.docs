@@ -160,7 +160,28 @@
     mac-addr: "d9:92:1c:25:69:e0"
     ilo-ip: 10.12.8.216
     ilo-password: password
-    ilo-user: admin</codeblock>
+    ilo-user: admin
+
+# Ceph RGW Nodes
+  - id: rgw1
+    ip-addr: 192.168.10.12
+    role: RGW-ROLE
+    server-group: RACK1
+    nic-mapping: MY-2PORT-SERVER
+    mac-addr: "8b:f6:9e:ca:3b:62"
+    ilo-ip: 192.168.9.12
+    ilo-password: password
+    ilo-user: admin
+
+  - id: rgw2
+    ip-addr: 192.168.10.13
+    role: RGW-ROLE
+    server-group: RACK2
+    nic-mapping: MY-2PORT-SERVER
+    mac-addr: "8b:f6:9e:ca:3b:63"
+    ilo-ip: 192.168.9.13
+    ilo-password: password
+    ilo-user: admin </codeblock>
     </section>
 
     <section id="ceph3_netinterfaces"><title>net_interfaces.yml</title>
@@ -239,7 +260,25 @@
       device:
           name: hed3
       network-groups:
-        - OSD-INTERNAL</codeblock>
+        - OSD-INTERNAL
+
+   - name: RGW-INTERFACES
+     network-interfaces:
+       - name: BOND0
+         device:
+            name: bond0
+         bond-data:
+            options:
+                mode: active-backup
+                miimon: 200
+                primary: hed3
+            provider: linux
+            devices:
+              - name: hed3
+              - name: hed4
+         network-groups:
+           - MANAGEMENT
+           - OSD-CLIENT</codeblock>
     </section>
 
     <section id="ceph3_networkgroups"><title>network_groups.yml</title>

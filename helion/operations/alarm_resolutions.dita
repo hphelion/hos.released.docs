@@ -1387,22 +1387,67 @@ sudo systemctl restart kibana</codeblock>
                 <entry>HTTP Status</entry>
                 <entry><p>component = monasca-persister</p>Persister Health Check</entry>
                 <entry>The process has crashed or a dependency is out.</entry>
-                <entry>If the process has crashed, restart. If a dependent service is down, address
-                  that issue.</entry>
+                <entry>If the process has crashed, restart it using the steps below. If a dependent
+                  service is down, address that issue. <p>Restart the process on the affected node
+                    using these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if <codeph>monasca-api</codeph> is running on all nodes with this
+                      playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-persister</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags persister</codeblock></li>
+                    <li>Verify that it is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-persister</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
                 <entry><p>component = monasca-api</p>API Health Check</entry>
                 <entry>The process has crashed or a dependency is out.</entry>
-                <entry>If the process has crashed, restart. If a dependent service is down, address
-                  that issue.</entry>
+                <entry>If the process has crashed, restart it using the steps below. If a dependent
+                  service is down, address that issue. <p>Restart the process on the affected node
+                    using these steps:</p>
+                  <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if <codeph>monasca-api</codeph> is running on all nodes with this
+                      playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-api</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags monasca-api</codeblock></li>
+                    <li>Verify that it is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-api</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
               </row>
               <row>
                 <entry>Monasca Agent Collection Time</entry>
                 <entry>Alarms when the elapsed time the <codeph>monasca-agent</codeph> takes to
                   collect metrics is high.</entry>
                 <entry>Heavy load on the box or a stuck agent plug-in.</entry>
-                <entry>Address the load issue on the machine. If needed, restart the agent.</entry>
+                <entry>Address the load issue on the machine. If needed, restart the agent using the
+                  steps below:
+                  <p>Restart the agent on the affected node using these steps:</p> <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if <codeph>monasca-agent</codeph> is running on all nodes with this
+                      playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-status.yml</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --limit &lt;hostname></codeblock></li>
+                    <li>Verify that it is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-status.yml</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
@@ -1426,45 +1471,99 @@ ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags kafka</codeblock>
                 <entry>Process Check</entry>
                 <entry><p>process_name = monasca-notification</p>Process not running.</entry>
                 <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.</entry>
+                <entry>Restart the process on the affected node using these steps: <ol
+                    id="ol_a4z_qp5_vv">
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if <codeph>monasca-api</codeph> is running on all nodes with this
+                      playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags notification</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags notification</codeblock></li>
+                    <li>Verify that it is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags notification</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
                 <entry>process_name = monasca-agent</entry>
-                <entry/>
-                <entry/>
+                <entry>Process crashed.</entry>
+                <entry>Restart the agent on the affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if <codeph>monasca-agent</codeph> is running on all nodes with this
+                      playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-status.yml</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --limit &lt;hostname></codeblock></li>
+                    <li>Verify that it is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-agent-status.yml</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
                 <entry>process_name = monasca-api</entry>
-                <entry/>
-                <entry/>
+                <entry>Process crashed.</entry>
+                <entry>Restart the process on the affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if <codeph>monasca-api</codeph> is running on all nodes with this
+                      playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-api</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags monasca-api</codeblock></li>
+                    <li>Verify that it is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-api</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
                 <entry>process_name = monasca-persister</entry>
-                <entry/>
-                <entry/>
+                <entry>Process crashed.</entry>
+                <entry>Restart the process on the affected node using these steps: <ol
+                    id="ol_l3z_tp5_vv">
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Check if <codeph>monasca-api</codeph> is running on all nodes with this
+                      playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-persister</codeblock></li>
+                    <li>Use the Monasca start playbook against the affected node to restart it:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags persister</codeblock></li>
+                    <li>Verify that it is running on all nodes with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-persister</codeblock></li>
+                  </ol>
+                  <p>Review the associated logs.</p></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
                 <entry>process_name = backtype.storm.daemon.nimbus<p>component =
                   apache-storm</p></entry>
-                <entry/>
+                <entry>Process crashed.</entry>
                 <entry/>
               </row>
               <row>
                 <entry>Process Check</entry>
                 <entry>process_name = backtype.storm.daemon.supervisor<p>component =
                     apache-storm</p></entry>
-                <entry/>
+                <entry>Process crashed.</entry>
                 <entry/>
               </row>
               <row>
                 <entry>Process Check</entry>
                 <entry>process_name = backtype.storm.daemon.worker<p>component =
                   apache-storm</p></entry>
-                <entry/>
+                <entry>Process crashed.</entry>
                 <entry/>
               </row>
               <row>

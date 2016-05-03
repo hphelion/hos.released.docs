@@ -26,25 +26,45 @@
               <li><b>server</b>: Specifies the name or ID of server (s)</li>
             </ul></p><p>OR</p><p>Migrate all instances spawned in that
             cluster.<codeblock># nova migrate &lt;server></codeblock></p></li>
-        <li>Run the following command to deactivate a
-            cluster:<codeblock># eon cluster-deactivate --vcenter-id &lt;vCenter ID> --cluster-moid &lt;Cluster Moid> </codeblock><p>where:
+        <li>Run the following playbooks for stop the Compute (Nova) and Networking (Neutron)
+            services:<codeblock>ansible-playbook -i hosts/verb_hosts nova-stop --limit &lt;hostname>;
+ansible-playbook -i hosts/verb_hosts neutron-stop --limit &lt;hostname>;</codeblock><p>where:
               <ul id="ul_hll_qrh_rt">
               <li>
-                <p><b>vCenter ID</b>: Specifies the ID of the vCenter containing the cluster.</p>
+                <p><b>hostname</b>: Specifies hostname of the compute proxy present in that
+                  cluster.</p>
               </li>
             </ul></p></li>
-        <li>Commit your
-          configuration:<codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "&lt;commit message>"</codeblock></li>
-        <li>Run the configuration
-          processor:<codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml -e remove_deleted_servers="y" -e free_unused_addresses="y"</codeblock></li>
-        <li>Run the following command to create a deployment
-          directory:<codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-        <li>Execute the following command to unimport the cluster on the respective cluster:<codeblock># eon cluster-unimport --vcenter-id &lt;vCenter ID> --cluster-moid &lt;Cluster Moid></codeblock><p>
-            <note> Do not run the <codeph>osconfig-run.yml</codeph> or
-                <codeph>hlm-deploy.yml</codeph> playbooks.</note>
+        <li>Deactivate the ESX Cluster <p>
+            <codeblock>eon resource-deactivate &lt;RESOURCE_ID></codeblock>
+          </p>This command deletes the ESX compute proxy, OVSvApp VMs in the cluster, and triggers
+          the ansible playbooks<p><b>Sample Output</b></p><p>
+            <codeblock>eon resource-deactivate 9ab2196d-37d2-4006-a2c7-08946b5194ea
++-----------------+--------------------------------------+
+| Property        | Value                                |
++-----------------+--------------------------------------+
+| id              | 9ab2196d-37d2-4006-a2c7-08946b5194ea |
+| ip_address      | UNSET                                |
+| name            | compute                              |
+| password        | UNSET                                |
+| port            | UNSET                                |
+| resource_mgr_id | 9FDCFA66-6677-42A1-83FF-16DC32448021 |
+| state           | cleanup-initiated                    |
+| type            | esxcluster                           |
+| username        | UNSET                                |
++-----------------+--------------------------------------+ </codeblock>
           </p></li>
       </ol></p>
+    <p>Once the deactivation is successful, the state of the cluster is set to
+        <codeph>imported</codeph>.</p>
+    <p>
+      <codeblock>eon resource-list
++--------------------------------------+-----------+-------------+--------------------------------------+------------+-------+------------+------------+
+| ID                                   | Name      | Moid        | Resource Manager ID                  | IP Address | Port  | Type       | State      |
++--------------------------------------+-----------+-------------+--------------------------------------+------------+-------+------------+------------+
+| 9ab2196d-37d2-4006-a2c7-08946b5194ea | compute   | domain-c104 | 9FDCFA66-6677-42A1-83FF-16DC32448021 | UNSET      | UNSET | esxcluster | imported   |
++--------------------------------------+-----------+-------------+--------------------------------------+------------+-------+------------+------------+
+</codeblock>
+    </p>
   </body>
 </topic>
