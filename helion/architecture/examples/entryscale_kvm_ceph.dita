@@ -1,67 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="entryscale_kvm_ceph">
-    <title><ph conkeyref="HOS-conrefs/product-title"/>Entry-Scale KVM with Ceph Model</title>
-    <body><!--not tested-->
-        <p conkeyref="HOS-conrefs/applies-to"/>
-        
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Entry-scale KVM with Ceph Model</title>
+  <body>
+    <!--not tested-->
+    <p conkeyref="HOS-conrefs/applies-to"/>
 
-      <p>This example provides a KVM-based cloud using Ceph for both block and object storage.</p>
-      <ul>
-        <li><b>Management traffic</b> - primarily includes all admin related operations such as pool
-          creation, crush map modification, user creation, etc.</li>
-        <li><b>Client (data) traffic</b> - primarily includes client requests sent to OSD
-          daemons.</li>
-        <li><b>Cluster (replication) traffic</b> - primarily includes replication and recovery data
-          traffic among OSD daemons.</li>
-      </ul>
-      <p>The table below lists out the key characteristics needed per server role for this
-        configuration.</p>
-      <table frame="all" rowsep="1" colsep="1" id="table_jnw_yss_s5">
-        <tgroup cols="4">
-          <colspec colname="c1" colnum="1"/>
-          <colspec colname="c2" colnum="2"/>
-          <colspec colname="c3" colnum="3"/>
-          <colspec colname="c4" colnum="4"/>
-          <thead>
-            <row>
-              <entry>Server role</entry>
-              <entry>Quantity</entry>
-              <entry>Compute Requirement</entry>
-              <entry>Network Requirement</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>Controller</entry>
-              <entry>3</entry>
-              <entry>2x 10 core 2.66 GHz<p>96 - 128 GB RAM</p></entry>
-              <entry>2x 10Gb Dual Port NIC</entry>
-            </row>
-            <row>
-              <entry>Compute (KVM hypervisor)</entry>
-              <entry>1 (minimum)</entry>
-              <entry>2x 12 core 2.66 GHz (ES-2690v3) Intel Xeon<p>256 GB RAM</p></entry>
-              <entry>1x 10Gb Dual Port NIC</entry>
-            </row>
-            <row>
-              <entry>OSD</entry>
-              <entry>3 (minimum)</entry>
-              <entry>RAM is dependent upon the number of disks. 1 GB per TB of disk capacity is
-                recommended.</entry>
-              <entry>2x 10Gb Dual Port NIC</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-      <p>This diagram below illustrates the physical networking used in this configuration.</p>
-      <p><image href="../../../media/hos.docs/entry_scale_kvm_ceph_three_network.png"/></p>
-      <p><xref href="../../../media/hos.docs/entry_scale_kvm_ceph_three_network_lg.png" scope="external"
-          format="html">Download a high-resolution version</xref></p>
-      <p>This configuration is based on the <codeph>entry-scale-kvm-ceph</codeph> cloud input model
+
+    <p>This example provides a KVM-based cloud using Ceph for both block and object storage.</p>
+    <ul>
+      <li><b>Management traffic</b> - primarily includes all admin related operations such as pool
+        creation, crush map modification, user creation, etc.</li>
+      <li><b>Client (data) traffic</b> - primarily includes client requests sent to OSD
+        daemons.</li>
+      <li><b>Cluster (replication) traffic</b> - primarily includes replication and recovery data
+        traffic among OSD daemons.</li>
+    </ul>
+    <p>The table below lists out the key characteristics needed per server role for this
+      configuration.</p>
+    <table frame="all" rowsep="1" colsep="1" id="table_jnw_yss_s5">
+      <tgroup cols="4">
+        <colspec colname="c1" colnum="1"/>
+        <colspec colname="c2" colnum="2"/>
+        <colspec colname="c3" colnum="3"/>
+        <colspec colname="c4" colnum="4"/>
+        <thead>
+          <row>
+            <entry>Server role</entry>
+            <entry>Quantity</entry>
+            <entry>Compute Requirement</entry>
+            <entry>Network Requirement</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>Controller</entry>
+            <entry>3</entry>
+            <entry>2x 10 core 2.66 GHz<p>96 - 128 GB RAM</p></entry>
+            <entry>2x 10Gb Dual Port NIC</entry>
+          </row>
+          <row>
+            <entry>Compute (KVM hypervisor)</entry>
+            <entry>1 (minimum)</entry>
+            <entry>2x 12 core 2.66 GHz (ES-2690v3) Intel Xeon<p>256 GB RAM</p></entry>
+            <entry>1x 10Gb Dual Port NIC</entry>
+          </row>
+          <row>
+            <entry>OSD</entry>
+            <entry>3 (minimum)</entry>
+            <entry>RAM is dependent upon the number of disks. 1 GB per TB of disk capacity is
+              recommended.</entry>
+            <entry>2x 10Gb Dual Port NIC</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p>This diagram below illustrates the physical networking used in this configuration.</p>
+    <p><image href="../../../media/hos.docs/exampleconfigs/entry_scale_kvm_ceph_1000.png"/></p>
+    <p><xref href="../../../media/hos.docs/exampleconfigs/entry_scale_kvm_ceph_5000.png"
+        scope="external" format="html">Download a high-resolution version</xref></p>
+    <p>This configuration is based on the <codeph>entry-scale-kvm-ceph</codeph> cloud input model
       which is included with the HPE Helion OpenStack distro. You will need to make the changes
       outlined below prior to the deployment of your Ceph cluster.</p>
-        
+
     <section id="ceph3_nicmappings"><title>nic_mappings.yml</title>
       <p>Ensure that your baremetal server NIC interfaces are correctly specified in the
           <codeph>~/helion/my_cloud/definition/data/nic_mappings.yml</codeph> file and that they
@@ -122,7 +123,7 @@
          type: simple-port
          bus-address: "0000:06:00.3"</codeblock>
     </section>
-        
+
     <section id="ceph3_servers"><title>servers.yml</title>
       <p>Ensure that your servers in the
           <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file are mapped to the
@@ -161,7 +162,7 @@
     ilo-password: password
     ilo-user: admin</codeblock>
     </section>
-        
+
     <section id="ceph3_netinterfaces"><title>net_interfaces.yml</title>
       <p>Define a new interface set for your OSD interfaces in the
           <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph> file.</p>
@@ -240,7 +241,7 @@
       network-groups:
         - OSD-INTERNAL</codeblock>
     </section>
-        
+
     <section id="ceph3_networkgroups"><title>network_groups.yml</title>
       <p>Define the OSD network group in the
           <codeph>~/helion/my_cloud/definition/data/network_groups.yml</codeph> file:</p>
@@ -269,7 +270,7 @@
   component-endpoints:
     - ceph-osd-internal</codeblock>
     </section>
-        
+
     <section id="ceph3_networks"><title>networks.yml</title>
       <p>Define the OSD VLAN in the <codeph>~/helion/my_cloud/definition/data/networks.yml</codeph>
         file.</p>
@@ -289,7 +290,7 @@
   gateway-ip: 192.168.200.1
   network-group: OSD-INTERNAL</codeblock>
     </section>
-        
+
     <section id="ceph3_servergroups"><title>server_groups.yml</title>
       <p>Add the OSD network to the server groups in the
           <codeph>~/helion/my_cloud/definition/data/server_groups.yml</codeph> file, indicated by
@@ -308,7 +309,7 @@
    <b>- OSD-CLIENT-NET</b>
    <b>- OSD-INTERNAL-NET</b></codeblock>
     </section>
-        
+
     <section id="ceph3_firewallrules"><title>firewall_rules.yml</title>
       <p>Modify the firewall rules in the
           <codeph>~/helion/my_cloud/definition/data/firewall_rules.yml</codeph> file to allow OSD
@@ -331,12 +332,12 @@
     port-range-max: 0
     protocol: icmp</codeblock>
     </section>
-        
+
     <section id="ceph3_readme"><title>Edit the README.html and README.md Files</title>
       <p>You can edit the <codeph>~/helion/my_cloud/definition/README.html</codeph> and
           <codeph>~/helion/my_cloud/definition/README.md</codeph> files to reflect the OSD network
         group information if you wish. This change does not have any semantic implication and only
         assists with the readability of your model.</p>
     </section>
-    </body>
+  </body>
 </topic>
