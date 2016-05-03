@@ -245,6 +245,11 @@ ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock>
             </p>
         </section>
         
+        <section id="DOCS-2555">
+            <title>Change to Monasca Monitoring Roles in Keystone</title>
+            <p>In Helion OpenStack version 2.x, the keystone role for submitting cross-tenant metrics was called  'monasca-agent'. In HOS 3.0, the keystone role for submitting cross-tenant metrics is now called 'monitoring-delegate'. Any user who submits cross-tenant metrics without the 'monitoring-delegate' role will now receive a '403 Forbidden' http response.</p>
+        </section>
+        
         <section id="DOCS-3036">
             <!-- https://jira.hpcloud.net/browse/DOCS-3036 -->
             <title>Cannot use wildcards in multipath blacklist on RHEL Boot from SAN nodes</title>
@@ -285,6 +290,18 @@ product: "LOGICAL VOLUME"
             
         </section>
         
+        <section>
+            <title>Agent monitoring feature of networking-vsphere needs to be disabled during installation and upgrade.</title>
+            <!-- DOCS-2961 -->
+            <p>You should disable Agent monitoring feature of networking-vsphere if you have modified the 
+                <codeph>ml2_conf.ini.j2</codeph> file in the input model folder.  If the Agent monitoring is not
+                disabled, this feature will generate false positives and place hosts into maintenance mode.</p>
+            <p>To disable the Agent monitoring feature, set the configuration parameter 
+                <codeph>enable_ovsvapp_monitor</codeph> to False in the [OVSVAPP] section of the 
+                <codeph>ml2_conf.ini.j2</codeph> file.  Once the parameter has been set, it is safe to proceed
+                with installation or upgrade.
+            </p>
+        </section>
         
         <section>
             <title>Rapidly Creating VMs</title>
