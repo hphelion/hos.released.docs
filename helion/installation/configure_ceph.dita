@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="config_ceph">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring for Ceph Storage Backend</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring for Ceph Object and Block Storage
+    Backend</title>
   <abstract><shortdesc outputclass="hdphidden">Installation and configuration steps for your Ceph
       backend.</shortdesc>This page describes how to configure your Ceph backend for the Helion
     Entry-scale with Ceph cloud model. It consists of the following steps:</abstract>
@@ -27,15 +28,15 @@
             href="../operations/blockstorage/ceph/deploy_monitor_standalone_node.dita">Install a
             monitor service on a dedicated resource node</xref>.</p>
         <p>The following steps describe how to configure Ceph as your Glance backend. This process
-          replaces Swift as is the default backend option in HPE Helion OpenStack. If you have any
-          pre-existing images in your Glance repository you should download them locally prior to
-          configuring Ceph as your backend. Once the Ceph configuration is complete you will then
-          need to re-upload the images to your Glance repository in order for those images to
-          work.</p>
-        <p><b>Ceph and RADOS:</b> The default Helion Entry-scale KVM Ceph input model deploys the
-          Ceph RADOS (Reliable Autonomic Distributed Object Store) service on two dedicated cluster
-          nodes. The deployment includes the RADOS Gateway (radosgw) service, which is a FastCGI
-          module for interacting with librgw and librados APIs. </p>
+          replaces Swift as is the default backend option in <keyword keyref="kw-hos-tm"/>. If you
+          have any pre-existing images in your Glance repository you should download them locally
+          prior to configuring Ceph as your backend. Once the Ceph configuration is complete you
+          will then need to re-upload the images to your Glance repository in order for those images
+          to work.</p>
+        <p><b>Ceph and RADOS:</b> The default <keyword keyref="kw-hos-tm"/> Entry-scale KVM Ceph
+          input model deploys the Ceph RADOS (Reliable Autonomic Distributed Object Store) service
+          on two dedicated cluster nodes. The deployment includes the RADOS Gateway (radosgw)
+          service, which is a FastCGI module for interacting with librgw and librados APIs. </p>
         <p>The RADOS Gateway service is an object storage interface that allows end user to perform
           HTTP based CRUD operations on object. It supports both the OpenStack Swift and Amazon S3
           REST APIs.</p>
@@ -45,7 +46,7 @@
           clients. The S3 and Swift APIs share a common namespace, so you may write data with one
           API and retrieve it with the other.</p>
       
-        <p>The HP Helion OpenStack deployment of the RADOS Gateway features include:</p>
+        <p>The <keyword keyref="kw-hos-tm"/> deployment of the RADOS Gateway features include:</p>
         <p>
           <ul id="ul_cl2_gqd_sv">
             <li>RADOS Gateway can be configured to run in a simple (non-federated or single region)
@@ -83,23 +84,24 @@
           <li>The disk should not be in use or held by some other device</li>
         </ul>
         <sectiondiv id="osd-journal">
-          <p><b>Concerning OSD journals:</b> HPE Helion OpenStack recommends storing the Ceph RADOS
-            Gateway OSD (object-storage deamon) journal on an SSD (solid-state drive ) and the OSD
-            object data on a separate hard disk drive. Considering that SSD drives are costly, you
-            can use multiple partitions in a single SSD drive for multiple OSD journals. We
-            recommend no more than four or five OSD journals on each SSD disk as a reasonable
-            balance between cost and optimal performance. If you have too many OSD journals on a
-            single SSD, and the journal disk crashes, you might lose your data on those disks. Also,
-            too many journals in a single SSD might negatively affect performance. </p>
+          <p><b>Concerning OSD journals:</b>
+            <keyword keyref="kw-hos-tm"/> recommends storing the Ceph RADOS Gateway OSD
+            (object-storage deamon) journal on an SSD (solid-state drive ) and the OSD object data
+            on a separate hard disk drive. Considering that SSD drives are costly, you can use
+            multiple partitions in a single SSD drive for multiple OSD journals. We recommend no
+            more than four or five OSD journals on each SSD disk as a reasonable balance between
+            cost and optimal performance. If you have too many OSD journals on a single SSD, and the
+            journal disk crashes, you might lose your data on those disks. Also, too many journals
+            in a single SSD might negatively affect performance. </p>
           <p>Using an OSD journal as a partition on the data disk itself is supported. However, you
             might see a significant decline in Ceph performance due the fact that each client
             request to store an object is first written to the journal disk before sending an
             acknowledgement to client.</p>
-          <p>Ceph OSD journal size defaults to 5120MB (i.e. 5GB) in HPE Helion OpenStack. This value
-            can be changed, however, it does not apply to any existing journal partitions. It will
-            be effective on any new OSDs created after the journal size is changed (whether the
-            journal is on same disk or separate disk than the data disk).  To change the journal
-            size, edit the <codeph>osd_journal_size</codeph> parameter in the
+          <p>Ceph OSD journal size defaults to 5120MB (i.e. 5GB) in <keyword keyref="kw-hos-tm"/>.
+            This value can be changed, however, it does not apply to any existing journal
+            partitions. It will be effective on any new OSDs created after the journal size is
+            changed (whether the journal is on same disk or separate disk than the data disk). To
+            change the journal size, edit the <codeph>osd_journal_size</codeph> parameter in the
               <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file. <!--DOCS-2833--></p>
         </sectiondiv>
       </sectiondiv>
@@ -118,11 +120,11 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
     </section>
     <section><title outputclass="headerH">Installing Ceph and RADOS</title><sectiondiv
         outputclass="insideSection">
-        <p>In HPE Helion OpenStack 3.0, the Ceph is installed on two dedicated cluster nodes
-          servers. You can install the RADOS Gateway the node(s) hosting the Ceph Monitor service or
-          on the HPE Helion OpenStack controller nodes. For information on these alternate
-          installation scenarios, see <xref href="#config_ceph/alternate" format="dita"/> before
-          starting the installation.</p>
+        <p>In <keyword keyref="kw-hos-tm"/>, the Ceph is installed on two dedicated cluster nodes
+          servers. You can install the RADOS Gateway on the cluster node(s) hosting the Ceph Monitor
+          service or on the <keyword keyref="kw-hos-tm"/> controller nodes. For information on these
+          alternate installation scenarios, see <xref href="#config_ceph/alternate" format="dita"/>
+          before starting the installation.</p>
         <p>
           <note> Both of these alternate configurations would lead to a sub-optimal
             performance.</note>
@@ -386,24 +388,26 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
                       </row>
                       <row>
                         <entry>data_disk_poll_interval</entry>
-                        <entry>The time interval in seconds to wait between data_disk_poll_attempts
-                          (default value 12) </entry>
+                        <entry>The time interval in seconds to wait between
+                            <codeph>data_disk_poll_attempts</codeph> (default value 12) </entry>
                       </row>
                       <row>
                         <entry>radosgw_admin_email </entry>
                         <entry>The email address for the server administrator. Default:
-                          admin@hpe.com</entry>
+                            <codeph>admin@hpe.com</codeph></entry>
                       </row>
                       <row>
                         <entry>rgw_keystone_service_type</entry>
                         <entry>If user wishes to replace Swift with Ceph radosgw, this parameter
-                          value should be changed to 'object-store'. Default: ceph-object-store
+                          value should be changed to <codeph>object-store</codeph>. Default:
+                            <codeph>ceph-object-store</codeph>
                         </entry>
                       </row>
                       <row>
                         <entry>rgw_keystone_accepted_roles </entry>
                         <entry>Only users having either of the roles listed here will be able to
-                          access the Swift APIs of radosgw. Default: admin, <i>member</i></entry>
+                          access the Swift APIs of radosgw. Default: <codeph>admin</codeph>,
+                            <i>_member_</i></entry>
                       </row>
                     </tbody>
                   </tgroup>
@@ -438,7 +442,7 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
               <li>
                 <p><codeph>~/helion/my_cloud/config/ceph/user_model.yml</codeph></p>
                 <p>The <codeph>user_model.yml</codeph> has the editable values for the different
-                  pools created by HPE Helion OpenStack.</p>
+                  pools created by <keyword keyref="kw-hos-tm"/>.</p>
                 <table frame="all" rowsep="1" colsep="1" id="table_qbk_mpq_35">
                   <tgroup cols="2">
                     <colspec colname="c1" colnum="1" colwidth="1.0*"/>
@@ -745,8 +749,8 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
     <section id="alternate">
       <title outputclass="headerH">Alternate RADOS Gateway deployment architecture choices</title>
       <sectiondiv outputclass="insideSection"> The RADOS Gateway service can also be co-hosted along
-        with other HPE Helion OpenStack services as listed in the following alternatives below. <ul
-          id="ul_wmx_w22_sv">
+        with other <keyword keyref="kw-hos-tm"/> services as listed in the following alternatives
+        below. <ul id="ul_wmx_w22_sv">
           <li>Installing RADOS Gateway on (dedicated) cluster node(s) that host Ceph Monitor
             service</li>
           <li>Installing RADOS Gateway on controller nodes</li>
@@ -843,11 +847,11 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
           the RADOS Gateway exists alongside OpenStack Swift (since the Keystone service type for
           RADOS Gateway defaults to <codeph>ceph-object-store</codeph>). In this mode, the Horizon
           interface works only with Swift for all the Object Store operations.</p><p>A RADOS Gateway
-          native user can access both the Swift and S3 APIs provided by Ceph RADOS Gateway. To
-          achieve this, create a RADOS Gateway user (only has S3 access) and a subuser to get Swift
-          API access. The following sections describe how to perform these tasks. </p><b>Creating a
-          new user and subuser</b><p>You can create a new user for interacting with Ceph Object
-          Gateway services.</p><ul id="ul_qnm_t1f_sv">
+          native user can be configured to access both the Swift and S3 APIs provided by Ceph RADOS
+          Gateway. To achieve this, create a RADOS Gateway user (only has S3 access) and a subuser
+          to get Swift API access. The following sections describe how to perform these tasks.
+          </p><b>Creating a new user and subuser</b><p>You can create a new user for interacting
+          with Ceph Object Gateway services.</p><ul id="ul_qnm_t1f_sv">
           <li><b>User:</b> A <codeph>user</codeph> can access the S3 interface.</li>
           <li><b>Subuser:</b> A <codeph>subuser</codeph> can access the Swift interface and is
             associated to a user . A subuser needs a Swift access key. </li>
@@ -945,9 +949,9 @@ rgw keystone url = https://helion-cp1-vip-KEY-API-mgmt:35357</codeblock></li>
         <p>If you do not want the Ceph and Swift object storage solutions in the same cloud, you can
           deploy a cloud with only the Ceph RADOS Gateway.</p>
         <p><b>Deploying Ceph RADOS Gateway as a replacement for OpenStack Swift in new cloud</b></p>
-        <p>HPE Helion OpenStack 3.0 cloud can be deployed with Ceph RADOS Gateway as a replacement
-          for OpenStack Swift. The input model needs to be tuned in the following way to achieve
-          this. </p>
+        <p>An <keyword keyref="kw-hos-tm"/> cloud can be deployed with Ceph RADOS Gateway as a
+          replacement for OpenStack Swift. The input model needs to be tuned in the following way to
+          achieve this. </p>
         <ol id="ol_pzz_w4c_5v">
           <li>Login to the deployer node and remove all the <codeph>swift</codeph> components except
               <codeph>swift-client</codeph> from
@@ -988,6 +992,7 @@ ansible-playbook -i hosts/verb_hosts swift-stop.yml </codeblock><note><ul id="ul
               your Volumes</xref></li>
           <li><xref href="installation_verification.dita#install_verification/volume_verify">Verify
               Your Block Storage Configuration</xref></li>
+          <li><xref href="installation_verification.dita#install_verification/rgw_verify">Verify RADOS Gateway access using the Swift API</xref></li>
         </ul>
       </sectiondiv>
     </section>
