@@ -76,10 +76,20 @@
         certificate would then be called "example-CA.crt" and the key would be called
         "example-CA.key." In the following examples, the external VIP certificate will be named
         "example-public-cert" and the internal VIP certificate will be named
-        "example-internal-cert."</p><note type="attention">Be sure to install your own certificate
-        for all production clouds after installing and testing your cloud. If you ever want to test
-        or troubleshoot later, you will be able to revert to the sample certificate to get back to a
-        stable state for testing.</note>
+        "example-internal-cert."</p><p>Cautions:</p> When using your own CA: <ul>
+        <li>You should use a distinct name from those existing in config/tls/cacerts </li>
+        <li>You should not remove any existing CA files from config/tls/cacerts </li>
+        <li>If you want to remove an existing CA from HOS you must <ol>
+            <li>First remove the file</li>
+            <li>Then run
+              <codeblock>ansible -i hosts/verb_hosts FND-STN -a 'sudo keytool -delete -alias debian:&lt;filename to be removed from Helion> \
+-keystore /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/security/cacerts -storepass changeit'</codeblock></li>
+          </ol></li>
+      </ul>
+      <note type="attention">Be sure to install your own certificate for all production clouds after
+        installing and testing your cloud. If you ever want to test or troubleshoot later, you will
+        be able to revert to the sample certificate to get back to a stable state for
+        testing.</note>
       <p>You can add your own certificate by following the instructions below. All changes must go
         into the following file:</p>
       <codeblock>~/helion/my_cloud/definition/data/network_groups.yml</codeblock>
