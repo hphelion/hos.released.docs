@@ -390,51 +390,7 @@ Saved the sample network file in /home/user/activationtemplate.json
         </ol>
       </p><p/></section>
     <section id="activate-cluster"><b>Activate Clusters</b><p>This involves using the activation
-        template to register the cloud network configuration for the vCenter.</p><p><b>Manually
-          activate the cluster</b></p><p>This process spawns one compute proxy VM per cluster and
-        one OVSvApp VM per host and configures the networking as defined in the JSON template. This
-        process also updates the input model with the service VM details.</p><p>
-        <ol>
-          <li>Activate the cluster for the selected
-                vCenter.<codeblock><codeph># eon resource-activate &lt;RESOURCE_ID> --config-json \&lt;ACTIVATION_JSON_NAME></codeph></codeblock><p><b>Sample
-                Output</b></p><p>
-              <codeblock>#  eon resource-activate 469710f6-e9f2-48a4-aace-1f00cbd60487 --config-json ~/activate.json
-
-+-----------------+--------------------------------------+
-| Property        | Value                                |
-+-----------------+--------------------------------------+
-| id              | 469710f6-e9f2-48a4-aace-1f00cbd60487 |
-| ip_address      | UNSET                                |
-| name            | virtClust                            |
-| password        | UNSET                                |
-| port            | UNSET                                |
-| resource_mgr_id | BC9DED4E-1639-481D-B190-2B54A2BF5674 |
-| state           | provision-initiated                  |
-| type            | esxcluster                           |
-| username        | UNSET                                |
-+-----------------+--------------------------------------+</codeblock>
-            </p></li>
-        </ol>
-      </p></section>
-    <p><b>Commit the Cloud definition</b></p>
-    <p>Add the cloud definition to git</p>
-    <codeblock>cd /home/stack/helion/hos/ansible;
-git add -A;
-git commit -m 'Adding ESX Configurations or other commit message';</codeblock>
-    <p>Prepare the environment for deployment</p>
-    <codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml;
-ansible-playbook -i hosts/localhost ready-deployment.yml;
-cd /home/stack/scratch/ansible/next/hos/ansible;</codeblock>
-    <p><b>Deploy ESX Compute Proxy and OVSvApp</b></p>
-    <p>Execute the following commands to deploy ESX Compute Proxy and OVSvApp</p>
-    <codeblock>ansible-playbook -i hosts/verb_hosts guard-deployment.yml
-ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit '*esx-ovsvapp:*esx-compute'
-ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit NOV-ESX:NEU-OVSVAPP</codeblock>
-    <note>The variable <codeph>esx-ovsvapp</codeph> and <codeph>esx-compute</codeph> must be taken
-      from the name key in the resource-nodes section in the
-        <codeph>/data/control_plane.yml</codeph> file.</note>
-    <p><b>Automatically activate the cluster using playbooks</b>
-    </p>
+        template to register the cloud network configuration for the vCenter.</p>
     <p>This process spawns one compute proxy VM per cluster and one OVSvApp VM per host and
       configures the networking as defined in the JSON template. This process also updates the input
       model with the service VM details and triggers the ansible playbooks on the new nodes.</p>
@@ -456,7 +412,7 @@ ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit NOV-ESX:NEU-OVSVAPP<
           the state is <codeph>activated</codeph>, the input model is updated with the service VM
           details, a git commit has been performed and the required playbooks have completed
           successfully.</p></li>
-    </ol>
+    </ol></section>
     <section id="modify-volume-config"><b>Modify the Volume Configuration File</b>
       <p>Once the cluster is activated you must configure the volume.</p><p>Perform the following
         steps to modify the volume configuration files:</p><ol id="ol_bhx_n5p_st">
@@ -508,12 +464,11 @@ cd /home/stack/scratch/ansible/next/hos/ansible;</codeblock></li>
         </ol>
       </p></section>
     <section id="deploy-compute-proxy-ovsvapps"><b>Deploy ESX Compute Proxy and OVSvApps</b>
-      <p>Execute the following command to deploy an esx compute and
-        OVSvApps:<codeblock>ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></p>
-      <note>The variable <b>esx-ovsvapp</b> and <b>esx-compute</b> must be taken from the
-          <b>name</b> key in the <codeph>resource-nodes</codeph> section in the
-          <codeph>data/control_plane.yml</codeph> file
-          (<codeph>/home/stack/helion/my_cloud/definition/data/control_plane.yml</codeph>).
+      <p>Execute the following command to deploy an ESX compute and
+        OVSvApps:<codeblock>ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></p><note>The
+        variable <b>esx-ovsvapp</b> and <b>esx-compute</b> must be taken from the <b>name</b> key in
+        the <codeph>resource-nodes</codeph> section in the <codeph>data/control_plane.yml</codeph>
+        file (<codeph>/home/stack/helion/my_cloud/definition/data/control_plane.yml</codeph>).
       </note></section>
     <section id="verify">
       <title>Validate the Compute</title>
