@@ -26,8 +26,8 @@ $ neutron router-interface-add routerHA &lt;private_subnet_id&gt;</codeblock></l
     <section id="TestRouter">
       <title>Test Router for High Availability</title>
       <p>You can demonstrate that the router is HA by running a continuous ping from a VM instance
-        that is running on the private network to an external network such as Googles public DNS. As
-        the ping is running, we identify the L3 agent that is responsible for the router. Induce the
+        that is running on the private network to an external network such as a public DNS. As the
+        ping is running, we identify the L3 agent that is responsible for the router. Induce the
         failover mechanism by creating a catastrophic event like shutting down the primary router’s
         node. Once the node is shut down, you will see that the ping from the VM to the external
         network continues to run as the failover of the agents restores the ping to external
@@ -37,9 +37,8 @@ $ neutron router-interface-add routerHA &lt;private_subnet_id&gt;</codeblock></l
         <li>Boot an instance on the private network
           <codeblock>$ nova boot --image &lt;image_id&gt; --flavor &lt;flavor_id&gt; --nic net_id=&lt;private_net_id&gt; --key_name &lt;key> VM1</codeblock></li>
         <li>Log into the VM using ssh with keys <codeblock>ssh -i &lt;key> VM1</codeblock></li>
-        <li>Start a ping to 8.8.8.8 (Google).  While pinging, make sure there is no packet loss
-        and leave the ping running.
-        <codeblock>$ ping 8.8.8.8</codeblock></li>
+        <li>Start a ping to X.X.X.X. While pinging, make sure there is no packet loss and leave the
+          ping running. <codeblock>$ ping X.X.X.X</codeblock></li>
         <li>Check which agent is active with the router
         <codeblock>$ neutron l3-agent-list-hosting-router &lt;router_id&gt;</codeblock></li>
         <li>Shutdown the node where the L3 agent is alive.  See <xref
