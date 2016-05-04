@@ -112,15 +112,17 @@
             Kafka, and in the /var/log directory)</li>
         </ul></p>
       <note type="attention">If you also enable auditing, you will need to estimate the required
-        disk space and add that manually to any calculations made using the Disk Calculator.</note>
+        disk space and add that manually to any calculations made using the Disk Calculator
+        spreadsheet.</note>
      
       <p><b>Disk Estimation Process</b> Helion OpenStack provides entry scale and scale-out models
-        for deployment. This disk estimation tool, currently in a spreadsheet form, helps you decide which disk model to start from as
-        well as what customizations you need to meet your deployment requirements. The disk
-        estimation process also provides default setting and minimum values for the parameters that drive
-        disk size. <note type="attention">The disk size for Kafka, the message queue, must be given
-          an appropriate amount of disk size. Providing less than the minimum disk size will cause
-          system issues and failures. The default for Kafka is 1 hour which is 17 GB.</note></p>
+        for deployment. This disk estimation tool, currently in a spreadsheet form, helps you decide
+        which disk model to start from as well as what customizations you need to meet your
+        deployment requirements. The disk estimation process also provides default settings and
+        minimum values for the parameters that drive disk size. <note type="attention">The disk size
+          for Kafka, the message queue, must be given an appropriate amount of disk size. Providing
+          less than the minimum disk size will cause system issues and failures. The default for
+          Kafka is 1 hour which is 17 GB.</note></p>
       <p><b>To estimate the disk sizes required for your deployment:</b></p>
       <ol>
         <li><xref href="hardware.dita#min_hardware/disk_calc_input">Enter input parameters.</xref></li>
@@ -136,8 +138,8 @@
       the minimum requirements for the components that define disk size. You can replace the default
       values with either the number you have to work with or the number that you want to support.
         <note type="attention">If you want to enable audit logging, follow the steps in the Audit
-        Logging Adjustment section to enter additional input parameters.</note>
-      <table id="table_disk_calc_input">
+        Logging Adjustment section to enter additional input parameters.</note><table
+        id="table_disk_calc_input">
         <tgroup cols="3">
           <colspec colname="c1" colnum="1"/>
           <colspec colname="c2" colnum="2"/>
@@ -223,7 +225,9 @@
       <p>If you want to enable audit logging, you must enter additional input parameters to ensure
         there is enough room to retain the audit logs. The following diagram shows the parameters
         you need to specify in the Disk Calculator spreadsheet.</p>
-      <image href="../media/DiskCalc2.png" placement="break"/>
+      
+<p><image href="../media/DiskCalc2.png" placement="break"/></p>
+      
       <p>To add audit logging to disk size calculations:</p>
       <ol>
         <li>To set the Number of Services on Cluster, enter a value in the API/Core Services,
@@ -236,16 +240,15 @@
     </section>
 
     <section id="disk_calc_select">
-      <title>Select the Deployment Model</title>
-      <p>To decide which architecture to deploy in order to meet all of your requirements, use the
-        values given in the Disk Calculator spreadsheet. Keeping in mind the rough scale you expect
-        to target as well as any need to separate services, choose an Entry Scale, Entry Scale MML,
-        or Mid Scale deployment. Once you have chosen a deployment you can match it to the sample
-        disk models in the Match to a Disk Model section. The following diagram shows the deployment
-        options that are recommended if you use the default values in the Disk Calculator
-        spreadsheet. <image href="../media/DiskCalc4.png" placement="break"/></p> For example, in
-      the above diagram, if you wanted to choose an Entry Scale MML deployment, the calculator
-      recommends the following disk sizes: <ul>
+      <title>Select the Deployment Model</title>To decide which architecture will meet all of your
+      requirements, use the values given in the Disk Calculator spreadsheet. Keeping in mind the
+      rough scale you expect to target as well as any need to separate services, choose an Entry
+      Scale, Entry Scale MML, or Mid Scale deployment. Once you have chosen a deployment you can
+      match it to the sample disk models in the <xref href="hardware.dita#disk_calc_match">Match to a Disk Model</xref> section. The following diagram
+      shows the deployment options that are recommended if you use the default values in the Disk
+      Calculator spreadsheet. <image href="../media/DiskCalc4.png" placement="break"
+        id="image_cmk_lxc_wv"/> For example, in the above diagram, if you wanted to choose an Entry
+      Scale MML deployment, the calculator recommends the following disk sizes: <ul>
         <li>216 GB for API/Core Service</li>
         <li>216 GB for Neutron (networking)</li>
         <li>216 GB for Swift (storage)</li>
@@ -256,7 +259,207 @@
 
     <section id="disk_calc_match">
       <title>Match to a Disk Model</title>
+      <p>For each of the entry-scale and scale-out cloud models, there is a set of associated disk
+        models that can be used as the basis for your deployment. These models provide examples of
+        pontetial parameters for operational tools and are expected to be used as the starting point
+        for actual deployments. Since each deployment can vary greatly, the disk calculator
+        spreadsheet provides a way to create the basic disk model and customize it to fit the
+        specific parameters your deployment. Once you have estimated disk sizes and chosen a
+        deployment architecture, you can choose which example disk partitioning file to use from the
+        tables below. Keep in mind if you are enabling more options than are listed in the Disk
+        Calculator, or if you want to plan for growth, you will need to manually adjust paramters as
+        necessary.</p>
+        
+        <p>Disk models are provided for each deployment option based on the expected size of the
+        disk available to the control plane nodes. The available space is then partitioned by
+        percentage to be allocated to each of the required volumes on the control plane. Each of the
+        disk models is targeted at a specific set of parameters which can be found in the following
+        tables: <ul>
+          <li><xref href="hardware.dita#disk_calc_entry">Entry Scale:</xref> 600 GB, 1 TB</li>
+          <li><xref href="hardware.dita#disk_calc_Mid">Mid Scale/ Entry Scale MML Servers:</xref> 600 GB, 2 TB, 4.5 TB</li>
+        </ul>
+      </p>
     </section>
+    
+    <section id="disk_calc_entry">
+      <title>Entry Scale Disk Models</title>
+      <p>These models include a single cluster of control plane nodes and all services.</p>
+    
+      <p><b>600 GB Entry Scale</b>
+        <table id="table_disk_matchE6">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="163.5pt"/>
+            <colspec colname="c2" colnum="2" colwidth="277.5pt"/>
+            <thead>
+              <row>
+                <entry>Component</entry>
+                <entry>Parameters</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>compute nodes</entry>
+                <entry>100. This model provides lower than recommended retention and should only be
+                  used for POC deployments.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></p>
+      
+      <p><b>1 TB Entry Scale</b>
+        <table id="table_disk_matchE1">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="156.75pt"/>
+            <colspec colname="c2" colnum="2" colwidth="132pt"/>
+            <thead>
+              <row>
+                <entry>Component</entry>
+                <entry>Parameters</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>compute nodes</entry>
+                <entry>100</entry>
+              </row>
+              <row>
+                <entry>local logging<p>var/log</p></entry>
+                <entry>7 day retention</entry>
+              </row>
+              <row>
+                <entry>metering/monitoring<p>/var/vertica</p></entry>
+                <entry>45 day retention</entry>
+              </row>
+              <row>
+                <entry>centralized logging<p>/var/lib/elasticsearch</p></entry>
+                <entry>7 day retention</entry>
+              </row>
+              <row>
+                <entry>Kafka Message Queue<p>/var/kafka</p></entry>
+                <entry>4 hour retention</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></p>
+      
+    </section>
+    
+    <section id="disk_calc_Mid">
+      <title>MML Disk Models</title>
+      <p>These mid-scale and entry-scale MML models include seperate control plane nodes for core services, metering/monitoring/logging, and MySQL/RabbitMQ. Optionally you can also seperate out Swift (storage) and Neutron (networking). MML servers are the ones that will need modification based on the scale and operational parameters.</p>
+      
+      <p><b>600 GB MML Server</b>
+        <table id="table_disk_matchM6">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="163.5pt"/>
+            <colspec colname="c2" colnum="2" colwidth="277.5pt"/>
+            <thead>
+              <row>
+                <entry>Component</entry>
+                <entry>Parameters</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>compute nodes</entry>
+                <entry>100</entry>
+              </row>
+              <row>
+                <entry>local logging<p>var/log</p></entry>
+                <entry>7 day retention</entry>
+              </row>
+              <row>
+                <entry>metering/monitoring<p>/var/vertica</p></entry>
+                <entry>30 day retention<p>
+                    <note type="caution">45 days is the default minimum.</note>
+                  </p></entry>
+              </row>
+              <row>
+                <entry>centralized logging<p>/var/lib/elasticsearch</p></entry>
+                <entry>7 day retention</entry>
+              </row>
+              <row>
+                <entry>Kafka Message Queue<p>/var/kafka</p></entry>
+                <entry>4 hour retention</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></p>
+      
+      <p><b>2 TB MML Server</b>
+        <table id="table_disk_matchM2T">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="156.75pt"/>
+            <colspec colname="c2" colnum="2" colwidth="132pt"/>
+            <thead>
+              <row>
+                <entry>Component</entry>
+                <entry>Parameters</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>compute nodes</entry>
+                <entry>300</entry>
+              </row>
+              <row>
+                <entry>local logging<p>var/log</p></entry>
+                <entry>7 day retention</entry>
+              </row>
+              <row>
+                <entry>metering/monitoring<p>/var/vertica</p></entry>
+                <entry>45 day retention</entry>
+              </row>
+              <row>
+                <entry>centralized logging<p>/var/lib/elasticsearch</p></entry>
+                <entry>7 day retention</entry>
+              </row>
+              <row>
+                <entry>Kafka Message Queue<p>/var/kafka</p></entry>
+                <entry>12 hour retention</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></p>
+      
+      <p><b>4.5 TB MML Server</b>
+        <table id="table_disk_matchM4T">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="156.75pt"/>
+            <colspec colname="c2" colnum="2" colwidth="132pt"/>
+            <thead>
+              <row>
+                <entry>Component</entry>
+                <entry>Parameters</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>compute nodes</entry>
+                <entry>300</entry>
+              </row>
+              <row>
+                <entry>local logging<p>var/log</p></entry>
+                <entry>7 day retention</entry>
+              </row>
+              <row>
+                <entry>metering/monitoring<p>/var/vertica</p></entry>
+                <entry>45 day retention</entry>
+              </row>
+              <row>
+                <entry>centralized logging<p>/var/lib/elasticsearch</p></entry>
+                <entry>45 day retention</entry>
+              </row>
+              <row>
+                <entry>Kafka Message Queue<p>/var/kafka</p></entry>
+                <entry>12 hour retention</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></p>
+      
+    </section>
+    
     <lines>
   
 </lines>
