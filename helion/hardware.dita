@@ -16,7 +16,8 @@
         <li><xref href="hardware.dita#min_hardware/supported_configs">Supported Hardware
             Configurations</xref></li>
         <li><xref href="hardware.dita#min_hardware/perf_notes">Notes about Performance</xref></li>
-        <li><xref href="hardware.dita#disk_calc">Disk Calculator for Compute-Centric Deployments</xref></li>
+        <li><xref href="hardware.dita#disk_calc">Disk Calculator for Compute-Centric
+            Deployments</xref></li>
         <li><xref href="hardware.dita#min_hardware/min_requirements_kvm">Recommended Minimum
             Hardware Requirements for a KVM model</xref></li>
         <li><xref href="hardware.dita#min_hardware/min_requirements_esx">Recommended Minimum
@@ -59,19 +60,18 @@
       <!--  TODO Check with Ollie about what is not supported for multipath -->
       <!-- https://jira.hpcloud.net/browse/DOCS-3054 -->
       <p id="multipath"><b>Multipath</b></p>
-      
       <sectiondiv id="multipath_hardware">
-      <p><keyword keyref="kw-hos-phrase"/> supports Fibre Channel and FCoE boot from SAN in multipath
-        environments. The following list outlines the current limitations based on testing: </p>
-      <ul>
-        <li><b>Emulex based LPE1605 Native Fibre Channel</b> - Up to 1024 paths during boot</li>
-        <li><b>Qlogic based SN100Q Native Fibre Channel</b> - Up to 1024 paths during boot </li>
-        <li><b>Emulex Flex Fabric 650 series</b> - Up to 1024 paths during boot</li>
-        <li><b>Qlogic Flex Fabric 536 and 630 series</b> - Not yet supported</li>
+        <p><keyword keyref="kw-hos-phrase"/> supports Fibre Channel and FCoE boot from SAN in
+          multipath environments. The following list outlines the current limitations based on
+          testing: </p>
+        <ul>
+          <li><b>Emulex based LPE1605 Native Fibre Channel</b> - Up to 1024 paths during boot</li>
+          <li><b>Qlogic based SN100Q Native Fibre Channel</b> - Up to 1024 paths during boot </li>
+          <li><b>Emulex Flex Fabric 650 series</b> - Up to 1024 paths during boot</li>
+          <li><b>Qlogic Flex Fabric 536 and 630 series</b> - Not yet supported</li>
 
-      </ul>
+        </ul>
       </sectiondiv>
-      
     </section>
 
 
@@ -92,42 +92,48 @@
 
     <section id="disk_calc">
       <title>Disk Calculator for Compute-Centric Deployments</title>
-      
       <p>This topic provides guidance on how to estimate the amount of disk space required for a
         compute-centric Helion OpenStack deployment. To accurately estimate the disk space needed,
         it is important to understand how Helion utilizes resources. Although there are a variety of
         factors, including the number of compute nodes, a large portion of the utilization is driven
         by operational tools, such as monitoring, metering, and logging.</p>
-      
-      <note type="attention">The disk calculator does not accurately estimate a Swift-centric deployment at this time.</note>
-      
-      <p>The usage of disk space by operational tools can be estimated from the following parameters:
-      <ul>
-        <li><b>Number of compute nodes</b> + <b>Number of VM's running on each compute node</b></li>
-        <li><b>Number of services being monitored or metered</b> + <b>Amount of logs created</b></li>
-        <li><b>Retention periods for operational data</b> (for Elastic Search, Vertica/InfluxDB, Kafka, and in the /var/log directory)</li>
-      </ul></p>
-      <note type="attention">If you also enable auditing, you will need to estimate the required disk space and add that manually to any calculations made using the Disk Calculator.</note>
-      
-      <p><b>Disk Estimation Process</b>
-        Helion OpenStack provides entry scale and scale-out models for deployment. This disk estimation tool helps you decide which disk model to start from as well as what customizations you need to meet your deployment requirements. The disk estimation process also provides minimum values by default for the parameters that drive disk size. 
-        <note type="attention">The disk size for Kafka, the message queue, must be given an appropriate amount of disk size. Providing less than the minimum disk size will cause system issues and failures. The default for Kafka is 1 hour which is 17 GB.</note></p>
-      
+      <note type="attention">The disk calculator does not accurately estimate a Swift-centric
+        deployment at this time.</note>
+      <p>The usage of disk space by operational tools can be estimated from the following
+        parameters: <ul>
+          <li><b>Number of compute nodes</b> + <b>Number of VM's running on each compute
+            node</b></li>
+          <li><b>Number of services being monitored or metered</b> + <b>Amount of logs
+            created</b></li>
+          <li><b>Retention periods for operational data</b> (for Elastic Search, Vertica/InfluxDB,
+            Kafka, and in the /var/log directory)</li>
+        </ul></p>
+      <note type="attention">If you also enable auditing, you will need to estimate the required
+        disk space and add that manually to any calculations made using the Disk Calculator.</note>
+      <p><b>Disk Estimation Process</b> Helion OpenStack provides entry scale and scale-out models
+        for deployment. This disk estimation tool helps you decide which disk model to start from as
+        well as what customizations you need to meet your deployment requirements. The disk
+        estimation process also provides minimum values by default for the parameters that drive
+        disk size. <note type="attention">The disk size for Kafka, the message queue, must be given
+          an appropriate amount of disk size. Providing less than the minimum disk size will cause
+          system issues and failures. The default for Kafka is 1 hour which is 17 GB.</note></p>
       <p><b>To estimate the disk sizes required for your deployment:</b></p>
       <ol>
         <li><xref href="hardware.dita#disk_calc_input">Enter input parameters.</xref></li>
-        <li><xref href="hardware.dita#disk_calc_select">Select the deployment model you want to support based on the calculations.</xref></li>
-        <li><xref href="hardware.dita#disk_calc_match">Match the selected deployment to a disk model example.</xref></li>
+        <li><xref href="hardware.dita#disk_calc_select">Select the deployment model you want to
+            support based on the calculations.</xref></li>
+        <li><xref href="hardware.dita#disk_calc_match">Match the selected deployment to a disk model
+            example.</xref></li>
       </ol>
     </section>
-    
+
     <section id="disk_calc_input">
       <title>Enter Input Parameters</title>The Disk Calculator automatically displays the minimum
       requirements for the components that define disk size. You can replace the default values with
-      either the number you have to work with or the number that you want to support.
-      <note type="attention">If you want to enable audit logging, follow the steps in the Audit Logging Adjustment section to enter additional input parameters.</note>
-      <table
-        id="table_disk_calc_input">
+      either the number you have to work with or the number that you want to support. <note
+        type="attention">If you want to enable audit logging, follow the steps in the Audit Logging
+        Adjustment section to enter additional input parameters.</note>
+      <table id="table_disk_calc_input">
         <tgroup cols="2">
           <colspec colname="c1" colnum="1"/>
           <colspec colname="c2" colnum="2"/>
@@ -196,7 +202,7 @@
         <li>To set a value for Audit logging file retention, replace the default in the <b>Audit
             Retention Period</b> field.</li>
       </ol> To include auditing in your estimation:</section>
-    
+
     <section>
       <title>Audit Logging Adjustment</title>
       <p>If you want to enable audit logging, you must enter additional input parameters to ensure
@@ -208,28 +214,28 @@
         <li>To set the Number of Services on Cluster, enter a value in the API/Core Services,
           Neutron, Swift, MMLB and MySQL/RabbitMQ fields.</li>
         <li>To set the required disk space for each of these services, you must add a value in GB
-          for each directory used in the Filesystem column. 
-          <p>For example, the API/Core Services only
-          use the default directory, the var/crash directory, and the var/log directory so those
-          fields have the following values in the diagram: 60 GB, 64 GB, and 92 GB.</p></li>
+          for each directory used in the Filesystem column. <p>For example, the API/Core Services
+            only use the default directory, the var/crash directory, and the var/log directory so
+            those fields have the following values in the diagram: 60 GB, 64 GB, and 92 GB.</p></li>
       </ol>
     </section>
-    
+
     <section id="disk_calc_select">
       <title>Select the Deployment Model</title>
     </section>
-    
+
     <section id="disk_calc_match">
       <title>Match to a Disk Model</title>
     </section>
-<lines>
+    <lines>
   
 </lines>
     <section id="min_requirements_kvm">
       <title>Recommended Minimum Hardware Requirements for a KVM model</title>
-      <p>These recommended minimums are based on the included Example Configurations included with the base installation and are suitable only
-        for demo environments. For production systems you will want to consider your capacity and
-        performance requirements when making decisions about your hardware.</p>
+      <p>These recommended minimums are based on the included Example Configurations included with
+        the base installation and are suitable only for demo environments. For production systems
+        you will want to consider your capacity and performance requirements when making decisions
+        about your hardware.</p>
       <note>The disk requirements detailed below can be met with logical drives, logical volumes, or
         external storage such as a 3PAR array.</note>
       <table>
@@ -329,89 +335,74 @@
         performance requirements when making decisions about your hardware.</p>
       <p><ph conkeyref="HOS-conrefs/product-title"/> currently supports the following:</p>
       <ul>
-        <li>ESXi version 5.5 (Update 1 and Update 2)</li>
-        <li>ESXi version 6</li>
+        <li>ESXi version 5.5 (Update 3)</li>
+        <li>ESXi version 6.0</li>
+        <li>ESXi version 6.0 (Update 1b)</li>
       </ul>
-      <table id="table_ixh_np2_dt">
-        <tgroup cols="5">
+      <table>
+        <tgroup cols="8">
           <colspec colname="c1" colnum="1"/>
           <colspec colname="c2" colnum="2"/>
           <colspec colname="c3" colnum="3"/>
           <colspec colname="c4" colnum="4"/>
           <colspec colname="c5" colnum="5"/>
-          <thead>
+          <colspec colname="c6" colnum="6"/>
+          <colspec colname="c7" colnum="7"/>
+          <colspec colname="c8" colnum="8"/>
+          <thead id="esx">
             <row>
-              <entry>Node Type</entry>
-              <entry>Role Name</entry>
-              <entry>Required Number</entry>
-              <entry>Server Hardware</entry>
-              <entry>Minimum Requirements and Recommendations</entry>
+              <entry morerows="1">Node Type</entry>
+              <entry morerows="1">Role Name</entry>
+              <entry morerows="1">Required Number</entry>
+              <entry namest="c4" nameend="c7" align="center">Server Hardware - Minimum Requirements
+                and Recommendations</entry>
+
             </row>
+            <row>
+              <entry>Disk </entry>
+              <entry>Memory</entry>
+              <entry>Network</entry>
+              <entry>CPU </entry>
+            </row>
+
           </thead>
           <tbody>
-            <row>
-              <entry morerows="3">Dedicated lifecycle manager (optional, the default configuration
-                uses the first controller node as the lifecycle manager)</entry>
-              <entry morerows="3">Lifecycle-manager</entry>
-              <entry morerows="3">1</entry>
-              <entry>Disk </entry>
+            <row id="esx_row_deployer">
+              <entry>Dedicated lifecycle manager (optional)</entry>
+              <entry>Lifecycle-manager</entry>
+              <entry>1</entry>
+
               <entry>300 GB</entry>
-            </row>
-            <row>
-              <entry>Memory</entry>
               <entry>8 GB</entry>
-            </row>
-            <row>
-              <entry>Network</entry>
               <entry>1 x 10 GB with PXE Support</entry>
-            </row>
-            <row>
-              <entry>CPU </entry>
               <entry>8 CPU (64-bit) cores total (can be Intel or AMD)</entry>
             </row>
-            <row>
-              <entry morerows="3">Control Plane</entry>
-              <entry morerows="3">Controller</entry>
-              <entry morerows="3">3</entry>
-              <entry>Disk</entry>
+
+            <row id="esx_row_control_plane">
+              <entry>Control Plane</entry>
+              <entry>Controller</entry>
+              <entry>3</entry>
               <entry>
                 <ul>
                   <li>1 x 600 GB (minimum) - operating system drive</li>
                   <li>2 x 600 GB (minimum) - Data drive</li>
                 </ul>
               </entry>
-            </row>
-            <row>
-              <entry>Memory</entry>
               <entry>64 GB</entry>
-            </row>
-            <row>
-              <entry>Network</entry>
               <entry>2 x 10 GB with one PXE enabled NIC port</entry>
-            </row>
-            <row>
-              <entry>CPU </entry>
               <entry>8 CPU (64-bit) cores total (can be Intel or AMD)</entry>
             </row>
-            <row>
-              <entry morerows="3">Compute</entry>
-              <entry morerows="3">1 vCenter with 2 ESX nodes under one cluster</entry>
-              <entry morerows="3">2</entry>
-              <entry>Disk</entry>
+
+            <row id="esx_row_compute">
+              <entry>Compute</entry>
+              <entry>1 vCenter with 2 ESX nodes under one cluster</entry>
+              <entry>2</entry>
               <entry>2 X 1 TB (minimum, shared across all nodes)</entry>
-            </row>
-            <row>
-              <entry>Memory</entry>
-              <entry>128 GB (minimum, shared across all nodes)</entry>
-            </row>
-            <row>
-              <entry>Network</entry>
+              <entry>128 GB (minimum)</entry>
               <entry>2 x 10 GB with one PXE enabled NIC port</entry>
-            </row>
-            <row>
-              <entry>CPU </entry>
               <entry>16 CPU (64-bit) cores total (can be Intel or AMD)</entry>
             </row>
+
           </tbody>
         </tgroup>
       </table>
