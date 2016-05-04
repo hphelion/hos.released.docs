@@ -83,8 +83,8 @@
           distinguishable names such as MyCompanyXYZ_PrivateRootCA.crt). </li>
         <li>You should not remove any existing CA files from config/tls/cacerts </li>
         <li>If you want to remove an existing CA you must <ol>
-            <li>First remove the file </li>
-            <li>Then run
+            <li>First remove the file. </li>
+            <li>Then run:
               <codeblock>ansible -i hosts/verb_hosts FND-STN -a 'sudo keytool -delete -alias debian:&lt;filename to remove> \
 -keystore /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/security/cacerts -storepass changeit'</codeblock></li>
           </ol></li>
@@ -119,7 +119,7 @@
         # cert-file: customer-provided-internal-cert
         # replace this with name of file in "config/tls/certs/"</codeblock>The
       configuration processor will also create a request template for each named certificate under
-        <codeph>info/cert_reqs/</codeph> This will be of the form
+        <codeph>info/cert_reqs/</codeph> This will be of the form:
       <codeblock>info/cert_reqs/customer-provided-internal-cert</codeblock></section>
     <section>These request templates contain the subject <codeph>Alt-names</codeph> that the
       certificates need. You can add to this template before generating your certificate signing
@@ -430,7 +430,7 @@ openssl ca -batch -notext -md sha256 -in "$EXAMPLE_SERVER_CSR_FILE" \
       configuration processor. </section>
     <section><title>Upload to the lifecycle manager</title><p>The following two files created from
         the example run above will need to be uploaded to the lifecycle manager and copied into
-          <codeph>config/tls.</codeph></p><ul id="ul_zcc_v1c_5v">
+          <codeph>config/tls</codeph>:</p><ul id="ul_zcc_v1c_5v">
         <li>example-internal-cert</li>
         <li>example-CA.crt</li>
       </ul><p>Once on the lifecycle manager, execute the following two copy commands to copy to
@@ -446,18 +446,17 @@ cp example-CA.crt ~/helion/my_cloud/config/tls/cacerts/</codeblock><b>Continue
 git add -A
 git commit -m "updated certificate and CA"</codeblock>Next,
       rerun the <codeph>config-processor-run</codeph> playbook, and run
-        <codeph>ready-deployment.yml</codeph>
-      <codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml
+        <codeph>ready-deployment.yml</codeph>:<codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>If
       you receive any prompts, enter the required information. <note>For automated installation
         (e.g. CI) you can specify the required passwords on the Ansible command line. For example,
-        the command below will disable encryption by the configuration processor
+        the command below will disable encryption by the configuration processor:
         <codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""</codeblock></note>Then
       change directories:<codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock>Then stop and
-      start HA proxy to make sure it is notified of the changes
+      start HA proxy to make sure it is notified of the changes:
       <!--to be fixed in next version. https://jira.hpcloud.net/browse/HLM-3779  and 3780--><codeblock>ansible-playbook -i hosts/verb_hosts FND-CLU-stop.yml
 ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml</codeblock>Run
-      hlm-reconfigure.yml<codeblock>ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
+      hlm-reconfigure.yml:<codeblock>ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
     </section> 
     
     <section id="configure_cipher">
@@ -526,8 +525,8 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Change
       <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml </codeblock>Note:
       If you run into issues with hlm-reconfigure, and the only change you made was to TLS, then run
-      the following after the failed hlm-reconfigure.
-      <codeblock>ansible-playbook -i hosts/verb_hosts _tls-endpoint-reconfigure.yml</codeblock>
+      the following after the failed
+      hlm-reconfigure:<codeblock>ansible-playbook -i hosts/verb_hosts _tls-endpoint-reconfigure.yml</codeblock>
     </section>
   </body>
 </topic>
