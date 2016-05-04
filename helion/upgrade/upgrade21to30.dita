@@ -86,6 +86,15 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
 
     <section id="upgradesteps"><title>Upgrade Instructions</title>
       <ol>
+        <li>Get status of all your services, if desired <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
+          <p>If status comes back bad for any service, run the service reconfigure playbook, with
+            naming convention <codeph>&lt;service>-reconfigure.yml</codeph>, for that service, then
+            run the status playbook for that service and see if the issue is resolved.</p>
+          <p>The status playbooks have this naming convention:</p>
+          <codeblock>&lt;service>-status.yml</codeblock>
+          <p>A full list is included at the end of this document.</p></li>
+        
         <li>Sign in and download the <keyword keyref="kw-hos-phrase-30"/> product and signature
           files at the links below: <ol>
             <li><xref
@@ -131,14 +140,7 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock><p><!--Removed step to comment out eon-upgrade.yml, per DOCS-2938--></p></li>
 
 
-        <li>Get status of all your services, if desired <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
-          <p>If status comes back bad for any service, run the service reconfigure playbook, with
-            naming convention <codeph>&lt;service>-reconfigure.yml</codeph>, for that service, then
-            run the status playbook for that service and see if the issue is resolved.</p>
-          <p>The status playbooks have this naming convention:</p>
-          <codeblock>&lt;service>-status.yml</codeblock>
-          <p>A full list is included at the end of this document.</p></li>
+
         <li>Run the upgrade playbook (required for all models/deployments): <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock>
           <!--<note>You will see an Ansible code style warning: [WARNING]: It is unnecessary to use '{{'
