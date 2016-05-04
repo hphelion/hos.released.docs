@@ -100,7 +100,28 @@ clusters:
   mac-addr: "d9:92:1c:25:69:e0"
   ilo-ip: 10.12.8.219
   ilo-password: password
-  ilo-user: admin</codeblock></li>
+  ilo-user: admin
+
+# Ceph RGW Nodes
+- id: rgw1
+  ip-addr: 192.168.10.12
+  role: RGW-ROLE
+  server-group: RACK1
+  nic-mapping: MY-2PORT-SERVER
+  mac-addr: "8b:f6:9e:ca:3b:62"
+  ilo-ip: 192.168.9.12
+  ilo-password: password
+  ilo-user: admin
+
+- id: rgw2
+  ip-addr: 192.168.10.13
+  role: RGW-ROLE
+  server-group: RACK2
+  nic-mapping: MY-2PORT-SERVER
+  mac-addr: "8b:f6:9e:ca:3b:63"
+  ilo-ip: 192.168.9.13
+  ilo-password: password
+  ilo-user: admin </codeblock></li>
                 <li>Edit the <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph>
                     file to define a new network interface set for your Ceph monitors. You can copy
                     the <codeph>RGW-INTERFACES</codeph> model as a base and then edit it to match
@@ -123,7 +144,26 @@ clusters:
             - name: hed1
             - name: hed2
       network-groups:
-        - MANAGEMENT</codeblock></li>
+        - MANAGEMENT
+
+- name: RGW-INTERFACES
+  network-interfaces:
+    - name: BOND0
+      device:
+        name: bond0
+      bond-data:
+         options:
+             mode: active-backup
+             miimon: 200
+             primary: hed3
+         provider: linux
+             devices:
+                - name: hed3
+                - name: hed4
+         network-groups:
+            - MANAGEMENT
+            - OSD-CLIENT
+</codeblock></li>
                 <li>Create a new file named <codeph>disks_ceph_monitor.yml</codeph> in the
                         <codeph>~/helion/my_cloud/definition/data/</codeph> directory which will
                     define the disk model for your Ceph monitors. You can use the
