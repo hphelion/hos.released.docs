@@ -245,6 +245,22 @@ ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock>
             </p>
         </section>
         
+        <section>
+            <title>SOSReport error during data collection</title>
+            <!-- HLX-1836 -->
+            <p>In rare instances when issuing command 
+                <codeph>ansible-playbook -i hosts/verb_hosts sosreport-run.yml</codeph> from the 
+                lifecycle manager, one of the nodes may list an error about not being able to collect data. 
+                If this issue occurs, ssh to the node that is experiencing the problem. Once on the node, 
+                attempt to run <codeph>sudo sosreport -v</codeph>. If sosreport fails to complete 
+                gathering, record what is shown on the screen. A reboot of the affected node will clear 
+                the error condition. The exact messages last shown on screen on local run was:
+                <codeblock>Running 64/87: openvswitch... 
+[plugin:openvswitch] unpacked command tuple: ('ovs-dpctl -s show', 'None', 'None', 300, 'None')
+*[plugin:openvswitch] collecting output of 'ovs-dpctl -s show' *</codeblock>
+            </p>
+        </section>
+        
         <section id="DOCS-2555">
             <title>Change to Monasca Monitoring Roles in Keystone</title>
             <p>In Helion OpenStack version 2.x, the keystone role for submitting cross-tenant metrics was called  'monasca-agent'. In HOS 3.0, the keystone role for submitting cross-tenant metrics is now called 'monitoring-delegate'. Any user who submits cross-tenant metrics without the 'monitoring-delegate' role will now receive a '403 Forbidden' http response.</p>
@@ -390,5 +406,11 @@ ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not 
             </p>
         </section>
         
+        <section>
+            <title>Security groups in an ESX Cloud</title>
+            <!-- VNETEE-769 & HLX-1711 per Alok Kumar Maurya -->
+            <p>You cannot have more than 400 virtual machines per security group
+            in an ESX cloud.</p>
+        </section>
     </body>
 </topic>
