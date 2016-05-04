@@ -138,20 +138,42 @@ ansible-playbook -i hosts/verb_hosts site.yml
           "messagingv2"
           <codeblock> ...
             
-            # Oslo messaging 
-            notification_driver = log
+ # Oslo messaging 
+ notification_driver = log
             
-            #  Note: 
-            #  If the infoblox-ipam-agent is to be deployed in the cloud, change the 
-            #  notification_driver settting from "messaging" to "messagingv2". 
-            notification_driver = messagingv2
-            notification_topics = notifications
+ #  Note: 
+ #  If the infoblox-ipam-agent is to be deployed in the cloud, change the 
+ #  notification_driver settting from "messaging" to "messagingv2". 
+ notification_driver = messagingv2
+ notification_topics = notifications
             
-            # Policy 
-            ...</codeblock>
+ # Policy 
+ ...</codeblock>
         </li>
-        <li>Commit the changes</li>
+        <!--<li>Commit the changes</li>
       </ol></section>
+    
+   <section><title>Setting up Neutron to use the Infoblox IPAM driver</title>
+    <ol>
+    <li>Edit ~stack/helion/my_cloud//definition/data/control_plane.yml as described above.
+    
+    </li><li>Edit ~stack/helion/my_cloud/config/neutron/neutron.conf.j2 as described above
+    
+    </li><li>Edit ~stack/helion/my_cloud/config/nova/nova.conf.j2 as described above
+    
+    </li>-->
+      <li>Commit the changes:
+          <codeblock>cd ~/helion/my_cloud
+git commit –a –m 'My config for enabling the Infoblox IPAM driver'</codeblock>
+        </li><li>Deploy the cloud with the changes. Due to changes to the control_plane.yml, we need to rerun the
+          config-processor-run.yml playbook/
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml;
+ansible-playbook -i hosts/localhost ready-deployment.yml;
+cd ~/scratch/ansible/next/hos/ansible;
+ansible-playbook -i hosts/verb_hosts site.yml;</codeblock>
+        </li></ol></section>
+    
     <section><title>Configuration parameters for using the Infoblox IPAM driver </title><p/>Changes
       required in the notification parameters in nova.conf: <table id="table_rzp_xwp_mv">
         <tgroup cols="5">
@@ -165,7 +187,7 @@ ansible-playbook -i hosts/verb_hosts site.yml
               <entry>Parameter Name</entry>
               <entry>Section in nova.conf</entry>
               <entry>Default Value</entry>
-              <entry>Current Value in HOS</entry>
+              <entry>Current Value </entry>
               <entry>Description</entry>
             </row>
           </thead>
@@ -218,7 +240,7 @@ ansible-playbook -i hosts/verb_hosts site.yml
               <entry>Parameter Name</entry>
               <entry>Section in neutron.conf</entry>
               <entry>Default Value</entry>
-              <entry>Current Value in HOS</entry>
+              <entry>Current Value </entry>
               <entry>Description</entry>
             </row>
           </thead>
@@ -254,7 +276,7 @@ ansible-playbook -i hosts/verb_hosts site.yml
               <entry>None</entry>
               <entry>notifications</entry>
               <entry>
-                <p><b>No change needed for HOS</b>.</p>
+                <p><b>No change needed</b>.</p>
                 <p>The row is here show the changes in the Neutron parameters described in the
                   installation guilde for networking-infoblox</p>
               </entry>
@@ -355,8 +377,8 @@ ansible-playbook -i hosts/verb_hosts site.yml
             href="https://bugs.launchpad.net/neutron/+bug/1516156" format="html" scope="external"
             >https://bugs.launchpad.net/neutron/+bug/1516156</xref>). This means there no way to
           automatically reconfigure the neutron database if you decide to change neutron to use a
-          pluggable IPAM driver. Currently, Neutron in HOS by default uses the non-pluggable IPAM
-          configuration. </li>
+          pluggable IPAM driver. Currently, Neutron in HPE Helion OpenStack by default uses the
+          non-pluggable IPAM configuration. </li>
         <li>Upgrade from previous versions of HPE Helion OpenStack to <keyword
             keyref="kw-hos-phrase"/> using any pluggable IPAM driver is not supported.</li>
         <li> Recofiguration from <keyword keyref="kw-hos-phrase"/> using non-pluggable IPAM

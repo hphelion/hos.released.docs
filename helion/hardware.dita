@@ -113,10 +113,11 @@
         </ul></p>
       <note type="attention">If you also enable auditing, you will need to estimate the required
         disk space and add that manually to any calculations made using the Disk Calculator.</note>
+     
       <p><b>Disk Estimation Process</b> Helion OpenStack provides entry scale and scale-out models
-        for deployment. This disk estimation tool helps you decide which disk model to start from as
+        for deployment. This disk estimation tool, currently in a spreadsheet form, helps you decide which disk model to start from as
         well as what customizations you need to meet your deployment requirements. The disk
-        estimation process also provides minimum values by default for the parameters that drive
+        estimation process also provides default setting and minimum values for the parameters that drive
         disk size. <note type="attention">The disk size for Kafka, the message queue, must be given
           an appropriate amount of disk size. Providing less than the minimum disk size will cause
           system issues and failures. The default for Kafka is 1 hour which is 17 GB.</note></p>
@@ -131,61 +132,72 @@
     </section>
 
     <section id="disk_calc_input">
-      <title>Enter Input Parameters</title>The Disk Calculator automatically displays the minimum
-      requirements for the components that define disk size. You can replace the default values with
-      either the number you have to work with or the number that you want to support. <note
-        type="attention">If you want to enable audit logging, follow the steps in the Audit Logging
-        Adjustment section to enter additional input parameters.</note>
+      <title>Enter Input Parameters</title> The Disk Calculator spreadsheet automatically displays
+      the minimum requirements for the components that define disk size. You can replace the default
+      values with either the number you have to work with or the number that you want to support.
+        <note type="attention">If you want to enable audit logging, follow the steps in the Audit
+        Logging Adjustment section to enter additional input parameters.</note>
       <table id="table_disk_calc_input">
-        <tgroup cols="2">
+        <tgroup cols="3">
           <colspec colname="c1" colnum="1"/>
           <colspec colname="c2" colnum="2"/>
+          <colspec colname="c3" colnum="3"/>
           <thead>
             <row>
               <entry>Input Parameter</entry>
               <entry>Default</entry>
+              <entry>Minimum</entry>
             </row>
           </thead>
           <tbody>
             <row>
               <entry>System Memory</entry>
               <entry>64 GB</entry>
+              <entry>64 GB</entry>
             </row>
             <row>
               <entry>Compute Nodes</entry>
+              <entry>100</entry>
               <entry>100</entry>
             </row>
             <row>
               <entry>VMs per Compute Node</entry>
               <entry>40</entry>
+              <entry>40</entry>
             </row>
             <row>
               <entry>Component: Vertica</entry>
               <entry>45 days retention period</entry>
+              <entry>30 days</entry>
             </row>
             <row>
               <entry>Component: Logging</entry>
               <entry>22 services covered <p>7 days retention period</p></entry>
+              <entry><p> </p>7 days retention period</entry>
             </row>
             <row>
-              <entry>Component: Kafka</entry>
+              <entry>Component: Kafka (message queue)</entry>
               <entry>0.17 of an hour retention period</entry>
+              <entry>0.042 of an hour retention period</entry>
             </row>
             <row>
-              <entry>Component: Elastic Search</entry>
+              <entry>Component: Elastic Search (log storage)</entry>
+              <entry>7 days retention period</entry>
               <entry>7 days retention period</entry>
             </row>
             <row>
               <entry>Component: Audit</entry>
               <entry>0 days retention period</entry>
+              <entry>0 days retention period</entry>
             </row>
           </tbody>
         </tgroup>
-      </table> The following diagram shows the input parameters in the calculator. <p>
+      </table> The following diagram shows the input parameters in the spreadsheet. <p>
         <image href="../media/DiskCalc1.png" placement="break"/>
       </p>
       <p>To provide the paramters required to estimate disk size:</p><ol>
-        <li><xref href="../hos-html/diskCalcGood.html" format="html">Open the disk calculator.</xref></li>
+        <li><xref href="../resources/Disk_Calculator_Spreadsheet.xlsx">Open the disk calculator
+            spreadsheet.</xref></li>
         <li> To set the server RAM size, replace the default value in the <b>System Memory</b>
           field.</li>
         <li>To set the number of compute nodes, replace the default in the <b>Compute Nodes</b>
@@ -204,13 +216,13 @@
             <b>Elastic Search Retention Period</b> field.</li>
         <li>To set a value for Audit logging file retention, replace the default in the <b>Audit
             Retention Period</b> field.</li>
-      </ol> To include auditing in your estimation:</section>
+      </ol></section>
 
     <section>
       <title>Audit Logging Adjustment</title>
       <p>If you want to enable audit logging, you must enter additional input parameters to ensure
         there is enough room to retain the audit logs. The following diagram shows the parameters
-        you need to specify in the Disk Calculation Tool.</p>
+        you need to specify in the Disk Calculator spreadsheet.</p>
       <image href="../media/DiskCalc2.png" placement="break"/>
       <p>To add audit logging to disk size calculations:</p>
       <ol>
@@ -225,6 +237,21 @@
 
     <section id="disk_calc_select">
       <title>Select the Deployment Model</title>
+      <p>To decide which architecture to deploy in order to meet all of your requirements, use the
+        values given in the Disk Calculator spreadsheet. Keeping in mind the rough scale you expect
+        to target as well as any need to separate services, choose an Entry Scale, Entry Scale MML,
+        or Mid Scale deployment. Once you have chosen a deployment you can match it to the sample
+        disk models in the Match to a Disk Model section. The following diagram shows the deployment
+        options that are recommended if you use the default values in the Disk Calculator
+        spreadsheet. <image href="../media/DiskCalc4.png" placement="break"/></p> For example, in
+      the above diagram, if you wanted to choose an Entry Scale MML deployment, the calculator
+      recommends the following disk sizes: <ul>
+        <li>216 GB for API/Core Service</li>
+        <li>216 GB for Neutron (networking)</li>
+        <li>216 GB for Swift (storage)</li>
+        <li>573 GB for MMLB</li>
+        <li>252 GB for MySQL/RabbitMQ</li>
+      </ul>
     </section>
 
     <section id="disk_calc_match">
