@@ -39,10 +39,55 @@
             
             <p>For an introduction to using the online Disk sizing tool, see <xref keyref="hardware/disk_calc">Disk Calculator for Compute-Centric Deployments</xref>.
                 
-                Unfortunately, it is currently not possible to use the online version of the tool for determining
+                Unfortunately, it is not currently possible to use the online version of the tool for determining
                 disk sizing requirements in the Upgrade scenario. You will need to download the corresponding 
                 Excel Spreadsheet and use the <codeph>retention</codeph> tab for calculating the extra disk space you 
                 will need after upgrade to <keyword keyref="kw-hos-phrase"/>.
+            </p>
+            
+        </section>
+        
+        <section>
+            <title>Adding Disks to an Existing Volume Group</title>
+            
+            <p>If the tool has recommnended adding more disk space to one or more volumes, this has to be done using standard Linux Logical 
+                Volume Group manager tool. While the lifecycle manager supports adding a new volume group, 
+                adding disks to an existing volume group is not supported. </p>
+            
+            <p>The steps to add more storage to the existing volumes are as follows:</p>
+            
+            <ol>
+                <li><codeph>ssh</codeph> to each controller or compute node</li>
+                <li>Add a disk with recommended size to each controller or compute node following instructions from the manufacturer.</li>
+                <li>Determine the device path to the disk using <codeph>lsblk</codeph> - for example <codeph>/dev/sdf</codeph></li>
+                <li>Create a physical volume using the disk:
+                <codeblock>sudo pvcreate /dev/sdf</codeblock>
+                </li>
+                <li>Extend the primary <codeph>hlm-vg</codeph> volume group with the newly added physical volume:
+                <codeblock>sudo vgextend hlm-vg /dev/sdf</codeblock>
+                </li>
+                <li>Add the desired amount of storage to the volume. For example, to add 10GB of additional storage to the volume <codeph>/var/log</codeph> :
+                <codeblock>sudo lvextend -r -L+10G /dev/hlm-vg/log</codeblock>
+                    This should increase the size of <codeph>/var/log</codeph> by 10G and automatically resize the filesystem partition.
+                </li>
+                <li>Verify that the volume has increased storage now by running the command <codeph>df -h</codeph></li>
+                <li>Repeat steps 4 thru 7 for the other desired volumes.</li>
+            </ol>
+            
+            <note type="important">	
+                Once the disk allocation for one or more volumes is changed, it may impact the disk space assumptions made by services using the volume(s). 
+                You should be sure to update the service configuration files to reflect the change.</note>
+            
+        </section>
+        
+        <section>
+            <title>Update Configuration Files with New Disk Sizing</title>
+            
+            <p>The lifecycle manager has no knowledge of the disk size changes you have implemented in the preceding steps. 
+            You should update the input model files to take into account the new storage and any changes in the relative sizes 
+            allocated to different services. If you do not update the model and need to reconfigure your system in the future, for example if a node fails
+            and you need to restore it, the lifecycle manager will use the original settings and you will have to re-do the changes again.
+         
             </p>
             
         </section>
