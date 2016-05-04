@@ -122,13 +122,20 @@ ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codebloc
       <title outputclass="headerH">Installing Ceph and RADOS</title>
       <sectiondiv outputclass="insideSection">
         <p>In <keyword keyref="kw-hos-tm"/>, the Ceph is installed on two dedicated cluster nodes
-          servers. You can install the RADOS Gateway on the cluster node(s) hosting the Ceph Monitor
-          service or on the <keyword keyref="kw-hos-tm"/> controller nodes. For information on these
-          alternate installation scenarios, see <xref href="#config_ceph/alternate" format="dita"/>
-          before starting the installation.</p>
+          servers. For the default deployment, follow the steps below, starting with <b>Edit Your
+            Ceph Environment Input Files</b>.</p>
+        <p>Alternatively, you can install the RADOS Gateway in other configurations:</p>
         <p>
-          <note> Both of these alternate configurations would lead to a sub-optimal
-            performance.</note>
+          <ul>
+            <li>On (dedicated) cluster node(s) that host Ceph Monitor service</li>
+            <li>On the <keyword keyref="kw-hos-tm"/> controller nodes</li>
+            <li>More than two RADOS Gateway servers</li>
+          </ul>
+        </p>
+        <p><b>Before starting the installation</b>, see <xref href="#config_ceph/alternate"
+            format="dita"/> for information on these alternate installation scenarios.</p>
+        <p>
+          <note> These alternate configurations will lead to a sub-optimal performance.</note>
         </p>
       </sectiondiv>
       <sectiondiv outputclass="insideSection" id="config_files"><b>Edit Your Ceph Environment Input
@@ -754,21 +761,20 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
       <sectiondiv outputclass="insideSection"> The RADOS Gateway service can also be co-hosted along
         with other <keyword keyref="kw-hos-tm"/> services as listed in the following alternatives
         below. <ul id="ul_wmx_w22_sv">
-          <li>Installing RADOS Gateway on (dedicated) cluster node(s) that host Ceph Monitor
-            service</li>
-          <li>Installing RADOS Gateway on controller nodes</li>
+          <li><xref href="#config_ceph/dedicated" format="dita">Installing RADOS Gateway on
+              (dedicated) cluster node(s) that host Ceph Monitor service</xref></li>
+          <li><xref href="#config_ceph/controller" format="dita">Installing RADOS Gateway on
+              controller nodes</xref></li>
+          <li><xref href="#config_ceph/multi-nodes" format="dita">Installing more than two RADOS
+              Gateway servers</xref></li>
         </ul><p>
           <note>Because the RADOS Gateway service will be sharing server resources with multiple
             services, these alternate configurations will likely result in sub-optimal performance,
             as compared to the default configuration.</note>
-        </p><p>Each of this requires corresponding change in input model es explained
-        below.</p></sectiondiv>
-    </section>
-    <section>
-      <sectiondiv outputclass="insideSection"><b>Installing RADOS Gateway on (dedicated) cluster
-          node(s) that host Ceph Monitor service</b><p>The RADOS Gateway can be configured to
-          install on dedicated cluster node(s) hosting the Ceph Monitor service as follows:</p><ol
-          id="ol_hfp_q22_sv">
+        </p><p>Each of this requires corresponding change in input model es explained below.</p><p
+          id="dedicated"><b>Installing RADOS Gateway on (dedicated) cluster node(s) that host Ceph
+            Monitor service</b></p><p>The RADOS Gateway can be configured to install on dedicated
+          cluster node(s) hosting the Ceph Monitor service as follows:</p><ol id="ol_hfp_q22_sv">
           <li>Remove the sections for servers in
               <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file having
               <codeph>role: RGW-ROLE</codeph> attribute.</li>
@@ -797,9 +803,9 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
        network-groups: 
          - MANAGEMENT 
          - OSD-CLIENT</codeblock></li>
-        </ol><b>Installing RADOS Gateway on controller nodes</b><p>The RADOS Gateway can be
-          configured to install on the controller nodes. The steps outlined below need to be
-          performed to achieve this:</p><ol id="ol_kfp_q22_sv">
+        </ol><p id="controller"><b>Installing RADOS Gateway on controller nodes</b></p><p>The RADOS
+          Gateway can be configured to install on the controller nodes. The steps outlined below
+          need to be performed to achieve this:</p><ol id="ol_kfp_q22_sv">
           <li>Remove the sections for servers in
               <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file having
               <codeph>role: RGW-ROLE</codeph> attribute.</li>
@@ -827,8 +833,8 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
             add the following line to the <codeph>service-components</codeph> for the cluster with
             the <codeph>server-role: CONTROLLER-ROLE</codeph>
             attribute.<codeblock>- ceph-radosgw</codeblock></li>
-        </ol><p><b>Installing more than 2 RADOS Gateway servers</b></p><p>To deploy more than RADOS
-          Gateway servers, you need to add a section to the
+        </ol><p id="multi-nodes"><b>Installing more than two RADOS Gateway servers</b></p><p>To
+          deploy more than RADOS Gateway servers, you need to add a section to the
             <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file for each additional
           RADOS Gateway node.</p><note>Installing additional RADOS Gateway servers is possible only
           if the RADOS Gateway is installed on dedicated cluster nodes or on dedicated cluster nodes
