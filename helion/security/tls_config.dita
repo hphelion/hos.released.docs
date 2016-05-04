@@ -76,15 +76,19 @@
         certificate would then be called "example-CA.crt" and the key would be called
         "example-CA.key." In the following examples, the external VIP certificate will be named
         "example-public-cert" and the internal VIP certificate will be named
-        "example-internal-cert."</p><note>Cautions:</note> When using your own CA: <ul>
+        "example-internal-cert."</p><note>Cautions:</note>
+      Any time you make a cert change, 
+      
+      
+      When using your own CA: <ul>
         <li>You should use a distinct name from those already existing in config/tls/cacerts. This
           also means that you should not <i>reuse</i> your CA names (and use unique and
           distinguishable names such as MyCompanyXYZ_PrivateRootCA.crt). </li>
         <li>You should not remove any existing CA files from config/tls/cacerts </li>
         <li>If you want to remove an existing CA from HOS you must <ol>
-            <li>First remove the file</li>
+            <li>First remove the file </li>
             <li>Then run
-              <codeblock>ansible -i hosts/verb_hosts FND-STN -a 'sudo keytool -delete -alias debian:&lt;filename to remove from Helion> /
+              <codeblock>ansible -i hosts/verb_hosts FND-STN -a 'sudo keytool -delete -alias debian:&lt;filename to remove from Helion> \
 -keystore /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/security/cacerts -storepass changeit'</codeblock></li>
           </ol></li>
       </ul>
@@ -190,7 +194,7 @@
  - public
  cert-file: example-public-cert #&lt;&lt;&lt;-------- Certificate name for the external VIP</codeblock>Commit
       your changes to the local git repository and run the configuration processor:
-      <codeblock>cd ~/helion
+      <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "changed VIP certificates"
 cd ~/helion/hos/ansible/
@@ -295,7 +299,7 @@ IP.1 = "192.168.245.5"
       <p>Now that you have a CA and a certificate request file, it's time to generate a CSR.</p>
       <codeblock>export EXAMPLE_SERVER_KEY_FILE='example-internal-cert.key'
 export EXAMPLE_SERVER_CSR_FILE='example-internal-cert.csr'
-export EXAMPLE_SERVER_REQ_FILE='example-interna
+export EXAMPLE_SERVER_REQ_FILE=example-internal-cert.req
 openssl req -newkey rsa:2048 -nodes -keyout "$EXAMPLE_SERVER_KEY_FILE" -out "$EXAMPLE_SERVER_CSR_FILE" -extensions v3_req -config "$EXAMPLE_SERVER_REQ_FILE"</codeblock>
       <p>Note that in production you would usually send the generated
           <codeph>example-internal-cert.csr</codeph> file to your IT department. But in this example
@@ -416,8 +420,8 @@ subjectKeyIdentifier = hash
 
 ######### end of openssl.cnf #########</codeblock>
       <p><b>Sign and create a server certificate</b></p><p>Now you can sign the server certificate
-        with your CA.  Copy the comands below to the command line and execute. This will cause the
-        two files, example-CA.key and example-CA.crt to be created:</p>
+        with your CA. Copy the comands below to the command line and execute. This will cause the
+        one file, example-internal-cert.crt, to be created: </p>
       <codeblock>export EXAMPLE_SERVER_CERT_FILE='example-internal-cert.crt'
 export EXAMPLE_SERVER_CSR_FILE='example-internal-cert.csr'
 export EXAMPLE_CA_KEY_FILE='example-CA.key'
@@ -443,8 +447,9 @@ openssl ca -batch -notext -md sha256 -in "$EXAMPLE_SERVER_CSR_FILE" \
         <li>example-internal-cert</li>
         <li>example-CA.crt</li>
       </ul><p>Once on the lifecycle manager, execute the following two copy commands to copy to
-        their  respective
-        directories.</p><codeblock>cp example-internal-cert example-public-cert ~/helion/my_cloud/config/tls/certs/
+        their respective directories. Note if you had created an external cert, you can copy that in
+        a similar manner, specifying its name using the copy command as
+        well.</p><codeblock>cp example-internal-cert ~/helion/my_cloud/config/tls/certs/
 cp example-CA.crt ~/helion/my_cloud/config/tls/cacerts/</codeblock><b>Continue
         with the deployment</b>
     </section>
@@ -453,17 +458,21 @@ cp example-CA.crt ~/helion/my_cloud/config/tls/cacerts/</codeblock><b>Continue
       <codeblock>cd ~/helion
 git add -A
 git commit -m "updated certificate and CA"</codeblock>Next,
-      rerun the <codeph>config-processor-run</codeph> playbook, run
+      rerun the <codeph>config-processor-run</codeph> playbook, and run
         <codeph>ready-deployment.yml</codeph>
       <codeblock>cd ~/helion/hos/ansible/
-ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Then
-      change directories:<codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock>And depending
-      on whether you were adding the certificates or reconfiguring  them, run either
-        <codeph>site.yml</codeph>
-      <codeblock>ansible-playbook -i hosts/verb_hosts site.yml</codeblock>Or
-        <codeph>hlm-reconfigure.yml</codeph><codeblock>ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
-    </section>
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>If
+      you receive any prompts, enter the required information. <note>For automated installation
+        (e.g. CI) you can specify the required passwords on the Ansible command line. For example,
+        the command below will disable encryption by the configuration processor
+        <codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""</codeblock></note>Then
+      change directories:<codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock>Then stop and
+      start HA proxy to make sure it is notified of the
+      changes <!--to be fixed in next version. https://jira.hpcloud.net/browse/HLM-3779  and 3780--><codeblock>FND-CLU-stop.yml
+FND-CLU-start.yml</codeblock>Run
+      hlm-reconfigure.yml<codeblock>ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
+    </section> 
     
     <section id="configure_cipher">
       <title>Configuring the cipher suite </title>
