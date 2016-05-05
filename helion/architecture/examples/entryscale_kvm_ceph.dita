@@ -86,9 +86,17 @@
          type: simple-port
          bus-address: "0000:06:00.2"
 
-       - logical-name: hed4
+## NIC specification for RADOS Gateway nodes. The first interface is used for management network
+## traffic. The second interface is used for client or public traffic.
+  - name: MY-4PORT-SERVER
+    physical-ports:
+       - logical-name: hed1
          type: simple-port
-         bus-address: "0000:06:00.3"</codeblock>
+         bus-address: "0000:07:00.0"
+
+       - logical-name: hed2
+         type: simple-port
+         bus-address: "0000:07:00.1"</codeblock>
     </section>
     <section id="ceph3_servers">
       <title>servers.yml</title>
@@ -192,7 +200,7 @@
     - name: HETH3
       device:
          name: hed3
-      network-groups:
+      forced-network-groups:
          - EXTERNAL-VM
          - GUEST
          - MANAGEMENT
@@ -323,7 +331,7 @@
         nodes to be pingable via the OSD network, indicated by the bold portion below:</p>
       <p>
         <note>Enabling ping for <codeph>OSD-CLIENT</codeph> and <codeph>OSD-INTERNAL</codeph> is
-          optional  Enabling ping on these networks might make debugging connectvity issues on these
+          optional. Enabling ping on these networks might make debugging connectvity issues on these
           networks easier.</note>
       </p>
       <codeblock>
