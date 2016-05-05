@@ -6,12 +6,14 @@
       keeping the cinder-volume and backup services online, such as maintenance tasks involving
       rebooting your controller nodes or upgrading your environment, you will need to perform tasks
       to migrate these services so they stay online during this process.</shortdesc><p>Due to the
-      single threading required in both <codeph>cinder-volume</codeph> and the drivers, the Cinder
-      volume service is run as a singleton service in the control plane. This means that when you
-      need to perform a procedure that requires keeping these services online, such as maintenance
-      tasks involving rebooting your controller nodes or upgrading your environment, you will need
-      to perform tasks to migrate these services so they stay online during this process. This page
-      describes how to achieve this.</p></abstract>
+      single threading required in both cinder volume and the drivers, the Cinder volume and backup
+      services are run as singleton services in the control plane. It is possible to migrate these
+      services between controller nodes. This page describes how to achieve this.</p>
+    <p>By default the Cinder volume and backup services are started on the first controller node. If
+      the deployer is on the first controller node you will not be able to migrate the these
+      services if that node fails. This can be mitigated by migrating the cinder volume and backup
+      services off of the shared deployer/controller node and on to one of the other conroller nodes
+      after the system has been initially setup.</p></abstract>
   <body>
     <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
@@ -22,12 +24,12 @@
     </section>
     <section>
       <title>Migrating the Cinder Volume and Backup Services</title>
-      <p>Due to the single threading required in both <codeph>cinder-volume</codeph> and the
-        drivers, and because Cinder backups have a dependency on <codeph>cinder-volume</codeph>, the
-        Cinder volume and backup services are started on one controller node at a time. By default,
-        these services are started on the first node in the Cinder volume and backup hostgroup. If
-        needed, the volume and backup services can be migrated to a different node in the hostgroup.
-        The following steps describe how to migrate the services to a specified host.</p>
+      <p>Due to the single threading required in both cinder-volume and the drivers, and because
+        Cinder backups have a dependency on cinder-volume, the Cinder volume and backup services are
+        started on one controller node at a time. By default, these services are started on the
+        first controller node. If needed, the volume and backup services can be migrated to a
+        different controller node. The following steps describe how to migrate the services to a
+        specified node.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Run the <codeph>cinder-show-volume-hosts.yml</codeph> playbook to determine the index
