@@ -10,15 +10,16 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
 
     <p>The process for adding additional VSA nodes to your cloud environment involves two major
-      steps:</p>
+      tasks:</p>
     <p>
       <ul>
         <li>Adding the VSA node(s) to your input model</li>
         <li>Updating your VSA management group and cluster to add the additional node(s)</li>
       </ul>
     </p>
-    <p>Once you have completed the deployment of your additional VSA node(s) you will also want to
-      add those new hosts to your monitoring checks and we show how to do that as well.</p>
+    <p>Once you have completed these two tasks, you should add those new hosts to your monitoring
+      checks following the directions in <xref href="#add_vsa/monitoring" format="dita">How to add
+        an additional VSA node to your monitoring checks</xref>.</p>
 
     <section id="prereqs"><title>Prerequisites</title>
       <p>You should have one or more baremetal servers that meet the minimum hardware requirements
@@ -38,8 +39,8 @@ git checkout site</codeblock></li>
         <li>Edit your <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file to include
           the details about your new VSA node(s). <p>For example, if you already had a cluster of
             three VSA nodes and needed to add a fourth one you would add your details to the bottom
-            of the file in this format:</p>
-          <codeblock># VSA Storage Nodes
+            of the file in this
+            format:</p><codeblock># VSA Storage Nodes
 
    - id: vsa4
      ip-addr: 10.13.111.148
@@ -49,22 +50,20 @@ git checkout site</codeblock></li>
      mac-addr: f0:92:1c:05:f5:78
      ilo-ip: 192.168.9.4
      ilo-password: password
-     ilo-user: admin</codeblock>
-          <p>You can find detailed descriptions of these fields <xref keyref="configobj_servers"
-              >here</xref>.</p>
-          <note type="important">You will need to verify that the <codeph>ip-addr</codeph> value you
-            choose for this node does not conflict with any other IP address in your cloud
-            environment. You can confirm this by checking the
+     ilo-user: admin</codeblock><p>You
+            can find detailed descriptions of these fields <xref keyref="configobj_servers"
+              >here</xref>.</p><note type="important">You will need to verify that the
+              <codeph>ip-addr</codeph> value you choose for this node does not conflict with any
+            other IP address in your cloud environment. You can confirm this by checking the
               <codeph>~/helion/my_cloud/info/address_info.yml</codeph> file on your lifecycle
-            manager.</note>
-        </li>
+            manager.</note></li>
         <li>In your <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file you
           will need to check the values for <codeph>member-count</codeph>,
             <codeph>min-count</codeph>, and <codeph>max-count</codeph>, if you specified them, to
           ensure that they match up with your new total node count. <p>For example, if you had
             previously specified <codeph>member-count: 3</codeph> and are adding a fourth VSA node,
-            you will need to change that value to <codeph>member-count: 4</codeph>.</p>
-          <p>See <xref keyref="configobj_controlplane">Input Model - Control Plane</xref> for more
+            you will need to change that value to <codeph>member-count: 4</codeph>.</p><p>See <xref
+              keyref="configobj_controlplane">Input Model - Control Plane</xref> for more
             details.</p></li>
         <li>Commit your configuration to the <xref href="../../../installation/using_git.dita">local
             git repo</xref>, as follows:
@@ -78,18 +77,19 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>Add the new node into Cobbler:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
-        <li>Then you can image the node: <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></codeblock>
-          <note>If you don't know the <codeph>&#60;node name></codeph> already, you can get it by
-            using <codeph>sudo cobbler system list</codeph></note>
-          <p>Before proceeding, you may want to take a look at
-              <codeph>~/helion/my_cloud/info/server_info.yml</codeph> to see if the assignment of
-            the node you have added is what you expect. It may not be, as nodes will not be numbered
-            consecutively if any have previously been removed. This is to prevent loss of data; the
-            configuration processor retains data about removed nodes and keeps their ID numbers from
-            being reallocated. See the Persisted Server Allocations section in <xref
-              keyref="persisteddata/persistedserverallocations"><keyword keyref="kw-hos-phrase"/>
-              Input Model</xref> for information on how this works.</p></li>
+        <li>Then you can image the node:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></codeblock><note>If
+            you don't know the <codeph>&#60;node name></codeph> already, you can get it by using
+              <codeph>sudo cobbler system list</codeph></note><p>Before proceeding, you may want to
+            take a look at <codeph>~/helion/my_cloud/info/server_info.yml</codeph> to see if the
+            assignment of the node you have added is what you expect. It may not be, as nodes will
+            not be numbered consecutively if any have previously been removed. This is to prevent
+            loss of data; the configuration processor retains data about removed nodes and keeps
+            their ID numbers from being reallocated. See the Persisted Server Allocations section in
+              <xref keyref="persisteddata/persistedserverallocations"><keyword
+                keyref="kw-hos-phrase"/> Input Model</xref> for information on how this
+          works.</p></li>
         <li>Run the following command to configure the operating system on the new node(s):
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts osconfig-run.yml</codeblock></li>
@@ -98,11 +98,11 @@ ansible-playbook -i hosts/verb_hosts osconfig-run.yml</codeblock></li>
           to specify your first controller node (which may be your lifecycle manager) if you are
           adding VSA nodes to your environment for the first time. If you added a VSA cluster during
           your initial cloud deploy then you only need to specify your new VSA nodes and can leave
-          the controller node out. <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit &#60;hostname_vsa_node,hostname_first_controller></codeblock>
-          <note>If you don't know the <codeph>&#60;hostname></codeph> already, you can get it by
-            looking in the <codeph>~/scratch/ansible/next/hos/ansible/host_vars</codeph>
-            directory.</note></li>
+          the controller node out.
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit &#60;hostname_vsa_node,hostname_first_controller></codeblock><note>If
+            you don't know the <codeph>&#60;hostname></codeph> already, you can get it by looking in
+            the <codeph>~/scratch/ansible/next/hos/ansible/host_vars</codeph> directory.</note></li>
       </ol>
     </section>
 
@@ -110,10 +110,10 @@ ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit &#60;hostname_vsa_no
 
     <section id="update_cluster"><title>How to add an additional VSA node to your management group
         and cluster</title>
-      <p>You can add your additional VSA node(s) in an automated process using the provided Ansible
-        playbooks if you used this method when you first deployed your VSA system. If you used the
-        HPE StoreVirtual Centralized Management Console (CMC) GUI to do this initially then you must
-        continue to use the utility to add new nodes and manage your cluster.</p>
+      <p>You can add additional VSA node(s) in an automated process using the provided Ansible
+        playbooks only if you used this method initially to create the cluster. If you used the HPE
+        StoreVirtual Centralized Management Console (CMC) GUI to create the cluster, you must
+        continue to use the CMC utility to add new node(s) and manage your cluster.</p>
       <p><b>Using Ansible</b></p>
       <p>If you initially created your VSA cluster using Ansible (using the <xref
           href="../../../installation/configure_vsa.dita#config_vsa/create_cluster"/> instructions,
@@ -129,8 +129,15 @@ ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li
         <li>When prompted, enter an administrative user name and password you will use to administer
           your cluster via the CMC utility, should it be needed in the future.</li>
         <li>Confirm in the output of the playbook that your new node is added.</li>
+        <li>You can view the added node to the cluster in CMC GUI as follows: <ol id="ol_r5f_ll3_wv">
+            <li>Launch the CMC utility. See <xref
+                href="../../../installation/configure_vsa.dita#config_vsa/launch_cmc">Launching the
+                CMC utility GUI</xref> for more details.</li>
+            <li>Locate the new VSA system. </li>
+            <li>View the added node in the cluster.</li>
+          </ol></li>
       </ol>
-      <p outputclass="expandcode"><b>Open | Close</b> Using the CMC Utility</p>
+      <p outputclass="expandcode"><b>Show | Hide</b> Using the CMC Utility</p>
       <p outputclass="hiddencode">
         <ol>
           <li>On your lifecycle manager, collect the IP addresses of the VSA virtual machines that
@@ -171,9 +178,7 @@ ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li
               <li>You can then mouse over your VSA node to see the Storage System get successfully
                 added to the cluster: <p><image href="../../../../media/vsa/addvsa_cmc10.png"
                 /></p></li>
-            </ul>
-          </li>
-          <li>You can then continue on to create additional volumes.</li>
+            </ul></li>
         </ol>
       </p>
     </section>
