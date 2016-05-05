@@ -5,6 +5,7 @@
     <body>
         <!--not tested-->
 
+        
         <section>
             <title>MySQL is sensitive to logrotate</title>
             <!-- LOG-360 -->
@@ -144,6 +145,7 @@ sudo systemctl start kibana
                         non-multipath Fiber Channel backends.</li>
                 </ul>
             </p>
+            
             <!-- DOCS-2980 -->
             <p>Under the following conditions the <i>allow_availability_zone_fallback</i> flag must 
                 be set to True in cinder.conf in order to boot Nova instances:
@@ -153,6 +155,7 @@ sudo systemctl start kibana
                     <li>The availability zone specified is different to the Cinder availability zone</li>
                 </ul>
             </p>
+            
             <!-- DOCS-3001 -->
             <p> If a volume is created from a cached image or from a volume snapshot, and a size 
                    is specified that is different than the cached image or snapshot size, the volume 
@@ -161,12 +164,19 @@ sudo systemctl start kibana
                    the cached image or snapshot.  This is a known limitation in Cinder and applies 
                    to most back-ends, including 3Par and StoreVirtual.
             </p>
+            
             <!-- DOCS-2998 -->
             <p>The Attach volume operation will fail frequently after scaling to 2200 instances with 
                   volume attached, if it is triggered with concurrency 25.  In order to avoid this, 
                   the <codeph>rpc_timeout</codeph> value must be increased to 180.   Increasing
                   the value merely postpones the error and is only meant to be a temporary solution. 
             </p>
+            
+            <!-- DOCS-3095 -->
+            <p>If you have enabled CHAP authentication on a 3PAR backend then you will not be 
+                able to backup an attached volume that is provisioned on that backend.</p>
+            <p> It is not possible to backup an attached volume that was provisioned on VSA.</p>
+           
             <!-- DOCS-3033 -->
             <p>Consistency groups are not supported with VSA backends.</p>
             <!-- DOCS-3029 -->
@@ -226,6 +236,16 @@ sudo systemctl start kibana
                 This may occur when booting a large number of VMs at the same time when all of the
                 networking may not be up in time before the DHCP retries timeout. If this occurs,
                 reboot the VM.</p>
+            
+            <!-- DOCS-3096 -->
+            <p><b>Support for IPv6 on tenant networks (listed as non-core)</b></p>
+            <p> Enabling IPv6 for tenant networks is a manual step as no Helion lifecycle 
+                management support is provided.
+                    <xref
+                    href="http://docs.openstack.org/liberty/networking-guide/adv_config_ipv6.html"
+                    format="html" scope="external"
+                /></p>
+             <p>There is no support for IPv6 on cloud infrastructure networks (i.e., MANAGEMENT)</p>
         </section>
         
         <section>
@@ -274,6 +294,11 @@ sudo systemctl start kibana
                 <codeblock>ansible-playbook -i hosts/verb_hosts monasca-stop.yml --tags thresh
 ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock>
             </p>
+            
+            <!-- JAH-2800 -->
+            <p><b>Monasca api logs showing "OutOfMemoryError: Java heap space"</b></p>
+            <p>If the Monasca API fails with <i>OutOfMemoryError: Java heap space</i> errors it is
+            recommended that you restart the monasca-api.</p>
         </section>
         
         <section>
@@ -385,7 +410,7 @@ product: "LOGICAL VOLUME"
         </section>
         
         
-        <section>
+        <section id="fact_cache">
             <title>Fact cache entry isn't valid</title>
             <p><!--https://jira.hpcloud.net/browse/HLM-3357--> If at the very start of an Ansible
                 run you see a message like the following:
