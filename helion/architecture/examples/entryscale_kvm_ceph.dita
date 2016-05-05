@@ -5,11 +5,9 @@
   <body>
     <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-
     <section id="about">
       <p>This example provides a KVM-based cloud using Ceph for both block and object storage.</p>
     </section>
-
     <section id="vlan">
       <p>The network traffic is segregated into the following VLANs:</p>
       <ul>
@@ -30,10 +28,9 @@
         which is included with the HPE Helion OpenStack distro. You will need to make the changes
         outlined below prior to the deployment of your Ceph cluster.</p>
     </section>
-
     <section conref="../../recommended_hardware_minimums.dita#rec_min/min_requirements_kvm_ceph"/>
-
-    <section id="ceph3_nicmappings"><title>nic_mappings.yml</title>
+    <section id="ceph3_nicmappings">
+      <title>nic_mappings.yml</title>
       <p>Ensure that your baremetal server NIC interfaces are correctly specified in the
           <codeph>~/helion/my_cloud/definition/data/nic_mappings.yml</codeph> file and that they
         meet the server requirements.</p>
@@ -93,8 +90,8 @@
          type: simple-port
          bus-address: "0000:06:00.3"</codeblock>
     </section>
-
-    <section id="ceph3_servers"><title>servers.yml</title>
+    <section id="ceph3_servers">
+      <title>servers.yml</title>
       <p>Ensure that your servers in the
           <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file are mapped to the
         correct NIC interface.</p>
@@ -153,8 +150,8 @@
     ilo-password: password
     ilo-user: admin </codeblock>
     </section>
-
-    <section id="ceph3_netinterfaces"><title>net_interfaces.yml</title>
+    <section id="ceph3_netinterfaces">
+      <title>net_interfaces.yml</title>
       <p>Define a new interface set for your OSD interfaces in the
           <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph> file.</p>
       <p>Here is an example with notes in-line:</p>
@@ -205,7 +202,7 @@
     - name: HETH4
        device:
           name: hed4
-       network-groups:
+       forced-network-groups:
           - OSD-CLIENT
         
 - name: OSD-INTERFACES
@@ -250,8 +247,8 @@
            - MANAGEMENT
            - OSD-CLIENT</codeblock>
     </section>
-
-    <section id="ceph3_networkgroups"><title>network_groups.yml</title>
+    <section id="ceph3_networkgroups">
+      <title>network_groups.yml</title>
       <p>Define the OSD network group in the
           <codeph>~/helion/my_cloud/definition/data/network_groups.yml</codeph> file:</p>
       <codeblock>#
@@ -266,6 +263,7 @@
   component-endpoints
     - ceph-monitor
     - ceph-osd
+    - ceph-radosgw
     
 #
 # OSD internal
@@ -279,8 +277,8 @@
   component-endpoints:
     - ceph-osd-internal</codeblock>
     </section>
-
-    <section id="ceph3_networks"><title>networks.yml</title>
+    <section id="ceph3_networks">
+      <title>networks.yml</title>
       <p>Define the OSD VLAN in the <codeph>~/helion/my_cloud/definition/data/networks.yml</codeph>
         file.</p>
       <p>The example below defines two separate network VLANs:</p>
@@ -299,8 +297,8 @@
   gateway-ip: 192.168.200.1
   network-group: OSD-INTERNAL</codeblock>
     </section>
-
-    <section id="ceph3_servergroups"><title>server_groups.yml</title>
+    <section id="ceph3_servergroups">
+      <title>server_groups.yml</title>
       <p>Add the OSD network to the server groups in the
           <codeph>~/helion/my_cloud/definition/data/server_groups.yml</codeph> file, indicated by
         the bold portion below:</p>
@@ -318,11 +316,16 @@
    <b>- OSD-CLIENT-NET</b>
    <b>- OSD-INTERNAL-NET</b></codeblock>
     </section>
-
-    <section id="ceph3_firewallrules"><title>firewall_rules.yml</title>
+    <section id="ceph3_firewallrules">
+      <title>firewall_rules.yml</title>
       <p>Modify the firewall rules in the
           <codeph>~/helion/my_cloud/definition/data/firewall_rules.yml</codeph> file to allow OSD
         nodes to be pingable via the OSD network, indicated by the bold portion below:</p>
+      <p>
+        <note>Enabling ping for <codeph>OSD-CLIENT</codeph> and <codeph>OSD-INTERNAL</codeph> is
+          optional  Enabling ping on these networks might make debugging connectvity issues on these
+          networks easier.</note>
+      </p>
       <codeblock>
 - name: PING
   network-groups:
@@ -341,8 +344,8 @@
     port-range-max: 0
     protocol: icmp</codeblock>
     </section>
-
-    <section id="ceph3_readme"><title>Edit the README.html and README.md Files</title>
+    <section id="ceph3_readme">
+      <title>Edit the README.html and README.md Files</title>
       <p>You can edit the <codeph>~/helion/my_cloud/definition/README.html</codeph> and
           <codeph>~/helion/my_cloud/definition/README.md</codeph> files to reflect the OSD network
         group information if you wish. This change does not have any semantic implication and only
