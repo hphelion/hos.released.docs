@@ -72,7 +72,8 @@
                 <entry>Alarms when the specified host is down or not reachable.</entry>
                 <entry>The host is down, has been rebooted, or has network connectivity
                   issues.</entry>
-                <entry/>
+                <entry>If it is a single host, attempt to restart the system. If it is multiple
+                  hosts, investigate networking issues.</entry>
               </row>
               <row>
                 <entry>Process Bound Check</entry>
@@ -2041,14 +2042,36 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-start.yml --limit &lt;hostname></co
                 <entry>Alarms when the Persister consumer group is not keeping up with the incoming
                   messages on the metric topic.</entry>
                 <entry/>
-                <entry/>
+                <entry>Verify that all of the monasca-persister services are up with these steps:<ol
+                    id="ol_z3p_2ff_wv">
+                    <li>Log in to the lifecycle manager</li>
+                    <li>Verify that all of the <codeph>monasca-persister</codeph> services are up
+                      with this
+                      playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-persister</codeblock></li>
+                  </ol>
+                  <p>Look for high load in the various systems. This alert can fire for multiple
+                    topics or on multiple hosts. Which alarms are firing can help diagnose likely
+                    causes. For example, if the alarm is alerting all on one machine it could be the
+                    machine. If one topic across multiple machines it is likely the consumers of
+                    that topic, etc.</p></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
                 <entry>Alarms when the specified process is not running. <p>process_name =
                     kafka.Kafka</p></entry>
                 <entry/>
-                <entry/>
+                <entry>Restart the process on the affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Stop the kafka service with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags kafka</codeblock></li>
+                    <li>Start the kafka service back up with this playbook:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags kafka</codeblock></li>
+                  </ol>
+                  <p>Review the logs in this location:</p>
+                  <codeblock>/var/log/kafka/server.log</codeblock></entry>
               </row>
 
               <!-- key-manager / barbican -->
@@ -2068,8 +2091,18 @@ ansible-playbook -i hosts/verb_hosts barbican-start.yml --limit &lt;hostname></c
               <row>
                 <entry>HTTP Status</entry>
                 <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
-                <entry/>
-                <entry/>
+                <entry>The endpoint is not responsive, it may be down.</entry>
+                <entry>Restart the process on the affected node using these steps: <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Stop the barbican service:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts barbican-stop.yml</codeblock></li>
+                    <li>Restart the barbican service back up:
+                      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts barbican-start.yml</codeblock></li>
+                  </ol>
+                  <p>Examine the logs <codeph>/var/log/barbican/</codeph> for possible error
+                    messages.</p></entry>
               </row>
               <row>
                 <entry>Service Log Directory Size</entry>
@@ -2154,8 +2187,13 @@ ansible-playbook -i hosts/verb_hosts octavia-start.yml --limit &lt;hostname></co
                 <entry>Process Check</entry>
                 <entry>Alarms when the specified process is not running. <p>process_name =
                     apache2</p></entry>
-                <entry/>
-                <entry/>
+                <entry>Process crashed.</entry>
+                <entry>If the Apache process goes down, try restarting it with:<ol
+                    id="ol_krr_bgf_wv">
+                    <li>SSH to the affected node.</li>
+                    <li>Restart apache with this command:
+                      <codeblock>sudo systemctl restart apache2</codeblock></li>
+                </ol></entry>
               </row>
 
               <!-- orchestration / heat -->
@@ -2286,8 +2324,8 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery</codeblock></li>
                 <entry>Process Check</entry>
                 <entry>Alarms when the specified process is not running.<p>process_name =
                     org.apache.zookeeper.server</p></entry>
-                <entry/>
-                <entry/>
+                <entry>Process crashed.</entry>
+                <entry>Restart the process on the affected node. Review the associated logs.</entry>
               </row>
               <row>
                 <entry>ZooKeeper Latency</entry>

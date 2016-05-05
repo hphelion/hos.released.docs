@@ -11,6 +11,12 @@
       <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
       <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
     </section>
+    
+    <section>
+      <title>Troubleshooting Ceph deployment issues</title>
+      <p>Here is a list of known issues along with resolutions for Ceph deployment issues.</p>
+    </section>
+    
     <section id="issue1">
       <title outputclass="headerH">Issue: If no Ceph monitor nodes are defined for the cloud, then
         Ceph cloud deployment fails</title>
@@ -275,39 +281,132 @@ ceph --cluster &lt;cluster-name> osd rm &lt;osd-num></codeblock></li>
         </ol>
       </sectiondiv>
     </section>
-    <section>
-      <title>Troubleshooting RADOS Gateway</title>
+
+
+    <section id="issue9">
+      <title outputclass="headerH">Issue: Ceph playbooks fail during disk validation step</title>
+      <sectiondiv outputclass="insideSection">
+        <p>If you receive an error like this when going through disk validation the follow the steps
+          below for resolution.</p>
+        <codeblock>TASK: [CEP-OSD | validate_disks | Validate the journal disks] *****************
+fatal: [helion-cp1-ceph0003-mgmt] => Traceback (most recent call last):
+  File "/opt/stack/venv/ansible-hos-3.0.0/lib/python2.7/site-packages/ansible/runner/__init__.py", line 589, in _executor
+   exec_rc = self._executor_internal(host, new_stdin)
+  File "/opt/stack/venv/ansible-hos-3.0.0/lib/python2.7/site-packages/ansible/runner/__init__.py", line 793, in _executor_internal
+    return self._executor_internal_inner(host, self.module_name, self.module_args, inject, port, complex_args=complex_args)
+  File "/opt/stack/venv/ansible-hos-3.0.0/lib/python2.7/site-packages/ansible/runner/__init__.py", line 1008, in _executor_internal_inner
+    module_args = template.template(self.basedir, module_args, inject, fail_on_undefined=self.error_on_undefined_vars)
+  File "/opt/stack/venv/ansible-hos-3.0.0/lib/python2.7/site-packages/ansible/utils/template.py", line 124, in template
+    varname = template_from_string(basedir, varname, templatevars, fail_on_undefined)
+  File "/opt/stack/venv/ansible-hos-3.0.0/lib/python2.7/site-packages/ansible/utils/template.py", line 382, in template_from_string
+    res = jinja2.utils.concat(rf)
+  File "&lt;template>", line 13, in root
+  File "/home/stack/helion/hos/ansible/filter_plugins/osd_disk_validate.py", line 23, in journal_disk_validate
+    existing_journal_disks = json.loads(existing_journal_disks)
+  File "/usr/lib/python2.7/json/__init__.py", line 338, in loads
+    return _default_decoder.decode(s)
+  File "/usr/lib/python2.7/json/decoder.py", line 369, in decode
+    raise ValueError(errmsg("Extra data", s, end, len(s)))
+ValueError: Extra data: line 1 column 4 - line 1 column 65 (char 3 - 64)</codeblock>
+        <p><b>Resolution:</b></p>
+        <p>This problem is hit due to existence of Ceph journal partition(s), which have not been
+          removed after the OSD data disk was removed. From the error, the problematic OSD node can
+          be identified (like 'helion-cp1-ceph0003-mgmt' in the above ansible error). Follow the
+          below steps to get the OSD disks inventory to a clean state:</p>
+        <ol>
+          <li>Log in to the identified OSD node.</li>
+          <li>List the OSD journal partitions using this command: <codeblock>sudo ceph-disk list | grep "ceph journal"</codeblock>
+            <p>Example output:</p>
+            <codeblock>$ sudo ceph-disk list | grep "ceph journal"
+ /dev/sdd2 ceph journal, for /dev/sdd1
+ /dev/sdg1 ceph journal, for /dev/sdc1
+ /dev/sdg2 ceph journal, for /dev/sde1
+ /dev/sdg3 ceph journal, for /dev/sdf1
+ /dev/sdg4 ceph journal</codeblock></li>
+          <li>Identify the journal disk for which the OSD data disk is not listed. For example, in
+            the output above <codeph>/dev/sdg4</codeph> is the journal partition.</li>
+          <li>Delete the journal partition identified in step #3 and instruct the kernel to reload
+            the table: <codeblock>(echo d; echo &lt;partition-number>; echo w) | sudo fdisk &lt;disk>
+sudo partprobe</codeblock>
+            <p>Example output:</p>
+            <codeblock>/dev/sdg4 journal partition can be removed by executing below commands:
+$ (echo d; echo 4; echo w) | sudo fdisk /dev/sdg
+$ sudo partprobe</codeblock></li>
+          <li>The above process should be repeated on rest of the OSD nodes in the Ceph cluster to
+            sanitize the Ceph disk inventory.</li>
+        </ol>
+      </sectiondiv>
     </section>
-    <p><b>Issue: Rados Gateway service does not come up after node is rebooted </b></p>
-    <p>After the RADOS Gateway node is rebooted, wait for the node to become ssh-able and allow an
-      additional minimum of five minutes for the node to settle. Start the services on the node:</p>
-    <p>
-      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <section>
+      <title>Troubleshooting RADOS Gateway issues</title>
+      <p>Here is a list of known issues along with resolutions for Ceph RADOS Gateway issues.</p>
+    </section>
+
+    <section><title outputclass="headerH">Issue: Rados Gateway service does not come up after node
+        is rebooted</title>
+      <sectiondiv outputclass="insideSection">
+        <p>After the RADOS Gateway node is rebooted, wait for the node to become ssh-able and allow
+          an additional minimum of five minutes for the node to settle. Start the services on the
+          node:</p>
+        <p>
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible 
 ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;radosgw-node> </codeblock>
-    </p>
-    <p> Verify the status of all services on the node:
-      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+        </p>
+        <p> Verify the status of all services on the node:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible 
 ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></codeblock></p>
-    <section>
-      <title>Issue: Rados Gateway service is not responding </title>
-      <p>Verify the status of all services on the Rados Gateway node:
-        <codeblock>cd ~/scratch/ansible/next/hos/ansible 
-ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></codeblock></p>
-      <p>Based on the results of the playbook:<ul id="ul_grf_tjb_wv">
-          <li>If the radosgw service is reported down, check the radosgw service logs in
-              <codeph>/var/log/ceph/</codeph> to diagnose the cause of the crash. </li>
-          <li>If the radosgw service status is fine, you can examine the access and error logs for
-            the apache2 web server in <codeph>/var/log/apache2/ directory</codeph> to determine if
-            the problem is with the web server. </li>
-          <li>If apache2 logs do not indicate an issue, check the HAProxy service logs in the
-              <codeph>/var/log/haprpoxy/</codeph> directory on the controller nodes. </li>
-        </ul></p>
+      </sectiondiv>
     </section>
-    <section><title>Issue: HTTP Request errors</title>Examining the access and error logs for the
-      apache2 web server itself is probably the first step in identifying what is going on. If there
-      is a 500 error, that usually indicates a problem communicating with the radosgw daemon.<p>Make
-        sure the daemon is running:
-      </p><codeblock>cd ~/scratch/ansible/next/hos/ansible 
-ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node> </codeblock></section>
+
+
+    <section>
+      <title outputclass="headerH">Issue: Rados Gateway service is not responding</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Verify the status of all services on the Rados Gateway node:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></codeblock></p>
+        <p>Based on the results of the playbook:<ul id="ul_grf_tjb_wv">
+            <li>If the radosgw service is reported down, check the radosgw service logs in
+                <codeph>/var/log/ceph/</codeph> to diagnose the cause of the crash. </li>
+            <li>If the radosgw service status is fine, you can examine the access and error logs for
+              the apache2 web server in <codeph>/var/log/apache2/ directory</codeph> to determine if
+              the problem is with the web server. </li>
+            <li>If apache2 logs do not indicate an issue, check the HAProxy service logs in the
+                <codeph>/var/log/haprpoxy/</codeph> directory on the controller nodes. </li>
+          </ul></p>
+      </sectiondiv>
+    </section>
+
+    <section><title outputclass="headerH">Issue: HTTP Request errors</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Examining the access and error logs for the apache2 web server itself is probably the
+          first step in identifying what is going on. If there is a 500 error, that usually
+          indicates a problem communicating with the radosgw daemon.</p>
+        <p>Make sure the daemon is running:
+        </p><codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node> </codeblock>
+      </sectiondiv>
+    </section>
   </body>
 </topic>
