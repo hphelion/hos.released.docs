@@ -28,6 +28,28 @@
             <codeblock>sudo service neutron-ovsvapp-agent restart</codeblock></li>
         </ol></p>
     </section>  
+    
+    <!--  docs 3098 -->
+    <section><title>Fail over a plain CVR router because the node became unavailable:</title>
+    <ol><li> Get a list of l3 agent UUIDs which can be used in the commands that follow
+          <codeblock> neutron agent-list | grep l3 </codeblock>
+        </li>
+    
+      <li>Determine the current host
+          <codeblock> neutron l3-agent-list-hosting-router &lt;router uuid> </codeblock>
+        </li>
+      
+      <li>Remove the router from the current host
+          <codeblock>neutron l3-agent-router-remove %lt;current l3 agent uuid> &lt;router uuid></codeblock>
+        </li>
+      
+      <li>Add the router to a new host
+          <codeblock>neutron l3-agent-router-add &lt;new l3 agent uuid> &lt;router uuid> </codeblock>
+        </li>
+    </ol>
+
+    
+    </section> 
  
   </body>
 </topic>
