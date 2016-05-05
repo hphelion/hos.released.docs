@@ -6,10 +6,9 @@
     <!--not tested-->
     <!--Needs Work-->
     <p conkeyref="HOS-conrefs/applies-to"/>
+
+
     <section id="creds"><title>Determining Your User Credentials</title>
-      <note type="important">At this time it is not possible to change the default administrator
-        password without causing errors in your deployment so we do not recommend changing the
-        default password.</note>
       <p>On your lifecycle manager, in the
           <codeph>~/scratch/ansible/next/hos/ansible/group_vars/</codeph> directory you will find
         several files. In the one labeled as first control plane node you can locate the user
@@ -24,22 +23,24 @@
       <p><b>Demo</b></p>
       <codeblock>grep keystone_demo_pwd entry-scale-kvm-vsa-control-plane-1</codeblock>
     </section>
-    <section id="env_vars"><title>Set up Environment Variables</title>
-      <p>This playbook will setup the proper environmental variables for your cloud so you can use
-        command-line clients</p>
-      <ol>
-        <li><p>Run the following command, which will replace <codeph>/etc/hosts</codeph> on the
-            deployer:</p>
-          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+
+
+    <section id="env_vars"><title>Configure your lifecycle manager to use the command-line
+        tools</title>
+      <p>This playbook will do a series of steps to update your environment variables for your cloud
+        so you can use command-line clients.</p>
+      <p>Run the following command, which will replace <codeph>/etc/hosts</codeph> on the lifecycle
+        manager:</p>
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts cloud-client-setup.yml</codeblock>
-          <p>As the <codeph>/etc/hosts</codeph> file no longer has entries for Helion lifecycle
-            management, sudo commands may become a bit slower. To fix this issue, once this step is
-            complete, add "hlm" after "127.0.0.1 localhost". The result will look like this:</p>
-          <codeblock>...
+      <p>As the /etc/hosts file no longer has entries for Helion lifecycle management, sudo commands
+        may become a bit slower. To fix this issue, once this step is complete, add "hlm" after
+        "127.0.0.1 localhost". The result will look like this:</p>
+      <codeblock>...
 # Localhost Information
-127.0.0.1 localhost hlm</codeblock></li>
-      </ol>
+127.0.0.1 localhost hlm</codeblock>
     </section>
+
     <section id="sshkeys"><title>Back up Your SSH Keys</title>
       <p>As part of the cloud deployment setup process, SSH keys to access the systems are generated
         and stored in <codeph>~/.ssh</codeph> on your lifecycle manager.</p>
@@ -49,15 +50,15 @@ ansible-playbook -i hosts/verb_hosts cloud-client-setup.yml</codeblock>
     <section id="endpoints"><title>Retrieving Service Endpoints</title>
       <!--  TODO add some content here  <p>text</p>-->
       <ol>
-        <li><p>From your lifecycle manager, source the admin creds setup during the
-            installation:</p>
-          <p><codeblock>unset OS_TENANT_NAME
-source ~/keystone.osrc</codeblock></p></li>
-        <li><p>Using the OpenStack command-line tool you can then query the Keystone service for
-            your endpoints:</p>
-          <p><codeblock>openstack endpoint list</codeblock></p>
-          <note type="tip">You can use <codeph>openstack -h</codeph> to access the client help file
-            and a full list of commands.</note></li>
+        <li>Log in to your lifecycle manager.</li>
+        <li>Source the keystone admin creds:<p>
+            <codeblock>unset OS_TENANT_NAME
+source ~/keystone.osrc</codeblock>
+          </p></li>
+        <li>Using the OpenStack command-line tool you can then query the Keystone service for your endpoints:<p>
+            <codeblock>openstack endpoint list</codeblock>
+          </p><note type="tip">You can use <codeph>openstack -h</codeph> to access the client help
+            file and a full list of commands.</note></li>
       </ol>
       <p>To learn more about Keystone, see <xref
           href="../operations/configuring/identity/identity_overview.dita">Keystone
