@@ -9,10 +9,10 @@
     <section>
       <p>This topic explains how to create a Neutron provider network. </p>
       <title>Provider networks overview</title>
-      <p id="provider_network_summary">A provider network is a virtual network created in the HPE Helion OpenStack cloud that is
-        consumed by Helion services. The distinctive element of a provider network is that it does
-        not create a virtual router; rather, it depends on L3 routing that is provided by the
-        infrastructure. </p>
+      <p id="provider_network_summary">A provider network is a virtual network created in the HPE
+        Helion OpenStack cloud that is consumed by Helion services. The distinctive element of a
+        provider network is that it does not create a virtual router; rather, it depends on L3
+        routing that is provided by the infrastructure. </p>
       <p>A provider network is created by adding the specification to the Helion OpenStack input
         model. It consists of at least one network and one or more subnets. </p>
     </section>
@@ -285,19 +285,27 @@
           host_routes:
             # route to MANAGEMENT-NET
             - destination: 10.13.111.128/26
-              nexthop:  10.13.189.5</codeblock></section>
-<section><title>Implementing your changes</title> First commit your changes <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "your message"</codeblock>
-      <p>Then, run the configuration processor and ready deploy before running install or
-        reconfigure.</p>
-      <codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Then
-      continue with your clean cloud installation.</section>
-    <section>Or, if you are changing your configuration at a later time (after install or upgrade),
-      run the following:
-      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+              nexthop:  10.13.189.5</codeblock>
+    </section>
+    <section>
+      <title>Implementing your changes</title>
+      <ol>
+        <li>Commit the changes to git:
+          <codeblock>git add -A
+git commit -a -m "configuring provider network"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Then continue with your clean cloud installation.</li>
+        <li>Or, if you are changing your configuration at a later time (after install or upgrade),
+          run the following:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml
-ansible-playbook -i hosts/verb_hosts site.yml</codeblock></section>
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock></li>
+      </ol>
+    </section>
   </body>
 </topic>
