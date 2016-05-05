@@ -8,7 +8,7 @@
     <!--not tested-->
     <section>
       <p>This topic explains how to create a Neutron provider network. </p>
-      <title>Provider Networks Overview</title>
+      <title>Provider networks overview</title>
       <p id="provider_network_summary">A provider network is a virtual network created in the HPE Helion OpenStack cloud that is
         consumed by Helion services. The distinctive element of a provider network is that it does
         not create a virtual router; rather, it depends on L3 routing that is provided by the
@@ -17,7 +17,7 @@
         model. It consists of at least one network and one or more subnets. </p>
     </section>
     <section>
-      <title>HPE Helion OpenStack Input Model</title>
+      <title>HPE Helion OpenStack input model</title>
       <p>The input model is the primary mechanism a cloud admin uses in defining a Helion
         installation. It exists as a directory with a data subdirectory that contains YAML files. By
         convention, any service that creates a Neutron provider network will create a subdirectory
@@ -49,7 +49,7 @@
     ├── README.html
     └── README.md</codeblock>
     </section>
-    <section><title>Network/Subnet Specification</title>
+    <section><title>Network/Subnet specification</title>
       <p>The elements required in the input model for you to define a network are: </p><ul>
         <li>name </li>
         <li>network_type </li>
@@ -67,7 +67,7 @@
         <li>enable-dhcp </li>
       </ul> NOTE: Only IPv4 is supported at the present time. </section>
     <section>
-      <title>Network Details</title>
+      <title>Network details</title>
       <p>The following table outlines the network values to be set, and what they represent.</p>
       <table frame="all" rowsep="1" colsep="1" id="table_lnv_y5n_2v">
         <tgroup cols="4">
@@ -120,7 +120,7 @@
     </section>
     <section>
       <p>The following table outlines the subnet values to be set, and what they represent. </p>
-      <title>Subnet Details</title>
+      <title>Subnet details</title>
       <table frame="all" rowsep="1" colsep="1" id="table_pzw_3wn_2v">
         <tgroup cols="4">
           <colspec colnum="1" colname="col1"/>
@@ -177,7 +177,7 @@
       </table>
     </section>
     <section>
-      <title>ALLOCATION_POOLS Details</title>
+      <title>ALLOCATION_POOLS details</title>
       <p>The following table explains allocation pool settings.</p>
       <table frame="all" rowsep="1" colsep="1" id="table_h5p_5wn_2v">
         <tgroup cols="4">
@@ -211,7 +211,7 @@
       </table>
     </section>
     <section>
-      <title>HOST_ROUTES Details</title>
+      <title>HOST_ROUTES details</title>
       <p>The following table explains host route settings.</p>
       <table frame="all" rowsep="1" colsep="1" id="table_gfj_dxn_2v">
         <tgroup cols="4">
@@ -245,13 +245,11 @@
       </table>
       <note>Multiple destination/nexthop may be used</note>
     </section>
-    <section><title>Examples</title>
-      <p>The following examples show the configuration file settings for Neutron and Octavia.</p>
-      <p><b>Octavia Configuration</b></p>
-      <p>This file defines the mapping. It doesn't need to be edited unless you want to change the
-        name of your VLAN.</p>
-      <p>Path: <codeph>~/helion/my_cloud/definition/data/octavia/octavia_config.yml</codeph></p>
-      <codeblock>---
+    <section><title>Examples</title><p>The following examples show the configuration file settings
+        for Neutron and Octavia.</p><p><b>Octavia configuration</b></p><p>This file defines the
+        mapping. It doesn't need to be edited unless you want to change the name of your
+        VLAN.</p><p>Path:
+          <codeph>~/helion/my_cloud/definition/data/octavia/octavia_config.yml</codeph></p><codeblock>---
   product:
     version: 2
 
@@ -260,12 +258,10 @@
       services:
         - octavia
       data:
-        amp_network_name: OCTAVIA-MGMT-NET</codeblock>
-      <p><b>Neutron Configuration</b></p>
-      <p>It's in this file that you input your network configuration information for your provider
-        VLANs.</p>
-      <p>Path: <codeph>~/helion/my_cloud/definition/data/neutron/neutron_config.yml</codeph></p>
-      <codeblock>---
+        amp_network_name: OCTAVIA-MGMT-NET</codeblock><p><b>Neutron
+          configuration</b></p><p>Input your network configuration information for your provider
+        VLANs in <codeph>neutron_config.yml</codeph> found here:
+        </p><codeph>~/helion/my_cloud/definition/data/neutron/</codeph>.<codeblock>---
   product:
     version: 2
 
@@ -289,8 +285,19 @@
           host_routes:
             # route to MANAGEMENT-NET
             - destination: 10.13.111.128/26
-              nexthop:  10.13.189.5</codeblock>
-    </section>
-
+              nexthop:  10.13.189.5</codeblock></section>
+<section><title>Implementing your changes</title> First commit your changes <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "your message"</codeblock>
+      <p>Then, run the configuration processor and ready deploy before running install or
+        reconfigure.</p>
+      <codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Then
+      continue with your clean cloud installation.</section>
+    <section>Or, if you are changing your configuration at a later time (after install or upgrade),
+      run the following:
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock></section>
   </body>
 </topic>
