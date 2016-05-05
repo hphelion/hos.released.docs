@@ -43,9 +43,7 @@
 - id: compute4
   ip-addr: 192.168.102.70
   role: RHEL-COMPUTE-ROLE
-  server-group: RACK1
-  mac-addr: e8:39:35:21:32:4e
-  distro-id: rhel72-x86_64</codeblock>
+  server-group: RACK1  </codeblock>
             <p>You can find detailed descriptions of these fields <xref keyref="configobj_servers"
                 >here</xref>.</p>
             <note type="important">You will need to verify that the <codeph>ip-addr</codeph> value
@@ -77,9 +75,20 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
               keeps their ID numbers from being reallocated. See the Persisted Server Allocations
               section in <xref keyref="persisteddata/persistedserverallocations">Input Model</xref>
               for information on how this works.</p></li>
-          <li>Complete the RHEL compute deployment with this playbook:
+          <li>[OPTIONAL] - Run the <codeph>wipe_disks.yml</codeph> playbook to ensure all of your
+            partitions on your nodes are completely wiped prior to continuing with the installation:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible/
-ansible-playbook -i hosts/verb_hosts site.yml --limit &#60;node name></codeblock></li>
+ansible-playbook -i hosts/verb_hosts wipe_disks.yml --limit &#60;hostname></codeblock></li>
+          <li>Configure the operating system on the new compute node with this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &#60;hostname></codeblock></li>
+          <li>Complete the compute node deployment with this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit &#60;hostname></codeblock></li>
+          <li>Run the <codeph>site.yml</codeph> playbook with the required tag so that all other
+            services become aware of the new node:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts site.yml --tag "generate_hosts_file"</codeblock></li>
         </ol>
       </sectiondiv>
       <sectiondiv>
