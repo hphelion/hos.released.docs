@@ -281,7 +281,8 @@ ceph --cluster &lt;cluster-name> osd rm &lt;osd-num></codeblock></li>
       <title outputclass="headerH">Issue: Ceph playbooks fail during disk validation with an error
         like below:</title>
       <sectiondiv outputclass="insideSection">
-        <p>If you receive an error like this when going through disk validation the follow the steps below for resolution.</p>
+        <p>If you receive an error like this when going through disk validation the follow the steps
+          below for resolution.</p>
         <codeblock>TASK: [CEP-OSD | validate_disks | Validate the journal disks] *****************
 fatal: [helion-cp1-ceph0003-mgmt] => Traceback (most recent call last):
   File "/opt/stack/venv/ansible-hos-3.0.0/lib/python2.7/site-packages/ansible/runner/__init__.py", line 589, in _executor
@@ -355,36 +356,51 @@ $ sudo partprobe</codeblock></li>
     <section>
       <title>Troubleshooting RADOS Gateway</title>
     </section>
-    <p><b>Issue: Rados Gateway service does not come up after node is rebooted </b></p>
-    <p>After the RADOS Gateway node is rebooted, wait for the node to become ssh-able and allow an
-      additional minimum of five minutes for the node to settle. Start the services on the node:</p>
-    <p>
-      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+
+    <section><title outputclass="headerH">Issue: Rados Gateway service does not come up after node
+        is rebooted</title>
+      <sectiondiv outputclass="insideSection">
+        <p>After the RADOS Gateway node is rebooted, wait for the node to become ssh-able and allow
+          an additional minimum of five minutes for the node to settle. Start the services on the
+          node:</p>
+        <p>
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible 
 ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;radosgw-node> </codeblock>
-    </p>
-    <p> Verify the status of all services on the node:
-      <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+        </p>
+        <p> Verify the status of all services on the node:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible 
 ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></codeblock></p>
-    <section>
-      <title>Issue: Rados Gateway service is not responding </title>
-      <p>Verify the status of all services on the Rados Gateway node:
-        <codeblock>cd ~/scratch/ansible/next/hos/ansible 
-ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></codeblock></p>
-      <p>Based on the results of the playbook:<ul id="ul_grf_tjb_wv">
-          <li>If the radosgw service is reported down, check the radosgw service logs in
-              <codeph>/var/log/ceph/</codeph> to diagnose the cause of the crash. </li>
-          <li>If the radosgw service status is fine, you can examine the access and error logs for
-            the apache2 web server in <codeph>/var/log/apache2/ directory</codeph> to determine if
-            the problem is with the web server. </li>
-          <li>If apache2 logs do not indicate an issue, check the HAProxy service logs in the
-              <codeph>/var/log/haprpoxy/</codeph> directory on the controller nodes. </li>
-        </ul></p>
+      </sectiondiv>
     </section>
-    <section><title>Issue: HTTP Request errors</title>Examining the access and error logs for the
-      apache2 web server itself is probably the first step in identifying what is going on. If there
-      is a 500 error, that usually indicates a problem communicating with the radosgw daemon.<p>Make
-        sure the daemon is running:
-      </p><codeblock>cd ~/scratch/ansible/next/hos/ansible 
-ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node> </codeblock></section>
+
+
+    <section>
+      <title outputclass="headerH">Issue: Rados Gateway service is not responding</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Verify the status of all services on the Rados Gateway node:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></codeblock></p>
+        <p>Based on the results of the playbook:<ul id="ul_grf_tjb_wv">
+            <li>If the radosgw service is reported down, check the radosgw service logs in
+                <codeph>/var/log/ceph/</codeph> to diagnose the cause of the crash. </li>
+            <li>If the radosgw service status is fine, you can examine the access and error logs for
+              the apache2 web server in <codeph>/var/log/apache2/ directory</codeph> to determine if
+              the problem is with the web server. </li>
+            <li>If apache2 logs do not indicate an issue, check the HAProxy service logs in the
+                <codeph>/var/log/haprpoxy/</codeph> directory on the controller nodes. </li>
+          </ul></p>
+      </sectiondiv>
+    </section>
+
+    <section><title outputclass="headerH">Issue: HTTP Request errors</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Examining the access and error logs for the apache2 web server itself is probably the
+          first step in identifying what is going on. If there is a 500 error, that usually
+          indicates a problem communicating with the radosgw daemon.</p>
+        <p>Make sure the daemon is running:
+        </p><codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node> </codeblock>
+      </sectiondiv>
+    </section>
   </body>
 </topic>
