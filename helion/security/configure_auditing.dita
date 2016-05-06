@@ -314,15 +314,13 @@
     <p>If you are running in a padawan, it already creates 5 extra disks in each of the controller nodes by default (/dev/sdc..sdg). Please identify an unused one and use it for the steps below.
       Update the disk template for controller nodes</p>
       
-      <ol><li>ssh to your lifecycle manager node </li><li>Copy the appropriate cloud templates for your cloud from the ~/helion/examples/&lt;cloud type> folder to ~/helion/my_cloud/definition/ folder. Note: If you already have the required templates under the ~/helion/my_cloud/definition/data folder, you may skip this step.
-        Example:
-        <codeblock>$ cp -r ~/helion/examples/entry-scale-esx/* ~/helion/my_cloud/definition/
-          
-          cd ~/helion/my_cloud/definition/data</codeblock>
-        
-        
-        
-      </li><li>Edit the file disks_controller.yml (if you copied the files from mid-scale template, please edit disks_control_common.yml instead):
+      <ol><li>ssh to your lifecycle manager node </li><li>Copy the appropriate cloud templates for your cloud from the ~/helion/examples/&lt;cloud type>
+          folder to ~/helion/my_cloud/definition/ folder. Note: If you already have the required
+          templates under the ~/helion/my_cloud/definition/data folder, you may skip this step.
+          Example:
+          <codeblock>cp -r ~/helion/examples/entry-scale-esx/* ~/helion/my_cloud/definition/
+cd ~/helion/my_cloud/definition/data</codeblock>
+        </li><li>Edit the file disks_controller.yml (if you copied the files from mid-scale template, please edit disks_control_common.yml instead):
         <ol><li>Uncomment the "- name: audit-vg" section
         </li><li>The physical volume setting defaults to "/dev/sdz". Change it to match the disk you added, if required
         </li><li>Review the settings under logical-volumes. These are preset to optimal defaults
@@ -332,28 +330,28 @@
           QA note: For the step 3, once the patch https://review.hpcloud.net/#/c/99320 merges, details about adding a audit-vg will be added (commented) to all input model disk_controller.yml templates. If you want to test before that merges, please refer to the files
           2.0/examples/entry-scale-esx/data/disks_controller_1TB.yml and 2.0/examples/entry-scale-esx/data/server_roles.yml as an example.
         </li><li> Save your changes
-          <codeblock>$ cd ~/helion
-$ git checkout site
-$ git add -A
+          <codeblock> cd ~/helion
+ git checkout site
+ git add -A
 # Verify the added files
-$ git status
-$ git commit -m "Setup disks for audit logging"</codeblock>
+ git status
+ git commit -m "Setup disks for audit logging"</codeblock>
         </li><li> Enable Audit Logging ssh to your lifecycle manager node
           <codeblock>cd ~/helion/my_cloud/definition</codeblock>
-        </li><li>Edit the file cloudConfig.yml:
-              audit-settings:
-              <codeblock>audit-dir: /var/audit
-                default: disabled
-                #enabled-services:
-                #  - keystone
-                #  - barbican
-                disabled-services:
-                - nova
-                - barbican
-                - keystone
-                - cinder
-                - ceilometer
-                - neutron</codeblock>    </li><li>
+        </li><li>Edit the file cloudConfig.yml: audit-settings:
+          <codeblock>audit-dir: /var/audit
+   default: disabled
+   #enabled-services:
+   #  - keystone
+   #  - barbican
+   disabled-services:
+   - nova
+   - barbican
+   - keystone
+   - cinder
+   - ceilometer
+   - neutron</codeblock>
+        </li><li>
                   
                   Uncomment the "enabled-services" list
                   
@@ -363,34 +361,34 @@ $ git commit -m "Setup disks for audit logging"</codeblock>
                   Audit logging support is available only for the services listed under "disabled-services".
                   
                 </li><li>Save your changes and re-run the configuration processor
-          <codeblock>$ cd ~/helion
-$ git add -A
+          <codeblock> cd ~/helion
+ git add -A
 # Verify the added files
-$ git status
-$ git commit -m "Enable Audit Logging"
+ git status
+ git commit -m "Enable Audit Logging"
          
-$ cd ~/helion/hos/ansible
-$ ansible-playbook -i hosts/localhost config-processor-run.yml
-$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+ cd ~/helion/hos/ansible
+ ansible-playbook -i hosts/localhost config-processor-run.yml
+ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
         </li><li>Run osconfig playbook to create the /var/audit volume group
-          <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
+          <codeblock> cd ~/scratch/ansible/next/hos/ansible
 # Activate the ansible venv to run the ad-hoc ansible command
-$ source /opt/stack/venv/ansible-hos-3.0.0/bin/activate</codeblock>
+ source /opt/stack/venv/ansible-hos-3.0.0/bin/activate</codeblock>
           # The osconfig playbook uses the stub file /etc/hos/osconfig-ran to decide if disks were
           already configured so that # it could be idempotent. Remove this stub file on the
           controller nodes before re-running osconfing-run playbook
-          <codeblock>$ ansible -i hosts/verb_hosts KEY-API -a 'sudo rm -f /etc/hos/osconfig-ran'
-$ ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit KEY-API</codeblock>
+          <codeblock> ansible -i hosts/verb_hosts KEY-API -a 'sudo rm -f /etc/hos/osconfig-ran'
+ ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit KEY-API</codeblock>
           # Note: I've used KEY-API here as an example to cover the management controller cluster.
           If you need to enable auditing for # a service that is not run in the same cluster, please
           suitably add it to the --limit flag above # For example: --limit KEY-API:MON-API </li><li> Run service playbooks to reconfigure them for audit logging
-          <codeblock>$ cd ~/scratch/ansible/next/hos/ansible
-$ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml
-$ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
-          # (More &lt;-reconfigure.yml to run if more are enabled or disabled.) </li><li>
-                  Alternatively, <!-- once the patch https://review.hpcloud.net/#/c/99998/ merges, -->the following top level playbook could be used:
-                  <codeblock>$ ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
-                </li></ol>
+          <codeblock> cd ~/scratch/ansible/next/hos/ansible
+ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml
+ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
+          # (More &lt;-reconfigure.yml to run if more are enabled or disabled.) </li><li> Alternatively, <!-- once the patch https://review.hpcloud.net/#/c/99998/ merges, -->the
+          following top level playbook could be used:
+          <codeblock> ansible-playbook -i hosts/verb_hosts hlm-reconfigure.yml</codeblock>
+        </li></ol>
       <!--The above steps are based on the wiki: Enable or Disable HOS Audit-->
 </section>
 
