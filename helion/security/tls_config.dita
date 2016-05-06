@@ -80,7 +80,9 @@
       using your own CA: <ul>
         <li>You should use a distinct name from those already existing in config/tls/cacerts. This
           also means that you should not <i>reuse</i> your CA names (and use unique and
-          distinguishable names such as MyCompanyXYZ_PrivateRootCA.crt). </li>
+          distinguishable names such as MyCompanyXYZ_PrivateRootCA.crt). A new name is what
+          indicates that a file is new or changed, so reusing a name means that the file is not
+          considered changed even its contents have changed.</li>
         <li>You should not remove any existing CA files from config/tls/cacerts </li>
         <li>If you want to remove an existing CA you must <ol>
             <li>First remove the file. </li>
@@ -222,12 +224,11 @@ openssl req -x509 -batch -newkey rsa:2048 -nodes -out "${EXAMPLE_CA_CERT_FILE}" 
       the configuration processor-generated request file from
       <codeph>info/cert_reqs/</codeph>:<codeblock>cat ~/helion/my_cloud/info/cert_reqs/example-internal-cert</codeblock>Then
       copy this file to your working directory and appended a <codeph>.req</codeph> extension to it.
-      <codeblock>cp cat ~/helion/my_cloud/info/cert_reqs/example-internal-cert example-internal-cert.req</codeblock>
+      <codeblock>cp ~/helion/my_cloud/info/cert_reqs/example-internal-cert example-internal-cert.req</codeblock>
       Expand the following headline to see a request file: </section>
     <section id="privateMetadata"><title outputclass="headerH">Certificate request file</title>
       <sectiondiv outputclass="insideSection">
-        <codeblock outputclass="nomaxheight">
-[req]
+        <codeblock outputclass="nomaxheight">[req]
 distinguished_name = req_distinguished_name
 req_extensions = v3_req
 prompt = no
