@@ -38,9 +38,10 @@
               licensed. This message displays in error and can be ignored.</note>
             <p>You can deploy VSA with Adaptive Optimization (AO) or without. The deployment process
               for each of these options is similar, you just need to make a change in the disk input
-              model. For more detailed information, refer to the <xref
-                href="#config_vsa/deploy-vsa-with-ao-without-ao" format="dita">VSA with AO or
-                without AO</xref> section below.</p></li>
+              model. For more detailed information, refer to <b>VSA with or without Adaptive
+                Optimization (AO)</b> in <xref
+                href="../architecture/modify/modify_entryscale_kvm_vsa.dita#modify_entryscale_kvm_vsa"
+              />.</p></li>
           <li>A single VSA node can have a maximum of seven raw disks (excluding the operating
             system disks) attached to it, which is defined in the disk input model for your VSA
             nodes. It is expected that no more than seven disks are specified (including Adaptive
@@ -92,40 +93,37 @@
           <codeblock>cd ~/scratch/ansible/next/hos/ansible/
 ansible-playbook -i hosts/verb_hosts vsalm-configure-cluster.yml</codeblock></li>
         <li>When prompted, enter an administrative user name and password you will use to administer
-          the CMC utility. <p>Administrative user naming requirements:</p>
-          <ul>
+          the CMC utility. <p>Administrative user naming requirements:</p><ul>
             <li>3 to 30 characters</li>
             <li>Must begin with a letter</li>
             <li>Allowed characters: 0-9, a-z, A-Z, hyphen (-), underline (_)</li>
             <li>Disallowed characters: Multibyte character set</li>
-          </ul>
-          <p>Administrative user password requirements:</p>
-          <ul>
+          </ul><p>Administrative user password requirements:</p><ul>
             <li>5 to 40 characters</li>
             <li>Must begin with a letter</li>
             <li>Many ASCII and extended ASCII characters, Multibyte character set</li>
             <li>Disallowed characters: dot (.), colon (:), forward slash (/), comma (,), backward
               slash (\), semi-colon (;), single-quote (‘), space ( ), equals (=)</li>
-          </ul>
-          <note type="important">You will need to remember these values to access the cluster using
-            the CMC utility or to re-run this playbook later if further management of your VSA
+          </ul><note type="important">You will need to remember these values to access the cluster
+            using the CMC utility or to re-run this playbook later if further management of your VSA
             system is needed. Do not change the credentials for one or more clusters using CMC as it
             will make the cluster automation playbook ignore those clusters for
             reconfiguration.</note></li>
         <li>In the output of the Ansible playbook you will see different steps where you can locate
           the values for your VSA cluster name, the virtual IP address, and the IP addresses of each
           of the VSA hosts in the cluster. You will use these values later when configuring your
-            backend.<p>Here are some examples below, with the important information
+            backend.<p>The following is an example, with the important information
             bolded.</p><p>This step displays the VSA cluster name and the virtual IP address of the
             cluster:<codeblock>TASK: [vsalm | _create_cluster | Display the status of cluster creation performed in above step] ***
 ok: [helion-cp1-vsa0001-mgmt] => {
     "msg": "Created cluster - Name=<b>cluster-vsa</b>, IP=<b>10.13.111.142</b>"
-}</codeblock></p>
-          <p>This step displays each of the IP addresses for the VSA hosts in the cluster:</p>
-          <codeblock>TASK: [vsalm | vsalm-configure-cluster | Display the status of validation step performed in above step] ***
-ok: [helion-cp1-vsa0001-mgmt] => {
-    "msg": "No change in VSA nodes; cluster_node_list: ['<b>10.13.111.141</b>', '<b>10.13.111.143</b>', '<b>10.13.111.144</b>'], cp_node_list: ['10.13.111.141', '10.13.111.143', '10.13.111.144']"
-}</codeblock></li>
+}</codeblock></p></li>
+        <li>You can view the added node to the cluster in CMC GUI as follows: <ol id="ol_r5f_ll3_wv">
+            <li>Launch the CMC utility. See <xref href="#config_vsa/cmc" format="dita">Launching the
+                CMC utility GUI</xref> for more details.</li>
+            <li>Find the new VSA system. </li>
+            <li>View the added node in the cluster.</li>
+          </ol></li>
         <!--<li>Run the following command from your first controller node which will open the HPE
           StoreVirtual Centralized Management Console (CMC) GUI on your local machine:
           <codeblock>/opt/HP/StoreVirtual/UI/jre/bin/java -jar /opt/HP/StoreVirtual/UI/UI.jar</codeblock></li>
@@ -397,8 +395,7 @@ hplefthand_debug: false</codeblock>
                     <row>
                       <entry>volume_backend_name</entry>
                       <entry>Name given to the VSA backend. You will specify this value later in the
-                          <xref href="configure_vsa.dita#config_vsa/associate_volumetype">Associate
-                          the Volume Type to a Backend</xref> steps.</entry>
+                        Associate the Volume Type to a Backend steps.</entry>
                     </row>
                     <row>
                       <entry>volume_driver</entry>
