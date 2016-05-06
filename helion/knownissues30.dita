@@ -200,6 +200,21 @@ sudo systemctl start kibana
         </section>
 
         <section>
+            <title>Ceph health status</title>
+            <!-- DOCS-3091 -->
+            <p>If Ceph health status displays <i>WARN</i> with <i>too few pgs</i>, you can increase
+                the pg_num and pgp_num to resolve the issue. </p>
+            <p>Example: <codeblock>health HEALTH_WARN pool .rgw has too few pgs</codeblock></p>
+            <p>Increase the pg_num and pgp_num count by running:
+                <codeblock>ceph osd pool get &lt;pool-name> pg_num</codeblock>
+            </p>
+            <p> More information on pg_num and pgp_num can be found here: <xref
+                    href="http://docs.ceph.com/docs/master/rados/operations/placement-groups/"
+                    format="html" scope="external"/>
+            </p>
+        </section>
+
+        <section>
             <title>Identity (Keystone)</title>
             <!-- DOCS-2513 -->
             <p>There will be performance degradation to a user's account in your cloud environment
@@ -226,6 +241,21 @@ sudo systemctl start kibana
                 Brocade.</p>
         </section>
 
+        <section><title>Image Service (Glance)</title>
+            <!-- DOCS-1997 -->
+            <p><b>Image sharing between projects is disabled for non-admin users</b></p>
+            <p>By default in <keyword keyref="kw-hos-phrase-30"/> we have altered the Glance
+                policies to only allow image sharing by the admin user. The policies are set as
+                follows:</p>
+            <codeblock>"add_member": "role:admin or role:glance_admin",
+"delete_member": "role:admin or role:glance_admin",
+"get_member": "role:admin or role:glance_admin",
+"get_members": "role:admin or role:glance_admin",
+"modify_member": "role:admin or role:glance_admin",</codeblock>
+            <p>This is due to the security issue documented <xref
+                    href="https://wiki.openstack.org/wiki/OSSN/1226078" scope="external"
+                    format="html">here</xref>.</p>
+        </section>
         <section>
             <title>Bare Metal (Ironic)</title>
             <p>Multipath in not supported for the boot device. In case multiple paths exist use
@@ -423,6 +453,14 @@ Fact cache entry for host COMPUTE-0001 isn't valid, deleting and failing
 ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not otherwise contain valid JSON data. They have been removed, so you can re-run your command now.
 </codeblock>
                 Then please just re-run your Ansible command. </p>
+        </section>
+
+        <section>
+            <title>Instance fail to spawn with type &lt;tuple error&gt; in <keyword keyref="kw-hos"
+                /> ESXi environment.</title>
+            <!-- DOCS-3099 -->
+            <p>The percentage of the failure is approximately 1.4% out of 8000 instance spawned.
+                    <keyword keyref="kw-hos"/> 4.0 will have a fix for this issue.</p>
         </section>
 
         <section>

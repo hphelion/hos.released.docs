@@ -48,6 +48,9 @@
             for Adaptive Optimization then your disk input model should not specify more than five
             raw disks for data and two raw disks for Adaptive Optimization. Exceeding the disk limit
             causes VSA deployment failure.</li>
+          <li>You can create more than one VSA cluster of same or different type by specifying the
+            configuration in cloud model. For more details, refer to <xref
+              href="../operations/blockstorage/vsa/create_multiple_vsa_clusters.dita"/>.</li>
         </ul>
       </p>
       <p id="multibackend"><b>Concerning using multiple backends:</b> If you are using multiple
@@ -67,21 +70,20 @@
         two major steps:</p>
       <p>
         <ul id="ul_kbm_n3k_5v">
-          <li>Creating a Management Group</li>
-          <li>Creating and configuring a cluster</li>
+          <li>Creating a cluster</li>
+          <li>Configuring VSA as the block storage backend</li>
         </ul>
       </p>
       <p>You can perform these tasks in an automated process using the provided Ansible playbooks or
         manually using the HPE StoreVirtual Centralized Management Console (CMC) GUI.</p>
       <note>Using Ansible playbooks to create clusters is strongly recommended. Cluster creation
         using HPE StoreVirtual Centralized Management Console (CMC) GUI is deprecated in <keyword
-          keyref="kw-hos"/>. Clusters created using CMC manually cannot be reconfigured using the
-        Ansible playbooks. If you used CMC to create the clusters, you must continue to use CMC to
-        administer those clusters.</note>
+          keyref="kw-hos-phrase"/>. Clusters created using CMC manually cannot be reconfigured using
+        the Ansible playbooks. If you used CMC to create the clusters, you must continue to use CMC
+        to administer those clusters.</note>
     </section>
 
-    <section id="ansible">
-      <p><b>Using Ansible</b></p>
+    <section id="ansible"><title>Using Ansible</title>
       <p>Perform the following steps to create the cluster using the provided Ansible playbooks.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
@@ -147,7 +149,7 @@ ok: [helion-cp1-vsa0001-mgmt] => {
         <p>Perform the following steps to create the cluster using CMC.</p>
         <p><b>Launching the CMC utility GUI</b></p>
         <p>The HPE StoreVirtual Centralized Management Console (CMC) GUI is an interface where you
-          can install and configure VSA. </p>
+          can configure VSA. </p>
         <p>The CMC utility requires a GUI to access it. You can use either of the following methods
           to launch the CMC GUI.</p>
         <p>
@@ -157,7 +159,7 @@ ok: [helion-cp1-vsa0001-mgmt] => {
           </ul>
         </p>
         <p><b>RDP/VNC connect method</b></p>
-        <p id="vnc"><b>Setup VNC connect on the Controller Node</b></p>
+        <p id="vnc">Setup VNC connect on the Controller Node</p>
         <p>The following steps will allow you to setup a VNC connect to your controller node so you
           can view the GUI.</p>
         <ol>
@@ -460,56 +462,8 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
       </ol>
-      <note type="important">You can create more than one VSA cluster of same or different type by
-        specifying the configuration in cloud model. For more details, refer <xref
-          href="../operations/blockstorage/vsa/create_multiple_vsa_clusters.dita">Modifying Cloud
-          Model to Create Multiple Clusters</xref>.</note>
     </section>
-    <section id="deploy-vsa-with-ao-without-ao">
-      <title>VSA with AO or without AO</title>
-      <p>VSA may be deployed with adaptive optimization (AO) or without AO. AO allows built-in
-        storage tiering for VSA. While deploying VSA with or without AO you must ensure to use the
-        appropriate disk input model.</p>
-      <p>If you are using VSA with AO, you will have an extra device group section where the usage
-        is identified as adaptive-optimization as described in the following example:
-        <codeblock>Additional disks can be added if available
-          device_groups:
-            - name: vsa-data
-              consumer:
-                name: vsa
-                usage: data
-              devices:
-                - name: /dev/sdc
-          - name: /dev/sdd
-          - name: /dev/sde
-          - name: /dev/sdf
-          
-            - name: vsa-cache
-              consumer:
-                name: vsa
-                usage: <b>adaptive-optimization</b>
-              devices:
-                - name: /dev/sdb</codeblock></p>
-      <p>VSA without AO consists of only data disks as described in the following example:
-        <codeblock>Additional disks can be added if available
-              device_groups:
-                - name: vsa-data
-                  consumer:
-                    name: vsa
-                    usage: data
-                  devices:
-                    - name: /dev/sdc
-                    - name: /dev/sdd
-                    - name: /dev/sde
-                    - name: /dev/sdf</codeblock></p>
-      <p>It is recommended to use SSD disk for AO. <note>A single VSA node can have a maximum of
-          seven raw disks (excluding the operating system disks) attached to it, which is defined in
-          the disk input model for your VSA nodes. It is expected that no more than seven disks are
-          specified (including Adaptive Optimization disks) per VSA node. For example, if you want
-          to deploy VSA with two disks for Adaptive Optimization then your disk input model should
-          not specify more than five raw disks for data and two raw disks for Adaptive Optimization.
-          Exceeding the disk limit causes VSA deployment failure.</note></p>
-    </section>
+
     <section id="post_install"><title>Post-Installation Tasks</title>
       <p>After you have configured VSA as your Block Storage backend, here are some tasks you will
         want to complete:</p>

@@ -2,6 +2,9 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="OctaviaInstall">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring Load Balancer as a Service</title>
+  <abstract><shortdesc outputclass="hdphidden">The <keyword keyref="kw-hos"/> Neutron LBaaS service
+      supports several load balancing providers. By default, both Octavia and the namespace haproxy
+      driver are configured to be used. We describe this in more detail here.</shortdesc></abstract>
   <body>
     <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
@@ -34,32 +37,29 @@
         as the default.</note>
     </section>
 
-    <section id="ExternalNetwork">
-      <title>Create External Network</title>
-      <p>You will need to create an external network and register an image to test LBaaS
+    <section id="prerequisites">
+      <title>Prerequisites</title>
+      <p>You will need to create an external network and create an image to test LBaaS
         functionality. If you have already created an external network and registered and image,
         this step can be skipped.</p>
-      <ol>
-        <li>You can run commands from the lifecycle manager or from a shell with access to the API
-          nodes. Run the playbook which registers a Cirros image and creates a public network under
-          Neutron. <note>Running this step configures 172.16.0.0/16 by default as the external
-            network with name <i>ext-net</i> and registers a Cirros image. You will need to change
-            the IP for your external network.</note>
-          <codeblock>ansible-playbook -i hosts/verb_hosts hlm-cloud-configure.yml</codeblock></li>
-      </ol>
+      <p><b>Creating an external network</b></p>
+      <xref href="../operations/create_extnet.dita"/>
+      <p><b>Creating and uploading a Glance image</b></p>
+      <xref href="../userguide/create_image.dita"/>
     </section>
 
 
     <section id="OctaviaProvider">
       <title>Octavia Load Balancing Provider</title>
-      <p id="summary_p">The Octavia Load balancing provider bundled with <keyword keyref="kw-hos-phrase-30"/> is an
-        operator grade load balancer for OpenStack. It is based on the Liberty version of Octavia.
-        It differs from the namespace driver by starting a new nova virtual machine to house the
-        haproxy performing the load balancing for each load balancer requested. A virtual machine
-        for each load balancer requested provides a better separation of load balancers between
-        tenants and makes it easier to grow load balancing capacity alongside compute node growth.
-        Additionally, if the virtual machine fails for any reason Octavia will replace it with a new
-        VM from a pool of spare VM's, assuming that the feature is configured.</p>
+      <p id="summary_p">The Octavia Load balancing provider bundled with <keyword
+          keyref="kw-hos-phrase-30"/> is an operator grade load balancer for OpenStack. It is based
+        on the Liberty version of Octavia. It differs from the namespace driver by starting a new
+        nova virtual machine to house the haproxy performing the load balancing for each load
+        balancer requested. A virtual machine for each load balancer requested provides a better
+        separation of load balancers between tenants and makes it easier to grow load balancing
+        capacity alongside compute node growth. Additionally, if the virtual machine fails for any
+        reason Octavia will replace it with a new VM from a pool of spare VM's, assuming that the
+        feature is configured.</p>
       <p><b>Prerequisites</b></p>
       <p>The Octavia Load Balancing Provider requires a provider network. This needs to be set up
         and configured in the hlm-input model prior to installing Octavia. Please refer to the

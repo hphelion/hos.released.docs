@@ -44,20 +44,21 @@
       uncommenting the line <codeph>ipam_driver = internal</codeph>, commit the file using git
       commit from the <codeph>helion/my_cloud</codeph>
       directory:<pre>git commit -a -m 'My config for enabling the internal IPAM Driver'</pre>Then
-      follow the steps below to deploy HPE Helion OpenStack:
-        <codeblock>cd ~/helion/hos/ansible
+      follow the steps to deploy HPE Helion OpenStack in the <xref
+        href="../installation/installation_overview.dita#install_overview">installation
+        document</xref> appropriate to your cloud configuration. <!--<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml
 cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml
-...</codeblock><note>Currently
-        there is no migration path from the non-pluggable driver to a pluggable IPAM driver because
-        changes are needed to database tables and Neutron currently can't make those
-      changes.</note></section>
+...</codeblock>-->
+      <note>Currently there is no migration path from the non-pluggable driver to a pluggable IPAM
+        driver because changes are needed to database tables and Neutron currently can't make those
+        changes.</note></section>
     <section><title>Using the Infoblox IPAM driver </title>
-      <p>As suggested above, using the Infoblox IPAM driver  requires changes to existing parameters
+      <p>As suggested above, using the Infoblox IPAM driver requires changes to existing parameters
         in <codeph>nova.conf</codeph> and <codeph>neutron.conf</codeph>. If you want to use the
         infoblox appliance, you will need to add the "infoblox service-component" to the
-        service-role containing the neutron api server. To use the infoblox appliance for IPAM, both
+        service-role containing the neutron API server. To use the infoblox appliance for IPAM, both
         the agent <i>and</i> the Infoblox IPAM driver are required. The
           <codeph>infoblox-ipam-agent</codeph> should be deployed on the same node where the
         neutron-server component is running. Usually this is a Controller node.</p>
@@ -68,7 +69,7 @@ ansible-playbook -i hosts/verb_hosts site.yml
           service in the controller node cluster (see change in bold). Make the changes in
             <codeph>control_plane.yml</codeph> found here:
             <codeph>~helion/my_cloud/definition/data/control_plane.yml</codeph>
-          <codeblock>---
+          <codeblock outputclass="nomaxheight">---
   product:
     version: 2
 
@@ -153,7 +154,7 @@ ansible-playbook -i hosts/verb_hosts site.yml
             
  #  Note: 
  #  If the infoblox-ipam-agent is to be deployed in the cloud, change the 
- #  notification_driver settting from "messaging" to "messagingv2". 
+ #  notification_driver setting from "messaging" to "messagingv2". 
  notification_driver = messagingv2
  notification_topics = notifications
             
@@ -175,13 +176,13 @@ ansible-playbook -i hosts/verb_hosts site.yml
       <li>Commit the changes:
           <codeblock>cd ~/helion/my_cloud
 git commit –a –m 'My config for enabling the Infoblox IPAM driver'</codeblock>
-        </li><li>Deploy the cloud with the changes. Due to changes to the control_plane.yml, we need to rerun the
-          config-processor-run.yml playbook/
-          <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml;
-ansible-playbook -i hosts/localhost ready-deployment.yml;
-cd ~/scratch/ansible/next/hos/ansible;
-ansible-playbook -i hosts/verb_hosts site.yml;</codeblock>
+        </li><li>Deploy the cloud with the changes. Due to changes to the control_plane.yml, you will need to
+          rerun the config-processor-run.yml playbook if you have run it already during the install
+          process.<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock>
         </li></ol></section>
     
     <section><title>Configuration parameters for using the Infoblox IPAM driver </title><p/>Changes
@@ -276,7 +277,7 @@ ansible-playbook -i hosts/verb_hosts site.yml;</codeblock>
               <entry>
                 <p>The driver used to send notifications from the Neutron API server to the Neutron
                   agents.</p>
-                <p>The installation guilde for networking-infoblox calls for the notification_driver
+                <p>The installation guide for networking-infoblox calls for the notification_driver
                   to be "messagingv2"</p>
               </entry>
             </row>
@@ -288,7 +289,7 @@ ansible-playbook -i hosts/verb_hosts site.yml;</codeblock>
               <entry>
                 <p><b>No change needed</b>.</p>
                 <p>The row is here show the changes in the Neutron parameters described in the
-                  installation guilde for networking-infoblox</p>
+                  installation guide for networking-infoblox</p>
               </entry>
             </row>
           </tbody>
@@ -314,7 +315,7 @@ ansible-playbook -i hosts/verb_hosts site.yml;</codeblock>
               <entry>infoblox</entry>
               <entry>0</entry>
               <entry>ID for selecting a particular grid from one or more grids to serve networks in
-                the Infoblox backend</entry>
+                the Infoblox back end</entry>
             </row>
             <row>
               <entry>ipam_agent_workers</entry>

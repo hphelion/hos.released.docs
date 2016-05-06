@@ -11,12 +11,12 @@
       <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv>
       <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv>
     </section>
-    
+
     <section>
       <title>Troubleshooting Ceph deployment issues</title>
       <p>Here is a list of known issues along with resolutions for Ceph deployment issues.</p>
     </section>
-    
+
     <section id="issue1">
       <title outputclass="headerH">Issue: If no Ceph monitor nodes are defined for the cloud, then
         Ceph cloud deployment fails</title>
@@ -339,7 +339,31 @@ $ sudo partprobe</codeblock></li>
     </section>
 
 
-
+    <section id="issue10">
+      <title outputclass="headerH">Issue: Nova volume-attach fails after configuring Ceph as the
+        backend</title>
+      <sectiondiv outputclass="insideSection">
+        <!-- STOR-1087 -->
+        <p>If you had Nova instances active in your environment prior to configuring Ceph as your
+          backend and you attempt to attach a Ceph volume to the instance and it fails, you should
+          check the <codeph>libvirt_debug.log</codeph> for the cause. If the error looks like this
+          below then look below for the workaround.</p>
+        <codeblock>2015-10-20 13:18:15.237+0000: 17966: debug : qemuMonitorSend:972 : QEMU_MONITOR_SEND_MSG: mon=0x7f9fa0000bd0 msg={"execute":"human-monitor-command","arguments":{"command-line":"drive_add dummy file=rbd:volumes/volume-d1d8d038-9571-42a9-ad5b-4a379849420c:id=cinder:key=AQBFMyZWKNnJERAAXvYACmAhovhjTJZymYfxsQ==:auth_supported=cephx\\;none:mon_host=192.168.186.102\\:6789\\;192.168.186.103\\:6789\\;192.168.186.104\\:6789,if=none,id=drive-virtio-disk1,format=raw,serial=d1d8d038-9571-42a9-ad5b-4a379849420c,cache=none"},"id":"libvirt-316"}^M
+ fd=-1
+2015-10-20 13:18:15.237+0000: 17961: debug : qemuMonitorIOWrite:503 : QEMU_MONITOR_IO_WRITE: mon=0x7f9fa0000bd0 buf={"execute":"human-monitor-command","arguments":{"command-line":"drive_add dummy file=rbd:volumes/volume-d1d8d038-9571-42a9-ad5b-4a379849420c:id=cinder:key=AQBFMyZWKNnJERAAXvYACmAhovhjTJZymYfxsQ==:auth_supported=cephx\\;none:mon_host=192.168.186.102\\:6789\\;192.168.186.103\\:6789\\;192.168.186.104\\:6789,if=none,id=drive-virtio-disk1,format=raw,serial=d1d8d038-9571-42a9-ad5b-4a379849420c,cache=none"},"id":"libvirt-316"}^M
+ len=425 ret=425 errno=0
+2015-10-20 13:18:15.239+0000: 17961: debug : qemuMonitorIOProcess:399 : QEMU_MONITOR_IO_PROCESS: mon=0x7f9fa0000bd0 buf={"return": "2015-10-20T13:18:15.239452Z Unknown protocol 'rbd'\r\n", "id": "libvirt-316"}^M
+ len=91
+2015-10-20 13:18:15.239+0000: 17961: debug : qemuMonitorJSONIOProcessLine:179 : Line [{"return": "2015-10-20T13:18:15.239452Z Unknown protocol 'rbd'\r\n", "id": "libvirt-316"}]
+2015-10-20 13:18:15.239+0000: 17961: debug : qemuMonitorJSONIOProcessLine:199 : QEMU_MONITOR_RECV_REPLY: mon=0x7f9fa0000bd0 reply={"return": "2015-10-20T13:18:15.239452Z Unknown protocol 'rbd'\r\n", "id": "libvirt-316"}
+2015-10-20 13:18:15.239+0000: 17961: debug : qemuMonitorJSONIOProcess:248 : Total used 91 bytes out of 91 available in buffer
+2015-10-20 13:18:15.239+0000: 17966: debug : qemuMonitorJSONCommandWithFd:291 : Receive command reply ret=0 rxObject=0x7f9fc16f8f80</codeblock>
+        <p><b>Resolution:</b></p>
+        <p>If you had active Nova instances before your environment was configured to use Ceph as
+          your block storage backend you will receive the error above. To resolve this issue you
+          will need to reboot the instances and then volume-attach actions should succeed.</p>
+      </sectiondiv>
+    </section>
 
 
 

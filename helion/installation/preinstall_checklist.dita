@@ -68,6 +68,10 @@
         tested. The networks are not installed or managed by the Cloud. You must install and manage
           the networks as documented in the <xref keyref="example_configurations">Example
           Configurations</xref>.</p>
+      <p>Note that if you want a pluggable IPAM driver, it must be specified at install time. Only
+        with a clean install of  <keyword keyref="kw-hos-phrase"/> can you specify a different IPAM
+        driver. If upgrading, you must use the default driver. More information can be found in
+          <xref href="../networking/using_ipam.dita#ipam"/>.</p>
       <p>Use these checklists to confirm and record your network configuration information.</p>
       <p><b>Router</b></p>
       <p>The IP router used with <keyword keyref="kw-hos"/> must support the updated of its ARP table
@@ -514,10 +518,13 @@
       </p>
 
     </section>
-    <section id="vlaninfo"><title>VLAN Information for the nic_mappings.yml Input File</title>
-      <p>From your lifecycle manager, run the following command and use this information for the
+    <section id="nicmappings"><title>Information for the nic_mappings.yml Input File</title>
+      <!--<p>From your lifecycle manager, run the following command and use this information for the
           <codeph>bus-address</codeph> value in your <codeph>nic_mappings.yml</codeph> file:
-        <codeblock>sudo lspci -D |grep -i net</codeblock></p>
+        <codeblock>sudo lspci -D |grep -i net</codeblock></p>-->
+      <p>Log onto each type of physical server you have and issue platform-appropriate commands to identify 
+        the <codeph>bus-address</codeph>es and <codeph>port-num</codeph>s that may be required.</p>
+      
       <p>
         <table frame="all" rowsep="1" colsep="1" id="nic_mappings">
           <tgroup cols="1">
@@ -547,11 +554,12 @@
           </tgroup>
         </table>
       </p>
-      <p>For certain adapters with more than one interface, the above command returns a single bus
-        address. In this instance, run the following command from the lifecycle manager. Use this
-        information for the <codeph>port-num</codeph> value in your
-          <codeph>nic_mappings.yml</codeph>
-        file:<codeblock>cat /sys/class/net/&lt;device name>/dev_port</codeblock></p>
+      <p>To find the  <codeph>port-num</codeph> use:
+          <codeblock>cat /sys/class/net/&lt;device name>/dev_port</codeblock>
+      
+      where the 'device-name' is  the name of the device <b>currently mapped</b> to this address, 
+        not necessarily the name of the device <b>to be mapped</b>.
+      </p>
       <p>
         <table frame="all" rowsep="1" colsep="1" id="nic_mappings2">
           <tgroup cols="1">
