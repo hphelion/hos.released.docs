@@ -21,6 +21,20 @@
         This populates 1% of the partitions on the system and if you are happy with this figure,
         please proceed to step 2 below. Otherwise, follow step 1 to edit the configuration file.</p>
       <ol>
+        <li>Update the cron file that runs the Swift dispersion report.<p>Path to file that needs to
+            be edited:</p><codeblock>~/scratch/ansible/next/hos/ansible/roles/swift-dispersion/templates/dispersion-report-cron.j2</codeblock>
+          <p>Change the contents from this: (line bolded)</p>
+          <codeblock># Cronjob that runs dispersion report every 2 hours
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=""
+<b>* */2 * * * {{ swift_user }} /usr/local/bin/swift-dispersion-report > /var/cache/swift/dispersion-report 2>&amp;1</b></codeblock>
+          <p>to this: (specific change needed bolded)</p>
+          <codeblock># Cronjob that runs dispersion report every 2 hours
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=""
+<b>0</b> */2 * * * {{ swift_user }} /usr/local/bin/swift-dispersion-report > /var/cache/swift/dispersion-report 2>&amp;1</codeblock></li>
         <li>If you wish to change the dispersion coverage percentage then edit the value of
             <codeph>dispersion_coverage</codeph> to the value you wish to use. In the example below
           we have altered the file to create 5% dispersion:
