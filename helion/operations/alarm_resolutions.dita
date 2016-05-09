@@ -1952,8 +1952,9 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry>Alarms when the specified process is not running.<p>process_name =
-                    apache2</p></entry>
+                <entry>Alarms when the specified process is not running.<p>
+                    <codeblock>process_name = apache2</codeblock>
+                  </p></entry>
                 <entry/>
                 <entry>If the Apache process goes down, connect to the affected node via SSH and
                   restart it with this command:
@@ -1969,15 +1970,17 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <row>
                 <entry morerows="2">backup</entry>
                 <entry>Process Check</entry>
-                <entry>Alarms when the specified process is not running.
-                  <p>freezer-scheduler</p></entry>
+                <entry>Alarms when the specified process is not running. <p>
+                    <codeblock>process_name = freezer-scheduler</codeblock>
+                  </p></entry>
                 <entry>Process crashed.</entry>
                 <entry>Restart the process on the affected node. Review the associated logs.</entry>
               </row>
               <row>
                 <entry>HTTP Status</entry>
-                <entry>Alarms when the specified HTTP endpoint is down or not reachable.
-                    <p>process_name = freezer-api</p></entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable. <p>
+                    <codeblock>process_name = freezer-api</codeblock>
+                  </p></entry>
                 <entry/>
                 <entry/>
               </row>
@@ -2013,8 +2016,8 @@ ansible-playbook -i hosts/verb_hosts ops-console-start.yml</codeblock></entry>
               <row>
                 <entry>haproxy</entry>
                 <entry>Process Check</entry>
-                <entry>Alarms when the specified process is not running. <p>process_name =
-                    haproxy</p></entry>
+                <entry>Alarms when the specified process is not running.
+                  <codeblock><p>process_name = haproxy</p></codeblock></entry>
                 <entry>HA Proxy is not running on this machine.</entry>
                 <entry>Restart the process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
@@ -2057,8 +2060,9 @@ ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags monasca-persister
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry>Alarms when the specified process is not running. <p>process_name =
-                    kafka.Kafka</p></entry>
+                <entry>Alarms when the specified process is not running. <p>
+                    <codeblock>process_name = kafka.Kafka</codeblock>
+                  </p></entry>
                 <entry/>
                 <entry>Restart the process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
@@ -2075,10 +2079,10 @@ ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags kafka</codeblock>
 
               <!-- key-manager / barbican -->
               <row>
-                <entry morerows="2">key-manager</entry>
+                <entry morerows="3">key-manager</entry>
                 <entry>Process Check</entry>
-                <entry>Alarms when the specified process is not running. <p>process_name =
-                    barbican-api</p></entry>
+                <entry>Alarms when the specified process is not running. 
+                  <codeblock>process_name = barbican-api</codeblock></entry>
                 <entry>Process has crashed.</entry>
                 <entry>Restart the process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
@@ -2089,19 +2093,34 @@ ansible-playbook -i hosts/verb_hosts barbican-start.yml --limit &lt;hostname></c
               </row>
               <row>
                 <entry>HTTP Status</entry>
-                <entry>Alarms when the specified HTTP endpoint is down or not reachable.</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not
+                  reachable.<codeblock>component = barbican-api
+api_endpoint = public or internal</codeblock></entry>
                 <entry>The endpoint is not responsive, it may be down.</entry>
-                <entry>Restart the process on the affected node using these steps: <ol>
+                <entry>For the HTTP Status alarms for the public and internal endpoints, restart the
+                  process on the affected node using these steps: <ol>
                     <li>Log in to the lifecycle manager.</li>
                     <li>Stop the barbican service:
                       <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts barbican-stop.yml</codeblock></li>
+ansible-playbook -i hosts/verb_hosts barbican-stop.yml --limit &lt;hostname></codeblock></li>
                     <li>Restart the barbican service back up:
                       <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts barbican-start.yml</codeblock></li>
+ansible-playbook -i hosts/verb_hosts barbican-start.yml --limit &lt;hostname></codeblock></li>
                   </ol>
                   <p>Examine the logs <codeph>/var/log/barbican/</codeph> for possible error
                     messages.</p></entry>
+              </row>
+              <row>
+                <entry>HTTP Status</entry>
+                <entry>Alarms when the specified HTTP endpoint is down or not reachable.
+                  <codeblock>component = barbican-api
+monitored_host_type = vip</codeblock></entry>
+                <entry>The Barbican API on the admin virtual IP is down.</entry>
+                <entry>This alarm is verifying access to the Barbican API via the virtual IP address
+                  (HAProxy). If this check is failing but the other two HTTP Status alarms for the
+                  key-manager service are not then the issue is likely with HAProxy so you should
+                  view the alarms for that service.  If the other two HTTP Status alarms are
+                  alerting as well then restart Barbican using the steps listed.</entry>
               </row>
               <row>
                 <entry>Service Log Directory Size</entry>
@@ -2127,8 +2146,8 @@ ansible-playbook -i hosts/verb_hosts barbican-start.yml</codeblock></li>
               </row>
               <row>
                 <entry>Process Check</entry>
-                <entry>Alarms when the specified process is not running. <p>process_name =
-                    mysqld</p></entry>
+                <entry>Alarms when the specified process is not running. 
+                  <codeblock>process_name = mysqld</codeblock></entry>
                 <entry>MySQL crashed.</entry>
                 <entry>Restart MySQL on the affected node.</entry>
               </row>
