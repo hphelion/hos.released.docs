@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="HP2.0multinetwork">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring Multiple External Networks</title>
+  <body><!--not tested-->
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <p><keyword keyref="kw-hos-phrase"/> Multiple External Network Configuration</p>
+    <p>This document describes the configuration process and requirements for the <keyword
+        keyref="kw-hos-phrase"/> Multiple External Network.</p>
+    <p>
+      <ul id="LBaaSlist">
+        <li><xref href="../networking/multinetwork.dita#HP2.0multinetwork/Prerequisites"
+            >Prerequisites</xref></li>
+        <li><xref href="../networking/multinetwork.dita#HP2.0multinetwork/Configuration"
+            >Configuration</xref></li>
+        <li><xref href="../networking/multinetwork.dita#HP2.0multinetwork/MoreInfo">More
+            Information</xref></li>
+      </ul>
+    </p>
+
+    <section id="Prerequisites">
+      <title>Prerequisites</title>
+      <p><keyword keyref="kw-hos"/> must be installed. </p>
+    </section>
+
+
+    <section id="Configuration">
+      <title>Configuration</title>
+      <p><keyword keyref="kw-hos-phrase"/> Multiple External Network Configuration</p>
+      <p>The Network Service (based on OpenStack Neutron) provider VLANs are networks that map
+        directly to an 802.1Q VLAN in the cloud provider’s physical network infrastructure. There
+        are four aspects to provider VLAN configuration:</p>
+      <ul>
+        <li>Network infrastructure configuration (e.g. the top-of-rack switch)</li>
+        <li>Server networking configuration (for compute nodes and networking service network
+          nodes)</li>
+        <li>Network service configuration file settings</li>
+        <li>Create the corresponding network objects in the network service</li>
+      </ul>
+      <p>The physical network infrastructure must be configured to convey the provider VLAN traffic
+        as tagged VLANs to the cloud compute nodes and network service network nodes. Configuration
+        of the physical network infrastructure is outside the scope of the <keyword
+          keyref="kw-hos-phrase"/> software.</p>
+      
+      
+      <p><keyword keyref="kw-hos"/> provides the ability to have multiple external networks, by using 
+        the Network Service (Neutron) provider networks for external networks.  You can configure 
+        <keyword keyref="kw-hos"/> to allow the use of provider VLANs as external networks by following
+        these steps.
+        <ol>
+          <li>Do NOT include the <i>neutron.l3_agent.external_network_bridge</i> tag in the network_groups 
+            definition for your cloud. This results in the <i>l3_agent.ini external_network_bridge</i> being set 
+            to an empty value (rather than the traditional <i>br-ex</i>).</li>
+          <li>Configure your cloud to use provider VLANs, by specifying the <i>neutron.provider_physical_network</i> 
+            tag on one of the network_groups defined for your cloud. For example, to run provider VLANSs over 
+            the GUEST network group:  (some attributes omitted for brevity) <codeblock>network-groups:
+              
+- name: GUEST
+ tags:
+- neutron.networks.vlan:
+  provider-physical-network: physnet1</codeblock></li>
+          <li>After the cloud has been deployed, you can create external networks using provider
+            VLANs. For example, using the Network Service CLI: <ol>
+              <li>Create external network 1 on vlan101
+                <codeblock>neutron net-create --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 101 ext-net1 --router:external true</codeblock></li>
+              <li>Create external network 2 on vlan102
+                <codeblock>neutron net-create --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 102 ext-net2 --router:external true</codeblock></li>
+            </ol>
+          </li>
+        </ol>
+      </p>      
+ 
+      
+      
+ 
+    </section>
+
+
+    <section id="MoreInfo">
+      <title>More Information</title>
+      <p>For more information on the Network Service command-line interface (CLI), see the OpenStack
+        networking command-line client reference: <xref
+          href="http://docs.openstack.org/cli-reference/content/neutronclient_commands.html"
+          scope="external" format="html"/></p>
+    </section>
+  </body>
+</topic>
