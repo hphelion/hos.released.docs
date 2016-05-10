@@ -27,10 +27,18 @@
               <codeblock>openstack endpoint list --interface public | tail -n +4 | head -n -1 | tee ~/public_endpoints.orig</codeblock></li>
           </ol>
         </li>
-        <li>Copy your certificate and then update your cloud configuration to specify the new cert: <ol>
-            <li>Place your TLS certificate in this directory:
+        <li>Copy your new certificate and then update your cloud configuration to specify the new
+          cert: <ol>
+            <li>Place your new TLS certificate in this directory:
               <codeblock>~/helion/my_cloud/config/tls/certs</codeblock></li>
-            <li>Edit your <codeph>network_groups.yml</codeph> file to specify your certificate.
+            <li>If your new certificate has been signed by a different entity than the old one then
+              ensure that you update the CA cert chain by replacing the contents of
+                <codeph>~/helion/hos/ansible/roles/tls-trust/files/frontend_cacert.pem</codeph> with
+              the new CA certificate chain file. <note>Since the CA certificate chain is essentially
+                a public key and will be installed on all clients, take care that you don't
+                accidently copy the contents of the certificate (which contains the private key)
+                itself into the<codeph> frontend_cacert.pem</codeph> file.</note></li>
+            <li>Edit your <codeph>network_groups.yml</codeph> file to specify your new certificate.
                 <p>Path to file:</p>
               <codeblock>~/helion/my_cloud/definition/data/network_groups.yml</codeblock>
               <p>Edit the <codeph>cert-file</codeph> line to specify the path to your cert, bolded
@@ -40,7 +48,7 @@
 roles
   - public
 <b>cert-file: &lt;path_to_cert></b></codeblock></li>
-            <li>Commit the changes to git:
+                        <li>Commit the changes to git:
               <codeblock>git add -A
 git commit -a -m "updating TLS cert"</codeblock></li>
           </ol>
@@ -64,7 +72,8 @@ ansible-playbook -i hosts/verb_hosts horizon-deploy.yml</codeblock></li>
         <li>Delete your existing public endpoints. This command will use the file you created
           earlier in step #2. Once this step is complete, any attempts to access the old endpoints
           will generate certificate
-          errors.<codeblock>awk '{ print "openstack endpoint delete " $2}' ~/public_endpoints.orig | tee ~/delete_endpoints</codeblock></li>
+          errors.<codeblock>awk '{ print "openstack endpoint delete " $2}' ~/public_endpoints.orig | tee ~/delete_endpoints
+source ~/delete_endpoints</codeblock></li>
         <li>Create new public endpoints. <ol>
             <li>Copy your original public endpoints to a new file which you will use to create your
               new endpoints:
@@ -74,9 +83,8 @@ ansible-playbook -i hosts/verb_hosts horizon-deploy.yml</codeblock></li>
               the old IP address and FQDN to fit your environment:
               <codeblock>sed -i "s/&lt;old_IP_address>/&lt;FQDN>/g" ~/public_endpoints.new</codeblock></li>
             <li>Recreate the public endpoints:
-              <codeblock>awk '{ print "openstack endpoint create --region " $4 " " $6 " public \42" $14 "\42"}'~/public_endpoints.new| tee ~/create_endpoints</codeblock></li>
-            <li>Confirm that the new endpoints look correct:
-              <codeblock>cat ~/create_endpoints</codeblock></li>
+              <codeblock>awk '{ print "openstack endpoint create --region " $4 " " $6 " public \42" $14 "\42"}'~/public_endpoints.new| tee ~/create_endpoints
+source ~/create_endpoints</codeblock></li>
           </ol></li>
         <li>Complete the deployment by reconfiguring the compute service:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
