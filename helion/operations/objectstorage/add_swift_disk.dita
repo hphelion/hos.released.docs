@@ -48,9 +48,8 @@
           <note>If the additional disks can be added to the Swift object servers online (for
             example, via hot plugging) then there is no need to do the last two steps.</note>
         </li>
-        <li>Update your cloud configuration with the details of your additional disks.
-        <ol>
-          <li>Edit the disk configuration file to add your new disks. <p>Path to file:</p>
+        <li>Update your cloud configuration with the details of your additional disks. <ol>
+            <li>Edit the disk configuration file to add your new disks. <p>Path to file:</p>
               <codeblock>~/helion/my_cloud/definition/data/disks_swobj.yml</codeblock>
               <p>Example showing the addition of a single new disk, indicated by the
                   <codeph>/dev/sdd</codeph>, in bold:</p>
@@ -63,8 +62,22 @@
     consumer:
       name: swift
       ...</codeblock>
-            </li>
-        </ol></li>
+              <note>For more details, see <xref
+                  href="../../architecture/input_model/configobj/configurationobjects.dita"/> for
+                more details on how the disk model works.</note></li>
+            <li>Configure the Swift weight-step value in the
+                <codeph>~/helion/my_cloud/definition/data/swift/rings.yml</codeph> file. See <xref
+                href="swift_weight_attribute.dita"/> for details on how to do this.</li>
+          <li>Commit the changes to
+            Git:<codeblock>cd ~helion
+git commit -a -m "adding additional Swift disks"</codeblock></li>
+          <li>Run the configuration
+            processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Update your deployment
+            directory:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          </ol></li>
       </ol>
     </section>
   </body>
