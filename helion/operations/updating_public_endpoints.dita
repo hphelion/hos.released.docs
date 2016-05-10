@@ -8,13 +8,16 @@
       addresses for your public endpoints which are specified in your corresponding TLS
       certificates, this document will show you how to update your public endpoints and TLS certs to
       use a domain name.</p>
+    <note type="warning">There will be API downtime while this process is completed. It is
+      recommended to give any users of your API a notice of this downtime. The API will be down for
+      the time it takes you to complete steps #4 - 6 below.</note>
 
     <section id="prereq"><title>Prerequisites</title>
       <p>You should obtain a TLS certificate that specifics
           <codeph>subjectAltName=&lt;DNS:&lt;dns_name></codeph></p>
     </section>
-
-    <section id="steps"><title>How to add your updated TLS certificate and deploy it in your
+    
+      <section id="steps"><title>How to add your updated TLS certificate and deploy it in your
         environment</title>
       <ol>
         <li>Log in to the lifecycle manager.</li>
@@ -72,7 +75,7 @@ ansible-playbook -i hosts/verb_hosts FND-CLU-deploy.yml</codeblock></li>
 ansible-playbook -i hosts/verb_hosts horizon-deploy.yml</codeblock></li>
           </ol>
         </li>
-        <li>Delete your existing public endpoints. This command will use the file you created
+        <li>Delete your existing public endpoints. These commands will use the file you created
           earlier in step
           #2.<codeblock>awk '{ print "openstack endpoint delete " $2}' ~/public_endpoints.orig | tee ~/delete_endpoints
 source ~/delete_endpoints</codeblock></li>
@@ -84,8 +87,8 @@ source ~/delete_endpoints</codeblock></li>
               with the FQDN from your cert. You can automate this by using this command, altering
               the old IP address and FQDN to fit your environment:
               <codeblock>sed -i "s/&lt;old_IP_address>/&lt;FQDN>/g" ~/public_endpoints.new</codeblock></li>
-            <li>Recreate the public endpoints:
-              <codeblock>awk '{ print "openstack endpoint create --region " $4 " " $6 " public \42" $14 "\42"}'~/public_endpoints.new| tee ~/create_endpoints
+            <li>Recreate the public endpoints using these
+              commands:<codeblock>awk '{ print "openstack endpoint create --region " $4 " " $6 " public \42" $14 "\42"}'~/public_endpoints.new| tee ~/create_endpoints
 source ~/create_endpoints</codeblock></li>
           </ol></li>
         <li>Complete the deployment by reconfiguring the compute service:
