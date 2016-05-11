@@ -60,6 +60,7 @@
           <li><b>Emulex based LPE1605 Native Fibre Channel</b> - Up to 1024 paths during boot</li>
           <li><b>Qlogic based SN100Q Native Fibre Channel</b> - Up to 1024 paths during boot </li>
           <li><b>Emulex Flex Fabric 650 series</b> - Up to 1024 paths during boot</li>
+          <li><b>Emulex Flex Fabric 554FLB</b> - Up to 1024 paths during boot</li>
           <li><b>Qlogic Flex Fabric 536 and 630 series</b> - Not yet supported</li>
 
         </ul>
@@ -89,14 +90,14 @@
         it is important to understand how Helion utilizes resources. Although there are a variety of
         factors, including the number of compute nodes, a large portion of the utilization is driven
         by operational tools, such as monitoring, metering, and logging.</p>
-      
       <p>These instructions are intended for new installations. The process is slightly different
         for an upgrade where you are starting with an existing deployment. For information on how to
         estimate disk size for an upgrade, see the <xref href="upgrade/update_disk_models.dita"/>
         topic.</p>
-      
       <note type="attention">The disk calculator does not accurately estimate a Swift-centric
-        deployment at this time. For more information on Swift, see the <xref href="recommended_hardware_minimums.dita#rec_min__min_requirements_swift">Recommended minimum hardware requirements for an entry-scale Swift model</xref> topic.</note>
+        deployment at this time. For more information on Swift, see the <xref
+          href="recommended_hardware_minimums.dita#rec_min/min_requirements_swift">Recommended
+          minimum hardware requirements for an entry-scale Swift model</xref> topic.</note>
       <p>The usage of disk space by operational tools can be estimated from the following
         parameters: <ul>
           <li><b>Number of compute nodes</b> + <b>Number of VM's running on each compute
@@ -106,8 +107,9 @@
           <li><b>Retention periods for operational data</b> (for Elastic Search, Vertica/InfluxDB,
             Kafka, and in the /var/log directory)</li>
         </ul></p>
-      <note type="attention">If you also enable auditing, follow the steps in the <xref href="hardware.dita#min_hardware/disk_calc_audit_adj">Audit Logging
-        Adjustment</xref> section to enter additional input parameters.</note>
+      <note type="attention">If you also enable auditing, follow the steps in the <xref
+          href="hardware.dita#min_hardware/disk_calc_audit_adj">Audit Logging Adjustment</xref>
+        section to enter additional input parameters.</note>
       <p><b>Disk Estimation Process</b>
       </p>
       <p>Helion OpenStack provides entry scale and scale-out models for deployment. This disk
@@ -124,8 +126,9 @@
       <ol>
         <li><xref href="hardware.dita#min_hardware/disk_calc_input">Enter input
           parameters.</xref></li>
-        <li>If you also enable auditing, follow the steps in the <xref href="hardware.dita#min_hardware/disk_calc_audit_adj">Audit Logging
-          Adjustment</xref> section to enter additional input parameters.</li>
+        <li>If you also enable auditing, follow the steps in the <xref
+            href="hardware.dita#min_hardware/disk_calc_audit_adj">Audit Logging Adjustment</xref>
+          section to enter additional input parameters.</li>
         <li><xref href="hardware.dita#min_hardware/disk_calc_select">Select the deployment model you
             want to support based on the calculations.</xref></li>
         <li><xref href="hardware.dita#min_hardware/disk_calc_match">Match the selected deployment to
@@ -137,9 +140,9 @@
       <title>Enter Input Parameters</title> The Disk Calculator spreadsheet automatically displays
       the minimum requirements for the components that define disk size. You can replace the default
       values with either the number you have to work with or the number that you want to support.
-      <note type="attention">If you want to enable audit logging, follow the steps in the <xref href="hardware.dita#min_hardware/disk_calc_audit_adj">Audit
-        Logging Adjustment</xref> section to enter additional input parameters.</note><table
-        id="table_disk_calc_input">
+        <note type="attention">If you want to enable audit logging, follow the steps in the <xref
+          href="hardware.dita#min_hardware/disk_calc_audit_adj">Audit Logging Adjustment</xref>
+        section to enter additional input parameters.</note><table id="table_disk_calc_input">
         <tgroup cols="3">
           <colspec colname="c1" colnum="1"/>
           <colspec colname="c2" colnum="2"/>
@@ -198,7 +201,7 @@
         <image href="../media/DiskCalc1.png" placement="break"/>
       </p>
       <p>To provide the paramters required to estimate disk size:</p><ol>
-        <li><xref href="../resources/Disk_Calculator_Spreadsheet.xlsx" format="xlsx">Open the disk calculator
+        <li><xref href="../media/hos.docs/diskcalc.xlsx" scope="local">Open the disk calculator
             spreadsheet.</xref></li>
         <li>At the bottom of the spreadsheet, click on the <b>Draft Sizing Tool4</b> tab.</li>
         <li> To set the server RAM size, replace the default value in the <b>System Memory</b>
@@ -226,31 +229,39 @@
       <p>If you want to enable audit logging, you must enter additional input parameters to ensure
         there is enough room to retain the audit logs. The following diagram shows the parameters
         you need to specify in the Disk Calculator spreadsheet.</p>
-      
       <p><image href="../media/DiskCalc2.png" placement="break"/></p>
       <p>To add audit logging to disk size calculations:</p>
       <ol>
-        <li>Determine which services you have enabled to collect audit logging information. This is part of HLM configuration.</li>
-        <li>Total up the audit log space required by the hosting control plane cluster, including api/core, Neutron, Swift, MMLB and MySQL/RabbitMQ.</li>
-<li>Manually enter these values for each cluster in the /var/audit line in the spreadsheet.
-      <note type="attention">If you enable logging for services beyond the defaults, you must change the <b>Number of Services on a Cluster</b> field in the spreadsheet. It is recommended that you increase the total services covered as well as increment the number on the appropriate cluster. For example, if you enable Apache logs on the core services, then the total would increase to 23 and the api/core services entry would change from 13 to 14.</note></li>
-        <li>To include Glance image space in your estimation, determine the size of the images that will be cached.</li>
-        <li>Enter the total size needed to store Glance images in the <b>/var/lib/glance/work_dir</b> field.</li>
+        <li>Determine which services you have enabled to collect audit logging information. This is
+          part of HLM configuration.</li>
+        <li>Total up the audit log space required by the hosting control plane cluster, including
+          api/core, Neutron, Swift, MMLB and MySQL/RabbitMQ.</li>
+        <li>Manually enter these values for each cluster in the /var/audit line in the spreadsheet.
+            <note type="attention">If you enable logging for services beyond the defaults, you must
+            change the <b>Number of Services on a Cluster</b> field in the spreadsheet. It is
+            recommended that you increase the total services covered as well as increment the number
+            on the appropriate cluster. For example, if you enable Apache logs on the core services,
+            then the total would increase to 23 and the api/core services entry would change from 13
+            to 14.</note></li>
+        <li>To include Glance image space in your estimation, determine the size of the images that
+          will be cached.</li>
+        <li>Enter the total size needed to store Glance images in the
+            <b>/var/lib/glance/work_dir</b> field.</li>
       </ol>
     </section>
 
     <section id="disk_calc_select">
-      <title>Select the Deployment Model</title>
-      To decide which architecture will meet all of your
+      <title>Select the Deployment Model</title> To decide which architecture will meet all of your
       requirements, use the values given in the Disk Calculator spreadsheet. Keeping in mind the
       rough scale you expect to target as well as any need to separate services, choose an Entry
       Scale, Entry Scale MML, or Mid Scale deployment. Once you have chosen a deployment you can
-      match it to the sample disk models in the <xref href="hardware.dita#min_hardware/disk_calc_match">Match to
-        a Disk Model</xref> section. The following diagram shows the deployment options that are
-      recommended if you use the default values in the Disk Calculator spreadsheet. 
-      <p><image href="../media/DiskCalc3.png" placement="break" id="image_cmk_lxc_wv"/></p> For
-      example, in the above diagram, if you wanted to choose an Entry Scale MML deployment, the
-      calculator recommends the following disk sizes: <ul id="ul_uwg_fs2_wv">
+      match it to the sample disk models in the <xref
+        href="hardware.dita#min_hardware/disk_calc_match">Match to a Disk Model</xref> section. The
+      following diagram shows the deployment options that are recommended if you use the default
+      values in the Disk Calculator spreadsheet. <p><image href="../media/DiskCalc3.png"
+          placement="break" id="image_cmk_lxc_wv"/></p> For example, in the above diagram, if you
+      wanted to choose an Entry Scale MML deployment, the calculator recommends the following disk
+      sizes: <ul id="ul_uwg_fs2_wv">
         <li>216 GB for API/Core Service</li>
         <li>216 GB for Neutron (networking)</li>
         <li>216 GB for Swift (storage)</li>
@@ -276,9 +287,10 @@
         to be allocated to each of the required volumes on the control plane. Each of the disk
         models is targeted at a specific set of parameters which can be found in the following
         tables: <ul>
-          <li><xref href="hardware.dita#min_hardware/disk_calc_entry">Entry Scale:</xref> 600 GB, 1 TB</li>
-          <li><xref href="hardware.dita#min_hardware/disk_calc_Mid">Mid Scale/ Entry Scale MML Servers:</xref>
-            600 GB, 2 TB, 4.5 TB</li>
+          <li><xref href="hardware.dita#min_hardware/disk_calc_entry">Entry Scale:</xref> 600 GB, 1
+            TB</li>
+          <li><xref href="hardware.dita#min_hardware/disk_calc_Mid">Mid Scale/ Entry Scale MML
+              Servers:</xref> 600 GB, 2 TB, 4.5 TB</li>
         </ul>
       </p>
     </section>
