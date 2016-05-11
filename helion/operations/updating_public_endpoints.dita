@@ -10,14 +10,14 @@
       use a domain name.</p>
     <note type="warning">There will be API downtime while this process is completed. It is
       recommended to give any users of your API a notice of this downtime. The API will be down for
-      the time it takes you to complete steps #4 - 6 below.</note>
+      the time it takes you to complete steps #6 - 9 below.</note>
 
     <section id="prereq"><title>Prerequisites</title>
       <p>You should obtain a TLS certificate that specifics
           <codeph>subjectAltName=&lt;DNS:&lt;dns_name></codeph></p>
     </section>
-    
-      <section id="steps"><title>How to add your updated TLS certificate and deploy it in your
+
+    <section id="steps"><title>How to add your updated TLS certificate and deploy it in your
         environment</title>
       <ol>
         <li>Log in to the lifecycle manager.</li>
@@ -54,7 +54,7 @@ tls-components
 roles
   - public
 <b>cert-file: &lt;path_to_cert></b></codeblock></li>
-                        <li>Commit the changes to git:
+            <li>Commit the changes to git:
               <codeblock>git add -A
 git commit -a -m "updating TLS cert"</codeblock></li>
           </ol>
@@ -66,20 +66,9 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
             <li>Update your deployment directory:
               <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-            <li>Run this playbook, which will push the certificate to your hosts and
-              reconfigure/restart HAProxy:
-              <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts FND-CLU-deploy.yml</codeblock></li>
-            <li>Deploy the CA chain, if necessary:
-              <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts horizon-deploy.yml</codeblock></li>
           </ol>
         </li>
-        <li>Delete your existing public endpoints. These commands will use the file you created
-          earlier in step
-          #2.<codeblock>awk '{ print "openstack endpoint delete " $2}' ~/public_endpoints.orig | tee ~/delete_endpoints
-source ~/delete_endpoints</codeblock></li>
-        <li>Create new public endpoints. <ol>
+        <li>Prepare for the creation of your new endpoints with these steps:<ol>
             <li>Copy your original public endpoints to a new file which you will use to create your
               new endpoints:
               <codeblock>cp ~/public_endpoints.orig ~/public_endpoints.new</codeblock></li>
@@ -87,10 +76,21 @@ source ~/delete_endpoints</codeblock></li>
               with the FQDN from your cert. You can automate this by using this command, altering
               the old IP address and FQDN to fit your environment:
               <codeblock>sed -i "s/&lt;old_IP_address>/&lt;FQDN>/g" ~/public_endpoints.new</codeblock></li>
-            <li>Recreate the public endpoints using these
-              commands:<codeblock>awk '{ print "openstack endpoint create --region " $4 " " $6 " public \42" $14 "\42"}' ~/public_endpoints.new| tee ~/create_endpoints
+          </ol>
+        </li>
+        <li>Run this playbook, which will push the certificate to your hosts and reconfigure/restart
+          HAProxy:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts FND-CLU-deploy.yml</codeblock></li>
+        <li>Deploy the CA chain, if necessary:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts horizon-deploy.yml</codeblock></li>
+        <li>Delete your existing public
+          endpoints:<codeblock>awk '{ print "openstack endpoint delete " $2}' ~/public_endpoints.orig | tee ~/delete_endpoints
+source ~/delete_endpoints</codeblock></li>
+        <li>Recreate the public
+          endpoints:<codeblock>awk '{ print "openstack endpoint create --region " $4 " " $6 " public \42" $14 "\42"}' ~/public_endpoints.new| tee ~/create_endpoints
 source ~/create_endpoints</codeblock></li>
-          </ol></li>
         <li>Complete the deployment by reconfiguring the compute service:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
