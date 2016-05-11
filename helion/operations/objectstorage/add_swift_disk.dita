@@ -68,16 +68,50 @@
             <li>Configure the Swift weight-step value in the
                 <codeph>~/helion/my_cloud/definition/data/swift/rings.yml</codeph> file. See <xref
                 href="swift_weight_attribute.dita"/> for details on how to do this.</li>
-          <li>Commit the changes to
-            Git:<codeblock>cd ~helion
+            <li>Commit the changes to
+              Git:<codeblock>cd ~helion
 git commit -a -m "adding additional Swift disks"</codeblock></li>
-          <li>Run the configuration
-            processor:<codeblock>cd ~/helion/hos/ansible
+            <li>Run the configuration
+              processor:<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-          <li>Update your deployment
-            directory:<codeblock>cd ~/helion/hos/ansible
+            <li>Update your deployment
+              directory:<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-          </ol></li>
+          </ol>
+        </li>
+        <li>Configure the added disks. The disk drives that are added should be clean. They should
+          either contain no partitions or a single partition the size of the entire disk. It should
+          not contain a file system or any volume groups. Failure to comply will cause errors and
+          the disk will not be added. <p>For more details, see <xref
+              href="../../administration/objectstorage/swift_device_groups.dita"/>.</p>
+          <ol>
+            <li>Obtain the hostname for the Swift node(s) you are adding disks to. <codeblock>cat ~/helion/my_cloud/info/server_info.yml</codeblock>
+              <p>In the next step you will need to specify each of the hostnames for the Swift nodes
+                you added disks to. You have two options for doing this: a wildcard or a textfile
+                you reference. If you added disks to all of the Swift object servers in your
+                environment and they all have the same prefix (for example,
+                  <codeph>helion-cp1-swobj...</codeph>) then you can use a wildcard like
+                  <codeph>helion-cp1-swobj*</codeph>. If you only added disks to a set of nodes but
+                not all of them, you can create a file, for example
+                  <codeph>/tmp/Swift_Object_Servers</codeph> and enter the hostnames of each of the
+                nodes you added disks to, one per line, that you can then reference.</p></li>
+            <li>To configure the operating system on the added drives, use this playbook. Ensure you
+              specify the Swift object nodes you added disks to according to the note in the
+              previous step.
+              <codeblock>cd ~/stack/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;hostname_or_reference_file></codeblock></li>
+          </ol>
+        </li>
+        <li>Verify that Swift services are running on all of your servers:
+          <codeblock>cd ~/stack/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts swift-status.yml</codeblock></li>
+        <li>If everything looks okay with the Swift status, then apply the changes to your Swift
+          rings with this playbook:
+          <codeblock>cd ~/stack/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts swift-deploy.yml</codeblock></li>
+        <li>At this point your Swift rings will begin rebalancing. You should wait until replication
+          has completed or min-part-time has elapsed (whichever is longer). For more information,
+          see <xref href="safe_rebalance_deploy_ring.dita"/>.</li>
       </ol>
     </section>
   </body>
