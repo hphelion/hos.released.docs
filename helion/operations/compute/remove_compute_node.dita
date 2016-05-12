@@ -151,14 +151,35 @@ $ neutron agent-update --admin-state-down 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4
 $ neutron agent-update --admin-state-down dbe4fe11-8f08-4306-8244-cc68e98bb770
 $ neutron agent-update --admin-state-down f0d262d1-7139-40c7-bdc2-f227c6dee5c8</codeblock>
     </section>
-    <section id="shutdown_node"><title>Shutdown or Stop the Nova and Neutron Services on the Compute
-        Host</title>
-      <p>To do this step you have a few options. You can SSH to the Compute host and run the
+    <section id="shutdown_node"><title>Shut down or Stop the Nova and Neutron Services on the
+        Compute Host</title>
+      <p>To perform this step you have a few options. You can SSH into the Compute host and run the
         following commands:</p>
       <codeblock>sudo systemctl stop nova-compute</codeblock>
-      <codeblock>sudo systemctl stop neutron-*</codeblock> Because the Neutron agent self-registers
-      against Neutron server you may want to avoid these services coming back online:
-      <codeblock>sudo systemctl disable neutron-*</codeblock> Now you can shut down the node: <codeblock>sudo shutdown now</codeblock>
+      <codeblock>sudo systemctl stop neutron-*</codeblock>
+      <!-- docs 3068 --> Because the Neutron agent self-registers against Neutron server, you may
+      want to prevent the following services from coming back online. Here is how you can get the
+      list:<codeblock>sudo systemctl list-units neutron-* --all</codeblock> Here are the
+      results:<codeblock>UNIT                                  LOAD        ACTIVE     SUB      DESCRIPTION
+neutron-common-rundir.service         loaded      inactive   dead     Create /var/run/neutron
+&#8226;neutron-dhcp-agent.service         not-found     inactive   dead     neutron-dhcp-agent.service
+neutron-l3-agent.service              loaded      inactive   dead     neutron-l3-agent Service
+neutron-lbaasv2-agent.service         loaded      inactive   dead     neutron-lbaasv2-agent Service
+neutron-metadata-agent.service        loaded      inactive   dead     neutron-metadata-agent Service
+&#8226;neutron-openvswitch-agent.service    loaded      failed     failed   neutron-openvswitch-agent Service
+neutron-ovs-cleanup.service           loaded      inactive   dead     Neutron OVS Cleanup Service
+        
+        LOAD   = Reflects whether the unit definition was properly loaded.
+        ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+        SUB    = The low-level unit activation state, values depend on unit type.
+        
+        7 loaded units listed.
+        To show all installed unit files use 'systemctl list-unit-files'.</codeblock>
+      For each loaded service issue the command
+      <codeblock>sudo systemctl disable &lt;service-name></codeblock> In the above example that
+      would be each service, <i>except </i><codeblock>neutron-dhcp-agent.service</codeblock> For
+      example: <codeblock>sudo systemctl disable neutron-common-rundir neutron-l3-agent neutron-lbaasv2-agent neutron-metadata-agent neutron-openvswitch-agent</codeblock>
+      <!-- end docs 3068 --> Now you can shut down the node: <codeblock>sudo shutdown now</codeblock>
       <p>OR</p>
       <p>From the lifecycle manager you can use the <codeph>bm-power-down.yml</codeph> playbook to
         shut the node down:</p>
