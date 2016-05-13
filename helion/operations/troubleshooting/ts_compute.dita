@@ -47,6 +47,137 @@ Optional arguments:
       </ul>
     </section>
 
+    <section id="EnablingMigrateResize">
+      <title>Enabling Migrate or Resize in Nova</title>
+      <p>If you want to enable migrate or resize in Nova you must do so after installing or upgrading to HOS 3.0 and 
+        before any subsequent configuration change which requires running the configuration processor.</p>
+      <p>If you have inadvertently made a configuration change and run the configuration processor after 
+        your initial install or upgrade to HOS 3.0, and you have run <codeph>ready-deployment.yml</codeph>, 
+        and you want to enable migrate or resize in Nova, then the following steps will allow you to proceed. 
+        <note>The Ansible Vault key referred to below is the encryption key that you have provided to the 
+          configuration processor.</note></p>
+      <p>
+        <ol>
+          <li>cd to the <codeph>~/helion</codeph> directory and checkout the ansible branch
+            <codeblock>$ cd ~/helion
+$ git checkout ansible
+Switched to branch 'ansible'</codeblock>
+          </li>
+          <li>Do a git log, and pick the previous commit.  In this example, the commit is
+            <codeph>ac54d619b4fd84b497c7797ec61d989b64b9edb3</codeph>
+            <codeblock>$ git log
+              
+commit 69f95002f9bad0b17f48687e4d97b2a791476c6a
+Merge: 439a85e ac54d61
+Author: git user &lt;user@company.com&gt;
+Date:   Fri May 6 09:08:55 2016 +0000
+                
+Merging promotion of saved output
+                
+commit 439a85e209aeeca3ab54d1a9184efb01604dbbbb
+Author: git user &lt;user@company.com&gt;
+Date:   Fri May 6 09:08:24 2016 +0000
+                  
+Saved output from CP run on 1d3976dac4fd7e2e78afad8d23f7b64f9d138778
+                  
+commit ac54d619b4fd84b497c7797ec61d989b64b9edb3
+Merge: a794083 66ffe07
+Author: git user &lt;user@company.com&gt;
+Date:   Fri May 6 08:32:04 2016 +0000
+                    
+Merging promotion of saved output</codeblock>
+          </li>
+          <li>Checkout the commit
+            <codeblock>$ git checkout ac54d619b4fd84b497c7797ec61d989b64b9edb3
+Note: checking out 'ac54d619b4fd84b497c7797ec61d989b64b9edb3'.
+              
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+              
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+              
+git checkout -b new_branch_name
+              
+HEAD is now at ac54d61... Merging promotion of saved output</codeblock>
+          </li>
+          <li>cd to the ansible output directory
+            <codeblock>$ cd my_cloud/stage/ansible/group_vars/</codeblock>
+          </li>
+          <li>Move the relevant group_vars file from Ansible Vault - it will be of the form
+            <codeblock>&lt;cloud name&gt;-&lt;control plane name&gt;-&lt;compute cluster name&gt;</codeblock>
+          </li>
+          <li>Edit the file, and search for nova_ssh_key
+            <codeblock>
+NOV_KVM:
+          vars:
+              nova_ssh_key:
+              private: '-----BEGIN RSA PRIVATE KEY-----
+              MIIEpAIBAAKCAQEAv/hhekzykD2K8HnVNBKZcJWYrVlUyb6gR8cvE6hbh2ISzooA
+              jQc3xgglIwpt5TuwpTY3LL0C4PEHObxy9WwqXTHBZp8jg/02RzD02bEcZ1WT49x7
+              Rj8f5+S1zutHlDv7PwEIMZPAHA8lihfGFG5o+QHUmsUHgjShkWPdHXw1+6mCO9V/
+              eJVZb3nDbiunMOBvyyk364w+fSzes4UDkmCq8joDa5KkpTgQK6xfw5auEosyrh8D
+              zocN/JSdr6xStlT6yY8naWziXr7p/QhG44RPD9SSD7dhkyJh+bdCfoFVGdjmF8yA
+              h5DlcLu9QhbJ/scb7yMP84W4L5GwvuWCCFJTHQIDAQABAoIBAQCCH5O7ecMFoKG4
+              JW0uMdlOJijqf93oLk2oucwgUANSvlivJX4AGj9k/YpmuSAKvS4cnqZBrhDwdpCG
+              Q0XNM7d3mk1VCVPimNWc5gNiOBpftPNdBcuNryYqYq4WBwdq5EmGyGVMbbFPk7jH
+              ZRwAJ2MCPoplKl7PlGtcCMwNu29AGNaxCQEZFmztXcEFdMrfpTh3kuBI536pBlEi
+              Srh23mRILn0nvLXMAHwo94S6bI3JOQSK1DBCwtA52r5YgX0nkZbi2MvHISY1TXBw
+              SiWgzqW8dakzVu9UNif9nTDyaJDpU0kr0/LWtBQNdcpXnDSkHGjjnIm2pJVBC+QJ
+              SM9o8h1lAoGBANjGHtG762+dNPEUUkSNWVwd7tvzW9CZY35iMR0Rlux4PO+OXwNq
+              agldHeUpgG1MPl1ya+rkf0GD62Uf4LHTDgaEkUfiXkYtcJwHbjOnj3EjZLXaYMX2
+              LYBE0bMKUkQCBdYtCvZmo6+dfC2DBEWPEhvWi7zf7o0CJ9260aS4UHJzAoGBAOK1
+              P//K7HBWXvKpY1yV2KSCEBEoiM9NA9+RYcLkNtIy/4rIk9ShLdCJQVWWgDfDTfso
+              sJKc5S0OtOsRcomvv3OIQD1PvZVfZJLKpgKkt20/w7RwfJkYC/jSjQpzgDpZdKRU
+              vRY8P5iryptleyImeqV+Vhf+1kcH8t5VQMUU2XAvAoGATpfeOqqIXMpBlJqKjUI2
+              QNi1bleYVVQXp43QQrrK3mdlqHEU77cYRNbW7OwUHQyEm/rNN7eqj8VVhi99lttv
+              fVt5FPf0uDrnVhq3kNDSh/GOJQTNC1kK/DN3WBOI6hFVrmZcUCO8ewJ9MD8NQG7z
+              4NXzigIiiktayuBd+/u7ZxMCgYEAm6X7KaBlkn8KMypuyIsssU2GwHEG9OSYay9C
+              Ym8S4GAZKGyrakm6zbjefWeV4jMZ3/1AtXg4tCWrutRAwh1CoYyDJlUQAXT79Phi
+              39+8+6nSsJimQunKlmvgX7OK7wSp24U+SPzWYPhZYzVaQ8kNXYAOlezlquDfMxxv
+              GqBE5QsCgYA8K2p/z2kGXCNjdMrEM02reeE2J1Ft8DS/iiXjg35PX7WVIZ31KCBk
+              wgYTWq0Fwo2W/EoJVl2o74qQTHK0Bs+FTnR2nkVF3htEOAW2YXQTTN2rEsHmlQqE              
+              A9iGTNwm9hvzbvrWeXtx8Zk/6aYfsXCoxq193KglS40shOCaXzWX0w==
+              -----END RSA PRIVATE KEY-----'
+              public: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/+GF6TPKQPYrwedU0Epl
+              wlZitWVTJvqBHxy8TqFuHYhLOigCNBzfGCCUjCm3lO7ClNjcsvQLg8Qc5vHL1bCpdMc
+              FmnyOD/TZHMPTZsRxnVZPj3HtGPx/n5LXO60eUO/s/AQgxk8AcDyWKF8YUbmj5Ad
+              SaxQeCNKGRY90dfDX7qYI71X94lVlvecNuK6cw4G/LKTfrjD59LN6zhQOSYKryOgNrkq
+              SlOBArrF/Dlq4SizKuHwPOhw38lJ2vrFK2VPrJjydpbOJevun9CEbjhE8P1JIPt2GTImH5t0
+              J+gVUZ2OYXzICHkOVwu71CFsn+xxvvIw/zhbgvkbC+5YIIUlMd
+              Generated Key for Nova User
+NTP_CLI:</codeblock>
+          </li>
+          <li>Put the entire section beginning "NOV_KVM" into a temporary file</li>
+          <li>Re-encrypt the group_vars file
+            <codeblock>$ git checkout padawan-ccp-compute</codeblock>
+          </li>
+          <li>Checkout the site branch, and cd to the scratch directory from which you will run 
+            the deployment
+            <codeblock>$ cd ~/helion
+$ git checkout site
+Previous HEAD position was ac54d61... Merging promotion of saved output
+Switched to branch 'site'
+$ cd ~/scratch/ansible/next/hos/ansible/group_vars/</codeblock>
+          </li>
+          <li>Move the relevant group_vars file from Vault
+            <codeblock>$ ansible-vault decrypt padawan-ccp-compute 
+Vault password: 
+Decryption successful</codeblock>
+          </li>
+          <li>Edit the file, and replace the NOV_KVM section with the contents of the temporary
+            file that you created earlier. Then move the file back into vault
+            <codeblock>$ ansible-vault encrypt padawan-ccp-compute 
+Vault password: 
+Confirm Vault password: 
+Encryption successful</codeblock>
+          </li>
+          <li>Remove the temporary file that you created earlier. You are now ready to run the deployment.</li>
+        </ol>
+      </p>
+    </section>
+
     <section id="esx"><title>Compute (ESX)</title>
       <p><!-- DOCS-2925 --><b>Unable to Create Instance Snapshot when Instance is Active</b></p>
       <p>There is a known issue with VMWare vCenter where if you have a compute instance in
