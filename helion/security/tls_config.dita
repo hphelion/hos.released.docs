@@ -224,19 +224,7 @@ openssl req -x509 -batch -newkey rsa:2048 -nodes -out "${EXAMPLE_CA_CERT_FILE}" 
       can tweak the subj and days settings above to meet your needs, or to test. For instance, if
       you want to test what happens when a CA expires, you can set 'days' to a very low value. Grab
       the configuration processor-generated request file from <codeph>info/cert_reqs/</codeph>:<codeblock>cat ~/helion/my_cloud/info/cert_reqs/example-internal-cert</codeblock>
-      <note>In the case of a public VIP certificate, please add all the FQDNs you want it to support
-        Currently Helion does not add the hostname for the external-name specified in
-          <codeph>network_groups.yml</codeph> to the certificate request file <!--(HLM-3872)-->.
-        However, you can add it to the certificate request file manually. Here we assume that
-          <codeph>myhelion.test</codeph> is your external-name. In that case you would add this line
-        (to the full <xref href="#tlsConfig/privateMetadata" format="dita">sample certificate
-          request file</xref> that is shown
-        below):<codeblock>DNS.48 = "myhelion.test"</codeblock></note>
-      <note>Any attempt to use IP addresses rather than FQDNs in certificates must use subject
-        alternate name entries that list both the IP address (needed for Google) and DNS with an IP
-        (needed for a Python bug workaround). Failure to create the certificates in this manner will
-        cause future installations of Go-based tools (such as Cloud Foundry, Stackato and other PaaS
-        components) to fail. </note> Now, copy this file to your working directory and appended a
+    Now, copy this file to your working directory and appended a
         <codeph>.req</codeph> extension to it.
       <codeblock>cp ~/helion/my_cloud/info/cert_reqs/example-internal-cert example-internal-cert.req</codeblock>
       Expand the following headline to see a request file: </section>
@@ -308,6 +296,19 @@ IP.1 = "192.168.245.5"
 =============end of certificate request file.</codeblock>
       </sectiondiv>
     </section>
+    <section>  <note>In the case of a public VIP certificate, please add all the FQDNs you want it to support
+        Currently Helion does not add the hostname for the external-name specified in
+          <codeph>network_groups.yml</codeph> to the certificate request file <!--(HLM-3872)-->.
+        However, you can add it to the certificate request file manually. Here we assume that
+          <codeph>myhelion.test</codeph> is your external-name. In that case you would add this line
+        (to the full <xref href="#tlsConfig/privateMetadata" format="dita">sample certificate
+          request file</xref> that is shown
+        above):<codeblock>DNS.48 = "myhelion.test"</codeblock></note>
+      <note>Any attempt to use IP addresses rather than FQDNs in certificates must use subject
+        alternate name entries that list both the IP address (needed for Google) and DNS with an IP
+        (needed for a Python bug workaround). Failure to create the certificates in this manner will
+        cause future installations of Go-based tools (such as Cloud Foundry, Stackato and other PaaS
+        components) to fail. </note> </section>
     <section><title>Generate a certificate signing request</title>
       <p>Now that you have a CA and a certificate request file, it's time to generate a CSR.</p>
       <codeblock>export EXAMPLE_SERVER_KEY_FILE='example-internal-cert.key'
