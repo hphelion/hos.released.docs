@@ -73,9 +73,29 @@ https://VIP:9095</codeblock></li>
         
        <section id="ops_deactivate">
            <title>Deactivate a Compute Host</title>
-           <p>If you have multiple compute nodes and for debugging reasons you want to disable them all except one, you may need to deactivate and then activate a compute host. This can be done easily in the Operations Console.</p>
-               
+           <p>If you have multiple compute nodes and for debugging reasons you want to disable them all except one, you may need to deactivate and then activate a compute host. If you want to delete a host, you will also have to deactivate it first. This can be done easily in the Operations Console.</p>
            
+           <note type="attention">The host must be in the following state: <b>ACTIVATED</b></note>
+           
+           <p>To deactivate a compute host:</p>
+           <ol>
+               <li>To open Operations Console, in a browser enter either the URL or Virtual IP
+                   connected to Ops Console. <p>For
+                       example:</p><codeblock>https://myhelion.test:9095
+https://VIP:9095</codeblock></li>
+               <li>On the <b>Home</b> screen, click the menu represented by 3 horizontal lines.
+                   <image href="../../../media/opsconsole/OpsConsoleBurgerMenu.png"/></li>
+               <li>From the menu that slides in on the left side, click <b>Compute</b>, and then <b>Compute Hosts</b>.</li>
+               <li>On the <b>Compute Hosts</b> page, in the row for the host you want to deactivate, click the details button. <image href="../../../media/opsconsole/DetailDots.png"></image></li>
+               <li>Click <b>Deactivate</b>, and in the confirmation screen that opens, click <b>Confirm</b>.</li>
+               <li>Wait for Helion to complete the operation. This process can take up to 2 minutes.</li>
+               <li>If deactivation is successful, you will see a notification and in the compute
+                   hosts table the <b>STATE</b> will change to <b>DEACTIVATED</b>.
+                   <note type="attention">If you receive a notice that the operation did
+                       not complete successfully, read the notification explaining at which step
+                       the error occured. You can click on the link in the error notification for more details. In the compute hosts table the <b>STATE</b> will remain <b>ACTIVATED</b>.</note>
+               </li>
+           </ol>  
        </section> 
         
         <lines>
@@ -84,6 +104,28 @@ https://VIP:9095</codeblock></li>
         
         <section id="ops_active">
             <title>Activate a Compute Host</title> 
+            
+            <note type="attention">The host must be in the following state: <b>DEACTIVATED</b></note>
+            
+            <p>To activate a compute host:</p>
+            <ol>
+                <li>To open Operations Console, in a browser enter either the URL or Virtual IP
+                    connected to Ops Console. <p>For
+                        example:</p><codeblock>https://myhelion.test:9095
+https://VIP:9095</codeblock></li>
+                <li>On the <b>Home</b> screen, click the menu represented by 3 horizontal lines.
+                    <image href="../../../media/opsconsole/OpsConsoleBurgerMenu.png"/></li>
+                <li>From the menu that slides in on the left side, click <b>Compute</b>, and then <b>Compute Hosts</b>.</li>
+                <li>On the <b>Compute Hosts</b> page, in the row for the host you want to activate, click the details button. <image href="../../../media/opsconsole/DetailDots.png"></image></li>
+                <li>Click <b>Activate</b>, and in the confirmation screen that opens, click <b>Confirm</b>.</li>
+                <li>Wait for Helion to complete the operation. This process can take up to 2 minutes.</li>
+                <li>If activation is successful, you will see a notification and in the compute
+                    hosts table the <b>STATE</b> will change to <b>ACTIVATED</b>.
+                    <note type="attention">If you receive a notice that the operation did
+                        not complete successfully, read the notification explaining at which step
+                        the error occured. You can click on the link in the error notification for more details. In the compute hosts table the <b>STATE</b> will remain <b>DEACTIVATED</b>.</note>
+                </li>
+            </ol>  
         </section>
         <lines>
             
@@ -91,6 +133,44 @@ https://VIP:9095</codeblock></li>
         <section id="ops_delete">
             <title>Delete a Compute Host</title>
             <p>If you need to scale down the size of your current deployment to use the hardware for other purposes, you may want to delete a compute host.</p> 
+        
+            <note type="attention">Complete the following steps before deleting a host: <ul>
+                    <li>host must be in the following state: <b>DEACTIVATED</b></li>
+                    <li>Optionally you can migrate the instance off the host to be deleted. To do
+                        this, complete the following sections in the <xref
+                            href="../maintenance/compute/remove_compute_node.dita">Removing
+                            Nodes</xref> topic: <ol>
+                            <li>Disable provisioning on the compute host.</li>
+                            <li>Use live migration to move any instances on this host to other
+                                hosts.</li>
+                        </ol>
+                    </li>
+                </ul></note>
+            
+            <p>To delete a compute host:</p>
+            <ol>
+                <li>To open Operations Console, in a browser enter either the URL or Virtual IP
+                    connected to Ops Console. <p>For
+                        example:</p><codeblock>https://myhelion.test:9095
+https://VIP:9095</codeblock></li>
+                <li>On the <b>Home</b> screen, click the menu represented by 3 horizontal lines.
+                    <image href="../../../media/opsconsole/OpsConsoleBurgerMenu.png"/></li>
+                <li>From the menu that slides in on the left side, click <b>Compute</b>, and then <b>Compute Hosts</b>.</li>
+                <li>On the <b>Compute Hosts</b> page, in the row for the host you want to delete, click the details button. <image href="../../../media/opsconsole/DetailDots.png"></image></li>
+                <li>Click <b>Delete</b>, and if the configuration is encrypted, enter the encryption key.</li> 
+                 <li>in the confirmation screen that opens, click <b>Confirm</b>.</li>
+                <li>In the compute hosts table you will see the <b>STATE</b> change to <b>Deleting</b>.</li>
+                <li>Wait for Helion to complete the operation. This process can take up to 2 minutes.</li>
+                <li>If deletion is successful, you will see a notification and in the compute
+                    hosts table the host will not be listed.
+                    <note type="attention">If you receive a notice that the operation did
+                        not complete successfully, read the notification explaining at which step
+                        the error occured. You can click on the link in the error notification for more details. In the compute hosts table the <b>STATE</b> will remain <b>DEACTIVATED</b>.</note>
+                </li>
+            </ol>  
+            
+        
+        
         </section>
         <lines>
             
@@ -99,8 +179,8 @@ https://VIP:9095</codeblock></li>
             <title>For More Information</title>
             <p>For more information on how to complete these tasks through the command line, see the following topics:</p>
             <ul>
-                <li><xref href="../adding_node.dita">Increasing Capacity by Adding Nodes</xref></li>
-                <li><xref href="../removing_node.dita">Removing Nodes</xref></li>
+                <li><xref href="../maintenance/compute/add_hpelinux_compute.dita">Increasing Capacity by Adding Nodes</xref></li>
+                <li><xref href="../maintenance/compute/remove_compute_node.dita">Removing Nodes</xref></li>
             </ul>
         </section>
         
