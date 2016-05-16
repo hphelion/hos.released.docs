@@ -9,8 +9,7 @@
       provided with the product.</shortdesc>In <keyword keyref="kw-hos-phrase"/> you have the option
     to specify a SMTP server for email notifications and a database platform you want to use for the
     metrics database. These steps will assist in this process.</abstract>
-
-  <body>
+<body>
     <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
 
@@ -22,7 +21,12 @@
       <p>You can specify your SMTP server either during the installation phase of your cloud
         deployment or post-installation if need be. We will show both methods below.</p>
       
-      <note type="note">You can also specify the email address where notifications are sent. This can be configured either during or after initial installation. These instructions are provided below the section on how to configure the SMTP server.</note>
+      <note type="note">You may need to change the "From" email address for notifications if your
+        email server rejects email from the default:
+        <codeblock>notification@exampleCloud.com</codeblock> You can also specify the email address
+        where notifications are sent; the "To" address. These can be configured either during or
+        after initial installation. The instructions are provided after you configure the SMTP
+        server.</note>
       
       <p><b>During Initial Installation</b></p>
       <p>To configure the SMTP server, edit the
@@ -73,19 +77,33 @@
           </tgroup>
         </table>
       </p>
-      
-      <p>To configure the email address where notications are sent, during installation, <ol>
-          <li>Edit the following file:
-            <codeph>roles/monasca-notification/defaults/main.yml</codeph></li>
-          <li>Find the following variable: <codeph>_addr:</codeph>. If it doesn't exist, you can add
-            it:</li>
-          <li>Change the value to be the email address you want to use.</li>
-        </ol><note type="note">You can also edit a similar file to specify the email address:
-            <codeph>roles/monasca-default-alarms/defaults/main.yml</codeph> by changing the value in
-          <codeph>notification_address:</codeph> to the email address you want to use. You do not have to change both files to save the new setting.</note>
+    </section>
+      <section id="emailAddress"><title>Configuring Email Addresses During Installation</title>
+        <p>You can edit one or both of the addresses used to send and recieve email notifications. The instructions are different for the "To" and "From" addresses. The instructions are also different if you configure the addresses during or after installation.</p>
+        
+      <p>To configure the "To" email address, during installation, <ol>
+        <li>Log in to the lifecycle manager (deployer).</li>
+        <li>Open the following file:
+          <codeblock>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeblock></li>      
+        <li>Find the following variable: <codeph>notification_address</codeph>. If it doesn't exist, you can add
+          it.</li>
+        <li>Change the value to be the email address you want to use.</li>
+        <li>Save the changes to the file. </li> 
+        </ol>
       </p>
-      
-      <p><b>After Initial Installation</b></p>
+        
+        <p>To configure the "From" email address, during installation, <ol>
+          <li>Log in to the lifecycle manager (deployer).</li>
+          <li>Open the following file:
+            <codeph>roles/monasca-notification/defaults/main.yml</codeph></li>
+          <li>Find the following variable: <codeph>from_addr:</codeph>. If it doesn't exist, you can add
+            it.</li>
+          <li>Change the value to be the email address you want to use.</li>
+        </ol>
+        </p>
+      </section>
+    <section id="After_Install">
+    <title>After Initial Installation</title>
       <p>If you need to configure a SMTP server or make changes to your existing SMTP server after
         your initial installation, these steps will show you how:</p>
       <ol>
@@ -120,39 +138,61 @@ ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml --tags notification
             may need to use the <codeph>--ask-vault-pass</codeph> switch if you opted for encryption
             during the initial deployment.</note></li>
       </ol>
-      
-      <p>To configure the email address where notications are sent, after installation, <ol>
-          <li>Edit the following file:
-            <codeph>roles/monasca-notification/defaults/main.yml</codeph></li>
-          <li>Find the following variable: <codeph>_addr:</codeph>. If it doesn't exist, you can add
-            it:</li>
-          <li>Change the value to be the email address you want to use. <note type="note">You can
-              also edit a similar file to specify the email address:
-                <codeph>roles/monasca-default-alarms/defaults/main.yml</codeph> by changing the
-              value in <codeph>notification_address:</codeph> to the email address you want to use.
-              You do not have to change both files to save the new setting, but you must use
-              Operations Console to create a notification that matches the address you use in the
-                <b>main.yml</b> file.</note></li>
+    </section>
+ 
+      <section id="emailAddress_after"><title>Configuring Email Addresses After Installation</title>
+        <p>You can edit one or both of the addresses used to send and recieve email notifications. The instructions are different for the "To" and "From" addresses. The instructions are also different if you configure the addresses during or after installation.</p>
+        
+        <p>To configure the "To" email address, after installation,</p>
+        <ol>
           <li>Log in to the Operations Console in a browser by entering either the URL or Virtual IP
             connected to Ops Console. <p>For
-            example:</p><codeblock>https://myhelion.test:9095
+              example:</p><codeblock>https://myhelion.test:9095
 https://VIP:9095</codeblock></li>
           <li>On the <b>Home</b> screen, click the menu represented by 3 horizontal lines. <image
-              href="../../../media/opsconsole/OpsConsoleBurgerMenu.png"/></li>
+            href="../../../media/opsconsole/OpsConsoleBurgerMenu.png"/></li>
           <li>From the menu that slides in on the left side, click <b>Home</b>, and then <b>Alarm
-              Explorer</b>.</li>
+            Explorer</b>.</li>
           <li>On the <b>Alarm Explorer</b> page, at the top, click the <b>Notification Methods</b>
             text.</li>
-          <li>On the <b>Notification Methods</b> page, click <b>Create Notification Method</b>.</li>
-          <li>On the <b>Create Notification Method</b> page, in <b>Name</b>, enter the same address
-            you used in the <b>main.yml</b> file.</li>
-          <li>On the <b>Create Notification Method</b> page, in <b>Type</b>, select <b>email</b>,
-            and then click <b>Create Notification</b>.</li>
-        </ol><note type="attention">Once the notification has been added, running playbooks will not
+          <li>On the <b>Notification Methods</b> page, find the row with the <b>Default Email</b> notification.</li>
+          <li>In the <b>Default Email</b> row, click the details icon <image
+            href="../../../media/opsconsole/DetailDots.png"/>, and then click <b>Edit</b>.</li>
+          <li>On the <b>Edit Notification Method: Default Email</b> page, in <b>Name</b>, <b>Type</b>, and <b>Address/Key</b>,
+            type in the values you want to use.</li>
+          <li>On the <b>Edit Notification Method: Default Email</b> page, click <b>Update Notification</b>.</li>
+        </ol>
+        <note type="attention">Once the notification has been added, running playbooks will not
           change it.</note>
-      </p>
-      
-    </section>
+        
+        <p>To configure the "From" email address, after installation, 
+          <ol>
+            <li>Log in to the lifecycle manager (deployer).</li>
+            <li>Open the following file:
+         <codeblock>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeblock></li>      
+            <li>Find the following variable: <codeph>from_addr:</codeph>. If it doesn't exist, you can add
+              it.</li>
+            <li>Change the value to be the email address you want to use.</li>
+            <li>Save the changes to the file. </li>
+            <li>To commit the changes to your local git
+            repository:<codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+          <li>To run the configuration
+            processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>To create a deployment
+            directory:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>To run the reconfigure
+            playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml</codeblock>
+          </li>
+        </ol>
+        </p>
+      </section>
+
+
     <section id="database"><title>Choosing an alarm metrics database option</title>
       <p>The monitoring service supports two different database options. The default metrics
         database is <b>Vertica</b>, which is a highly-scalable analytics database from HP. Vertica
