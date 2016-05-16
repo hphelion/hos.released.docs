@@ -109,7 +109,7 @@
           <codeblock>python  ~/helion/hos/ansible/roles/KEYMGR-API/templates/generate_kek</codeblock>The
           master key is generated at stdout from the command above.</li>
         <li>Set above master key in file:
-          <codeblock>~/helion/hos/ansible/roles/barbican-common/vars/barbican_deploy_config.yml</codeblock></li>
+          <codeblock>~helion/my_cloud/config/barbican/barbican_deploy_config.yml</codeblock></li>
         <li>Replace existing *barbican_customer_master_key* value with above generated master key if
           present.</li>
         <li>Commit the change to the git repository: <!--cp -r ~/hp-ci/padawan/* ~/helion/my_cloud/definition/-->
@@ -480,16 +480,18 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
           general "Internal Server Error" is returned when the certificate is invalid or missing any
           of necessary client certificate data (client certificate, key and CA root
           certificate).</li>
-        <li>After reconfiguring VIP from TLS to non-TLS , false measurements appear in monitoring.
+        <!--<li>After reconfiguring VIP from TLS to non-TLS , false measurements appear in monitoring.
           Monasca measurements for http_status checks alternate between '0' and '1' as shown
-          below.</li>
-      </ol><!--<codeblock>stack@padawan-ccp-c1-m1-mgmt:~$ monasca
+          below.</li>-->
+      </ol>
+      
+      <!--<codeblock>stack@padawan-ccp-c1-m1-mgmt:~$ monasca
         - -os-username monasca measurement-list - -dimensions
-        component=barbican-api,monitored_host_type=vip,api_endpoint=internal - -merge_metrics</codeblock>-->
-      <codeblock> http_status 2016-02-17T20:17:00
-+-------------+------------+--------------------------+--------------+------------+
+        component=barbican-api,monitored_host_type=vip,api_endpoint=internal - -merge_metrics</codeblock>
+     <codeblock> http_status 2016-02-17T20:17:00
++................+....................+................................+............….+.….….….…...+
 | name        | dimensions | timestamp                | value        | value_meta |
-+-------------+------------+--------------------------+--------------+------------+
++................+.….…....+....................................+................-+..................+
 | http_status |            | 2016-02-17T20:17:28.000Z |        1.000 |            |
 |             |            | 2016-02-17T20:17:29.000Z |        0.000 |            |
 |             |            | 2016-02-17T20:17:29.000Z |        1.000 |            |
@@ -497,13 +499,14 @@ ansible-playbook -i hosts/verb_hosts barbican-reconfigure.yml</codeblock>
 |             |            | 2016-02-17T20:17:31.000Z |        1.000 |            |
 |             |            | 2016-02-17T20:17:57.000Z |        0.000 |            |
 |             |            | 2016-02-17T20:17:57.000Z |        1.000 |            |
-+---------------------------------------------------------------------------------+</codeblock>Both
++......................................................................................................+</codeblock>Both
       URLs (http and https) are being monitored after the non-TLS switch. To remedy this, edit the
       control plane definition file,
       <codeph>control_plane.yml</codeph>:<codeblock>~/helion/my_cloud/definition/data/control_plane.yml</codeblock>Make
-      changes to add Barbican service components if not already there, as explained next: </section>
-    <section conref="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade/config"/>
-    <section>Commit the change in git repository.
+      changes to add Barbican service components if not already there, as explained next:-->
+    </section>
+    <!--<section conref="../upgrade/enable_barbican_for_upgrade.dita#barbicanUpgrade/config"/>-->
+    <!--<section>Commit the change in git repository.
       <codeblock>cd ~/helion
 git add -A
 git commit -m "My config"</codeblock>
@@ -515,6 +518,6 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
       Then run the site.yml
       playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible 
 ansible-playbook -i hosts/verb_hosts site.yml</codeblock>
-    </section>
+    </section>-->
   </body>
 </topic>
