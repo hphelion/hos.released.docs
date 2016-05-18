@@ -4,6 +4,49 @@
     <title>Known Issues in this Release</title>
     <body>
         <!--not tested-->
+        
+        <section id="bnx2x">
+            <title>Upgrade may fail - Can't load firmware file bnx2x/bnx2x-e2-7.12.30.0.fw</title>
+            <!--  HLM-3865 -->
+            <p>After running the upgrade procedure, and before re-booting your nodes, you must check to see if you need
+            to install the most recent version of the bnx2x driver on every node in you cluster. SSH to each node and run the command: </p>
+            
+            <codeblock>sudo lsmod | grep bnx2x</codeblock>
+            
+            <p>If this command generates any output, then you will need to install the driver on the node.</p>
+            
+            <p>To check what files, if any, are already present for this driver on the node, run: </p>
+            
+            <codeblock>sudo ls /lib/firmware/bnx2x</codeblock>
+            
+            <p>This may generate output similar to the following:</p>
+            
+<codeblock>
+bnx2x-e1-7.0.29.0.fw  bnx2x-e1h-7.0.29.0.fw  bnx2x-e2-7.0.29.0.fw
+bnx2x-e1-7.8.17.0.fw  bnx2x-e1h-7.8.17.0.fw  bnx2x-e2-7.8.17.0.fw
+bnx2x-e1-7.8.19.0.fw  bnx2x-e1h-7.8.19.0.fw  bnx2x-e2-7.8.19.0.fw
+</codeblock>
+            <p> Note that the required file <codeph>bnx2x-e2-7.12.30.0.fw</codeph> is not present in the list.</p>
+            
+            <p>To install the latest version of the driver, run the following command on each node where you have
+            determined it is needed:</p>
+            
+            <codeblock>sudo apt-get install firmware-bnx2x</codeblock>
+            
+            <p>Now, when you list the contents of the <codeph>/lib/firmware/bnx2x</codeph> directory, you should see
+                the file <codeph>bnx2x-e2-7.12.30.0.fw</codeph>:</p>
+            
+<codeblock>
+bnx2x-e1-7.0.29.0.fw   bnx2x-e1h-7.0.29.0.fw   bnx2x-e2-7.0.29.0.fw
+bnx2x-e1-7.12.30.0.fw  bnx2x-e1h-7.12.30.0.fw  <b>bnx2x-e2-7.12.30.0.fw</b>
+bnx2x-e1-7.8.17.0.fw   bnx2x-e1h-7.8.17.0.fw   bnx2x-e2-7.8.17.0.fw
+bnx2x-e1-7.8.19.0.fw   bnx2x-e1h-7.8.19.0.fw   bnx2x-e2-7.8.19.0.fw
+</codeblock>            
+            
+            <note type="important">If you reboot the node before installing the driver, you may lose all networking
+            on the node.</note>
+            
+        </section>
 
         <section>
             <title>Helion Development Platform</title>
