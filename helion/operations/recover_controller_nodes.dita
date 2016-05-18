@@ -47,24 +47,27 @@ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1</codeb
             means you can run the bootstrap on either node but you can only run the bootstrap
             command once and only on one node.</note>
           <codeblock>stack@helion-cp-c1-m1-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
-stack@helion-cp-c1-m1-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:37:12 InnoDB: Shutdown completed; log sequence number <b>165002105</b> 
+stack@helion-cp-c1-m1-mgmt:~$ sudo grep --text 'Recovered position' /var/log/mysql/error.log| tail -1
+151119 14:37:12 32123 [Note] WSREP: Recovered position: a0cd6b29-f027-11e5-b9e3-fb0ed503c0ac:<b>165002105</b>
 
 stack@helion-cp-c1-m2-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
-stack@helion-cp-c1-m2-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number <b>165252407</b>
+stack@helion-cp-c1-m2-mgmt:~$ sudo grep --text 'Recovered position' /var/log/mysql/error.log| tail -1
+151119 14:37:1214:37:52 32336 [Note] WSREP: Recovered position: a0cd6b29-f027-11e5-b9e3-fb0ed503c0ac:<b>165252407</b>
 
-stack@helion-cp-c1-m3-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
-stack@helion-cp-c1-m3-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number <b>165252407</b>
-151119 14:53:23 InnoDB: Shutdown completed; log sequence number 165252407</codeblock></li>
+stack@helion-cp-c1-m3-mgmt:~$  sudo /usr/bin/mysqld_safe --wsrep-recover
+stack@helion-cp-c1-m3-mgmt:~$ sudo grep --text 'Recovered position' /var/log/mysql/error.log| tail -1
+151119 14:37:1214:37:52 32332 [Note] WSREP: Recovered position: a0cd6b29-f027-11e5-b9e3-fb0ed503c0ac:<b>165252407</b></codeblock></li>
         <li>SSH into the node with the highest log sequence number and bootstrap the cluster with
-          these commands:
-          <codeblock>sudo /etc/init.d/mysql bootstrap-pxc
-sudo service mysql restart</codeblock></li>
-        <li>Log onto any other controller nodes that went down and run this command to start MySQL
-          back up: <codeblock>sudo service mysql start</codeblock>
+          these commands: <codeblock>sudo /etc/init.d/mysql bootstrap-pxc</codeblock>
         </li>
+        <li>Log onto any other controller nodes that went down and run this command to start MySQL
+          back up: <codeblock>sudo service mysql start</codeblock></li>
+        <li>Wait for a few minutes for the services to be fully up and sycned.</li>
+        <li>Log in to the controller node on which you did a bootstrap and issue a restart: <codeblock>sudo service mysql restart</codeblock>
+          <p>This is to correct the systemctl status, the mysql service on this controller node
+            should show it is active and running, which you can confirm with this command:</p>
+          <codeblock>sudo service mysql status |grep Active
+   Active: active (running) since Thu 2016-05-05 17:50:48 UTC; 2min 17s ago</codeblock></li>
       </ol>
     </section>
     <!-- 2.0 Instructions -->
