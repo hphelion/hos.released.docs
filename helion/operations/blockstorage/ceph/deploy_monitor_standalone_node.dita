@@ -23,7 +23,7 @@
         <section id="deploy"><title>To Install the Ceph Monitor Service on Dedicated Resource
                 Nodes</title>
             <p>Perform the following procedure to install the Ceph monitor on dedicated nodes. Note
-                that Ceph requires at least 3 monitoring servers to form a majority in case of node
+                that Ceph requires at least 3 monitoring servers to form a cluster in case of node
                 failure.</p>
             <ol>
                 <li>Log in to the lifecycle manager.</li>
@@ -104,30 +104,12 @@ clusters:
 
 # Ceph RGW Nodes
 - id: rgw1
-  ip-addr: 192.168.10.12
-  role: RGW-ROLE
-  server-group: RACK1
-  nic-mapping: MY-2PORT-SERVER
-  mac-addr: "8b:f6:9e:ca:3b:62"
-  ilo-ip: 192.168.9.12
-  ilo-password: password
-  ilo-user: admin
-
-- id: rgw2
-  ip-addr: 192.168.10.13
-  role: RGW-ROLE
-  server-group: RACK2
-  nic-mapping: MY-2PORT-SERVER
-  mac-addr: "8b:f6:9e:ca:3b:63"
-  ilo-ip: 192.168.9.13
-  ilo-password: password
-  ilo-user: admin </codeblock></li>
+  ...</codeblock></li>
                 <li>Edit the <codeph>~/helion/my_cloud/definition/data/net_interfaces.yml</codeph>
                     file to define a new network interface set for your Ceph monitors. You can copy
                     the <codeph>RGW-INTERFACES</codeph> model as a base and then edit it to match
-                    your environment:
-                    <codeblock>
-## This defines the interface used for management
+                    your environment: <p><b>Three-network Ceph example:</b></p>
+                    <codeblock>## This defines the interface used for management
 ## traffic like logging, monitoring, etc.
 - name: CEP-MON-INTERFACES
   network-interfaces:
@@ -148,22 +130,81 @@ clusters:
 
 - name: RGW-INTERFACES
   network-interfaces:
-    - name: BOND0
-      device:
-        name: bond0
-      bond-data:
-         options:
-             mode: active-backup
-             miimon: 200
-             primary: hed3
-         provider: linux
-             devices:
-                - name: hed3
-                - name: hed4
-         network-groups:
+  ...</codeblock>
+                    <p><b>Two-network Ceph example:</b></p>
+                    <codeblock>    - name: CEP-MON-INTERFACES
+      network-interfaces:
+      ## This defines the interface used for management
+      ## traffic like logging, monitoring, etc.
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed1
+              provider: linux
+              devices:
+                - name: hed1
+                - name: hed2
+          network-groups:
             - MANAGEMENT
-            - OSD-CLIENT
-</codeblock></li>
+
+    - name: OSD-INTERFACES
+      network-interfaces:
+      ## This defines the interface used for management
+      ## traffic like logging, monitoring, etc.
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed1
+              provider: linux
+              devices:
+                - name: hed1
+                - name: hed2
+          network-groups:
+            - MANAGEMENT
+      ## This defines the interface used for internal
+      ## cluster communication among OSD nodes.
+        - name: HETH4
+          device:
+              name: hed4
+          network-groups:
+            - OSD</codeblock>
+                    <p><b>Single-network Ceph example:</b></p>
+                    <codeblock>    - name: CEP-MON-INTERFACES
+      network-interfaces:
+      ## This defines the interface used for management
+      ## traffic like logging, monitoring, etc.
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed1
+              provider: linux
+              devices:
+                - name: hed1
+                - name: hed2
+          network-groups:
+            - MANAGEMENT
+      ## This interface is used to connect the client
+      ## node to the Ceph nodes so that any Ceph client
+      ## like cinder-volume can route data directly to
+      ## Ceph over thisinterface.
+        - name: ETH2
+          device:
+              name: hed3
+          network-groups:
+            - OSD-CLIENT</codeblock>
+                </li>
                 <li>Create a new file named <codeph>disks_ceph_monitor.yml</codeph> in the
                         <codeph>~/helion/my_cloud/definition/data/</codeph> directory which will
                     define the disk model for your Ceph monitors. You can use the
@@ -204,8 +245,7 @@ disk-models:
          name: os</codeblock></li>
                 <li>Edit the <codeph>~/helion/my_cloud/definition/data/server_roles.yml</codeph>
                     file to define a new server role for your Ceph monitors:
-                    <codeblock>
-- name: CEP-MON-ROLE
+                    <codeblock>- name: CEP-MON-ROLE
   interface-model: CEP-MON-INTERFACES
   disk-model: CEP-MON-DISKS</codeblock></li>
                 <li>Commit your
