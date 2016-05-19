@@ -6,15 +6,16 @@
   <abstract><shortdesc outputclass="hdphidden">Steps for removing data disks from your OSD
       nodes.</shortdesc>If you want to remove a data disks from your existing OSD nodes, these steps
     will show you how to.</abstract>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="steps"><title>Removing a Data Disk from an Object Storage Daemon (OSD) Node</title>
       <ol>
         <li>Log in to the OSD node you want to remove the data disk from.</li>
         <li>Figure out the OSD number for the corresponding disk using this command:
           <codeblock>sudo ceph-disk list | grep &lt;disk-to-be-removed&gt; | grep osd</codeblock></li>
-        <li>Using the output from the command in the previous step, locate the OSD number. <p>In
-            the example below, the OSD number is <codeph>4</codeph>:</p>
+        <li>Using the output from the command in the previous step, locate the OSD number. <p>In the
+            example below, the OSD number is <codeph>4</codeph>:</p>
           <codeblock>/dev/sdn1 ceph data, active, cluster ceph, osd.4, journal /dev/sdj1</codeblock>
           <note>The value for &lt;osd_number> in the next steps should be replaced with the OSD
             number you locate above.</note></li>
@@ -31,6 +32,8 @@ ceph -w</codeblock>
 ceph osd crush remove osd.&lt;osd_number&gt;
 ceph auth del osd.&lt;osd_number&gt;
 ceph osd rm &lt;osd_number&gt;</codeblock></li>
+        <li>Unmount the OSD data
+          disk:<codeblock>sudo umount &lt;mount_path_of_datadisk></codeblock></li>
         <li>This step will remove the OSD's directories and should be performed with caution: <codeblock>sudo rm -rf /var/lib/ceph/osd/&lt;ceph_cluster&gt;-&lt;osd_number&gt;</codeblock>
           <p>where:</p>
           <table frame="all" rowsep="1" colsep="1" id="table_sgn_m5r_35">
@@ -39,8 +42,8 @@ ceph osd rm &lt;osd_number&gt;</codeblock></li>
               <colspec colname="c2" colnum="2" colwidth="1.0*"/>
               <thead>
                 <row>
-                  <entry/>
-                  <entry/>
+                  <entry>Variable</entry>
+                  <entry>Description</entry>
                 </row>
               </thead>
               <tbody>
@@ -56,8 +59,7 @@ ceph osd rm &lt;osd_number&gt;</codeblock></li>
               </tbody>
             </tgroup>
           </table></li>
-        <li>Unmount the OSD data
-          disk:<codeblock>sudo umount &lt;mount_path_of_datadisk></codeblock></li>
+
         <li>Remove the mount instructions for the same disk(s) from the <codeph>/etc/fstab</codeph>
           file. For example, to remove the data disk <codeph>/dev/sde</codeph>, find out its UUID by
           executing this command:<codeblock>sudo blkid | grep "ceph data"</codeblock>
