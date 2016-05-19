@@ -67,51 +67,35 @@
     
     <section id="TinT_backend">
     <title>Configuring TinTri as a Single-VMstore Backend</title>
-
-    <p>With HP StoreVirtual 4000 Storage, you Install the Centralized Management Console (CMC) on the computer or virtual machine that you use to administer the StoreVirtual Storage. You administer the entire network of Virtual Storage Appliances (VSA) from this CMC. </p>
-    <p>VSAs provide a complete array functionality of StoreVirtual 4000 Storage for VMware vSphere, Microsoft Hyper-V, and KVM environments without external array hardware. The CMC lets you easily configure, manage, and monitor your storage.</p>
-    <note type="note">To configure your Cinder backend server to use your VSA environment, you will use the information you configured in the CMC.</note>
+      <p>To update your Cinder backend server to use TinTri storage, you must modify the appropriate Cinder configuration file. On the lifecycle manager, find the following file: <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph>. Add the following text:<codeph># Configure the enabled backends     Enabled_backends=tintri_vmstore</codeph></p>
+        <note type="important">If you are using multiple backend types, you can use a comma
+        delimited list here. For example, if you are going to use both TinTri and EMC backends, you
+        could specify it in the following way:
+        <codeblock># Configure the enabled backends
+Enabled_backends=tintri_vmstore,emc</codeblock></note>
     <p>To configure TinTri as a backend:</p>
     <ol>
-      <li><xref type="section" href="#TinT_install_driver/TinT_VSA">Add your VSA backend to the Cinder configuration file.</xref></li>
       <li><xref type="section" href="#TinT_install_driver/TinT_Cinder">Add the TinTri backend to the Cinder configuration file.</xref></li>
       <li><xref type="section" href="#TinT_install_driver/TinT_Nova">Add NFS mount options to the Nova configuration file.</xref></li>
       <li><xref type="section" href="#TinT_install_driver/TinT_Commit">Commit your changes and reconfigure Cinder and Nova.</xref></li>
     </ol>
-    </section>  
-    
-    <section id="TinT_VSA">
-      <title>Add Your VSA backend to the Cinder Configuration File</title>
-      <p>You must update your Cinder configuration to add VSA storage.</p>
-      <p>To add VSA to the Cinder configuration file:</p>
-      <ol>
-        <li>Log in to the lifecycle manager.</li>
-        <li>Find the following file:
-          <codeblock>Cinder.conf.j2</codeblock> 
-          <b>For example:</b>
-          <codeblock>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeblock></li>
-        <li>In a text editor, open the following file:
-        <codeblock>cinder.conf.j2</codeblock>
-        </li>
-        <li>To add your VSA backend to the enabled_backends section, add the following text:
-          <codeblock># Configure the enabled backends
-Enabled_backends=tintri_vmstore</codeblock></li>
-      </ol> 
-      <note type="important">If you are using multiple backend types, you can use a comma delimited
-        list here. For example, if you are going to use both TinTri and EMC backends, you could
-        specify it in the following way:
-        <codeblock># Configure the enabled backends
-Enabled_backends=tintri,emc</codeblock>
-      </note>
-          </section>  
+    </section>   
     
     <section id="TinT_Cinder">
       <title>Add the TinTri backend to the Cinder Configuration File</title>
+      <p>To update your Cinder backend server to use TinTri storage, you must modify the Cinder configuration file on the lifecycle manager.</p>
       <p>To create a section for the TinTri backend:</p>
       <ol>
-        <li>If not already open, find and open the following file in a text editor:
-          <codeblock>Cinder.conf.j2</codeblock></li>
-        <li>Add the following settings and fill in the values as per your cluster/environment:
+        <li>Log in to the lifecycle manager.</li>
+          <li>Open the following file in a text editor:
+          <codeblock>~/helion/my_cloud/config/Cinder.conf.j2</codeblock></li>
+        <li>Add the following text:
+            <codeblock>#configure the enabled backends
+Enabled_backends=tintri_vmstore</codeblock><note
+            type="important">If you are using multiple backend types, use a comma delimited list.
+            For example, if you are using both TinTri and EMC backends, you can specifiy it as:
+            <codeblock>Enabled_backends=tintri_vmstore,emc</codeblock></note></li>
+        <li>To the <codeph>[tintri_vmstore]</codeph> section, add the following settings and fill in the values as per your cluster/environment:
             <table frame="all" rowsep="1" colsep="1" id="table_TinT_Cinder">
             <tgroup cols="2">
               <colspec colname="c1" colnum="1" colwidth="1.08*"/>
@@ -174,17 +158,12 @@ nfs_shares_config=/opt/stack/service/cinder-volume-20151019T060521Z/etc/nfs_shar
           <codeblock>nova.conf.j2</codeblock> 
           For example:<codeph>~/helion/my_cloud/config/Nova/nova.conf.j2</codeph></li>
         <li>In a text editor, open the following file: <codeblock>nova.conf.j2</codeblock></li>
-        <li>To add your NFS options to the Nova configuration, find the following text:
-            <codeblock>LIBVIRT</codeblock><note type="important">If this text does not exist, add it
-            after the line “END OF DEFAULT”</note></li>
-        <li>To the <b>LIBVIRT</b> section, add the following text:
-          <codeblock>nfs_mount_options= vers=3,proto=tcp</codeblock>
-          For example:
+        <li>In the Nova configuration file, add the NSF changes to the <codeph>LIBVIRT</codeph>
+          section. If this section does not exist, add it, and then add the following text:
           <codeblock># LIBVIRT
-          [libvirt]
-          virt_type = kvm
-          nfs_mount_options=vers=3,proto=tcp</codeblock>
-           </li>
+[libvirt]
+virt_type = kvm
+nfs_mount_options=vers=3,proto=tcp</codeblock></li>
       </ol>
     </section>
  
@@ -195,8 +174,8 @@ nfs_shares_config=/opt/stack/service/cinder-volume-20151019T060521Z/etc/nfs_shar
       <ol>
         <li>To commit your configuration changes to a local git repository, run:
           <codeblock>#cd ~/helion/hos/ansible
-          git add -A
-          git commit -m "&lt;your commit message&gt;"</codeblock></li>
+git add -A
+git commit -m "&lt;your commit message&gt;"</codeblock></li>
         <li>To use an ansible playbook to run the configuration processor, run:
           <codeblock>#cd ~/helion/hos/ansible
           ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
