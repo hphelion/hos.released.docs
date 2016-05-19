@@ -4,60 +4,55 @@
     <title>Known Issues in this Release</title>
     <body>
         <!--not tested-->
-        
+
         <section id="bnx2x">
             <title>Upgrade may fail - Can't load firmware file bnx2x/bnx2x-e2-7.12.30.0.fw</title>
             <!--  HLM-3865 -->
-            <p>After running the upgrade procedure, and before re-booting your nodes, you must check to see if you need
-            to install the most recent version of the bnx2x driver on every node in your cluster. SSH to each node and run the command: </p>
-            
+            <p>After running the upgrade procedure, and before re-booting your nodes, you must check
+                to see if you need to install the most recent version of the bnx2x driver on every
+                node in your cluster. SSH to each node and run the command: </p>
             <codeblock>sudo lsmod | grep bnx2x</codeblock>
-            
-            <p>If this command generates any output, then you will need to install the driver on the node. To check what files, if any, are already present for this driver on the node, run: </p>
-            
+            <p>If this command generates any output, then you will need to install the driver on the
+                node. To check what files, if any, are already present for this driver on the node,
+                run: </p>
             <codeblock>sudo ls /lib/firmware/bnx2x</codeblock>
-            
             <p>This may generate output similar to the following:</p>
-            
-<codeblock>
+            <codeblock>
 bnx2x-e1-7.0.29.0.fw  bnx2x-e1h-7.0.29.0.fw  bnx2x-e2-7.0.29.0.fw
 bnx2x-e1-7.8.17.0.fw  bnx2x-e1h-7.8.17.0.fw  bnx2x-e2-7.8.17.0.fw
 bnx2x-e1-7.8.19.0.fw  bnx2x-e1h-7.8.19.0.fw  bnx2x-e2-7.8.19.0.fw
 </codeblock>
-            <p> Note that the required file <codeph>bnx2x-e2-7.12.30.0.fw</codeph> is not present in the list. To install the latest version of the driver, run the following command on each node where you have
-            determined it is needed:</p>
-            
+            <p> Note that the required file <codeph>bnx2x-e2-7.12.30.0.fw</codeph> is not present in
+                the list. To install the latest version of the driver, run the following command on
+                each node where you have determined it is needed:</p>
             <codeblock>sudo apt-get install firmware-bnx2x</codeblock>
-            
-            <p>Now, when you list the contents of the <codeph>/lib/firmware/bnx2x</codeph> directory, you should see
-                the file <codeph>bnx2x-e2-7.12.30.0.fw</codeph>:</p>
-            
-<codeblock>
+            <p>Now, when you list the contents of the <codeph>/lib/firmware/bnx2x</codeph>
+                directory, you should see the file <codeph>bnx2x-e2-7.12.30.0.fw</codeph>:</p>
+            <codeblock>
 bnx2x-e1-7.0.29.0.fw   bnx2x-e1h-7.0.29.0.fw   bnx2x-e2-7.0.29.0.fw
 bnx2x-e1-7.12.30.0.fw  bnx2x-e1h-7.12.30.0.fw  <b>bnx2x-e2-7.12.30.0.fw</b>
 bnx2x-e1-7.8.17.0.fw   bnx2x-e1h-7.8.17.0.fw   bnx2x-e2-7.8.17.0.fw
 bnx2x-e1-7.8.19.0.fw   bnx2x-e1h-7.8.19.0.fw   bnx2x-e2-7.8.19.0.fw
-</codeblock>            
-            
-            <note type="important">If you reboot a node before installing the required driver, you may lose all networking
-            on the node.</note>
-            
+</codeblock>
+            <note type="important">If you reboot a node before installing the required driver, you
+                may lose all networking on the node.</note>
         </section>
 
         <section>
             <title>Helion Development Platform</title>
-            <p>Helion Development Platform (HDP) 2.0 or earlier versions are not supported on 
-                <keyword keyref="kw-hos-phrase"/> If you have existing HDP 2.0 deployment on 
-                <keyword keyref="kw-hos"/> 2.X platform, 
-                consider the following before upgrading to <keyword keyref="kw-hos-phrase-30"/>. 
-                <ul>
-                    <li>Helion Stackato 3.6.2 is the recommended and supported PaaS product on <keyword keyref="kw-hos-phrase-30"/>. </li>
-                    <li>Helion Database Service and Messaging Service are not included and not supported on <keyword keyref="kw-hos-phrase-30"/>. </li>
+            <p>Helion Development Platform (HDP) 2.0 or earlier versions are not supported on
+                    <keyword keyref="kw-hos-phrase"/> If you have existing HDP 2.0 deployment on
+                    <keyword keyref="kw-hos"/> 2.X platform, consider the following before upgrading
+                to <keyword keyref="kw-hos-phrase-30"/>. <ul>
+                    <li>Helion Stackato 3.6.2 is the recommended and supported PaaS product on
+                            <keyword keyref="kw-hos-phrase-30"/>. </li>
+                    <li>Helion Database Service and Messaging Service are not included and not
+                        supported on <keyword keyref="kw-hos-phrase-30"/>. </li>
                 </ul>
             </p>
-            <p>Please see: <xref
-                href="http://docs.hpcloud.com/#devplatform/2.0/upgrade_HOS_30.html"
-                format="html" scope="external">Upgrading HPE Helion OpenStack to Version 3.0</xref> for more information.</p>
+            <p>Please see: <xref href="http://docs.hpcloud.com/#devplatform/2.0/upgrade_HOS_30.html"
+                    format="html" scope="external">Upgrading HPE Helion OpenStack to Version
+                    3.0</xref> for more information.</p>
         </section>
 
         <section>
@@ -156,6 +151,24 @@ sudo systemctl start kibana
                 live migrate instances between them. Instances on KVM hosts can only be live
                 migrated to other KVM hosts and the same for RHEL hosts. For more details about live
                 migration, see <xref href="operations/maintenance/live_migration.dita"/>.</p>
+            <!-- DOCS-3169 -->
+            <p><b>Two upstream limitations regarding live migration abortion parameters that
+                    exist</b></p>
+            <p>There are two upstream limitations when configuring the live-migration abortion
+                parameters that also exist in our product:</p>
+            <ol>
+                <li>The <codeph>live_migration_downtime</codeph>,
+                        <codeph>live_migration_downtime_steps</codeph> and
+                        <codeph>live_migration_downtime_delay</codeph> default values are not
+                    honored. See <xref href="https://bugs.launchpad.net/nova/+bug/1583107"
+                        scope="external" format="html"/> for more details. If you want to set up
+                    values different than the minimum ones then you need to do it explicitly.</li>
+                <li>Live-migration monitoring is not working properly. The consequence is that the
+                        <codeph>live_migration_completion_timeout</codeph> parameter has no effect
+                    and is overridden by <codeph>live_migration_progress_timeout</codeph>. See <xref
+                        href="https://bugs.launchpad.net/nova/+bug/1583145" scope="external"
+                        format="html"/> for more details.</li>
+            </ol>
             <!-- DOCS-3103 -->
             <p><b>Enabling migrate or resize</b></p>
             <p>If you want to enable migrate or resize in Nova you must do so after installing or
@@ -195,7 +208,13 @@ sudo systemctl start kibana
 
         <section>
             <title>Use of InfluxDB version 9.5.1 Not Recommended</title>
-            <p><!-- DOCS-2993 --> Although Helion OpenStack ships with InfluxDB version 9.5.1, it is not recommended to be used in a HOS 3.0 environment. InfluxDB will randomly start to fail silently without any indication to the user. This can happen at any time. The only sign of failure is InfluxDB will start timing out connections to it. The only way to find that the problem is occurring is looking at the influxdb logs.  The only way to fix it is to either stop the load from pushing through it or restart InfluxDB.</p>
+            <p><!-- DOCS-2993 --> Although Helion OpenStack ships with InfluxDB version 9.5.1, it is
+                not recommended to be used in a HOS 3.0 environment. InfluxDB will randomly start to
+                fail silently without any indication to the user. This can happen at any time. The
+                only sign of failure is InfluxDB will start timing out connections to it. The only
+                way to find that the problem is occurring is looking at the influxdb logs. The only
+                way to fix it is to either stop the load from pushing through it or restart
+                InfluxDB.</p>
         </section>
 
         <section>
@@ -250,13 +269,12 @@ sudo systemctl start kibana
             <p>Cinder volume creation with VMDK as backend will take approximately 30 minutes with
                 200 ESXi hosts in the environment. In a smaller environment, the time to create a
                 volume will be approximately 10 minutes.</p>
-            
             <!-- DOCS-3145 -->
             <p><b>Multipath cannot be enabled when using VSA</b></p>
-            <p>If a compute node is configured to use multipath to attach volumes, that is, 
-                if it has the configuration variable <codeph>iscsi_use_multipath</codeph> set to true
-                in the libvirt section of the nova config file, then it will not be possible 
-                to attach a VSA volume to a nova instance hosted on that compute node.</p>
+            <p>If a compute node is configured to use multipath to attach volumes, that is, if it
+                has the configuration variable <codeph>iscsi_use_multipath</codeph> set to true in
+                the libvirt section of the nova config file, then it will not be possible to attach
+                a VSA volume to a nova instance hosted on that compute node.</p>
         </section>
 
         <section>
