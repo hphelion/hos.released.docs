@@ -37,55 +37,61 @@
       <sectiondiv outputclass="collapseall">Collapse All</sectiondiv>
     </section>
 
-    <section id="pointdb"><title outputclass="headerH">Point-in-Time Database Recovery</title>
+    <section id="pointdb">
+      <title outputclass="headerH">Point-in-Time Database Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>In this scenario, everything is still running (lifecycle manager, cloud controller nodes,
           and compute nodes) but you want to restore the MySQL database to a previous state. </p>
         <b>Restore from a Swift backup</b>
         <ol>
-          <li>On the first MySQL node, run the following steps. <p/>Become root:
-            <codeblock>sudo su</codeblock>Create a restore directory
-            <codeblock>mkdir /tmp/hlm_mysql_restore/</codeblock>Source the backup environment file
-            <codeblock>source /home/stack/backup.osrc
- </codeblock>List the
-            jobs<codeblock>freezer-scheduler -c &lt;hostname&gt; job-list</codeblock>Get the id
-            corresponding to the job "HLM Default: Mysql restore from Swift". Launch the restore.
-            <codeblock>freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;</codeblock>This
-            will take some time. While you wait you can follow the progress in the
-            /var/log/freezer-agent/freezer-agent.log.<p/>
-          </li>
-          <li>From the lifecycle manager run the following steps:
+          <li>Log in to the first MySQL node.</li>
+          <li>Become root: <codeblock>sudo su</codeblock></li>
+          <li>Create a restore directory <codeblock>mkdir /tmp/hlm_mysql_restore/</codeblock></li>
+          <li>Source the backup environment file
+            <codeblock>source /home/stack/backup.osrc</codeblock></li>
+          <li>List the
+            jobs<codeblock>freezer-scheduler -c &lt;hostname&gt; job-list</codeblock></li>
+          <li>Get the id corresponding to the job "HLM Default: Mysql restore from Swift".</li>
+          <li>Launch the restore.
+            <codeblock>freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;</codeblock></li>
+          <li>This will take some time. While you wait you can follow the progress in the
+              <codeph>/var/log/freezer-agent/freezer-agent.log</codeph> log file.</li>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Stop the Percona DB service:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock>
-          </li>
-          <li>On the first MySQL node run the following steps. <p>Clean the Mysql directory by
-              removing everything there:</p>
-            <codeblock>sudo rm -r /var/lib/mysql/*</codeblock>Copy the restored files back to the
-            mysql
+ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock></li>
+          <li>Log back in to the first MySQL node.</li>
+          <li>Clean the Mysql directory by removing everything there:
+            <codeblock>sudo rm -r /var/lib/mysql/*</codeblock></li>
+          <li>Copy the restored files back to the mysql
             directory:<codeblock>sudo cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql</codeblock></li>
-          <li>On the lifecycle manager, from the following directory, run
-            percona-bootstrap.yml:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Log back in to the lifecycle manager.</li>
+          <li>Start the Percona DB service back up:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml</codeblock></li>
         </ol>
-        <p><b>Restore from an SSH backup</b></p><p>Follow the same procedure as the one for Swift
-          but select the job "HLM Default: Mysql restore from SSH".</p>
+        <p><b>Restore from an SSH backup</b></p>
+        <p>Follow the same procedure as the one for Swift but select the job "HLM Default: Mysql
+          restore from SSH".</p>
         <p><b>Restore MySQL manually </b></p>
-        <p>If restoring MySQL fails during the percona-bootstrap procedure, you can follow this
-          procedure instead:</p>
+        <p>If restoring MySQL fails during the <codeph>percona-bootstrap.yml</codeph> procedure
+          outlined above, you can follow this procedure to manually restore MySQL:</p>
         <ol>
-          <li>From the lifecycle manager, run the following commands to stop the MySQL
-            cluster:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Log in to the lifecycle manager.</li>
+          <li>Stop the MySQL cluster:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock></li>
           <li>On all MySQL nodes, run the following command to purge the old
             database:<codeblock>sudo rm -r /var/lib/mysql/*</codeblock></li>
           <li>On the first MySQL node, restore the backup as follows. If you have already restored
             to a temporary directory, copy the files again:
-            <codeblock>sudo cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql</codeblock>If you need to
-            restore the files manually from SSH, follow these steps: <p>Become root:</p>
-            <codeblock>sudo su</codeblock> Create the /root/mysql_restore.ini file with the contents
-            below. Be careful to substitute the {{ values }}. Note that the SSH information refers
-            to the SSH server you configured for backup before installing.
-            <codeblock>[default]
+            <codeblock>sudo cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql</codeblock></li>
+          <li>If you need to restore the files manually from SSH, follow these steps: <ol>
+              <li>Become root: <codeblock>sudo su</codeblock></li>
+              <li>Create the <codeph>/root/mysql_restore.ini</codeph> file with the contents below.
+                Be careful to substitute the <codeph>{{ values }}</codeph>. Note that the SSH
+                information refers to the SSH server you configured for backup before installing.
+                <codeblock>[default]
 action = restore
 storage = ssh
 ssh_host = {{ freezer_ssh_host }}
@@ -95,30 +101,35 @@ ssh_key = /etc/freezer/ssh_key
 backup_name = freezer_mysql_backup
 restore_abs_path = /var/lib/mysql/
 log_file = /var/log/freezer-agent/freezer-agent.log
-hostname = {{ hostname of the first MySQL node }}</codeblock>
-            Execute the restore
-            job:<codeblock>freezer-agent --config /root/mysql_restore.ini</codeblock>
+hostname = {{ hostname of the first MySQL node }}</codeblock></li>
+              <li>Execute the restore
+                job:<codeblock>freezer-agent --config /root/mysql_restore.ini</codeblock></li>
+            </ol>
           </li>
-          <li>On the first MySQL node, follow the next steps to start the cluster. <p/>Become root:
-            <codeblock>sudo su</codeblock> When the last step executed successfully, start the MySQL
-            cluster: <codeblock>/etc/init.d/mysql bootstrap-pxc</codeblock>Start the process with
-            systemctl to make sure the process is monitored by upstard:
-            <codeblock>systemctl start mysql</codeblock>Make sure the mysql process started
-            successfully by getting the status: <codeblock>systemctl status mysql</codeblock></li>
-          <li>From the lifecycle manager, execute the following commands to start all MySQL
+          <li>On the first MySQL node, follow the next steps to start the cluster. <ol>
+              <li>Become root: <codeblock>sudo su</codeblock></li>
+              <li>When the last step executed successfully, start the MySQL cluster:
+                <codeblock>/etc/init.d/mysql bootstrap-pxc</codeblock></li>
+              <li>Start the process with systemctl to make sure the process is monitored by upstard:
+                <codeblock>systemctl start mysql</codeblock></li>
+              <li>Make sure the mysql process started successfully by getting the status:
+                <codeblock>systemctl status mysql</codeblock></li>
+            </ol>
+          </li>
+          <li>Log back in to the lifecycle manager.</li>
+          <li>Execute the following commands to start all MySQL
             instances:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts percona-start.yml</codeblock>Mysql
-            cluster status can be checked using
+ansible-playbook -i hosts/verb_hosts percona-start.yml</codeblock></li>
+          <li>Mysql cluster status can be checked using
             percona-status.yml:<codeblock>ansible-playbook -i hosts/verb_hosts percona-status.yml</codeblock></li>
           <li>On all MySQL nodes run the following commands as
             root:<codeblock>sudo su
 touch /var/lib/mysql/galera.initialised
-chown mysql:mysql /var/lib/mysql/galera.initialised</codeblock>After
-            approximately 10-15 minutes the output of percona-status should show all the MySQL nodes
-            in sync. Mysql cluster status can be checked using this
-            command:<codeblock>ansible-playbook -i hosts/verb_hosts percona-status.yml</codeblock>
-            The output is as
-            follows:<codeblock>TASK: [FND-MDB | status | Report status of "{{ mysql_service }}"] ************* 
+chown mysql:mysql /var/lib/mysql/galera.initialised</codeblock></li>
+          <li>After approximately 10-15 minutes the output of percona-status should show all the
+            MySQL nodes in sync. Mysql cluster status can be checked using this command:<codeblock>ansible-playbook -i hosts/verb_hosts percona-status.yml</codeblock>
+            <p>The output is as follows:</p>
+            <codeblock>TASK: [FND-MDB | status | Report status of "{{ mysql_service }}"] ************* 
 ok: [helion-cp1-c1-m1-mgmt] => {
     "msg": "mysql is synced."
 }
@@ -133,55 +144,72 @@ ok: [helion-cp1-c1-m3-mgmt] => {
     </section>
 
 
-    <section id="pointswift"><title outputclass="headerH">Point-in-Time Swift Rings Recovery</title>
+    <section id="pointswift">
+      <title outputclass="headerH">Point-in-Time Swift Rings Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>In this situation, everything is still running (lifecycle manager, control plane nodes,
           and compute nodes) but you want to restore your Swift rings to a previous
           state.</p><note>Freezer backs up and restores Swift rings only, not Swift data.</note>
         <b>Restore from a Swift backup</b>
         <ol>
-          <li>On the first Swift Proxy (SWF-PRX[0]) node run the following steps. <p/>Become root:
-            <codeblock>sudo su</codeblock>Create a restore
-            directory:<codeblock>mkdir /tmp/hlm_builder_dir_restore/</codeblock>Source the backup
-            environment file: <pre>source /home/stack/backup.osrc</pre>List the jobs:
-            <codeblock>freezer-scheduler -c &lt;hostname&gt; job-list</codeblock>Get the id
-            corresponding to the job "HLM Default: Swift restore from Swift." Launch the restore
-            job:<codeblock>freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;</codeblock>This
-            will take some time. While you wait you can follow the progress in the
-            /var/log/freezer-agent/freezer-agent.log.<p/></li>
-          <li>On the lifecycle manager run swift-stop.yml like
-            so:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Log in to the first Swift Proxy (<codeph>SWF-PRX[0]</codeph>) node.</li>
+          <li>Become root: <codeblock>sudo su</codeblock></li>
+          <li>Create a restore directory:
+            <codeblock>mkdir /tmp/hlm_builder_dir_restore/</codeblock></li>
+          <li>Source the backup environment file:
+            <codeblock>source /home/stack/backup.osrc</codeblock></li>
+          <li>List the jobs:
+            <codeblock>freezer-scheduler -c &lt;hostname&gt; job-list</codeblock></li>
+          <li>Get the id corresponding to the job "HLM Default: Swift restore from Swift."</li>
+          <li>Launch the restore
+            job:<codeblock>freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;</codeblock></li>
+          <li>This will take some time. While you wait you can follow the progress in the
+              <codeph>/var/log/freezer-agent/freezer-agent.log</codeph> log file.</li>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Stop the Swift service:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-stop.yml</codeblock></li>
-          <li>On the first Swift Proxy (SWF-PRX[0]) run the following steps. Copy restored files
+          <li>Log back in to the first Swift Proxy (<codeph>SWF-PRX[0]</codeph>) node.</li>
+          <li>Copy restored files
             <codeblock>cp -pr /tmp/hlm_builder_dir_restore/* /etc/swiftlm/builder_dir/</codeblock></li>
-          <li>On the lifecycle manager run
-            swift-reconfigure.yml:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>Log back in to the lifecycle manager.</li>
+          <li>Reconfigure the Swift service:\
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
         </ol>
-        <p><b>Restore from an SSH backup</b></p><p>Follow the same procedure as for Swift in the
-          section immediately preceding this one, but select the job "HLM Default: Swift restore
-          from SSH."</p>
+        <p><b>Restore from an SSH backup</b></p>
+        <p>Follow the same procedure as for Swift in the section immediately preceding this one, but
+          select the job "HLM Default: Swift restore from SSH."</p>
       </sectiondiv>
     </section>
-    <section id="pointlifecycle"><title outputclass="headerH">Point-in-time Lifecycle Manager
-        Recovery</title>
+
+
+
+    <section id="pointlifecycle">
+      <title outputclass="headerH">Point-in-time Lifecycle Manager Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>In this scenario, everything is still running (lifecycle manager, controller nodes, and
           compute nodes) but you want to restore the lifecycle manager to a previous state.</p>
         <b>Restore from a Swift backup</b>
         <ol>
-          <li>On the lifecycle manager, follow these steps. <p/>Become root:
-            <codeblock>sudo su</codeblock>Source the backup environment file:
-            <pre>source /home/stack/backup.osrc</pre>List the jobs:
-            <codeblock>freezer-scheduler -c &lt;lifecycle manager hostname&gt; job-list</codeblock>Get
-            the id corresponding to the job "HLM Default: Deployer restore from swift."<p/> Stop the
-            Dayzero UI: <codeblock>systemctl stop dayzero</codeblock> Launch the restore job:
-            <codeblock>freezer-scheduler -c &lt;lifecycle manager hostname&gt; job-start -j &lt;job-id&gt;</codeblock>This
-            will take some time. While you wait you can follow the progress in the
-            /var/log/freezer-agent/freezer-agent.log. <p/>Start the Dayzero UI: <codeblock>systemctl start dayzero</codeblock>
-            <b>Restore from an SSH backup</b> Follow the same procedure as for Swift but select the
-            job "HLM Default: Deployer restore from SSH."</li>
-        </ol></sectiondiv>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Become root: <codeblock>sudo su</codeblock></li>
+          <li>Source the backup environment file:
+            <codeblock>source /home/stack/backup.osrc</codeblock></li>
+          <li>List the jobs:
+            <codeblock>freezer-scheduler -c &lt;lifecycle manager hostname&gt; job-list</codeblock></li>
+          <li>Get the id corresponding to the job "HLM Default: Deployer restore from swift."</li>
+          <li>Stop the Dayzero UI: <codeblock>systemctl stop dayzero</codeblock></li>
+          <li>Launch the restore job:
+            <codeblock>freezer-scheduler -c &lt;lifecycle manager hostname&gt; job-start -j &lt;job-id&gt;</codeblock></li>
+          <li>This will take some time. While you wait you can follow the progress in the
+              <codeph>/var/log/freezer-agent/freezer-agent.log</codeph> log file.</li>
+          <li>Start the Dayzero UI: <codeblock>systemctl start dayzero</codeblock></li>
+        </ol>
+        <p><b>Restore from an SSH backup</b></p>
+        <p>Follow the same procedure as for Swift but select the job "HLM Default: Deployer restore
+          from SSH."</p>
+      </sectiondiv>
     </section>
 
 
@@ -189,22 +217,64 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
 
 
 
-    <section id="onecontroller"><title outputclass="headerH">One or Two Control Plane Node Disaster
-        Recovery</title>
+    <section id="onecontroller">
+      <title outputclass="headerH">One or Two Controller Node Disaster Recovery</title>
       <sectiondiv outputclass="insideSection">
-        <p>In this scenario, everything is still running (lifecycle manager, control plane node, and
-          compute nodes) but you've lost one or two control plane nodes.</p>
-        <b>Restore from other nodes</b><ol id="ol_ag2_y13_1v">
-          <li>On the lifecycle manager, run the site.yml playbook against the failed controller
-            node:
-            <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts site.yml --limit helion-ccp-c1-m2-mgmt</codeblock></li>
+        <p>These steps make the following assumptions:</p>
+        <ul>
+          <li>Your lifecycle manager is still intact and working.</li>
+          <li>One or two of your controller nodes went down, but not the entire cluster.</li>
+          <li>The node needs to be rebuilt from scratch, not simply rebooted.</li>
+        </ul>
+        <p><b>Steps to recovering one or two controller nodes</b></p>
+        <ol>
+          <li>Ensure that your node has power and all of the hardware is functioning.</li>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Verify that all of the information in your
+              <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file is correct for
+            your controller node. You may need to replace the existing information if you had to
+            either replacement your entire controller node or just pieces of it.</li>
+          <li>If you made changes to your <codeph>servers.yml</codeph> file then commit those
+            changes to your local git:
+            <codeblock>git add -A
+git commit -a -m "editing controller information"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Update your deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Ensure that Cobbler has the correct system information: <ol>
+              <li>If you replaced your controller node with a completely new machine, you need to
+                verify that Cobbler has the correct list of controller nodes:
+                <codeblock>sudo cobbler system list</codeblock></li>
+              <li>Remove any controller nodes from Cobbler that no longer exist:
+                <codeblock>sudo cobbler system remove --name=&lt;node></codeblock></li>
+              <li>Add the new node into Cobbler:
+                <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
+            </ol>
+          </li>
+          <li>Then you can image the node: <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node_name></codeblock>
+            <note>If you don't know the <codeph>&#60;node name></codeph> already, you can get it by
+              using <codeph>sudo cobbler system list</codeph></note>
+            <p>Before proceeding, you may want to take a look at <b>info/server_info.yml</b> to see
+              if the assignment of the node you have added is what you expect. It may not be, as
+              nodes will not be numbered consecutively if any have previously been removed. This is
+              to prevent loss of data; the config processor retains data about removed nodes and
+              keeps their ID numbers from being reallocated. See the Persisted Server Allocations
+              section in <xref keyref="persisteddata/persistedserverallocations">Input Model</xref>
+              for information on how this works.</p></li>
+          <li>[OPTIONAL] - Run the <codeph>wipe_disks.yml</codeph> playbook to ensure all of your
+            partitions on your nodes are completely wiped prior to continuing with the installation:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts wipe_disks.yml --limit &#60;controller_node_hostname></codeblock></li>
+          <li>Complete the rebuilding of your controller node with the two playbooks
+            below:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml -e rebuild=True --limit=&lt;controller_node_hostname>
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;controller_node_hostname></codeblock></li>
         </ol>
-        <p><b>Restore from a Swift backup</b></p>
-        <p>You shouldn’t need to restore anything; the MySQL database will be recovered
-          automatically from other running nodes.</p>
-        <p><b>Restore from an SSH backup </b></p><p>You shouldn’t need to restore anything; the
-          MySQL database will be recovered automatically from other running nodes.</p>
       </sectiondiv>
     </section>
     <section id="allcontrollers"><title outputclass="headerH">Three Control Plane Node Disaster
