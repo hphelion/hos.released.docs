@@ -2,15 +2,53 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="topic_l1p_vpy_jt">
   <title><ph conkeyref="HOS-conrefs/product-title-both"/>Managing Cinder Volume and Backup Services</title>
-  <body><!--Needs Work; fnf edit 10/27; intro text to first procedure needs clarifying-->
+  <body>
     <p conkeyref="HOS-conrefs/applies-to-all"/>
-    <p>Due to the single threading required in both <codeph>cinder-volume</codeph> and the drivers,
-      the Cinder volume service is run as a singleton in the control plane.</p>
-    <section>
-      <title>Prerequisite</title>
+    <p>Different from the Swift oject storage service, the OpenStack Cinder service allows persistent block-level storage volumes to be used with Nova compute instances. The Cinder block-storage service manages the creation, attaching, and detaching of these volumes between a storage system and different host servers.</p> 
+    <p>The Cinder service architecture is made up of the following components:</p>
+    <dl>
+      <dlentry>
+        <dt>cinder-api</dt>
+        <dd>authenticates and routes requests from the <b>cinder-volume</b> and <b>cinder-backup</b> daemons to the cinder clinet</dd>
+      </dlentry>
+      <dlentry>
+        <dt>cinder-scheduler</dt>
+        <dd>schedules and routes requests to the appropriate volume service through the <b>cinder-volume</b> daemon</dd>
+      </dlentry>
+      <dlentry>
+        <dt>cinder volume</dt>
+        <dd>manages Block Storage devices, specifically the back-end devices themselves</dd>
+      </dlentry>
+      <dlentry>
+        <dt>cinder-backup</dt>
+        <dd>provides a way to back up a Cinder volume to various backup targets</dd>
+      </dlentry>
+    </dl>
+    
+    <p>Use Cases for Cinder:</p>
+    <ul>
+      <li><b>Terminating an Instance.</b> If you need to terminate an instance and launch a new one, you can keep any data that you want to persist on Cinder volumes and attach them to the new instance. This same scenario can be used if an instance crashes, or if a compute node crashes.</li>
+      <li><b>Using Third-Party Storage solutions.</b> Hosting Cinder volumes can provide greater
+        capacity than directly attached storage in the compute nodes. Hosting Cinder volumes also
+        allows you to leverage vendor-specific features such as thin-provisioning, tiering,
+        etc.</li>
+    </ul>
+    
+    <p>This topic provides the following information on managing Cinder:</p>
+    <ul>
+      <li><xref href="#topic_l1p_vpy_jt/cinder_prereq">Pre-requisites</xref></li>
+      <li><xref href="#topic_l1p_vpy_jt/cinder_migrate">Migrating the Cinder Volume and Backup Services</xref></li>
+      <li><xref href="#topic_l1p_vpy_jt/manage_Cinder_reboot">Managing Cinder Volume and Backup Services During a Node Reboot</xref></li>
+      <li><xref href="#topic_l1p_vpy_jt/manage_cinder_nodes">Managing Cinder Volume and Backup Services During a Node Replacement</xref></li>
+      <li><xref href="SolidFire/SolidFire_overview.dita">Integrating with SolidFire</xref></li>
+    </ul>
+    
+    
+    <section id="cinder_prereq">
+      <title>Pre-requisites</title>
       <p><keyword keyref="kw-hos"/> cloud must be successfully deployed. </p>
     </section>
-    <section>
+    <section id="cinder_migrate">
       <title>Migrating the Cinder Volume and Backup Services</title>
       <p>Due to the single threading required in both <codeph>cinder-volume</codeph> and the
         drivers, and because Cinder backups have a dependency on <codeph>cinder-volume</codeph>, the
@@ -38,7 +76,7 @@ ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml --extra-vars "mig
             <codeph>padawan-ccp-c1-m1-mgmt</codeph>.</p></li>
         </ol></p>
     </section>
-    <section>
+    <section id="manage_Cinder_reboot">
       <title>Managing Cinder Volume and Backup Services During a Node Reboot </title>
       <p>If the controller node is running Cinder volume and backup reboots, perform the following
         steps: <ol id="ol_o3k_1ff_pt">
@@ -52,7 +90,7 @@ ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml --extra-vars "mig
               volume hostgroup. </p></li>
         </ol></p>
     </section>
-    <section>
+    <section id="manage_cinder_nodes">
       <title>Managing Cinder Volume and Backup Services During a Node Replacement</title>
       <p>If the controller node running Cinder volume and backup is going to be replaced with a new
         node, perform the following steps: <ol id="ol_b1c_ngf_pt">
