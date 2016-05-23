@@ -2,7 +2,8 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="websso">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring Web Single Sign On</title>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <bodydiv/>
     <section>This topic explains how to implement web single sign on.</section>
@@ -19,22 +20,20 @@
         to the identity provider to renew their credentials.</p>
     </section>
     <section><title>Limitations</title>
-      <ul id="webssoLimitations"><li>The WebSSO function only supports Horizon web authentication.  It is not supported for direct API or CLI access.
-      </li><li>The HPE Helion OpenStack WebSSO function was tested with Microsoft Active Directory Federation
-          Services (ADFS). The instructions provided are pertinent to ADFS and are intended to
-          provide a sample configuration for deploying WebSSO with an external identity provider. If
-          you have a different identity provider such as Ping Identity or IBM Tivoli please consult
-          with those vendors for specific instructions for those products. </li><li>Only WebSSO federation via the SAML method is supported in <keyword keyref="kw-hos-phrase-30"/>
-          . OpenID-based federation is not currently supported. </li>
+      <ul id="webssoLimitations">
+        <li>The WebSSO function only supports Horizon web authentication. It is not supported for
+          direct API or CLI access. </li>
+        <li>The HPE Helion OpenStack WebSSO function was tested with Microsoft Active Directory
+          Federation Services (ADFS). The instructions provided are pertinent to ADFS and are
+          intended to provide a sample configuration for deploying WebSSO with an external identity
+          provider. If you have a different identity provider such as Ping Identity or IBM Tivoli
+          please consult with those vendors for specific instructions for those products. </li>
+        <li>Only WebSSO federation via the SAML method is supported in <keyword
+            keyref="kw-hos-phrase-30"/> . OpenID-based federation is not currently supported. </li>
         <li><b>WebSSO has a change password option in User Settings, but note that this function is
             not accessible for users authenticating with external systems such as LDAP or SAML
-            Identity Providers.</b></li></ul>
-    
-    
-    
-    
-    
-    
+            Identity Providers.</b></li>
+      </ul>
     </section>
     <section><title> Enabling WebSSO</title>
       <keyword keyref="kw-hos-phrase-30"/> now provides WebSSO support for the Horizon web
@@ -53,7 +52,8 @@
           <li>Keystone automatically redirects the web browser back to Horizon and the user can then
             access projects and resources assigned to the user</li>
         </ol>The diagram below provides more details on the WebSSO authentication workflow.
-        </p><image href="../../../../media/keystone/Keystone-ADFS-WebSSO-Authentication-Sequence.png"
+        </p><image
+        href="../../../../media/keystone/Keystone-ADFS-WebSSO-Authentication-Sequence.png"
         id="image_xc4_zfh_mv"/>
       <p>Note that the Horizon dashboard service never talks directly to the Keystone identity
         service until the end of the sequence, after the federated unscoped token negotiation has
@@ -87,14 +87,14 @@
           this point, the user is successfully logged in.</li>
       </ol>
     </section>
-    
+
     <section><title>ADFS prerequisites</title> In order to enable the WebSSO feature, you will need
       to have an ADFS server already set up. This will be used as an identity provider to identify
       and authenticate users. In order to create the trust between the Keystone identity service as
       the service provider and ADFS as the identity provider you will need to exchange metadata
       information between them. Therefore, you must export the ADFS metadata information from the
       ADFS server. </section>
-    
+
     <section><title>Create ADFS metadata</title> For more information, see the <xref
         href="https://technet.microsoft.com/en-us/library/gg317734" format="html" scope="external"
         >Microsoft wiki </xref> section "To create edited ADFS 2.0 metadata with an added scope
@@ -132,11 +132,11 @@
 &lt;RoleDescriptor xsi:type=…></codeblock>
         </li>
         <li> Save and close adfs_metadata.xml. </li>
-        <li> Copy adfs_metadata.xml to the lifecycle manager node in your preferred location. Here it is
-          /tmp. </li>
+        <li> Copy adfs_metadata.xml to the lifecycle manager node in your preferred location. Here
+          it is /tmp. </li>
       </ol>
     </section>
-    
+
     <section><title>Set up WebSSO</title> To enable WebSSO for the Keystone identity service and the
       Horizon dashboard service, follow the instructions below: </section>
     <section>Create a config file adfs_config.yml with the following parameters and place it in any
@@ -323,11 +323,12 @@ keystone_sp_conf:
                 }]
               }
  ]        </codeblock>More
-          details about how the Websso mapping works can be found on the <xref
-            href="https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst"
-            format="html" scope="external">OpenStack github site</xref>. Also see the section below
-          entitled <xref href="#websso/maprules" format="dita">Mapping Rules</xref> for more
-          information. </li>
+          details about how the WebSSO mapping works can be found on the <xref
+            href="http://docs.openstack.org/developer/keystone/mapping_combinations.html"
+            format="html" scope="external"
+            >http://docs.openstack.org/developer/keystone/mapping_combinations.html</xref>. Also see
+          the section below entitled <xref href="#websso/maprules" format="dita">Mapping
+            Rules</xref> for more information. </li>
         <li>Go to /home/stack/scratch/ansible/next/hos/ansible and run the following to enable
           WebSSO in the Keystone identity service:
           <codeblock>ansible-playbook  -i hosts/verb_hosts keystone-reconfigure.yml  -e@/tmp/adfs_config.yml</codeblock>
@@ -339,7 +340,7 @@ keystone_sp_conf:
         </li>
       </ol>
     </section>
-    
+
     <section id="maprules"><title>Mapping rules</title> One IdP-SP has only one mapping; the last
       mapping that the customer configures will be the one used and will overwrite the old mapping
       setting. Therefore, if the example mapping adfs_sp_mapping.json is used, the following
@@ -484,7 +485,7 @@ keystone_sp_conf:
 </codeblock>
       </p>
     </section>
-  
+
     <section><title>Setting up the ADFS server as the identity provider</title>
       <p>For ADFS to be able to communicate with the Keystone identity service we need to add the
         Keystone identity service as a trusted relying party for ADFS as well as specify the user
