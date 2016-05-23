@@ -2,7 +2,8 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="k2kfed">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Keystone to Keystone Federation</title>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>This topic explains how you can use an instance of Keystone as an identity provider and
       one as a service provider.</section>
@@ -45,8 +46,6 @@
         has supported APIs to access the K2K APIs.</p>
       <p>The file k2kclient.py, included below, is an example, and the diagram the end of this page
         shows how the flow of client requests. Expand the section below to view k2kclient.py.</p>
-      
-      
       <p id="k2kclient" outputclass="expandcode"><b>Open | Close </b>k2kclient.py</p>
       <p outputclass="hiddencode">
         <codeblock outputclass="nomaxheight prettyprint">import json
@@ -196,8 +195,8 @@ keystone_sp_conf:
 		-
 		  name: name1
 		  id: id1</codeblock>
-          Below are descriptions of each of the attributes.                 <table frame="all"
-            rowsep="1" colsep="1" id="tv">
+          Below are descriptions of each of the attributes. <table frame="all" rowsep="1" colsep="1"
+            id="tv">
             <tgroup cols="2">
               <colspec colname="c1" colnum="1" colwidth="1.0*"/>
               <colspec colname="c2" colnum="2" colwidth="1.0*"/>
@@ -376,9 +375,9 @@ keystone_sp_conf:
    }
 ]           </codeblock>
               <p>More information on how the K2K mapping works can be found here: <xref
-                  href="https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst"
+                  href="http://docs.openstack.org/developer/keystone/mapping_combinations.html"
                   format="html" scope="external"
-                  >https://github.com/openstack/keystone/blob/master/doc/source/mapping_combinations.rst</xref></p></li>
+                  >http://docs.openstack.org/developer/keystone/mapping_combinations.html</xref></p></li>
           </ol></li>
         <li>Next, go to <codeph>/home/stack/scratch/ansible/next/hos/ansible</codeph> and run the
           following playbook to enable the service provider:
@@ -388,7 +387,7 @@ keystone_sp_conf:
       <p>To set up Keystone as an identity provider, follow these steps:</p>
       <ol>
         <li>Create a config file <codeph>k2k.yml</codeph> with the following parameters and place it
-          in any directory on your lifecycle manager, for example <codeph>/tmp</codeph>.  Note that
+          in any directory on your lifecycle manager, for example <codeph>/tmp</codeph>. Note that
           the certificate and key here are excerpted for
           space.<codeblock outputclass="width66">keystone_k2k_idp_conf:
     service_provider: 
@@ -548,10 +547,10 @@ curl -k -X GET -H "X-Auth-Token: &lt;unscoped token>" https://&lt;sp_public_endp
         <li>The user then re-scopes his token to a given project. </li>
         <li>The user now has access to the resources owned by the project.</li>
       </ol> The following diagram illustrates the flow of authentication requests. <image
-        href="../../../../media/keystone/Keystone-2-Keystone-Sequence-Generic.png" id="image_ldf_njb_mv"
-      /></section>
+        href="../../../../media/keystone/Keystone-2-Keystone-Sequence-Generic.png"
+        id="image_ldf_njb_mv"/></section>
 
-    
+
 
     <section><title>Additional testing scenarios</title>
       <p>The following tests assume one identity provider and one service provider. </p><b>Test case
@@ -989,7 +988,6 @@ group_domain_name=domain2
           <codeblock>group=group1, group_domain_name=domain1, 'group1' scopes to 'project1'</codeblock>
         </li>
         <li>Mapping used: <codeblock>testcase1_1.json</codeblock>
-          
           <p id="t1" outputclass="expandcode"><b>Open | Close </b>testcase1_1.json</p>
           <p outputclass="hiddencode">
             <codeblock outputclass="nomaxheight">[
@@ -1023,10 +1021,11 @@ group_domain_name=domain2
 ]</codeblock></p>
         </li>
         <li>Expected result: <ul>
-        <li>The federated user will scope to 'project1'.
-          </li><li>User uses CLI/Curl to assign any existing role to 'group1' on 'domain1'.
-          </li><li>User uses CLI/Curl to remove 'project1' scope from 'group1'.</li></ul></li>
-          <li>Final result: The federated user will scope to 'domain1'</li>
+            <li>The federated user will scope to 'project1'. </li>
+            <li>User uses CLI/Curl to assign any existing role to 'group1' on 'domain1'. </li>
+            <li>User uses CLI/Curl to remove 'project1' scope from 'group1'.</li>
+          </ul></li>
+        <li>Final result: The federated user will scope to 'domain1'</li>
       </ol>
       <b>Test case 7: Test 5 remote attributes for mapping </b><ol>
         <li>Test all the 5 different remote attributes as the following with similar test cases as above.<ul>
@@ -1038,12 +1037,10 @@ group_domain_name=domain2
           </ul>The attribute openstack_user does not make much sense for testing as it is only
           mapped to a specific username. The attributes openstack_user_domain, openstack_roles and
           openstack_project have already been covered by the above test cases. </li>
-      </ol>
-      Note that similar tests have also been run for two identity providers/one service provider, and for one identity provider/two service providers.
-    </section>
-    <section><title>Known issues and limitations</title> Keep the following points in mind: 
-      
-      <ul id="k2klimitations">
+      </ol> Note that similar tests have also been run for two identity providers/one service
+      provider, and for one identity provider/two service providers. </section>
+    <section><title>Known issues and limitations</title> Keep the following points in mind: <ul
+        id="k2klimitations">
         <li>When a user is disabled in the identity provider, the issued federated token from the
           service provider still remains valid until the token is expired based on the Keystone
           expiration setting.</li>
@@ -1052,28 +1049,29 @@ group_domain_name=domain2
           issued federated token. For example, if an already issued federated token was mapped to
           goup1 that has scope on project1, and mapping is changed to group2 that has scope on
           project2, the prevously issued federated token still has scope on project1. </li>
-      
-      <li>Access to service provider resources is provided only via the python-keystone CLI client
-          or the Keystone API. No Horizon web interface support is currently available. </li><li>Domains, projects, groups, roles, and quotas are created per service provider cloud. Support for
-          federated projects, groups, roles, and quotas is currently not available. </li>
+
+        <li>Access to service provider resources is provided only via the python-keystone CLI client
+          or the Keystone API. No Horizon web interface support is currently available. </li>
+        <li>Domains, projects, groups, roles, and quotas are created per service provider cloud.
+          Support for federated projects, groups, roles, and quotas is currently not available. </li>
         <li>Keystone to Keystone federation and WebSSO cannot be configured by putting both sets of
           configuration attributes in the same config file; they will overwrite each other. So they
           will need to be configured individually. </li>
-      
-      
+
+
         <li>Scoping the federated user to a domain is not supported by default in the playbook.
-          Please <b><xref href="#k2kfed/scopeToDomain" format="dita">follow these steps to
-            support it.</xref></b></li></ul>
-          
-          <ol id='scopeToDomain'>
-            <li>On the IdP side, set <codeph>hostname=myidp.com</codeph> and
-                <codeph>username=user1</codeph>.</li>
-            <li>On the service provider side, set: <codeph>group=group1</codeph>,
-                <codeph>group_domain_name=domain1</codeph>, 'group1' scopes to 'project1.' </li>
-            <li>Mapping used: testcase1_1.json.
-              <p outputclass="expandcode"><b>Open | Close </b>testcase1_1.json</p>
-              <p outputclass="hiddencode">
-                <codeblock outputclass="nomaxheight">[
+          Please <b><xref href="#k2kfed/scopeToDomain" format="dita">follow these steps to support
+              it.</xref></b></li>
+      </ul>
+      <ol id="scopeToDomain">
+        <li>On the IdP side, set <codeph>hostname=myidp.com</codeph> and
+            <codeph>username=user1</codeph>.</li>
+        <li>On the service provider side, set: <codeph>group=group1</codeph>,
+            <codeph>group_domain_name=domain1</codeph>, 'group1' scopes to 'project1.' </li>
+        <li>Mapping used: testcase1_1.json. <p outputclass="expandcode"><b>Open | Close
+            </b>testcase1_1.json</p>
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight">[
   {
     "local": [
       {
@@ -1103,14 +1101,13 @@ group_domain_name=domain2
    }
 ]
                 </codeblock></p>
-            
-            </li>
-            <li>Expected result: The federated user will scope to 'project1.' Use CLI/Curl to assign
-              any existing role to 'group1' on 'domain1.' Use CLI/Curl to remove 'project1' scope
-              from 'group1' </li>
-            <li>Result: The federated user will scope to 'domain1.' </li>
-          
+        </li>
+        <li>Expected result: The federated user will scope to 'project1.' Use CLI/Curl to assign any
+          existing role to 'group1' on 'domain1.' Use CLI/Curl to remove 'project1' scope from
+          'group1' </li>
+        <li>Result: The federated user will scope to 'domain1.' </li>
+
       </ol></section>
-   
+
   </body>
 </topic>
