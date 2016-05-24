@@ -13,7 +13,9 @@
             <othermeta name="product-version2" content="HPE Helion Openstack 1.1"/>
         </metadata>
     </prolog>
-    <body><!--not tested--><!--Needs Edit-->
+    <body>
+        <!--not tested-->
+        <!--Needs Edit-->
         <p conkeyref="HOS-conrefs/applies-to"/>
         <p>
             <!--PUBLISHED-->
@@ -140,8 +142,8 @@ instance_usage_audit_period=hour</codeblock>
             <title><b>Improving Reporting API responsiveness</b></title>
             <p>Reporting APIs are the main access to the Metering data stored in Ceilometer. These
                 APIs are access by Horizon to provide basic usage data and information.</p>
-            <p><keyword keyref="kw-hos"/> uses Apache2 Web Server to serve the API access. It is possible
-                to tune performance to optimize the front-end and back-end (database). Our
+            <p><keyword keyref="kw-hos"/> uses Apache2 Web Server to serve the API access. It is
+                possible to tune performance to optimize the front-end and back-end (database). Our
                 experience indicates that an excessive increase of concurrent access to the
                 front-end tends to put strain in the database. We are striving to improve
                 performance for the back-end but for now we have documented the best set-up
@@ -171,9 +173,11 @@ Listen &lt;ipaddress>:8777
                 processing pipeline. </p>
             <p>To increase the responsiveness you may increase the number of threads and processes
                 in ceilometer.conf.</p>
-            <note><p>WSGIDaemon Recommended Settings The best, and hence, recommended configuration is
-                to have four processes running in parallel:</p> <codeblock>processes=4</codeblock> <p>Five
-                threads for each process is also recommended: </p><codeblock>threads=5</codeblock>
+            <note><p>WSGIDaemon Recommended Settings The best, and hence, recommended configuration
+                    is to have four processes running in parallel:</p>
+                <codeblock>processes=4</codeblock>
+                <p>Five threads for each process is also recommended:
+                </p><codeblock>threads=5</codeblock>
             </note>
         </section>
         <section id="add_soft_link"><title>Add softlink for config file</title>
@@ -210,11 +214,12 @@ ceilome+ 31433 31427 10 16:29 ? 00:02:43 /usr/sbin/apache2 -k start</codeblock>
         </section>
         <section id="notification_strategy"><title>Notification Whitelisting and Polling
                 Strategies</title>
-            <p>In <keyword keyref="kw-hos-phrase"/> we have adopted a strategy to reduce the amount of data that is sent
-                to the storage. The main reason is that we are currently using a SQL based cluster
-                that is not highly indicated for big data. Ceilometer can be controlled for the data
-                that collects using the <b>pipeline.yaml</b> file. This configuration file is
-                located in the<b> /etc/ceilometer</b> folder in any of the controller nodes.</p>
+            <p>In <keyword keyref="kw-hos-phrase"/> we have adopted a strategy to reduce the amount
+                of data that is sent to the storage. The main reason is that we are currently using
+                a SQL based cluster that is not highly indicated for big data. Ceilometer can be
+                controlled for the data that collects using the <b>pipeline.yaml</b> file. This
+                configuration file is located in the<b> /etc/ceilometer</b> folder in any of the
+                controller nodes.</p>
             <note>The pipeline.yaml file needs to be changed in all the controller nodes to change
                 the white-listing and or polling strategy.</note>
             <p> The pipeline file is comprised of two major elements:</p>
@@ -262,7 +267,7 @@ sinks:
             <p>The interval attribute decides the frequency of the data polling whenever the meter
                 can be polled. In general the meters that are available as notification and polling
                 (indicated as both in <xref
-                    href="http://docs.openstack.org/openstack-ops/content/scaling.htmlhttp://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html"
+                    href="http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html"
                     format="html" scope="external"
                     >http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html</xref>)
                 are going to be polled at the specified interval. In our setting, since we want to
@@ -407,10 +412,10 @@ sinks:
             <ul>
                 <li>Ceilometer Central Agent and Ceilometer Notification agent use different
                     pipeline.yaml to configure meters that are fetched via polling and using
-                    notifications. This was done to prevent accidentally polling for meters which can
-                    be retrieved by polling agent as well as the notification agent. (e.g. glance
-                    image and image.size are meters which are both of pollster and notification
-                    type)</li>
+                    notifications. This was done to prevent accidentally polling for meters which
+                    can be retrieved by polling agent as well as the notification agent. (e.g.
+                    glance image and image.size are meters which are both of pollster and
+                    notification type)</li>
                 <li>Ceilometer Central Agent's (polling agent) pipeline.yaml is located at
                         <b>/opt/stack/service/ceilometer-common/etc/pipeline-agent-central.yaml
                         </b><p>Here is an example of the pipeline-agent-central</p>
@@ -465,11 +470,11 @@ sinks:
         </section>
         <section id="ceilometer_api"><title>Ceilometer API</title>
             <b>Separate pipeline.yaml for Ceilometer Post Sample API</b>
-            <p>Post Sample API is disabled by default in <keyword keyref="kw-hos-phrase"/> and its configured
-                with a pipeline configuration different than the agents. The api pipeline has no
-                meters enabled, so it needs to be configured with meters when the Post sample API is
-                enabled. Exercise caution when adding meters to the API pipeline. Ensure that only
-                those meters are added to this pipeline which are already present in the
+            <p>Post Sample API is disabled by default in <keyword keyref="kw-hos-phrase"/> and its
+                configured with a pipeline configuration different than the agents. The api pipeline
+                has no meters enabled, so it needs to be configured with meters when the Post sample
+                API is enabled. Exercise caution when adding meters to the API pipeline. Ensure that
+                only those meters are added to this pipeline which are already present in the
                 notification agent and the central agent pipeline. Here is a sample of the API
                 pipeline:</p>
             <codeblock>---
@@ -515,12 +520,12 @@ sinks:
             <p>Without period parameter:</p>
             <codeblock>ceilometer statistics -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" -m "instance"</codeblock>
             The recommended values for query (-q) parameter and period (-p) parameter are </section>
-        <section id="query_params"><b>query parameter (-q):</b> Always provide a timestamp range which restricts the
-            query to one day (24 hours). Providing a timestamp range more than a day or not at all
-            providing the time stamp range as a query parameter is not recommended e.g. -q
-            "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" If query parameter and
-            timestamp is not provided, it will end up querying all the records in the database which
-            is not recommended </section>
+        <section id="query_params"><b>query parameter (-q):</b> Always provide a timestamp range
+            which restricts the query to one day (24 hours). Providing a timestamp range more than a
+            day or not at all providing the time stamp range as a query parameter is not recommended
+            e.g. -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" If query
+            parameter and timestamp is not provided, it will end up querying all the records in the
+            database which is not recommended </section>
         <section><b>period parameter(-p):</b> Provide a fairly large number for period, the
             recommended value 3600 or more (1 hour or more). Providing a period of less than 3600 is
             not recommended. e.g. -p 3600 Period parameter (value in seconds) is used to divide the
