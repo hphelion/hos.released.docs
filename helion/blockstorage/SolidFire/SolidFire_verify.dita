@@ -4,21 +4,100 @@
   <title>Verify SolidFire Integration</title>
   <body>
 
-    <p>To verify TinTri integration, you will use the graphical user interface in Horizon to verify the backend is running and that you can create a virtual machine (VM). Horizon is an OpenStack project that provides a dashboard to bring together all OpenStack projects in one place. By building custom dashboards it is possible to seamlessly integrate external components or services with OpenStack.</p>
+    <p>To verify that SolidFire is integrated with Helion OpenStack, you can use the graphical user interface in Horizon to test that the supported operations can be successfully completed. Horizon is an OpenStack project that provides a dashboard to bring together all OpenStack projects in one place. By building custom dashboards it is possible to seamlessly integrate external components or services with OpenStack.</p>
 
-    <p>To verify TinTri integration:</p>
-    <ol>
-      <li><xref type="section" href="#TinT_config_verify/TinT_Horizon">Access the Horizon dashboard.</xref></li>
-      <li><xref type="section" href="#TinT_config_verify/TinT_verify_backend">Verify the TinTri backend.</xref></li>
-      <li><xref type="section" href="#TinT_config_verify/TinT_VM">Create a new VM.</xref></li>
-    </ol>
-<note type="important"> TinTri storage does support the below configurations and they have not been
-      tested with Helion OpenStack 2.0. <ul>
-        <li>Configuring Cinder for “Multi-VMstore” backend</li>
-        <li>Configuring Nova for data path to instances on VMstore</li>
-      </ul></note>
+    <p>To verify Solid integration, complete the following checklist:</p>
+    
+   <p> 
+    <table frame="all" rowsep="1" colsep="1" id="table_test_sldfr">
+      <tgroup cols="2">
+        <colspec colname="c1" colnum="1" colwidth="25pt"/>
+        <colspec colname="c2" colnum="2" colwidth="1*"/>
+        <thead>
+          <row>
+            <entry>&#9744;</entry>
+            <entry>Item</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#SolidFire_preinstall/SF_Cinder_config">Verify the
+                  Cinder Configuration File</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#SolidFire_verify/SF_Horizon">Access the Horizon Dashboard</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#SolidFire_verify/SF_TestVol">Run the Test Scenarios for Volumes</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#SolidFire_verify/SF_TestHReboot">Run the Test Scenarios for Hard Reboot</xref></entry>
+          </row>
+          <row>
+            <entry/>
+            <entry><xref type="section" href="#SolidFire_verify/SF_TestUsers">Run the Test Scenarios for Users</xref></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    </p>
+  <note type="attention">The following scenarios cannot be tested because it is not supported by SolidFire:
+  <ul>
+    <li>Create consistency groups</li>
+    <li>Delete consistency groups</li>
+    <li>Create consistency group snapshot</li>
+    <li>List consistency group snapshots</li>
+    <li>Delete consistency group snapshots</li>
+  </ul>
+  </note>
 
-<section id="TinTri_Horizon">
+    <section id="SF_Cinder_config">
+      <title>Verify the Cinder Configuration File</title>
+      <p>To check the Cinder config file:</p>
+      <ol>
+      <li>Log in to the lifecycle manager.</li>
+      <li>In a text editor, open the following file:
+        <codeblock>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeblock></li>
+      <li>In the file, find the SolidFire iSCSI cluster section and verify it looks similar to the
+          sample below. If the section does not exist, create it now.
+          <codeblock># SolidFire Section
+[SolidFire_iSCSI]
+volume_driver = cinder.volume.drivers.solidfire.SolidFireDriver
+san_ip = 10.2.17.252
+san_login = openstack
+san_password = temp123
+sf_emulate_512 = True
+volume_backend_name = solidfire
+# end solidfire</codeblock></li>
+      <li>If the section exists and contains the correct values, close the file.
+        <note type="attention">If you had to create the SolidFire section or make changes, you must rerun the configuration processor using the following steps:
+        <ol>
+          <li>To commit your configuration changes to a local git repository, run:
+        <codeblock>$ cd ~/helion/hos/ansible
+git add -A
+git commit -m "&lt;Added SolidFire to Cinder Backend Storage&gt;"</codeblock></li>
+      <li>To use an ansible playbook to run the configuration processor, run:
+        <codeblock>#cd ~/helion/hos/ansible
+          ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+      <li>To use an ansible playbook to create a deployment directory, run:
+        <codeblock>#cd ~/helion/hos/ansible
+          ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+      <li>To complete the configuration, run:
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+      ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+      </ol>
+        </note>
+      </li>
+      </ol>
+    </section>
+    <lines>
+      
+    </lines>
+<section id="SF_Horizon">
   <title>Accessing Horizon</title>
   <p>Horizon dashboards provide a web-based user interface to HPE Helion OpenStack services including Compute, Volume Operations, Networking, and Identity.</p> 
   <p>To access a Horizon dashboard, you must know its hostname or IP address. If your administrator set a hostname value during the configuration process for your cloud, then Horizon will be accessed over port 80 on that hostname. If your administrator did not set a hostname value, then you can run a command to determine which IP address to use.</p>
@@ -53,27 +132,200 @@
           In</b>.</li>
   </ol>
 </section>
-    
-    <section id="TinT_verify_backend">
-      <title>Verify the TinTri Backend</title><p>To verify the TinTri backend is running:</p><ol>
-        <li>In the Horizon dashboard, look in the list on the left side. Verify you can see
-            <b>Admin</b>.</li>
-        <li>In the list on the left side, click on <b>System Information</b>.</li>
-        <li>At the top, click <b>Block Storage Services</b>.</li>
-        <li>Verify that the cinder volume for the TinTri host you created is listed.</li>
-      </ol><p>Use the graphic below to navigate the user interface.</p>
-      <image href="../TinTri/verify_be_graphic.jpg"/>
+    <lines>
+      
+    </lines>
+    <section id="SF_TestVol">
+      <title>Run the Test Scenarios for Volumes</title>
+<p>Use the checklist to test the scenarios for the supported operations of creating, deleting, attaching, and detaching volumes.</p>
+      <p> 
+        <table frame="all" rowsep="1" colsep="1" id="table_test_sldfrVol">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="25pt"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>&#9744;</entry>
+                <entry>Volume Test Scenario</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry/>
+                <entry>Create a volume</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Delete a volume</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Attach a volume</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Detach a volume</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
     </section>
-    
-    <section id="TinT_VM">
-      <title>Create a New Virtual Machine (VM)</title><p>To create a new VM in Horizon:</p><ol>
-        <li>In the Horizon dashboard, on the left side, click <b>Project</b>.</li>
-        <li>In the list on the left side, click <b>Compute</b>.</li>
-        <li>Under Compute, click <b>Volumes</b>.</li>
-        <li>At the top of the screen on the right side, click <b>+Create Volume</b>.</li>
-        <li>Verify that it is listed on the Volumes tab.</li>
-      </ol><p>Use the graphic below to navigate the user interface.</p>
-      <image href="../TinTri/new_vm_graphic.jpg"/>
+    <lines>
+      
+    </lines>
+    <section id="SF_TestVolSS">
+      <title>Run the Test Scenarios for Volume Snapshots</title>
+      <p>Use the checklist to test the scenarios for the supported operations of creating, listing and deleting volume snapshots.</p>
+      <p> 
+        <table frame="all" rowsep="1" colsep="1" id="table_test_sldfrVolSS">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="25pt"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>&#9744;</entry>
+                <entry>Volume Snapshot Test Scenario</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry/>
+                <entry>Create a volume snapshot</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>List volume snapshots</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Delete a volume</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Create a volume from a snapshot</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Copy a snapshot to a volume</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Clone a volume from a snapshot</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Extend a volume from a snapshot</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Transfer a volume between tenants using a snapshot</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Retype a volume using a snapshot</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Get volume statistics (properties) from a snapshot</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      <note type="attention">The test case for migrating a volume using a snapshot is not listed because the process requires multiple backends.</note>
+    </section>
+    <lines>
+      
+    </lines>
+    <section id="SF_TestHReboot">
+      <title>Run the Test Scenarios for Hard Reboot</title>
+      <p> 
+        <table frame="all" rowsep="1" colsep="1" id="table_test_sldfrHR">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="25pt"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>&#9744;</entry>
+                <entry>SolidFire Hard Reboot Test Scenario</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry/>
+                <entry><ol>
+                  <li>Attach multiple volumes to an instance.</li>
+                  <li>Hard-reboot the instance.</li>
+                  <li>Verify the volumes are still attached to the instance.</li>
+                </ol></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Detach a volume from an instance after a hard reboot</entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>Attach a volume to an instance after a hard reboot</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+    </section>
+    <lines>
+      
+    </lines>
+    <section id="SF_TestUsers">
+      <title>Run the Test Scenarios for Users</title>
+      <p> 
+        <table frame="all" rowsep="1" colsep="1" id="table_test_sldfrU">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="25pt"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>&#9744;</entry>
+                <entry>SolidFire User Test Scenario</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry/>
+                <entry><ol>
+                  <li>Log in with User credentials.</li>
+                  <li>Create some files in the volume.</li>
+                  <li>Make the files visible through the instance.</li>
+                </ol></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry>
+                  <ol>
+                    <li>Log in with User credentials.</li>
+                    <li>Check the existence of files created earlier are the instance.</li>
+                  </ol>
+                </entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><ol>
+                  <li>Log in with User credentials.</li>
+                  <li>Attach multiple iSCSI volumes to the same virtual machine instance.</li>
+                </ol>
+                </entry>
+              </row>
+              <row>
+              <entry/>
+                <entry><ol>
+                  <li>Log in with User credentials.</li>
+                  <li>Create a backup of a volume.</li>
+                </ol></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
     </section>
     
   </body>
