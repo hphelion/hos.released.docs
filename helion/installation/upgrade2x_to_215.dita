@@ -94,14 +94,14 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
         <li>If you have made any made any changes to your configuration files, ensure that you
           commit them to your local git and if any merge conflicts are reported, you must resolve
           them before proceeding:
-          <codeblock>cd ~/helion
+          <codeblock>cd ~/helion/hos/ansible
 git add –A
-git commit –m "My changes"</codeblock></li>
+git commit –m "changes prior to 2.1.5 upgrade"</codeblock></li>
         <li>Run the configuration processor:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-        <li>Run the ready deployment playbook:
-          <codeblock>cd ~/helion/hos/ansible
+        <li>Update your deployment
+          directory:<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li><b>ESX - additional step</b>: If you are using the Entry-scale with ESX model you will
           need to uncomment the EON upgrade step from the YAML file below prior to continuing with the upgrade steps: 
@@ -110,7 +110,7 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <codeblock>eon-upgrade.yml</codeblock></li>
 
 
-        <li>Get status of all your services, if desired <codeblock>cd ~/scratch/ansible/next/hos/ansible
+        <li>Get status of all your services, if desired:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
           <p>If status comes back bad for any service, run the service reconfigure playbook, with
             naming convention <codeph>&lt;service>-reconfigure.yml</codeph>, for that service, then
@@ -197,19 +197,19 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_ho
           <li>Stop all services on the controller node that you are rebooting first:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock></li>
-          <li>Reboot the controller node, e.g. run the following command on the controller itself: <codeblock>sudo reboot</codeblock>
-            <p>Note that the current node being rebooted could be hosting the lifecycle manager.</p>
-          </li>
+          <li>Reboot the controller node, e.g. run the following command on the controller itself:
+            <codeblock>sudo reboot  </codeblock></li>
           <li>Wait for the controller node to become ssh-able and allow an additional minimum of
             five minutes for the controller node to settle. Start all services on the controller
             node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock>
-          </li>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock></li>
+          <li>If you are using a shared controller/lifecycle manager, ensure that you restart apache
+            on the lifecycle manager after the reboot using this
+            command:<codeblock>sudo systemctl start apache2</codeblock></li>
           <li>Verify that the status of all services on that is OK on the controller node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node></codeblock>
-          </li>
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node></codeblock></li>
           <li>When above start operation has completed successfully, you may proceed to the next
             controller node. Ensure that you migrate your singleton services off the node
             first.</li>
