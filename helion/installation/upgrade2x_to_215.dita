@@ -321,7 +321,8 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
           <li>Identify all VSA nodes of a given cluster </li>
           <li>Pick one of the VSA nodes of the cluster and reboot it manually</li>
           <li>Check VSA VM's status :
-            <codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit &lt;vsa_node name></codeblock></li>
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit &lt;vsa_node name></codeblock></li>
           <li>Wait for VSA to come up, Check cluster status using CMC ( status should be
             "normal")</li>
           <li>Run the following command from your first controller node which will open the HP
@@ -385,7 +386,8 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
           <li>Reboot a Ceph monitor node in the cluster. </li>
           <li>Once the monitor node comes up, wait for a minute and then execute the following
             command:
-            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostname></codeblock>
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostname></codeblock>
           </li>
           <li>If the above playbook executes successfully, repeat from step 1 to reboot the next
             Ceph monitor node in the cluster. </li>
@@ -393,15 +395,16 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
             <codeblock>ceph quorum_status </codeblock>on a monitor node and ensure that all the
             monitors have joined the quorum by observing that in the output, the "quorum_names"
             section lists all the monitors in the Ceph cluster. </li>
-          <li>Login to the OSD node to be rebooted and execute the following command to avoid the
-            cluster rebalancing itself: <codeblock>ceph osd set noout</codeblock>
+          <li>SSH to the Ceph OSD node to be rebooted and execute the following command to avoid the
+            cluster rebalancing itself:<codeblock>ceph osd set noout</codeblock>
           </li>
-          <li>Stop all the OSD services on the current node by executing below command:
-            <codeblock>sudo systemctl stop  ceph-osd@*</codeblock>
+          <li>Stop all the OSD services on the node by executing below command:
+            <codeblock>sudo systemctl stop ceph-osd@*</codeblock>
           </li>
           <li>Now reboot the OSD node. </li>
-          <li>Once the OSD node is up, log in and execute the following command and observe that a
-            line similar to "osd.0 192.17.11.7:6801/3824 boot" appears for all the OSDs on the node:
+          <li>To verify that that OSD node is back up, SSH to one of your controller nodes and
+            execute the following command and observe that a line similar to "osd.0
+            192.17.11.7:6801/3824 boot" appears for all the OSDs on the node:
             <codeblock>ceph -w</codeblock> To quit, this command press Ctrl + C </li>
           <li>Verify that all the OSDs on this node are 'up' by executing following command (and
             observing that all the OSDs under the current host are reported as 'up')
@@ -409,12 +412,13 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
             check the logs for the corresponding OSD (in the
               <codeph>/var/log/ceph/&lt;cluster-name>-osd.&lt;osd_number>.log</codeph> file) for
             resolving the issue. </li>
-          <li>Now execute the following command from the re-booted OSD node, to unset the cluster
+          <li>SSH to the rebooted OSD node and execute the following command to unset the cluster
             from noout : <codeblock>ceph osd unset noout</codeblock>
           </li>
-          <li>Execute the following playbook from the lifecycle manager node to check the status of
-            the OSDs that have just come up:
-            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname></codeblock>
+          <li>From the lifecycle manager, execute the following playbook to check the status of the
+            OSDs that have just come up:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname></codeblock>
           </li>
           <li>If the above playbook does not report any errors, repeat from step 5 for another Ceph
             OSD node in the cluster. </li>
@@ -469,6 +473,5 @@ ls *status*</codeblock> Here is the list:
       cmc-status.yml         glance-status.yml   keystone-status.yml  monasca-agent-status.yml     percona-status.yml      zookeeper-status.yml</codeblock>
       </sectiondiv>
     </section>
-    <p outputclass="hostarget"/>
   </body>
 </topic>
