@@ -399,14 +399,17 @@ ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostnam
             cluster rebalancing itself:<codeblock>ceph osd set noout</codeblock>
           </li>
           <li>Stop all the OSD services on the node by executing below command:
-            <codeblock>sudo systemctl stop ceph-osd@*</codeblock>
-          </li>
-          <li>Now reboot the OSD node. </li>
-          <li>To verify that that OSD node is back up, SSH to one of your controller nodes and
-            execute the following command and observe that a line similar to <codeph>osd.0
-              192.17.11.7:6801/3824 boot</codeph> appears for all the OSDs on the node:
-            <codeblock>ceph -w</codeblock> To quit, this command press Ctrl + C </li>
-          <li>Verify that all the OSDs on this node are 'up' by executing following command (and
+            <codeblock>sudo systemctl stop ceph-osd@*</codeblock></li>
+          
+          <li>You are going to need to verify that your OSD node has rebooted in the next step, so
+            to do that you should SSH to one of your controller nodes and execute the command
+            below:<codeblock>ceph -w</codeblock></li>
+          
+          <li>Now reboot the OSD node and monitor the output of the <codeph>ceph -w</codeph> command
+            and when you see a line similar to <codeph>osd.0 192.17.11.7:6801/3824 boot</codeph>
+            that is the sign that the reboot has completed.  You can use CTRL + C to end the
+            stream.</li>
+          <li>Verify that all the OSDs on this node are up by executing following command (and
             observing that all the OSDs under the current host are reported as 'up')
             <codeblock>ceph osd tree</codeblock> If any of the OSDs are reported as 'down', please
             check the logs for the corresponding OSD (in the
