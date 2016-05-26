@@ -2,9 +2,12 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="neutron_troubleshooting">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Network Service Troubleshooting </title>
-  <body><!--not tested-->
+  <abstract><shortdesc outputclass="hdphidden">Troubleshooting scenarios with resolutions for the
+      Networking service.</shortdesc></abstract>
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <!--<section><title>Overview</title></section><section><title>Troubleshooting packets</title> Path MTU discovery </section>-->  
+    <!--<section><title>Overview</title></section><section><title>Troubleshooting packets</title> Path MTU discovery </section>-->
     <section><title>Troubleshooting Network failures</title>
       <p><b>Split-brain result of failover of L3 agent when master comes back up</b></p>This
       situation is specific to when L3 HA is configured and a network failure occurs to the node
@@ -27,29 +30,28 @@
           <li> Execute the following command to restart the Network (Neutron) service:
             <codeblock>sudo service neutron-ovsvapp-agent restart</codeblock></li>
         </ol></p>
-    </section>  
-    
+    </section>
+
     <!--  docs 3098 -->
     <section><title>Fail over a plain CVR router because the node became unavailable:</title>
-    <ol><li> Get a list of l3 agent UUIDs which can be used in the commands that follow
+      <ol>
+        <li> Get a list of l3 agent UUIDs which can be used in the commands that follow
           <codeblock> neutron agent-list | grep l3 </codeblock>
         </li>
-    
-      <li>Determine the current host
+
+        <li>Determine the current host
           <codeblock> neutron l3-agent-list-hosting-router &lt;router uuid> </codeblock>
         </li>
-      
-      <li>Remove the router from the current host
+
+        <li>Remove the router from the current host
           <codeblock>neutron l3-agent-router-remove &lt;current l3 agent uuid> &lt;router uuid></codeblock>
         </li>
-      
-      <li>Add the router to a new host
+
+        <li>Add the router to a new host
           <codeblock>neutron l3-agent-router-add &lt;new l3 agent uuid> &lt;router uuid> </codeblock>
         </li>
-    </ol>
+      </ol>
+    </section>
 
-    
-    </section> 
- 
   </body>
 </topic>
