@@ -3,11 +3,10 @@
 <topic id="install_kvm">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Installation for Helion Entry-scale Cloud with
     KVM</title>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="about">
-
-
       <ul>
         <li><xref href="install_entryscale_kvm.dita#install_kvm/setup_deployer">Set up the
             Lifecycle-manager</xref></li>
@@ -24,34 +23,38 @@
         <li><xref href="install_entryscale_kvm.dita#install_kvm/post_installation">Post-Installation
             Verification and Administration</xref></li>
       </ul></section>
-    
+
     <section id="important_notes"><title>Important Notes</title>
       <ul>
-        <li id="notes-gui">If you are looking for information about when to use the GUI installer and when to use
-          the CLI, see the <xref href="installation_overview.dita#install_overview">Installation
-            Overview</xref>.</li>
-        <li id="notes-hardware">Review the <xref href="../planning/hw_support_matrix.dita">recommended minimum hardware
+        <li id="notes-gui">If you are looking for information about when to use the GUI installer
+          and when to use the CLI, see the <xref href="installation_overview.dita#install_overview"
+            >Installation Overview</xref>.</li>
+        <li id="notes-hardware">Review the <xref
+            href="../planning/recommended_hardware_minimums.dita">recommended minimum hardware
             requirements</xref> that we have listed.</li>
-        <li id="notes-release">Review the <xref href="../releasenotes30.dita">Release Notes</xref> to make yourself aware
-          of any known issues and limitations.</li>
-        <li id="notes-phases">The installation process can occur in different phases. For example, you can install the
-          control plane only and then add Compute nodes afterwards if you would like.</li>
+        <li id="notes-release">Review the <xref href="../releasenotes30.dita">Release Notes</xref>
+          to make yourself aware of any known issues and limitations.</li>
+        <li id="notes-phases">The installation process can occur in different phases. For example,
+          you can install the control plane only and then add Compute nodes afterwards if you would
+          like.</li>
         <!-- consider including steps to achieve this -->
-        <li id="notes-trouble">If you run into issues during installation, we have put together a list of <xref
-            href="installation_troubleshooting.dita">Installation Troubleshooting Steps</xref> you
-          can reference.</li>
-        <li id="notes-disks">Make sure all disks on the system(s) are wiped before you begin the install. (For Swift,
-          refer to <xref href="../administration/objectstorage/swift_device_groups.dita">Swift Requirements for
+        <li id="notes-trouble">If you run into issues during installation, we have put together a
+          list of <xref href="installation_troubleshooting.dita">Installation Troubleshooting
+            Steps</xref> you can reference.</li>
+        <li id="notes-disks">Make sure all disks on the system(s) are wiped before you begin the
+          install. (For Swift, refer to <xref
+            href="../administration/objectstorage/swift_device_groups.dita">Swift Requirements for
             Device Group Drives</xref>)</li>
-        <li id="notes-network">There is no requirement to have a dedicated network for OS-install and system
-          deployment, this can be shared with the management network. More information can be found
-          on the <xref keyref="example_configurations">Example Configuration</xref> page.</li>
-        <li id="notes-deployer">You may see the terms deployer and lifecycle manager used interchangeably. These are
-          referring to the same nodes in your environment.</li>
-        <li id="notes-ansible">When running the Ansible playbook in this installation guide, if a runbook fails you
-          will see in the error response to use the <codeph>--limit</codeph> switch when retrying a
-          playbook. This should be avoided. You can simply re-run any playbook without this
-          switch.</li>
+        <li id="notes-network">There is no requirement to have a dedicated network for OS-install
+          and system deployment, this can be shared with the management network. More information
+          can be found on the <xref keyref="example_configurations">Example Configuration</xref>
+          page.</li>
+        <li id="notes-deployer">You may see the terms deployer and lifecycle manager used
+          interchangeably. These are referring to the same nodes in your environment.</li>
+        <li id="notes-ansible">When running the Ansible playbook in this installation guide, if a
+          runbook fails you will see in the error response to use the <codeph>--limit</codeph>
+          switch when retrying a playbook. This should be avoided. You can simply re-run any
+          playbook without this switch.</li>
       </ul>
     </section>
     <section id="prereqs">
@@ -107,8 +110,6 @@
       </ol>
       <p>At the end of this section you should have a node set up with Linux for HPE Helion on
         it.</p>
-      
-      
       <p><b>Configure and Run the Lifecycle Manager</b></p>
       <note type="important">It is critical that you don't run any of the commands below as the
           <codeph>root</codeph> user or use <codeph>sudo</codeph>, unless it is stated explicitly in
@@ -122,35 +123,28 @@
           <codeblock>sudo mount HelionOpenStack-3.0.iso /media/cdrom</codeblock></li>
         <li>Unpack the tarball that is in the <codeph>/media/cdrom/hos/</codeph> directory:
             <p>Example for <keyword keyref="kw-hos-tm"/>
-            <keyword keyref="kw-hos-version-30"/> </p>
+            <keyword keyref="kw-hos-version-30"/>
+          </p>
           <codeblock>tar xvf /media/cdrom/hos/hos-3.0.0-20160503T085137Z.tar</codeblock>
         </li>
         <li>Run the hos-init.bash script which is included in the build: <p>Example for <keyword
               keyref="kw-hos-tm"/>
             <keyword keyref="kw-hos-version-30"/>:</p>
           <codeblock>~/hos-3.0.0/hos-init.bash</codeblock>
- 
-
           <p>You will be prompted to enter an optional SSH passphrase when running
               <codeph>hos-init.bash</codeph>. This passphrase is used to protect the key used by
             Ansible when connecting to its client nodes. If you do not want to use a passphrase then
             just press return at the prompt.</p>
-          
           <p>For automated installation (e.g. CI) it is possible to disable SSH passphrase prompting
             by setting the <codeph>HOS_INIT_AUTO</codeph> environment variable before running
               <codeph>hos-init.bash</codeph>, like this:</p>
           <codeblock>export HOS_INIT_AUTO=y</codeblock></li>
       </ol>
-      
       <p>If you have protected the SSH key with a passphrase then execute the following commands to
         avoid having to enter the passphrase on every attempt by Ansible to connect to its client
         nodes:</p>
       <codeblock>eval $(ssh-agent)
 ssh-add ~/.ssh/id_rsa</codeblock>
-      
-      
-      
-      
       <p>At the end of this section you should have a local directory structure, as described
         below:</p>
       <codeblock>helion/                        Top level directory
@@ -158,7 +152,6 @@ helion/examples/               Directory contains the config input files of the 
 helion/my_cloud/definition/    Directory contains the config input files
 helion/my_cloud/config/        Directory contains .j2 files which are symlinks to the /hos/ansible directory
 helion/hos/                    Directory contains files used by the installer</codeblock>
-      
       <note type="warning">It's important that you do not add any extra files in the
           <codeph>~/helion</codeph> directory on your lifecycle manager. This includes temporary
         save files. Doing so will cause errors during the installation.</note>
@@ -166,15 +159,15 @@ helion/hos/                    Directory contains files used by the installer</c
           href="installation_troubleshooting.dita#troubleshooting_installation/deployer_setup"
           >Troubleshooting Your Installation</xref></p>
     </section>
-    
-    
+
+
     <section id="configuration">
       <title>Configure Your Environment</title>
       <p>During the configuration phase of the installation you will be making modifications to the
         example configuration input files to match your cloud environment. You should use the <xref
-          keyref="example_configurations">Example Configurations</xref> documentation for
-        detailed information on how to do this. There is also a README.md file included in each of
-        the example directories on the lifecycle manager that has useful information about the
+          keyref="example_configurations">Example Configurations</xref> documentation for detailed
+        information on how to do this. There is also a README.md file included in each of the
+        example directories on the lifecycle manager that has useful information about the
         models.</p>
       <p>In the steps below we show how to set up the directory structure with the example input
         files as well as use the optional encryption methods for your sensitive data.</p>
@@ -188,15 +181,14 @@ helion/hos/                    Directory contains files used by the installer</c
             </li>
             <li>Begin inputting your environment information into the configuration files in the
                 <codeph>~/helion/my_cloud/definition</codeph> directory. <p>If you are using the
-                Entry-scale KVM with VSA model, see <xref
-                  keyref="modify_entryscale_kvm_vsa"
+                Entry-scale KVM with VSA model, see <xref keyref="modify_entryscale_kvm_vsa"
                   >Modifying the Entry-scale KVM with VSA model for your Environment</xref> for
                 details.</p>
               <p>If you are using the Entry-scale KVM with Ceph model, see <xref
                   href="configure_ceph.dita#config_ceph/config_files">Configuring Your Ceph
                   Environment Input Files</xref> for details.</p></li>
           </ol></li>
-<!--        <li>If your <keyword keyref="kw-hos"/> environment is behind a firewall, you need to set the
+        <!--        <li>If your <keyword keyref="kw-hos"/> environment is behind a firewall, you need to set the
           Sherpa proxy shell variables so that the Sherpa service can communicate out to the Helion
           Download Network (HDN). <ol>
             <li>Edit the sherpa.conf.j2 file in the location below:
@@ -212,12 +204,12 @@ https_proxy = '{{ sherpa_https_proxy }}'
 no_proxy =  '{{ sherpa_no_proxy }}'
 ##############################################################</codeblock></li>
           </ol></li>-->
-<!--        <li>If you are planning on installing HPE Helion Development Platform you should ensure that
+        <!--        <li>If you are planning on installing HPE Helion Development Platform you should ensure that
           you include your Service Net into your configuration files at this point in the
           installation. <p>See <xref href="../operations/create_hdp_servicenet.dita">Creating
               the HPE Helion Development Platform Service Net</xref> for details on how to achieve
             this.</p></li>-->
-<!--        <li>[WORKAROUND] - There is currently an issue with the Elasticsearch name that requires
+        <!--        <li>[WORKAROUND] - There is currently an issue with the Elasticsearch name that requires
           that you change it in the logging configuration file before continuing in the
           installation. The steps to do this are: <ol>
             <li>Edit the file below:
@@ -231,8 +223,8 @@ no_proxy =  '{{ sherpa_no_proxy }}'
 elasticsearch_cluster_name: "{{ LOG_SVR | item('vars.elasticsearch_cluster_name', default='<b>elasticsearch</b>') }}"</codeblock></li>
           </ol></li>-->
 
-        <li id="hosencrypt">[OPTIONAL] - You can use the <codeph>hosencrypt.py</codeph> script to encrypt your iLo
-          passwords. This script uses OpenSSL. <ol>
+        <li id="hosencrypt">[OPTIONAL] - You can use the <codeph>hosencrypt.py</codeph> script to
+          encrypt your iLo passwords. This script uses OpenSSL. <ol>
             <li>Change to the Ansible directory: <codeblock>cd ~/helion/hos/ansible</codeblock></li>
             <li>Put the encryption key into the following environment variable:
               <codeblock>export HOS_USER_PASSWORD_ENCRYPT_KEY=&#60;encryption key></codeblock></li>
@@ -246,21 +238,21 @@ elasticsearch_cluster_name: "{{ LOG_SVR | item('vars.elasticsearch_cluster_name'
                   <codeph>export HOS_USER_PASSWORD_ENCRYPT_KEY=&#60;encryption
               key></codeph></note></li>
           </ol></li>
-        
-        <li id="commit"><p>Commit your configuration to the <xref href="using_git.dita">local git repo</xref>, as
-          follows:</p>
+
+        <li id="commit"><p>Commit your configuration to the <xref href="using_git.dita">local git
+              repo</xref>, as follows:</p>
           <codeblock>cd ~/helion/hos/ansible
             git add -A
             git commit -m "My config or other commit message"</codeblock>
           <p><note type="important">This step needs to be repeated any time you make changes to your
-            configuration files before you move onto the following steps. See <xref
-              href="using_git.dita">Using Git for Configuration Management</xref> for more
-            information.</note></p>               
+              configuration files before you move onto the following steps. See <xref
+                href="using_git.dita">Using Git for Configuration Management</xref> for more
+              information.</note></p>
         </li>
       </ol>
     </section>
-    
-    
+
+
     <section id="provision"><title>Provision Your Baremetal Nodes</title>
       <p>To provision the baremetal nodes in your cloud deployment you can either use the automated
         operating system installation process provided by <keyword keyref="kw-hos"/> or you can use
@@ -280,8 +272,9 @@ elasticsearch_cluster_name: "{{ LOG_SVR | item('vars.elasticsearch_cluster_name'
         <li>There should be a LVM logical volume as <codeph>/root</codeph> on each node.</li>
         <li>If the LVM volume group name for the volume group holding the "root" LVM logical volume
           is hlm-vg then it will align with the disk input models in the examples.</li>
-        <li><ph id="baremetal_prereqs">Ensure that <codeph>openssh-server</codeph>, <codeph>python</codeph>,
-          <codeph>python-apt</codeph>, and <codeph>rsync</codeph> are installed.</ph></li>
+        <li><ph id="baremetal_prereqs">Ensure that <codeph>openssh-server</codeph>,
+              <codeph>python</codeph>, <codeph>python-apt</codeph>, and <codeph>rsync</codeph> are
+            installed.</ph></li>
       </ul>
       <p>If you chose this method for installing your baremetal hardware, skip forward to the <xref
           href="install_entryscale_kvm.dita#install_kvm/config_processor">Run the Configuration
@@ -378,10 +371,10 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
         environment will be generated and populated in the
           <codeph>~/helion/my_cloud/info/address_info.yml</codeph> file. It's at this point that you
         will want to take into consideration whether or not you want to configure TLS and setup a
-        SSL certificate for your environment. Please read <xref href="../operations/configuring_tls.dita"
-          >Enabling TLS</xref> before proceeding for how to achieve this.</p>
-      
-     <!-- <p>Note that if you intend to install HPE Helion Development Platform in your environment you
+        SSL certificate for your environment. Please read <xref
+          href="../operations/configuring_tls.dita">Enabling TLS</xref> before proceeding for how to
+        achieve this.</p>
+      <!-- <p>Note that if you intend to install HPE Helion Development Platform in your environment you
         will need to configure an SSL certificate for the public endpoint for the Identity service.
         This can be located in the <codeph>~/helion/my_cloud/info/address_info.yml</codeph> under
         the <codeph>EXTERNAL-API</codeph> section. Here is an example showing a snippet of a file
