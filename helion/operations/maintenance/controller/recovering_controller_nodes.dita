@@ -213,9 +213,87 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
     </section>
 
 
+    <section outputclass="pageTarget1" id="nolifecycle_target">
+      <title outputclass="headerH">Dedicated Lifecycle Manager Disaster Recovery</title>
+      <sectiondiv outputclass="insideSection" id="deployer">
+        <p>In this scenario everything is still running (controller nodes and compute nodes) but
+          you've lost the dedicated lifecycle manager.</p>
+        <p>Ensuring that you use the same version of HPE Helion OpenStack that you previously had
+          loaded on your lifecycle manager, you will need to download and install the lifecycle
+          management software using the instructions from the <xref
+            href="../../../installation/install_entryscale_kvm.dita#install_kvm/setup_deployer"
+            >installation guide</xref> before proceeding further.</p>
+        <b>Restore from a Swift backup</b>
+        <ol>
+          <li>On the lifecycle manager, install the freezer-agent, as follows:<codeblock>cd ~/helion/hos/ansible/
+            ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
+            <p>You must retrieve the following two files <codeph>/home/stack/backup.osrc</codeph>
+              and <codeph>/opt/stack/service/freezer-agent/etc/systemd_env_vars.cfg</codeph> from
+              any compute or controller node and put them in this directory
+                (<codeph>/opt/stack/service/freezer-agent/etc/</codeph>) on the lifecycle
+              manager.</p>
+            <p>You must then retrieve the /etc/hosts file from any compute or controller node and
+              replace the one found on the lifecycle manager with the one retrieved. Be sure to edit
+              the 127.0.0.1 line so it points to hlinux like so:</p>
+            <codeblock>127.0.0.1       localhost
+::1             localhost ip6-localhost ip6-loopback
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+127.0.0.1       hlinux</codeblock></li>
+          <li>On the lifecycle manager: <p>Become root:</p><codeblock>sudo su</codeblock> Source the
+            credentials: <codeblock>source /home/stack/backup.osrc</codeblock> List the jobs
+            <codeblock>freezer-scheduler -c &lt;hostname> job-list</codeblock>Get the id of the job
+            corresponding to "HLM Default: Deployer restore from Swift." Stop that job so the
+            freezer-scheduler doesn't begin making backups when started.
+            <codeblock>freezer-scheduler -c &lt;hostname> job-stop -j &lt;job-id&gt;</codeblock>If
+            it is present, also stop the lifecycle manager's SSH backup. <p>Next, stop the dayzero
+              UI installer:</p><codeblock>systemctl stop dayzero</codeblock>Start the
+            freezer-scheduler: <codeblock>systemctl start freezer-scheduler</codeblock>Get the id of
+            the job corresponding to "HLM Default: deployer restore from Swift" and launch that job:
+            <codeblock>freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;</codeblock>This
+            will take some time; you can follow the progress in
+            /var/log/freezer-agent/freezer-agent.log. <p>Start the dayzero UI
+            installer:</p><codeblock>systemctl start dayzero</codeblock>When the lifecycle manager
+            is restored, re-run the deployment to ensure the lifecycle manager is in the correct
+            state:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+              ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
+        </ol>
+        <b>Restore from an SSH backup</b>
+        <ol id="ol_q5k_qyh_1v">
+          <li>On the lifecycle manager, edit the following file so it contains the same information
+            as it did previously:
+            <codeblock>~/helion/my_cloud/config/freezer/ssh_credentials.yml</codeblock></li>
+          <li>On the lifecycle manager, copy the following files, change directories, and run
+            _deployer_restore_helper.yml: <codeblock>cp -r ~/hp-ci/helion/* ~/helion/my_cloud/definition/
+cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
+            <p>Perform the restore. First become root and change directories:</p>
+            <codeblock>sudo su
+              cd /root/deployer_restore_helper/</codeblock>
+            <p>Then, stop the Dayzero UI installer:</p>
+            <codeblock>systemctl stop dayzero</codeblock>Execute the restore job:
+            <codeblock>./deployer_restore_script.sh</codeblock>Start the Dayzero UI
+            installer:<codeblock>systemctl start dayzero</codeblock>When the lifecycle manager is
+            restored, re-run the deployment to ensure the lifecycle manager is in the correct state:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
+        </ol>
+      </sectiondiv>
+    </section>
 
-
-
+    <section id="shared_lifecyclemgt">
+      <title outputclass="headerH">Shared Controller / Lifecycle Manager Disaster Recovery</title>
+      <sectiondiv outputclass="insideSection">
+        <ol>
+          <li>Ensuring that you use the same version of HPE Helion OpenStack that you previously had
+            loaded on your lifecycle manager, you will need to download and install the lifecycle
+            management software using the instructions from the installation guide. See <xref
+              href="../../../installation/install_entryscale_kvm.dita#install_kvm/setup_deployer"/>
+            for more details.</li>
+          
+        </ol>
+      </sectiondiv>
+    </section>
 
     <section id="onecontroller">
       <title outputclass="headerH">One or Two Controller Node Disaster Recovery</title>
@@ -279,10 +357,10 @@ ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;
     </section>
     <section id="allcontrollers"><title outputclass="headerH">Three Control Plane Node Disaster
         Recovery</title>
-      <sectiondiv outputclass="insideSection">
-        <p>In this scenario, all control plane nodes are destroyed.</p><b>Restore from a Swift
-          backup: </b><p>Restoring from a Swift backup is not possible because Swift is
-          gone.</p><b>Restore from an SSH backup: </b><p>
+      <sectiondiv outputclass="insideSection"><p>In this scenario, all control plane nodes are
+          destroyed which need to be rebuilt or replaced.</p><b>Restore from a Swift backup:
+          </b><p>Restoring from a Swift backup is not possible because Swift is gone.</p><b>Restore
+          from an SSH backup: </b><p>
           <ol id="ol_ws5_pyh_1v">
             <li>On the lifecycle manager, follow the procedure below to deploy the control plane
               nodes:
@@ -290,77 +368,23 @@ ansible-playbook -i hosts/verb_hosts hlm-deploy.yml -e rebuild=True --limit=&lt;
 ansible-playbook -i hosts/verb_hosts site.yml --limit helion-ccp-c1-m1-mgmt,helion-ccp-c1-m2-mgmt,helion-ccp-c1-m3-mgmt -e '{ "freezer_backup_jobs_upload": false }'</codeblock>You
               can now perform the procedure for <xref href="#topic_tb4_lqy_qt/pointdb" format="dita"
                 >Point-in-time database recovery</xref> at the top of this document. Once everything
-              is restored, re-enable the backups. <p/></li>
+              is restored, re-enable the backups. </li>
             <li>From the lifecycle manager run _freezer_manage_jobs.yml:
               <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
           </ol>
-        </p></sectiondiv></section>
-    <section outputclass="pageTarget1" id="nolifecycle_target"><title outputclass="headerH"
-        >Dedicated Lifecycle Manager Disaster Recovery</title>
-      <sectiondiv outputclass="insideSection" id="deployer">
-        <p>In this scenario everything is still running (controller nodes and compute nodes) but
-          you've lost the dedicated lifecycle manager.</p>
-        <p>Ensuring that you use the same version of HPE Helion OpenStack that you previously had
-          loaded on your lifecycle manager, you will need to download and install the lifecycle
-          management software using the instructions from the <xref
-            href="../../../installation/install_entryscale_kvm.dita#install_kvm/setup_deployer"
-            >installation guide</xref> before proceeding further.</p>
-        <b>Restore from a Swift backup</b>
-        <ol>
-          <li>On the lifecycle manager, install the freezer-agent, as follows:<codeblock>cd ~/helion/hos/ansible/
-ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
-            <p>You must retrieve the following two files <codeph>/home/stack/backup.osrc</codeph>
-              and <codeph>/opt/stack/service/freezer-agent/etc/systemd_env_vars.cfg</codeph> from
-              any compute or controller node and put them in this directory
-                (<codeph>/opt/stack/service/freezer-agent/etc/</codeph>) on the lifecycle
-              manager.</p>
-            <p>You must then retrieve the /etc/hosts file from any compute or controller node and
-              replace the one found on the lifecycle manager with the one retrieved. Be sure to edit
-              the 127.0.0.1 line so it points to hlinux like
-            so:</p><codeblock>127.0.0.1       localhost
-::1             localhost ip6-localhost ip6-loopback
-ff02::1         ip6-allnodes
-ff02::2         ip6-allrouters
-127.0.0.1       hlinux</codeblock></li>
-          <li>On the lifecycle manager: <p>Become root:</p><codeblock>sudo su</codeblock> Source the
-            credentials: <codeblock>source /home/stack/backup.osrc</codeblock> List the jobs
-            <codeblock>freezer-scheduler -c &lt;hostname> job-list</codeblock>Get the id of the job
-            corresponding to "HLM Default: Deployer restore from Swift." Stop that job so the
-            freezer-scheduler doesn't begin making backups when started.
-            <codeblock>freezer-scheduler -c &lt;hostname> job-stop -j &lt;job-id&gt;</codeblock>If
-            it is present, also stop the lifecycle manager's SSH backup. <p>Next, stop the dayzero
-              UI installer:</p><codeblock>systemctl stop dayzero</codeblock>Start the
-            freezer-scheduler: <codeblock>systemctl start freezer-scheduler</codeblock>Get the id of
-            the job corresponding to "HLM Default: deployer restore from Swift" and launch that job:
-            <codeblock>freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;</codeblock>This
-            will take some time; you can follow the progress in
-            /var/log/freezer-agent/freezer-agent.log. <p>Start the dayzero UI
-            installer:</p><codeblock>systemctl start dayzero</codeblock>When the lifecycle manager
-            is restored, re-run the deployment to ensure the lifecycle manager is in the correct
-            state:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
-        </ol>
-        <b>Restore from an SSH backup</b>
-        <ol id="ol_q5k_qyh_1v">
-          <li>On the lifecycle manager, edit the following file so it contains the same information
-            as it did previously:
-            <codeblock>~/helion/my_cloud/config/freezer/ssh_credentials.yml</codeblock></li>
-          <li>On the lifecycle manager, copy the following files, change directories, and run
-            _deployer_restore_helper.yml:
-            <codeblock>cp -r ~/hp-ci/helion/* ~/helion/my_cloud/definition/
-cd ~/helion/hos/ansible/
-ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>Perform
-            the restore. First become root and change
-            directories:<codeblock>sudo su
-cd /root/deployer_restore_helper/</codeblock>Then, stop
-            the Dayzero UI installer:<codeblock>systemctl stop dayzero</codeblock>Execute the
-            restore job: <codeblock>./deployer_restore_script.sh</codeblock>Start the Dayzero UI
-            installer:<codeblock>systemctl start dayzero</codeblock>When the lifecycle manager is
-            restored, re-run the deployment to ensure the lifecycle manager is in the correct state:
-            <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
-        </ol></sectiondiv></section>
+        </p>
+        <p>If you are using a dedicated lifecycle manager, then you can skip these initial steps as
+          they are showing you how to recover your shared controller/lifecycle manager first.</p>
+      </sectiondiv></section>
+
+
+
+
+
+
+
+
     <section id="full"><title outputclass="headerH">Full Disaster Recovery</title>
       <sectiondiv outputclass="insideSection">
         <p>In this disaster scenario, you've lost everything in the cloud, including
