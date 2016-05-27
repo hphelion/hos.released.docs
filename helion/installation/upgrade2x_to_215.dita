@@ -11,9 +11,9 @@
         restarting. If your environment relies on HPE Helion Development Platform, please follow
         instructions for the <xref href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
           scope="external">HPE Helion Development Platform upgrade process</xref>.</note>
-      <p>When upgrading from HPE Helion OpenStack 2.x to HPE Helion OpenStack 2.1.5 you will use the same configuration files in your
-          <codeph>~/helion/my_cloud/definition</codeph> directory as you used when originally
-        installing the software.</p>
+      <p>When upgrading from HPE Helion OpenStack 2.x to HPE Helion OpenStack 2.1.5 you will use the
+        same configuration files in your <codeph>~/helion/my_cloud/definition</codeph> directory as
+        you used when originally installing the software.</p>
       <p>The configuration you specified will remain unchanged through the upgrade process;
           <b>however</b>, if you made any configuration changes by passing parameters to any Ansible
         playbooks using the <codeph>-e</codeph> option, you should find the affected files and make
@@ -48,9 +48,10 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
     </section>
     <section id="prereqs"><title>Prerequisites</title>
       <p>These steps assume you have an installed and working <keyword keyref="kw-hos-phrase-20"/>
-        or 2.1 cloud, and that you have followed the <xref href="/#devplatform/2.0/upgrade_HOS_21.html"
-          format="html" scope="external">HPE Helion Development Platform upgrade process</xref> to
-        gracefully shutdown Helion Development Platform Services and instances.</p>
+        or 2.1 cloud, and that you have followed the <xref
+          href="/#devplatform/2.0/upgrade_HOS_21.html" format="html" scope="external">HPE Helion
+          Development Platform upgrade process</xref> to gracefully shutdown Helion Development
+        Platform Services and instances.</p>
     </section>
 
     <section id="mainSteps"><title>Upgrade Overview</title>
@@ -73,10 +74,10 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
         <li>Sign in and download the <keyword keyref="kw-hos-phrase-215"/> product and signature
           files at the links below: <ol>
             <li><xref
-              href="https://helion.hpwsportal.com/catalog.html#/Product/%7B%22productId%22%3A%223034%22%7D/Show" 
+                href="https://helion.hpwsportal.com/catalog.html#/Product/%7B%22productId%22%3A%223034%22%7D/Show"
                 format="html" scope="external">HPE Helion OpenStack Files</xref></li>
             <li><xref
-              href="https://helion.hpwsportal.com/catalog.html#/Product/%7B%22productId%22%3A%223033%22%7D/Show"
+                href="https://helion.hpwsportal.com/catalog.html#/Product/%7B%22productId%22%3A%223033%22%7D/Show"
                 format="html" scope="external">HPE Helion OpenStack Signature Files</xref></li>
           </ol></li>
         <li>You can verify the download was complete via the signature verification process outlined
@@ -84,8 +85,8 @@ ansible-playbook -i hosts/verb_hosts designate-start.yml</codeblock></li>
             href="https://h20392.www2.hpe.com/portal/swdepot/displayProductInfo.do?productNumber=HPLinuxCodeSigning"
             scope="external" format="html">here</xref>.</li>
         <li>To begin the upgrade process, log in to the lifecycle manager as the user you created
-          during the <keyword keyref="kw-hos-phrase-20"/> or 2.1 deployment, and mount the install media at
-            <codeph>/media/cdrom</codeph>; for example:
+          during the <keyword keyref="kw-hos-phrase-20"/> or 2.1 deployment, and mount the install
+          media at <codeph>/media/cdrom</codeph>; for example:
           <codeblock>sudo mount HelionOpenStack-2.1.5.iso /media/cdrom</codeblock></li>
         <li>Unpack the following
           tarball:<codeblock>tar xvf /media/cdrom/hos/hos-2.1.5-20160524T002822Z.tar</codeblock></li>
@@ -104,8 +105,8 @@ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
           directory:<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li><b>ESX - additional step</b>: If you are using the Entry-scale with ESX model you will
-          need to uncomment the EON upgrade step from the YAML file below prior to continuing with the upgrade steps: 
-          <codeblock>~/scratch/ansible/next/hos/ansible/_hlm-service-upgrade.yml</codeblock>
+          need to uncomment the EON upgrade step from the YAML file below prior to continuing with
+          the upgrade steps: <codeblock>~/scratch/ansible/next/hos/ansible/_hlm-service-upgrade.yml</codeblock>
           <p>The line to uncomment is:</p>
           <codeblock>eon-upgrade.yml</codeblock></li>
 
@@ -189,6 +190,9 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_ho
         retrieve a list of nodes in your cloud running control plane services. <codeblock>for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); do grep $i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts | grep ansible_ssh_host | awk '{print $1}'; done</codeblock>
         <p>Then perform the following steps from your lifecycle manager for each of your controller
           nodes:</p>
+        <note type="warning">Any compute instances you have that don't have floating IP addresses
+          associated with them will lose network connectivity while the controller nodes are
+          rebooted.</note>
         <ol>
           <li>If any singleton services are active on this node, they will be unavailable while the
             node is down. If you want to retain the service during the reboot, you should take
@@ -400,14 +404,14 @@ ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostnam
           </li>
           <li>Stop all the OSD services on the node by executing below command:
             <codeblock>sudo systemctl stop ceph-osd@*</codeblock></li>
-          
+
           <li>You are going to need to verify that your OSD node has rebooted in the next step, so
             to do that you should SSH to one of your controller nodes and execute the command
             below:<codeblock>ceph -w</codeblock></li>
-          
+
           <li>Now reboot the OSD node and monitor the output of the <codeph>ceph -w</codeph> command
             and when you see a line similar to <codeph>osd.0 192.17.11.7:6801/3824 boot</codeph>
-            that is the sign that the reboot has completed.  You can use CTRL + C to end the
+            that is the sign that the reboot has completed. You can use CTRL + C to end the
             stream.</li>
           <li>Verify that all the OSDs on this node are up by executing following command (and
             observing that all the OSDs under the current host are reported as 'up')
