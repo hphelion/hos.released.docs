@@ -166,6 +166,22 @@ sudo systemctl start kibana
             <p>There is a bug in the dashboard when you create a new Swift object storage container
                 where the progress bar never ends even after the container has been successfully
                 created. There is no workaround, it can just be ignored.</p>
+            <!-- DOCS-3269 / HORI-5545 -->
+            <p><b>Swift container file uploads initiated via the dashboard may stall out and
+                    fail</b></p>
+            <p>Due to the way the Horizon dashboard is architected, some file uploads to Swift
+                containers may stall out and fail. You will mostly see this in large files but it
+                can happen with smaller files depending on the size of root disk partition on your
+                controller nodes.</p>
+            <p>The way the Horizon dashboard transfers files is that they stage the files in a
+                temporary directory before sending the files to Swift. If the root disk partition is
+                less than the size of the file you are attempting to upload, it will run out of disk
+                space and cause an error.</p>
+            <p>There is an architectural fix being worked in upstream OpenStack to alleviate this
+                issue but right now the workaround is to either increase the disk space for your
+                root disk partition or you can use the Swift CLI or the API to upload files, which
+                does not run into this issue. Keep in mind that Swift still has the 5GB file
+                limitation in general before chunking the file is necessary.</p>
         </section>
 
         <section>
