@@ -153,34 +153,14 @@ rgw keystone url = https://helion-cp1-vip-KEY-API-mgmt:35357</codeblock></li>
         </ol></sectiondiv>
     </section>
     <section id="replace">
-      <title outputclass="headerH">Replacing Swift with RADOS Gateway for Cloud Object
-        Storage</title>
-      <sectiondiv outputclass="insideSection">
-        <p>If you do not want the Ceph and Swift object storage solutions in the same cloud, you can
-          deploy a cloud with only the Ceph RADOS Gateway.</p>
-        <p><b>Deploying Ceph RADOS Gateway as a replacement for OpenStack Swift in new cloud</b></p>
-        <p>An <keyword keyref="kw-hos-tm"/> cloud can be deployed with Ceph RADOS Gateway as a
-          replacement for OpenStack Swift. The input model needs to be tuned in the following way to
-          achieve this. </p>
-        <ol id="ol_pzz_w4c_5v">
-          <li>Login to the deployer node and remove all the <codeph>swift</codeph> components except
-              <codeph>swift-client</codeph> from
-              <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file. Remove the
-            following Swift service components:
-            <codeblock>swift-ring-builder
+      <!--<title outputclass="headerH">Replacing Swift with RADOS Gateway for Cloud Object Storage</title> --><sectiondiv
+        outputclass="insideSection"><!-- <p>If you do not want the Ceph and Swift object storage solutions in the same cloud, you can deploy a cloud with only the Ceph RADOS Gateway.</p> <p><b>Deploying Ceph RADOS Gateway as a replacement for OpenStack Swift in new cloud</b></p> <p>An <keyword keyref="kw-hos-tm"/> cloud can be deployed with Ceph RADOS Gateway as a replacement for OpenStack Swift. The input model needs to be tuned in the following way to achieve this. </p> <ol id="ol_pzz_w4c_5v"><li>Login to the deployer node and remove all the <codeph>swift</codeph> components except <codeph>swift-client</codeph> from <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file. Remove the following Swift service components: <codeblock>swift-ring-builder
 swift-proxy 
 swift-account
 swift-container 
-swift-object </codeblock></li>
-          <li>Modify the <codeph>rgw_keystone_service_type</codeph> in file
-              <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows:
-            <codeblock>rgw_keystone_service_type: object-store</codeblock></li>
-          <li>Commit your configuration
-            <codeblock>cd ~/helion/hos/ansible
+swift-object </codeblock></li><li>Modify the <codeph>rgw_keystone_service_type</codeph> in file <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> as follows: <codeblock>rgw_keystone_service_type: object-store</codeblock></li><li>Commit your configuration <codeblock>cd ~/helion/hos/ansible
 git add -A 
-git commit -m "&lt;commit message>" </codeblock></li>
-          <li>Proceed with the cloud deployment steps from the Config Processor Run step. </li>
-        </ol>
+git commit -m "&lt;commit message>" </codeblock></li><li>Proceed with the cloud deployment steps from the Config Processor Run step. </li></ol>-->
         <!--<b>Replace swift with rados gateway in pre-deployed Helion cloud </b><p>To replace OpenStack Swift with Ceph RADOS Gateway in a running HOS cloud, perform the steps listed below: </p><ol id="ol_qmq_sgf_sv"><li>Login to controller node. </li><li>Identify the Swift and Ceph service IDs using following commands. Look for Name <codeph>swift</codeph> and <codeph>ceph</codeph> and note the associated ID for eac: <codeblock>source ~/keystone.osrc 
 openstack service list </codeblock></li><li>Delete the Swift and Ceph services using the service ID identified in earlier step: <codeblock>source ~/keystone.osrc
 openstack service delete &lt;swift-service-id> 
