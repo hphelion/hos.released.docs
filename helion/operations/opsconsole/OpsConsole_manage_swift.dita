@@ -4,7 +4,11 @@
     <title><ph conkeyref="HOS-conrefs/product-title"/>Managing SWIFT Performance</title>
     <body>
         
-        <p>OpenStack Swift is an object storage solution with a focus on availability. While there are various mechanisms inside Swift to protect stored data and ensure a high availability, you must still closely monitor your Swift cluster to ensure long-term data protection as well as sufficient performance. The best way to manage Swift is to collect useful data to detect possible performance impacts early on.</p>
+        <p>OpenStack Swift is an object storage solution with a focus on availability. While there
+            are various mechanisms inside Swift to protect stored data and ensure a high
+            availability, you must still closely monitor your Swift cluster to ensure long-term data
+            protection as well as sufficient performance. The best way to manage Swift is to collect
+            useful data that will detect possible performance impacts early on.</p>
         
         <p>The new Object Summary Dashboard in Operations Console (Ops Console) provides an overview of your Swift environment. </p>
         
@@ -13,15 +17,16 @@
         <p>In Ops Console's object storage dashboard, you can easily review the following information:</p>
         <ul>
             <li><xref type="section" href="#manage_swift_perf/Ops_Swift_PerfSumm">Performance Summary</xref></li>
-            <li>Inventory Summary</li>
-            <li>Capacity Summary</li>
-            <li>Alarm Summary</li>
+            <li><xref type="section" href="#manage_swift_perf/Ops_Swift_Inventory">Inventory Summary</xref></li>
+            <li><xref type="section" href="#manage_swift_perf/Ops_Swift_Capacity">Capacity Summary</xref></li>
+            <li><xref type="section" href="#manage_swift_perf/Ops_Swift_AlarmSumm">Alarm Summary</xref></li>
         </ul>
 <lines>   
 </lines>
         <section id="Ops_Swift_PerfSumm">
             <title>Performance Summary</title>
-            <p>To access the object storage dashboard:</p>
+            <p>View a comprehensive summary of current performance values.</p>
+            <p>To access the object storage performance dashboard:</p>
             <ol>
                 <li>Open Operations Console, either in a browser enter either the URL or Virtual IP
                     connected to Ops Console. <p>For
@@ -32,7 +37,7 @@ https://VIP:9095</codeblock></li>
                 <li>From the menu that slides in on the left side, click <b>Storage</b>, and then <b>Object Storage Summary</b>.</li>
             </ol>  
             <p><image href="../../../media/opsconsole/ObjStorageSumm1.png"/></p>
-                <p>View a comprehensive summary of current performance values including:</p>
+                <p>Performance data includes:</p>
             <dl>
               <dlentry>
                   <dt>Healthcheck Latency from Monasca</dt>
@@ -55,14 +60,26 @@ https://VIP:9095</codeblock></li>
                 </dlentry>
                 <dlentry>
                     <dt>Graph of Performance Over Time</dt>
-                    <dd></dd>
+                    <dd>Create a visual representation of performance data to see when Swift
+                        encountered longer-than-normal response times. <p>To create a graph:</p><ol>
+                            <li>Choose the length of time you want to graph in <b>Date Range</b>.
+                                This sets the length of time for the x-axis which counts backwards
+                                until it reaches the present time. In the example below, 1 day is
+                                selected, and so the x axis shows performance starting from 24 hours
+                                ago (-24) until the present time.</li>
+                            <li>Look for spikes which represent longer than normal response times.
+                                In the example below, Swift experienced long response times 21 hours
+                                ago and again 1 hour ago.</li>
+                        </ol></dd>
                 </dlentry>
             </dl>
                     <p><image href="../../../media/opsconsole/ObjStorageSumm2.png"/></p>
         </section>
- 
+        <lines>   
+        </lines>
  <section id="Ops_Swift_Inventory">
         <title>Inventory Summary</title>
+            <p>Monitor details about all the Swift resources deployed in your cloud.</p>
      <p>To access the object storage inventory screen:</p>
      <ol>
          <li>Open Operations Console, either in a browser enter either the URL or Virtual IP
@@ -77,18 +94,57 @@ https://VIP:9095</codeblock></li>
      <p><image href="../../../media/opsconsole/ObjStorageInventory1.png"/></p>
 <p>General Swift metrics are available for the following attributes:</p>
      <ul>
-         <li>Time to replicate</li>
-         <li>Oldest replication</li>
-         <li>Length of the async queue</li>
-         <li>Total number of alarms</li>
-         <li>Total nodes</li>
-         <li>Cluster breakdown of nodes</li>
+         <li><b>Time to replicate</b>. The average time in seconds it takes all hosts to complete a
+                    replication cycle.</li>
+         <li><b>Oldest replication</b>. The time in seconds that has elapsed since the object
+                    replication process completed its last replication cycle.</li>
+         <li><b>Length of the async queue</b>. This is length over all object servers. It is normal
+                    for it to grow if a node hosting the Swift container service is down.</li>
+         <li><b>Total number of alarms</b>. This number includes all nodes that host Swift services,
+                    including proxy, account, container, and object storage services.</li>
+         <li><b>Total nodes</b>. This number includes all nodes that host Swift services, including
+                    proxy, account, container, and object storage services. The following colors are
+                    used to show the severity of the alarms triggered on each node: <dl>
+                        <dlentry>
+                            <dt>Green</dt>
+                            <dd>Not severe</dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>Yellow</dt>
+                            <dd>Kind of severe</dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>Red</dt>
+                            <dd>Really severe</dd>
+                        </dlentry>
+                        <dlentry>
+                            <dt>Gray</dt>
+                            <dd>Most severe</dd>
+                        </dlentry>
+                    </dl> The number in the colored box represents the number of alarms in that
+                    state.</li>
+         <li><b>Cluster breakdown of nodes</b>. In the example screen above, the cluster consists of 2 nodes named
+                    SWPAC and SWOBJ. Click on a node name to bring up more detailed information about that node.</li>
      </ul>
  </section>
-        
+        <lines>   
+        </lines>     
 <section id="Ops_Swift_Capacity">
      <title>Capacity Summary</title>
-
+<p>Use this screen to view the size of the file system space on all nodes and disk drives assigned to Swift. Also shown is the remaining space available and the total size of all file systems used by Swift. Values are given in megabytes (MB).</p>
+    <p>To access the object storage capacity screen:</p>
+    <ol>
+        <li>Open Operations Console, either in a browser enter either the URL or Virtual IP
+            connected to Ops Console. <p>For
+                example:</p><codeblock>https://myhelion.test:9095
+https://VIP:9095</codeblock></li>
+        <li>On the <b>Home</b> screen, click the menu represented by 3 horizontal lines.
+            <image href="../../../media/opsconsole/OpsConsoleBurgerMenu.png"/></li>
+        <li>From the menu that slides in on the left side, click <b>Storage</b>, and then <b>Object Storage Summary</b>.</li>
+        <li>On the <b>Summary</b> page, click <b>Capacity Summary</b>.</li>
+    </ol>  
+    <p><image href="../../../media/opsconsole/ObjStorageCapacity.png"/></p>
+    
 </section>
 
 <section id="Ops_Swift_AlarmSumm">
