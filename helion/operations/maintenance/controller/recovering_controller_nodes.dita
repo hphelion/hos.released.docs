@@ -46,7 +46,7 @@
         <ol>
           <li>Log in to the first MySQL node.</li>
           <li>Become root: <codeblock>sudo su</codeblock></li>
-          <li>Create a restore directory <codeblock>mkdir /tmp/hlm_mysql_restore/</codeblock></li>
+          <li>Create a restore directory <codeblock>mkdir /tmp/mysql_restore/</codeblock></li>
           <li>Source the backup environment file
             <codeblock>source /home/stack/backup.osrc</codeblock></li>
           <li>List the
@@ -64,7 +64,7 @@ ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock></li>
           <li>Clean the Mysql directory by removing everything there:
             <codeblock>sudo rm -r /var/lib/mysql/*</codeblock></li>
           <li>Copy the restored files back to the mysql
-            directory:<codeblock>sudo cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql</codeblock></li>
+            directory:<codeblock>sudo cp -pr /tmp/mysql_restore/* /var/lib/mysql</codeblock></li>
           <li>Log back in to the lifecycle manager.</li>
           <li>Start the Percona DB service back up:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -85,7 +85,7 @@ ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock></li>
             database:<codeblock>sudo rm -r /var/lib/mysql/*</codeblock></li>
           <li>On the first MySQL node, restore the backup as follows. If you have already restored
             to a temporary directory, copy the files again:
-            <codeblock>sudo cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql</codeblock></li>
+            <codeblock>sudo cp -pr /tmp/mysql_restore/* /var/lib/mysql</codeblock></li>
           <li>If you need to restore the files manually from SSH, follow these steps: <ol>
               <li>Become root: <codeblock>sudo su</codeblock></li>
               <li>Create the <codeph>/root/mysql_restore.ini</codeph> file with the contents below.
@@ -155,7 +155,7 @@ ok: [helion-cp1-c1-m3-mgmt] => {
           <li>Log in to the first Swift Proxy (<codeph>SWF-PRX[0]</codeph>) node.</li>
           <li>Become root: <codeblock>sudo su</codeblock></li>
           <li>Create a restore directory:
-            <codeblock>mkdir /tmp/hlm_builder_dir_restore/</codeblock></li>
+            <codeblock>mkdir /tmp/swift_builder_dir_restore/</codeblock></li>
           <li>Source the backup environment file:
             <codeblock>source /home/stack/backup.osrc</codeblock></li>
           <li>List the jobs:
@@ -171,7 +171,7 @@ ok: [helion-cp1-c1-m3-mgmt] => {
 ansible-playbook -i hosts/verb_hosts swift-stop.yml</codeblock></li>
           <li>Log back in to the first Swift Proxy (<codeph>SWF-PRX[0]</codeph>) node.</li>
           <li>Copy restored files
-            <codeblock>cp -pr /tmp/hlm_builder_dir_restore/* /etc/swiftlm/builder_dir/</codeblock></li>
+            <codeblock>cp -pr /tmp/swift_builder_dir_restore/* /etc/swiftlm/builder_dir/</codeblock></li>
           <li>Log back in to the lifecycle manager.</li>
           <li>Reconfigure the Swift service:\
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -226,7 +226,7 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
         <b>Restore from a Swift backup</b>
         <ol>
           <li>On the lifecycle manager, install the freezer-agent, as follows:<codeblock>cd ~/helion/hos/ansible/
-            ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
+ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
             <p>You must retrieve the following two files <codeph>/home/stack/backup.osrc</codeph>
               and <codeph>/opt/stack/service/freezer-agent/etc/systemd_env_vars.cfg</codeph> from
               any compute or controller node and put them in this directory
@@ -256,7 +256,7 @@ ff02::2         ip6-allrouters
             installer:</p><codeblock>systemctl start dayzero</codeblock>When the lifecycle manager
             is restored, re-run the deployment to ensure the lifecycle manager is in the correct
             state:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-              ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
+ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
         </ol>
         <b>Restore from an SSH backup</b>
         <ol id="ol_q5k_qyh_1v">
@@ -269,7 +269,7 @@ cd ~/helion/hos/ansible/
 ansible-playbook -i hosts/localhost _deployer_restore_helper.yml</codeblock>
             <p>Perform the restore. First become root and change directories:</p>
             <codeblock>sudo su
-              cd /root/deployer_restore_helper/</codeblock>
+cd /root/deployer_restore_helper/</codeblock>
             <p>Then, stop the Dayzero UI installer:</p>
             <codeblock>systemctl stop dayzero</codeblock>Execute the restore job:
             <codeblock>./deployer_restore_script.sh</codeblock>Start the Dayzero UI
@@ -290,7 +290,7 @@ ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
             management software using the instructions from the installation guide. See <xref
               href="../../../installation/install_entryscale_kvm.dita#install_kvm/setup_deployer"/>
             for more details.</li>
-          
+
         </ol>
       </sectiondiv>
     </section>
@@ -430,14 +430,14 @@ ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
           <li>Recover the rings as follows. Note, you will need a node with the freezer-agent
               installed.<p>Become root</p><codeblock>sudo su</codeblock>Create the temporary
             directory to restore your files to:
-            <codeblock>mkdir /tmp/hlm_builder_rid_restore/</codeblock>Create a restore file with the
-            following content:
+            <codeblock>mkdir /tmp/swift_builder_dir_restore/</codeblock>Create a restore file with
+            the following content:
             <codeblock>cat &lt;&lt; EOF &gt; ./restore_config.ini
 [default]
 action = restore
 storage = ssh
 compression = bzip2
-restore_abs_path = /tmp/hlm_builder_rid_restore/
+restore_abs_path = /tmp/swift_builder_dir_restore/
 ssh_key = /etc/freezer/ssh_key
 ssh_host = &lt;freezer_ssh_host&gt;
 ssh_port = &lt;freezer_ssh_port&gt;
@@ -448,21 +448,24 @@ EOF</codeblock>
             Edit the file and repave all &lt;tags&gt; with the right information.
             <codeblock>vim ./restore_config.ini</codeblock>You will also need to put the SSH key
             used to do the backups in /etc/freezer/ssh_key and remember to set the right
-            permissions: 600. <p/>Execute the restore
-            job:<codeblock>freezer-agent --config ./restore_config.ini</codeblock> You now have the
-            Swift rings in /tmp/hlm_builder_dir_restore/<p/></li>
+            permissions: 600. <p>Execute the restore job:</p>
+            <codeblock>freezer-agent --config ./restore_config.ini</codeblock> You now have the
+            Swift rings in <codeph>/tmp/swift_builder_dir_restore/</codeph></li>
           <li>If the SWF-PRX[0] is already deployed, copy the contents of the restored directory
-            (/tmp/hlm_builder_dir_restore/) to /etc/swiftlm/builder_dir/ on the SWF-PRX[0] Then from
-            the deployer run:
+              (<codeph>/tmp/swift_builder_dir_restore/</codeph>) to
+              <codeph>/etc/swiftlm/builder_dir/</codeph> on the SWF-PRX[0] Then from the lifecycle
+            manager run:
               <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock><p>If
-              the SWF-ACC[0] is<b> not </b>deployed, from the deployer
+              the SWF-ACC[0] is<b> not </b>deployed, from the lifecycle manager
               run<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts guard-deployment.yml
 ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;SWF-ACC[0]-hostname&gt;</codeblock>
-              Copy the contents of the restored directory (/tmp/hlm_builder_dir_restore/) to
-              /etc/swiftlm/builder_dir/ on the SWF-ACC[0] You will have to create the directories :
-              /etc/swiftlm/builder_dir/ </p></li>
+              Copy the contents of the restored directory
+                (<codeph>/tmp/swift_builder_dir_restore/</codeph>) to
+                <codeph>/etc/swiftlm/builder_dir/</codeph> on the SWF-ACC[0] You will have to create
+              the directories : <codeph>/etc/swiftlm/builder_dir/</codeph>
+            </p></li>
           <li>From the deployer run hlm-deploy.yml:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-deploy.yml</codeblock></li>
