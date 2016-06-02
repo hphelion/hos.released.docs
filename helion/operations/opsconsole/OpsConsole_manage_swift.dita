@@ -67,9 +67,17 @@ https://VIP:9095</codeblock></li>
                                 until it reaches the present time. In the example below, 1 day is
                                 selected, and so the x axis shows performance starting from 24 hours
                                 ago (-24) until the present time.</li>
+                            <li>Look at y-axis to understand the range of response times. The first
+                                number is the smallest value in the data collected from the backend,
+                                and the last number is the longest amount of time it took Swift to
+                                respond to a request. In the example below, the shortest time for a
+                                response from Swift was 16.1 milliseconds.</li>
                             <li>Look for spikes which represent longer than normal response times.
                                 In the example below, Swift experienced long response times 21 hours
                                 ago and again 1 hour ago.</li>
+                            <li>Look for the latency value at the present time. The line running
+                                across the x-axis at 16.1 milliseconds shows you what the response
+                                time is currently.</li>
                         </ol></dd>
                 </dlentry>
             </dl>
@@ -98,9 +106,15 @@ https://VIP:9095</codeblock></li>
                     replication cycle.</li>
          <li><b>Oldest replication</b>. The time in seconds that has elapsed since the object
                     replication process completed its last replication cycle.</li>
-         <li><b>Async Pending</b>. This is length of the async queue over all object servers. It is
-                    normal for it to grow if a node hosting the Swift container service is
-                    down.</li>
+         <li><b>Async Pending</b>. This is the number of failed requests to add an entry in the
+                    container server's database.There is one async queue per Swift disk, and a cron
+                    job queries all Swift servers to calculate the total. When an object is uploaded
+                    into Swift, and it is successfully stored, a request is sent to the container
+                    server to add a new entry for the object in the database. If the container
+                    update fails, the request is stored in what Swift calls an Async Pending
+                    Queue.
+                <note type="attention">On a public cloud deployment, this value can reach millions. If it continues to grow, it means that the container updates are not keeping up with the requests. It is also normal for it this number to grow if a node hosting the Swift container service is
+                    down.</note></li>
          <li><b>Total number of alarms</b>. This number includes all nodes that host Swift services,
                     including proxy, account, container, and object storage services.</li>
          <li><b>Total nodes</b>. This number includes all nodes that host Swift services, including
@@ -148,7 +162,7 @@ https://VIP:9095</codeblock></li>
 <section id="Ops_Swift_Capacity">
      <title>Capacity Summary</title>
 <p>Use this screen to view the size of the file system space on all nodes and disk drives assigned to Swift. Also shown is the remaining space available and the total size of all file systems used by Swift. Values are given in megabytes (MB).</p>
-    <p>To access the object storage capacity screen:</p>
+    <p>To access the object storage alarm summary screen:</p>
     <ol>
         <li>Open Operations Console, either in a browser enter either the URL or Virtual IP
             connected to Ops Console. <p>For
@@ -157,7 +171,7 @@ https://VIP:9095</codeblock></li>
         <li>On the <b>Home</b> screen, click the menu represented by 3 horizontal lines.
             <image href="../../../media/opsconsole/OpsConsoleBurgerMenu.png"/></li>
         <li>From the menu that slides in on the left side, click <b>Storage</b>, and then <b>Object Storage Summary</b>.</li>
-        <li>On the <b>Summary</b> page, click <b>Capacity Summary</b>.</li>
+        <li>On the <b>Summary</b> page, click <b>Alarm Summary</b>.</li>
     </ol>  
     <p><image href="../../../media/opsconsole/ObjStorageCapacity.png"/></p>
     
@@ -165,7 +179,54 @@ https://VIP:9095</codeblock></li>
 
 <section id="Ops_Swift_AlarmSumm">
         <title>Alarm Summary</title>
-      
- </section>      
+      <p>Use this page to quickly see the most recent alarms and triage all alarms related to object storage.</p>
+    <p>To access the object storage alarm summary screen:</p>
+    <ol>
+        <li>Open Operations Console, either in a browser enter either the URL or Virtual IP
+            connected to Ops Console. <p>For
+                example:</p><codeblock>https://myhelion.test:9095
+https://VIP:9095</codeblock></li>
+        <li>On the <b>Home</b> screen, click the menu represented by 3 horizontal lines.
+            <image href="../../../media/opsconsole/OpsConsoleBurgerMenu.png"/></li>
+        <li>From the menu that slides in on the left side, click <b>Storage</b>, and then <b>Object Storage Summary</b>.</li>
+        <li>On the <b>Summary</b> page, click <b>Alarm Summary</b>.</li>
+    </ol>  
+    <p><image href="../../../media/opsconsole/OpsConsoleSwiftAlarmSumm.png"/></p>
+
+        <p>Each row has a checkbox to allow you to select multiple alarms and set the same
+            condition on them.</p>
+        <p>The <b>State</b> column displays a graphical indicator representing the state of each
+            alarm:</p>
+        <ul>
+            <li>Green square (or green indicator): OK. Good operating state.</li>
+            <li>Yellow diamond (or yellow indicator): Warning. Low severity, not requiring
+                immediate action.</li>
+            <li>Red ball (or red indicator): Alarm. Varying severity levels and must be
+                addressed.</li>
+            <li>Gray square (or gray indicator): Undetermined.</li>
+        </ul>
+        <p>The <b>Alarm</b> column identifies the alarm by the name it was given when it was
+            originally created. </p>
+        <p>The <b>Last Check</b> column displays the date and time the most recent occurrence of
+            the alarm.</p>
+        <p>The <b>Dimension</b> column describes the components to check in order to clear the
+            alarm.</p>
+        <p>The <b>Condition</b> column shows the current condition of each alarm. </p>
+        <p>The last column, depicted by three dots, reveals an <b>Actions</b> menu that allows
+            you to choose:</p>
+        <ul>
+            <li><uicontrol>View Details</uicontrol>, which opens a separate window that shows
+                all the information from the table view and the alarm history. This window also
+                allows you set the condition on the alarm to another condition. Note, the
+                condition the alarm is currently set to is not selectable, as indicated by the
+                grayed-out button. </li>
+            <li><uicontrol>Set Condition</uicontrol>, which opens a separate window that allows
+                you to directly apply a condition (<i>Open</i>, <i>Acknowledged</i>, or
+                <i>Resolved</i>) to that alarm, which can be used for tracking and sorting
+                purposes.</li>
+        </ul>
+
+
+</section>      
     </body>  
 </topic>
