@@ -1,56 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="SolidFire_install">
-  <title>Configure SolidFire as a Backend</title>
+<topic id="EMC_install">
+  <title>Install EMC Drivers</title>
   <body>
-    <p>To integrate SolidFire storage with Helion OpenStack 2.0, you must configure the SolidFire storage array as a Cinder backend. This is done by modifying the cinder.conf.j2 file. In this configuration file you will create an Internet Small Computer Systems Interface (iSCSI) cluster. iSCSI is an Internet Protocol (IP)-based storage networking standard for linking data storage facilities.</p>
-      
-      <p>To configure the Cinder backend:</p>
-    <ol>
-      <li>Log in to the lifecycle manager.</li>
-      <li>In a text editor, open the following file:
-        <codeblock>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeblock></li>
-      <li>To create a SolidFire backend, in the <codeph>enabled_backends section</codeph> add the
-        following text:
-        <codeblock># Configure the enabled back-ends
-enabled_backends=SolidFire_iSCSI</codeblock></li>
-<li>In the same file, create a new SolidFire iSCSI cluster section and fill the values used in your
-        environment as shown in the following code sample:
-          <codeblock># SolidFire
-[SolidFire_iSCSI]
-volume_driver = 
-san_ip = 
-san_login = 
-san_password = 
-sf_emulate_512 = 
-volume_backend_name = 
-# end solidfire</codeblock><p>Sample
-          SolidFire iSCSI
-        section:</p><codeblock># SolidFire
-[SolidFire_iSCSI]
-volume_driver = cinder.volume.drivers.solidfire.SolidFireDriver
-san_ip = 10.2.17.252
-san_login = openstack
-san_password = temp123
-sf_emulate_512 = True
-volume_backend_name = solidfire
-# end solidfire</codeblock></li>
-      <li>To commit your configuration changes to a local git repository, run:
-        <codeblock>cd ~/helion/hos/ansible
-git add -A
-git commit -m "&lt;Added SolidFire to Cinder Backend Storage&gt;"</codeblock></li>
-      <li>To use an ansible playbook to run the configuration processor, run:
-        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-      <li>To use an ansible playbook to create a deployment directory, run:
-        <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-      <li>To complete the configuration, run:
-        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
-      </ol>
+    <p>To integrate EMC VNX storage with Helion OpenStack 2.0, these instruction use EMC's Navisphere CLI (NaviSecCLI) to configure VNX storage and storage pools.</p>
 
-    <p>For more on configuring SolidFire, use the <xref href="http://www.solidfire.com/solutions/cloud-orchestration/openstack" scope="external" format="html">SolidFire Documentation Resources</xref> list.</p>
-  
+<p>To instegrate EMC VNX storage with Helion OpenStack:</p>
+    <ol>
+      <li><xref href="#EMC_install/EMC_install_Navi">Install the NaviSecCLI Driver </xref></li>
+      <li><xref href="#EMC_install/EMC_config_Cinder">Update Your Cinder Configuration</xref></li>
+    </ol>
+    <section id="EMC_install_Navi">
+      <title>Install the NaviSecCLI driver</title>      
+    
+    <p>To install the NaviSecCLI driver, you must prepare the Block Storage nodes to use the EMC VNX direct driver. To do this, download Navisphere CLI, install the driver, ensure you have correct configurations, and register the driver.</p>
+      
+      <note type="attention">The following instructions should be repeated on all controller nodes in your cloud deployment.</note>
+      
+      <p>To install the driver:</p>
+      <ol>
+        <li>Login to a controller node.</li>
+        <li>To download the driver, run:
+        <codeblock>cd /home/stack
+        wget http://github.com/emc-openstack/naviseccli/blob/master/navicli-linux-64-x86-en-us_7.33.2.0.51-1_all.deb</codeblock>
+        </li>
+        <li>Copy the Debian software package to all Block Storage nodes within your OpenStack deployment, including all controller and compute nodes.</li>
+        <li>To move the Debian software package into a virtual environment and extract the package, run:
+          <codeblock>mkdir ~/scratch/Navisphere
+virtualenv ~/scratch/Navisphere
+#You will see the following output:
+     #Running virtualenv with interpreter /usr/bin/python2
+     #New python executable in /home/stack/scratch/Navisphere/bin/python2
+     #Also creating executable in /home/stack/scratch/Navisphere/bin/python
+     #Installing setuptools, pip...done.        </codeblock>
+        </li>
+        <li>To list the folder content and verify that the bin file named <codeph>naciseccli</codeph> is available, run:
+        <codeblock>ls ~scratch/Navisphere/opt/Navisphere/bin</codeblock>
+        </li>
+        <li>To begin the process to register the compute node, run:
+            <codeblock>sudo /etc/init.d/open-iscsi start
+#Sample output: sudo iscsiadm -m discovery -t st -p 10.1.34.25
+#Sample output: 10.1.34.25:3260,1 iqn.1992-04.com.emc:cx.apm00131214040.a5
+#Sample output: 10.1.34.26:3260,2 iqn.1992-04.com.emc:cx.apm00131214040.b5</codeblock><note
+            type="note">In the above example output, the value <codeph>10.1.38.250</codeph> is the
+            iSCSI target.</note>
+        </li>
+      </ol>
+      
+    </section>
+    <section id="EMC_config_Cinder">
+      <title>Update Your Cinder Configuration</title>      
+      
+      <p>To update your Cinder configuration to add VNX iSCSI Direct Driver Storage, you need to update the Cinder configuration file on the Lifecycle Manager, save your changes, and reconfigure Cinder.</p>
+      
+    </section>
   </body>
 </topic>
