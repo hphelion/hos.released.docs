@@ -99,7 +99,7 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeb
             <li>Do your required maintenance. If the required maintenance did not take down the
               disks completely then you should be able to list the instances again after the repair
               and confirm they are still in their <codeph>SHUTOFF</codeph> state:
-              <codeblock>nova list --host &lt;ihostname> --all-tenants</codeblock></li>
+              <codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
             <li>Start the instances back up using this command: <codeblock>nova start &lt;instance uuid></codeblock>
               <p>Example:</p>
               <codeblock>$ nova start ef31c453-f046-4355-9bd3-11e774b1772f
@@ -152,6 +152,9 @@ ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;node name></
           host:<codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
         <li>If you wish, you can live migrate the instances off the node. See <xref
             href="../live_migration.dita"/> for more details.</li>
+        <li>Before continuing to the next step, any remaining instances on the compute host are
+          either in a <codeph>SHUT OFF</codeph> state or have a task state of
+            <codeph>powering-off</codeph>, otherwise the step will fail.</li>
         <li>At this point you should be ready with a good hard disk in the node that you can use for
           the operating system. Follow these steps:<ol id="ol_tzh_4rp_xv">
             <li>Edit the <codeph>--netboot-enabled</codeph> status of the node, which will enable it
