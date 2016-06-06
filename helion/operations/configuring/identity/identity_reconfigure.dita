@@ -101,59 +101,6 @@ $ ansible-playbook -i hosts/verb_hosts keystone-reconfigure.yml</codeblock></li>
       <note>Tempest doesn't work with Fernet Tokens in <keyword keyref="kw-hos-phrase"/>. If Fernet tokens are
         enabled, please don't run token tests in Tempest.</note>
     </section>
-    <section><title>Keystone Identity Auditing</title>Identity Service auditing can be enabled as
-      described in "Enabling Keystone Features". Keystone creates an exchange with the name
-      "keystone" of type "topic" and sends a message to that exchange with the binding_key
-      "notification.info". Keystone also creates a queue with the name "notification.info" and
-      attaches to this exchange. You should not connect to this queue as this queue is used by
-      ceilometer. If some other clients connects to this queue, then ceilometer will no longer have
-      exclusive access to the messages in this queue. So a typical client which likes to consume the
-      audit message should create an exclusive queue for itself, attach the queue to the exchange
-      "keystone" and look for the messages with the binding key "notification.info". Given below is
-      the sample code for a typical client consuming audit messages.<p>Keystone auditing was
-        implemented for Ceilometer. Ceilometer is focused on metrics that support
-        showback/chargeback/billing. There's no product plan for Keystone metrics to be part of the
-        Ceilometer collection.
-      </p><codeblock>###Sample Audit Client code
-
- #!/usr/bin/env python
-import pika
- 
-# Call back message for processing audit messges
-def callback(ch, method, properties, body):
-    print " [x] %r:%r" % (method.routing_key, body,)
- 
-# Sample code to connect and consume audit messages
- 
-# Username/Password for rabbit
-credentials = pika.PlainCredentials("guest", "guest")
-connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host='192.168.245.3', port=5672, credentials=credentials))
-channel = connection.channel()
- 
-# Keystone sends the message to the exchange=keystone
-channel.exchange_declare(exchange='keystone',
-                         type='topic')
- 
-# Create a random queue and connect to the exchange
-# Make sure this queue is exclusive to auditclient and non persistent.
-# If you make the queue to be persistent, you have to make sure that queue doesn't get saturated with 
-# too many messages
-result = channel.queue_declare(exclusive=True)
-queue_name = result.method.queue
- 
-# Binding keys used by keystone
-binding_keys = ["notifications.info"]
-for binding_key in binding_keys:
-    channel.queue_bind(exchange='keystone',
-                       queue=queue_name,
-                       routing_key=binding_key)
- 
-print ' [*] Waiting for audit messages. To exit press CTRL+C'
- 
-channel.basic_consume(callback,
-                      queue=queue_name,
-                      no_ack=True)
-channel.start_consuming()</codeblock></section>
+    
   </body>
 </topic>
