@@ -109,75 +109,60 @@ clusters:
                     file to define a new network interface set for your Ceph monitors. You can copy
                     the <codeph>RGW-INTERFACES</codeph> model as a base and then edit it to match
                     your environment: <p><b>Three-network Ceph example:</b></p>
-                    <codeblock>## This defines the interface used for management
-## traffic like logging, monitoring, etc.
-- name: CEP-MON-INTERFACES
-  network-interfaces:
-    - name: BOND0
-      device:
-          name: bond0
-      bond-data:
-          options:
-              mode: active-backup
-              miimon: 200
-              primary: hed1
-          provider: linux
-          devices:
-            - name: hed1
-            - name: hed2
-      network-groups:
-        - MANAGEMENT
-
-- name: RGW-INTERFACES
-  network-interfaces:
-  ...</codeblock>
-                    <p><b>Two-network Ceph example:</b></p>
-                    <codeblock>    - name: CEP-MON-INTERFACES
+                    <codeblock>interface-models:
+      # Edit the device names and bond options
+      # to match your environment
+      #
+    - name: CONTROLLER-INTERFACES
       network-interfaces:
-      ## This defines the interface used for management
-      ## traffic like logging, monitoring, etc.
+    ## This bonded interface is used by the controller 
+    ## nodes for cloud management traffic.
         - name: BOND0
           device:
-              name: bond0
+             name: bond0
           bond-data:
-              options:
-                  mode: active-backup
-                  miimon: 200
-                  primary: hed1
-              provider: linux
-              devices:
+             options:
+                mode: active-backup
+                miimon: 200
+                primary: hed1
+             provider: linux
+             devices:
                 - name: hed1
                 - name: hed2
-          network-groups:
+            network-groups:
+            - EXTERNAL-API
+            - EXTERNAL-VM
+            - GUEST
             - MANAGEMENT
-
-    - name: OSD-INTERFACES
-      network-interfaces:
-      ## This defines the interface used for management
-      ## traffic like logging, monitoring, etc.
-        - name: BOND0
+    ## This interface is used to connect the controller
+    ## node to the Ceph nodes so that any Ceph client
+    ## like cinder-volume can route data directly to
+    ## Ceph over thisinterface.
+        - name: ETH2
           device:
-              name: bond0
-          bond-data:
-              options:
-                  mode: active-backup
-                  miimon: 200
-                  primary: hed1
-              provider: linux
-              devices:
-                - name: hed1
-                - name: hed2
+            name: hed3
           network-groups:
+            - OSD-CLIENT
+
+    - name: COMPUTE-INTERFACES
+      network-interfaces:
+        - name: HETH3
+          device:
+              name: hed3
+          network-groups:
+            - EXTERNAL-VM
+            - GUEST
             - MANAGEMENT
-      ## This defines the interface used for internal
-      ## cluster communication among OSD nodes.
+      ## This interface is used to connect the compute node
+      ## to the Ceph cluster so that a workload VM can route
+      ## data traffic to the Ceph cluster over thisinterface.
         - name: HETH4
           device:
               name: hed4
-          network-groups:
-            - OSD</codeblock>
-                    <p><b>Single-network Ceph example:</b></p>
-                    <codeblock>    - name: CEP-MON-INTERFACES
+          forced-network-groups:
+            - OSD-CLIENT
+
+    - name: CEP-MON-INTERFACES
       network-interfaces:
       ## This defines the interface used for management
       ## traffic like logging, monitoring, etc.
@@ -202,8 +187,224 @@ clusters:
         - name: ETH2
           device:
               name: hed3
+          forced-network-groups:
+            - OSD-CLIENT
+
+    - name: OSD-INTERFACES
+      network-interfaces:
+      ## This defines the interface used for management
+      ## traffic like logging, monitoring, etc.
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed1
+              provider: linux
+              devices:
+                - name: hed1
+                - name: hed2
           network-groups:
-            - OSD-CLIENT</codeblock>
+            - MANAGEMENT
+      ## This defines the interface used for client
+      ## or data traffic.
+        - name: HETH3
+          device:
+              name: hed3
+          network-groups:
+            - OSD-CLIENT
+      ## This defines the interface used for internal
+      ## cluster communication among OSD nodes.
+        - name: HETH4
+          device:
+              name: hed4
+          network-groups:
+            - OSD-INTERNAL</codeblock>
+                    <p><b>Two-network Ceph example:</b></p>
+                    <codeblock>interface-models:
+      # Edit the device names and bond options
+      # to match your environment
+      #
+    - name: CONTROLLER-INTERFACES
+      network-interfaces:
+    ## This bonded interface is used by the controller 
+    ## nodes for cloud management traffic.
+    ## The same interface is also used to connect the client
+    ## node to the Ceph nodes so that any Ceph client
+    ## like cinder-volume can route data directly to
+    ## Ceph over thisinterface.
+        - name: BOND0
+          device:
+             name: bond0
+          bond-data:
+             options:
+                mode: active-backup
+                miimon: 200
+                primary: hed1
+             provider: linux
+             devices:
+                - name: hed1
+                - name: hed2
+            network-groups:
+            - EXTERNAL-API
+            - EXTERNAL-VM
+            - GUEST
+            - MANAGEMENT
+
+    - name: COMPUTE-INTERFACES
+      network-interfaces:
+      ## The same interface is also used to connect the compute node
+      ## to the Ceph cluster so that a workload VM can route
+      ## data traffic to the Ceph cluster over thisinterface.
+        - name: HETH3
+          device:
+              name: hed3
+          network-groups:
+            - EXTERNAL-VM
+            - GUEST
+            - MANAGEMENT
+
+    - name: CEP-MON-INTERFACES
+      network-interfaces:
+      ## This defines the interface used for management
+      ## traffic like logging, monitoring, etc.
+      ## The same interface is also used to connect the client
+      ## node to the Ceph nodes so that any Ceph client
+      ## like cinder-volume can route data directly to
+      ## Ceph over thisinterface.
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed1
+              provider: linux
+              devices:
+                - name: hed1
+                - name: hed2
+          network-groups:
+            - MANAGEMENT
+
+    - name: OSD-INTERFACES
+      network-interfaces:
+      ## This defines the interface used for management
+      ## traffic like logging, monitoring, etc.
+      ## The same interface is also used for client
+      ## or data traffic.
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed1
+              provider: linux
+              devices:
+                - name: hed1
+                - name: hed2
+          network-groups:
+            - MANAGEMENT
+      ## This defines the interface used for internal
+      ## cluster communication among OSD nodes.
+        - name: HETH4
+          device:
+              name: hed4
+          network-groups:
+            - OSD-INTERNAL</codeblock>
+                    <p><b>Single-network Ceph example:</b></p>
+                    <codeblock>interface-models:
+      # Edit the device names and bond options
+      # to match your environment
+      #
+    - name: CONTROLLER-INTERFACES
+      network-interfaces:
+    ## This bonded interface is used by the controller 
+    ## nodes for cloud management traffic.
+    ## The same interface is also used to connect the client
+    ## node to the Ceph nodes so that any Ceph client
+    ## like cinder-volume can route data directly to
+    ## Ceph over thisinterface.
+        - name: BOND0
+          device:
+             name: bond0
+          bond-data:
+             options:
+                mode: active-backup
+                miimon: 200
+                primary: hed1
+             provider: linux
+             devices:
+                - name: hed1
+                - name: hed2
+            network-groups:
+            - EXTERNAL-API
+            - EXTERNAL-VM
+            - GUEST
+            - MANAGEMENT
+
+    - name: COMPUTE-INTERFACES
+    ## This interface is also used to connect the compute node
+    ## to the Ceph cluster so that a workload VM can route
+    ## data traffic to the Ceph cluster over thisinterface.
+      network-interfaces:
+        - name: HETH3
+          device:
+              name: hed3
+          network-groups:
+            - EXTERNAL-VM
+            - GUEST
+            - MANAGEMENT
+
+    - name: CEP-MON-INTERFACES
+      network-interfaces:
+      ## This defines the interface used for management
+      ## traffic like logging, monitoring, etc.
+      ## The same interface is also used to connect the client
+      ## node to the Ceph nodes so that any Ceph client
+      ## like cinder-volume can route data directly to
+      ## Ceph over thisinterface.
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed1
+              provider: linux
+              devices:
+                - name: hed1
+                - name: hed2
+          network-groups:
+            - MANAGEMENT
+
+    - name: OSD-INTERFACES
+      network-interfaces:
+      ## This defines the interface used for management
+      ## traffic like logging, monitoring, etc.
+      ## The same interface is also used for internal cluster
+      ## communication among the OSD nodes.
+      ## The same interface is also used for internal
+      ## cluster communication among OSD nodes.
+        - name: BOND0
+          device:
+              name: bond0
+          bond-data:
+              options:
+                  mode: active-backup
+                  miimon: 200
+                  primary: hed1
+              provider: linux
+              devices:
+                - name: hed1
+                - name: hed2
+          network-groups:
+            - MANAGEMENT</codeblock>
                 </li>
                 <li>Create a new file named <codeph>disks_ceph_monitor.yml</codeph> in the
                         <codeph>~/helion/my_cloud/definition/data/</codeph> directory which will
