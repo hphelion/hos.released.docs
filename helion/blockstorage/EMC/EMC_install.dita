@@ -3,11 +3,12 @@
 <topic id="EMC_install">
   <title>Install EMC Drivers</title>
   <body>
-    <p>You must configure VNX storage and storage pools using EMC Unisphere or Naviseccli. These
-      instructions tell you how to install EMC's Navisphere CLI (NaviSecCLI) to configure VNX
-      storage and storage pools.</p>
+    <p>You must configure VNX storage and storage pools using EMC Unisphere and Naviseccli. After
+      you download and install the drivers, you must register the compute and block storage nodes
+      with VNX to be able to access VNX storage. Finally, you must configure Cinder to add the VNX
+      iSCSI Direct Driver storage.</p>
 
-<p>To instegrate EMC VNX storage with Helion OpenStack:</p>
+<p>To integrate EMC VNX storage with Helion OpenStack:</p>
     <ol>
       <li><xref href="#EMC_install/EMC_install_Navi">Install the NaviSecCLI Driver </xref></li>
       <li><xref href="#EMC_install/EMC_config_Cinder">Update Your Cinder Configuration</xref></li>
@@ -64,21 +65,44 @@ virtualenv ~/scratch/Navisphere
         <li>To list the folder content and verify that the bin file named
             <codeph>naciseccli</codeph> is available, run:
           <codeblock>ls ~scratch/Navisphere/opt/Navisphere/bin</codeblock></li>
-        <li>To begin the process to register the compute node, run:
-            <codeblock>sudo /etc/init.d/open-iscsi start
-sudo iscsiadm -m discovery -t st -p 10.1.34.25
+        <li>To begin the registration process and start the iSCSI initiator service, run:
+            <codeblock>sudo /etc/init.d/open-iscsi start</codeblock></li>
+        <li>To discover the iSCSI target portals on VNX, run:
+<codeblock>sudo iscsiadm -m discovery -t st -p 10.1.34.25
      #Sample output: 10.1.34.25:3260,1 iqn.2015-01.com.mycloud:cx.apm00131214040.a5
      #Sample output: 10.1.34.26:3260,2 iqn.2015-01.com.mycloud:cx.apm00131214040.b5</codeblock><note
             type="note">In the above example output, the value <codeph>10.1.38.250</codeph> is the
             iSCSI target.</note></li>
         <li>To continue the registration process, run:
-            <codeblock>cd /etc/iscsi
-sudo more initiatorname.iscsi
-sudo iscsiadm -m node -T iqn.1992-04.com.emc:cx.apm00131214040.b5 -p 10.1.38.250 -l
+            <codeblock>cd /etc/iscsi</codeblock></li>
+        <li>To find out the iqn of the node, run:
+<codeblock>sudo more initiatorname.iscsi</codeblock></li>
+         
+          <li>To login to VNX from the compute node using the target corresponding to the SPA port: <codeblock>sudo iscsiadm -m node -T iqn.1992-04.com.emc:cx.apm00131214040.b5 -p 10.1.38.250 -l
      #Sample output: Logging in to [iface: default, target: iqn.1992-04.com.emc:cx.apm00131214040.a5, portal: 10.1.34.25,3260] (multiple)
-     #Sample output: Login to [iface: default, target: iqn.1992-04.com.emc:cx.apm00131214040.a5, portal: 10.1.34.25,3260] successful.</codeblock><note
-            type="note">In the above example output, the initiator name is
-            <codeblock>iqn.2015-01.com.mycloud:cx.apm00131214040.a5</codeblock>.</note></li>
+     #Sample output: Login to [iface: default, target: iqn.1992-04.com.emc:cx.apm00131214040.a5, portal: 10.1.34.25,3260] successful.</codeblock>
+          <note type="note">In the above example output, the initiator name is:
+            <codeblock>iqn.2015-01.com.mycloud:cx.apm00131214040.a5</codeblock></note></li>
+          
+        <li>On the VNX node, login to Unisphere.</li>
+        <li>In Unisphere, go to <b>VNX00000</b>, then <b>Hosts</b>, <b>Initiators</b>, and then click <b>Refresh</b>.</li>
+        <li>Wait to make sure the initiator you just created appears. For example:
+          <codeblock>iqn.2015-01.com.mycloud:cx.apm00131214040.a5 with SP Port A-8v0</codeblock></li>
+        <li>Click on the initiator, then click <b>Register</b>.</li>
+        <li>Select <b>CLARiiON/VNX</b>, and in <b>Host Name</b> type in the host name used in your deployment,
+          and in <b>IP address</b> type the host name used in your deployment.</li>
+          <li>Click <b>Register</b>. </li>
+            <li>On the <b>Hosts</b> screen under <b>Host List</b>, wait for the host to appear.</li>
+        <li>To logout iSCSI on the node, run: <codeblock>sudo iscsiadm -m node -u</codeblock></li>
+        <li>Log in to VNX storage using the target corresponding to the SPB port. For example:
+          <codeblock>sudo iscsiadm -m node -T iqn.1992-04.com.emc:cx.apm00131214040.b5 -p 10.1.38.251 -l
+sudo iscsiadm -m node -u</codeblock></li>
+          <li>To create a VNX NaviSphere security file and add login credential, run:
+          <codeblock>~/scratch/Navisphere/opt/Navisphere/bin/naviseccli security -certificate -setLevel low
+
+#check the level after assigned as low
+~/scratch/Navisphere/opt/Navisphere/bin/naviseccli security -certificate -getlevel low</codeblock></li>
+        <li>To logout iSCSI on the node, run: <codeblock>sudo iscsiadm -m node -u</codeblock></li>
       </ol>
       
     </section>
@@ -150,8 +174,7 @@ inititator_auto_regsitration = True
 #iscsi_initiators = {"overcloud-ce-controller-controller0-y3fd3nvs3zag":["192.0.2.23"]}
 iscsi_initiators = {"helion-cp1-c1-m1-mgmt":["10.2.33.5"],"helion-cp1-c1-m2-mgmt":["10.2.33.6"],"helion-cp1-c1-m3-mgmt":["10.2.33.7"],"helion-cp1-comp0001-mgmt":["10.2.33.8"],"helion-cp1-comp0002-mgmt":["10.2.33.9"]}
 volume_backend_name = BE_Pool_1
-host = ha-volume-manager</codeblock>
-        </li>
+host = ha-volume-manager</codeblock></li>
         <li>To commit your configuration changes to a local git repository, run:
           <codeblock>cd ~/helion/hos/ansible
 git add -A
