@@ -89,13 +89,13 @@
       <ol>
      <li>Add an 'mtu' attribute to all the network groups in your model. Note that adding the MTU
           for the network groups will only affect the configuration for physical network
-          interfaces.<p/>To add the mtu attribute, edit network_groups.yml, which is found in
-          ~/helion/my_cloud/definition/data/, along with
-          ~/helion/my_cloud/config/neutron/dhcp_agent.ini.j2,
-          ~/helion/my_cloud/config/neutron/l3_agent.ini.j2, and
-          ~/helion/my_cloud/config/nova/nova.conf.j2 <p/>To edit these files, begin by checking out
-          the <b>site</b> branch on the lifecycle manager node. You may already be on that branch.
-          If so, you will remain there.<codeblock>git checkout site</codeblock>Then begin editing
+          interfaces.<p/>To add the mtu attribute, find the YAML file that contains your
+          network-groups entry. We will assume it is network_groups.yml, unless you have changed it.
+          Whatever the file is named, it will be found in ~/helion/my_cloud/definition/data/.
+          <p/>To edit these files, begin by checking out the <b>site</b> branch on the lifecycle
+          manager node. You may already be on that branch. If so, you will remain
+          there.<codeblock>cd ~/helion/hos/ansible
+git checkout site</codeblock>Then begin editing
           the files. In network_groups.yml, add mtu:
           9000<codeblock>network-groups:
    - name: GUEST
@@ -112,7 +112,7 @@
  ...
  path_mtu = 9000
  segment_mtu = 9000</codeblock> This changes the
-          MTU value that will be advertised to VMs, based upon the network type. </li> <li>Next, edit neutron.conf.j2  found in ~/helion/my_cloud/config/neutron/to set advertise_mtu (to
+          MTU value that will be advertised to VMs, based upon the network type. </li> <li>Next, edit neutron.conf.j2 found in ~/helion/my_cloud/config/neutron/ to set advertise_mtu (to
           true) under [DEFAULT]: <codeblock>[DEFAULT]
  ...
  advertise_mtu = True</codeblock> This
@@ -126,39 +126,37 @@
           <codeblock>[DEFAULT]
  ...
  network_device_mtu = 9000</codeblock>This tells the dhcp agent,
-          l3 agent, and Nova to create new network devices with that particular MTU. </li> <li>If HPE Helion OpenStack has already been deployed, follow the procedure to commit this new
-          configuration:
+          l3 agent, and Nova to create new network devices with that particular MTU. </li>
+        <li>Commit your changes
           <codeblock>git add -A
-git commit -m "your commit message goes here in quotes"</codeblock>run
-          the configuration
-          processor:<codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>and
+git commit -m "your commit message goes here in quotes"</codeblock></li> <li>If HPE Helion OpenStack has already been deployed, skip to step 9.</li>
+        <li>Assuming HPE Helion OpenStack has not been deployed yet, continue here to commit this
+          new configuration: <p/>Run the configuration
+          processor:<codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>and
           ready the
-          deployment:<codeblock>ansible-playbook -i hosts/verb_hosts ready-deployment.yml</codeblock>Then
-          run the network_interface-reconfigure.yml
-          playbook:<codeblock>ansible-playbook -i hosts/verb_hosts network_interface-reconfigure.yml</codeblock>followed
-          by the
+          deployment:<codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Then
+          run the network_interface-reconfigure.yml playbook, changing directories
+          first:<codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts network_interface-reconfigure.yml</codeblock>followed
+          by
           nova-reconfigure.yml:<codeblock>ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml </codeblock>Then
           run neutron-reconfigure.yml:
           <codeblock>ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock>Note:
           adding/changing network-group mtu settings will likely require a network restart during
           network_interface-reconfigure.yml. </li>
-
-        <li>If HPE Helion OpenStack hasn't been deployed yet, simply make sure these config changes
-          have been committed before running the typical deployment procedure.
-          <codeblock>git add -A
-git commit -m "your commit message goes here in quotes"</codeblock></li>
-        <li>Follow the normal process for creating a neutron network and booting a VM or two. In
-          this example, if a vxlan network is created and a VM is booted on it, the VM will have an
+        <li>Follow the normal process for creating a Neutron network and booting a VM or two. In
+          this example, if a VXLAN network is created and a VM is booted on it, the VM will have an
           MTU of 8950, with the remaining 50 bytes used by the VXLAN encapsulation header.</li>
         <li>Test and verify that the VM can send and receive jumbo frames without fragmentation. You
-          can use ping. For example, to test an MTU of 9000 using vxlan:
+          can use ping. For example, to test an MTU of 9000 using VXLAN:
           <codeblock>ping –M do –s 8950 &lt;your_vm_floating_ip></codeblock>Just substitute your
-          actual floating ip address for the &lt;your vm floating ip>. <!-- Ping and see how big the
+          actual floating IP address for the &lt;your vm floating IP>.
+          <!-- Ping and see how big the
           response packets are??</li>
         <li>If they don't agree, the config processor will raise an error... if VMs are already
           running when you make a change...??? pinging VIP?? so are you seeing the right value?? or
-          is something bypassed (tunnel mentioned) jumbo frames may or may not make it for 30--> </li>
+          is something bypassed (tunnel mentioned) jumbo frames may or may not make it for 30-->
+        </li>
       </ol></section>
   
   </body>
