@@ -6,49 +6,15 @@
   <abstract><shortdesc outputclass="hdphidden">Using the Metering service.</shortdesc></abstract>
   <body><!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <section id="newfunct">
-      <title>New Metering Functionality in <keyword keyref="kw-hos-phrase"/></title>
-      <ul>
-        <li> The default meters and other items configured for the Ceilometer API can now be
-          modified and additional meters can be added. It is highly recommended that customers test
-          overall <keyword keyref="kw-hos"/> performance prior to deploying any Ceilometer
-          modifications to ensure the addition of new notifications or polling events does not
-          negatively affect overall system performance. </li>
-        <li>Ceilometer Central Agent (pollster) is now called Polling Agent and is configured to support HA (Active-Active) </li>
-        <li>Notification Agent has built-in HA (Active-Active) with support for pipeline
-          transformers </li>
-        <li>SWIFT Poll-based account level meters will be enabled by default with an hourly
-          collection cycle.</li>
-        <li>Integration with centralized monitoring(Monasca) and centralized logging </li>
-        <li>Support for upgrade and reconfigure operations</li>
-      </ul>
+    <section id="ceilo_intro">
+      <p>The Helion OpenStack Metering service is based on the OpenStack Ceilometer API. The Helion metering service collects and provides access to OpenStack usage data that can be used for billing reporting such as showback, and chargeback. The metering service can also be used for general usage reporting. As illustrated in the diagram below, the OpenStack Ceilometer API acts as the central collection and data access service to the meters provided  by all OpenStack services.</p>
+      <p/>
+      <p><image href="../../media/Ceilo_Architecture.png"/></p>
     </section>
-
-    <section id="limitations">
-      <title>Limitations</title>
-      <ul>
-        <li>The Ceilometer Post Meter API is disabled by default. </li>
-        <li>The Ceilometer Events and Traits API is not supported and disabled by default.</li>
-        <li>The Number of metadata attributes that can be extracted from resource_metadata has a maximum of 16. This is the number of fields in the metadata section of the <b>monasca_field_definitions.yaml</b> file for any service. It is also the number that is equal to fields in metadata.common and fields in metadata.&lt;service.meters&gt; sections. The total number of these fields cannot be more than 16.</li>
-        <li>Several network-related attributes are accessible using a colon ":" but are returned as
-          a period ".". For example, you can access a sample list using the following command:
-          <codeblock>ceilometer --debug sample-list network -q "resource_id=421d50a5-156e-4cb9-b404-
-d2ce5f32f18b;resource_metadata.provider.network_type=flat"</codeblock>
-          However, in response you will see the following:
-          <codeblock>provider.network_type</codeblock> instead of
-            <codeblock>provider:network_type</codeblock><p>This limitation is known for the
-            following
-          attributes:</p><codeblock>provider:network_type
-provider:physical_network
-provider:segmentation_id</codeblock></li>
-        <li>Ceilometer Expirer is unsupported. Data retention expiration is now handled by Monasca with a default retention period of 45 days.</li>
-        <li>Ceilometer Collector is unsupported.</li>
-        <li>The Ceilometer Alarms API is disabled by default. <keyword keyref="kw-hos-phrase"/>
-          provides an alternative operations monitoring service that will provide support for
-          operations monitoring, alerts, and notifications use cases. </li>
-      </ul>
-    </section>
-
+    <lines>
+      
+    </lines>
+   
     <section><title>Meters</title><p>The basic elements of information collected by the Ceilometer
         API are known as meters. A meter is a unique measurement of a particular OpenStack service
         resource usage and each OpenStack service defines what type of data is exposed for metering.
@@ -126,31 +92,6 @@ provider:segmentation_id</codeblock></li>
       </dl></section>
 
 
-    <section><title>Samples</title> Samples are discrete collections of a particular meter or the
-      actual usage data defined by a meter description. Each sample is time-stamped and includes a
-      variety of data that varies per meter but usually includes the project ID and UserID of the
-      entity that consumed the resource represented by the meter and sample. <p>In a typical
-        deployment, the number of samples can be in the tens of thousands if not higher for a
-        specific collection period depending on overall activity. </p>
-      <p>Sample collection and data storage expiry settings are Ceilometer configuration options.
-        Use cases that include collecting data for monthly billing cycles are usually stored over a
-        period of 45 days and require a large, scalable, back-end database to support the large
-        volume of samples generated by production OpenStack deployments.</p>
-      <b>Example configuration:</b>
-      <codeblock>[database]
-metering_time_to_live=-1</codeblock>
-      External applications such as a billing application must then collect all pertinent samples,
-      sort, summarize, and combine with the results of other types of metered samples typically
-      required for a complete billing record. <p>This function is known as aggregation and is
-        external to the Ceilometer service.</p> Meter data, or samples, can also be collected
-      directly from the service APIs by individual Ceilometer polling agents. These polling agents
-      directly access service usage by calling the API of each service.<p>OpenStack services such as
-        Swift and Ceph currently only provide metered data via this function and some of the other
-        OpenStack services provide specific metrics only via a polling action.</p>
-    </section>
-
-
-
     <section><title>Statistics, or metering the meters</title> The Ceilometer API also provides a
       set of statistics functions that can perform basic aggregation functions for meter specific
       samples over a time period-defined set of samples including: <dl>
@@ -176,8 +117,6 @@ metering_time_to_live=-1</codeblock>
         </dlentry>
       </dl></section>
 
-
-
     <section><title>Role Based Access Control (RBAC)</title> A user with the admin role can access
       all API functions across all projects by default. Ceilometer also supports the ability to
       assign who can access specific Ceilometer API functions by project and UserID. This assignment
@@ -193,41 +132,6 @@ metering_time_to_live=-1</codeblock>
 
 
 
-    <!--
-    <p>The HPE Helion OpenStack Metering service leverages the OpenStack Ceilometer service. A
-      metering service takes specified measurements of both physical and virtual resources,
-      including physical servers and network devices such as switches and firewalls. No matter what
-      purpose the data is used for, this service provides a reliable, consistent method for data
-      collection.</p>
-    <section id="newIn20">
-      <title>New for HPE Helion OpenStack 2.0</title>
-      <p> Ceilometer configuration is now possible via a number of yaml files in the HPE Helion
-        OpenStack implementation of the OpenStack Ceilometer metering service.</p>
-    </section>
-
-    <section id="installation">
-      <title>Installation</title>
-      <p>The metering service is automatically installed as part of the HPE Helion OpenStack
-        installation process. It may be necessary to install the command-line interface (<xref
-          href="http://docs.openstack.org/user-guide/content/install_clients.html" scope="external"
-          format="html">CLI</xref>) separately to perform various administrative tasks.</p>
-      <p>The initial default configuration enables a limited subset of all potential meters,
-        collecting a few essential measurements from the Nova, Cinder, Glance, and Neutron services
-        only. With these measurements, the Ceilometer API can begin collecting basic HPE Helion
-        OpenStack usage and status information.</p>
-      <p>Additional metrics collection for all of the HPE Helion OpenStack infrastructure services,
-        as well as other application and platform services, are targeted for future HPE Helion
-        OpenStack releases.</p>
-    </section>
-    <section id="working_with_ceilometer">
-      <title>Working with Ceilometer</title>
-      <p>All the Ceilometer processes have a unified configuration file: ceilometer.conf.</p>
-      <p>Access to Ceilometer is through the command-line interface <xref
-          href="http://docs.openstack.org/cli-reference/content/ceilometerclient_commands.html"
-          scope="external" format="html">(CLI)</xref>, or the low-level <xref
-          href="http://developer.openstack.org/api-ref-telemetry-v2.html" scope="external"
-          format="html">REST API</xref>. A Ceilometer Horizon dashboard panel is not available at
-        this time.</p>
-    </section>-->
+   
   </body>
 </topic>

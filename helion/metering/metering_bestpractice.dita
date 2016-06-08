@@ -14,16 +14,10 @@
         </metadata>
     </prolog>
     <body>
-        <!--not tested-->
-        <!--Needs Edit-->
         <p conkeyref="HOS-conrefs/applies-to"/>
-        <p>
-            <!--PUBLISHED-->
-            <!--./commercial/GA1/ceilometer/1.1commerical.services-reporting-bestpractice.md-->
-            <!--permalink: /helion/openstack/1.1/services/reporting/bestpractices/--></p>
+        <p><!--PUBLISHED--><!--./commercial/GA1/ceilometer/1.1commerical.services-reporting-bestpractice.md--><!--permalink: /helion/openstack/1.1/services/reporting/bestpractices/--></p>
         <p>Configuration changes that improve reporting API and database responsiveness by keeping
             data storage to a reasonable level.</p>
-
         <section id="ceilometer_nova">
             <title>Nova</title>
             <p>Nova can send notifications related to its usage and VM status simply enabling it
@@ -148,8 +142,10 @@ instance_usage_audit_period=hour</codeblock>
                 front-end tends to put strain in the database. We are striving to improve
                 performance for the back-end but for now we have documented the best set-up
                 providing a good compromise.</p>
-            <p>These are the steps to configure Apache2 and Ceilometer API:</p></section>
-        <section><title>Configure Apache2 for the Ceilometer API</title>
+            <p>These are the steps to configure Apache2 and Ceilometer API:</p>
+        </section>
+        <section>
+            <title>Configure Apache2 for the Ceilometer API</title>
             <p>The first step to execute is to add the ceilometer.conf file in the
                     <b>/etc/apache2/sites-available</b> folder. </p>
             <p>The ceilometer.conf file should have the following data:</p>
@@ -173,19 +169,22 @@ Listen &lt;ipaddress>:8777
                 processing pipeline. </p>
             <p>To increase the responsiveness you may increase the number of threads and processes
                 in ceilometer.conf.</p>
-            <note><p>WSGIDaemon Recommended Settings The best, and hence, recommended configuration
-                    is to have four processes running in parallel:</p>
+            <note>
+                <p>WSGIDaemon Recommended Settings The best, and hence, recommended configuration is
+                    to have four processes running in parallel:</p>
                 <codeblock>processes=4</codeblock>
-                <p>Five threads for each process is also recommended:
-                </p><codeblock>threads=5</codeblock>
+                <p>Five threads for each process is also recommended: </p>
+                <codeblock>threads=5</codeblock>
             </note>
         </section>
-        <section id="add_soft_link"><title>Add softlink for config file</title>
+        <section id="add_soft_link">
+            <title>Add softlink for config file</title>
             <p>Next, create/add a softlink for the ceilometer.conf in the
                     <b>/etc/apache2/sites-enabled</b> folder.</p>
             <codeblock>ln -s /etc/apache2/sites-available/ceilometer.conf /etc/apache2/sites-enabled</codeblock>
         </section>
-        <section id="reload_apache"><title>Reload Apache2</title>
+        <section id="reload_apache">
+            <title>Reload Apache2</title>
             <p>For the changes to take effect, the apache2 service needs to be reloaded. This
                 ensures that all the configuration changes are considered and the service has
                 applied them. The system administrator can change the configuration of processes and
@@ -212,8 +211,8 @@ ceilome+ 31433 31427 10 16:29 ? 00:02:43 /usr/sbin/apache2 -k start</codeblock>
             <note>If Ceilometer fails to deploy, check the proxy setting, and unset https_proxy
                 http_proxy HTTP_PROXY HTTPS_PROXY</note>
         </section>
-        <section id="notification_strategy"><title>Notification Whitelisting and Polling
-                Strategies</title>
+        <section id="notification_strategy">
+            <title>Notification Whitelisting and Polling Strategies</title>
             <p>In <keyword keyref="kw-hos-phrase"/> we have adopted a strategy to reduce the amount
                 of data that is sent to the storage. The main reason is that we are currently using
                 a SQL based cluster that is not highly indicated for big data. Ceilometer can be
@@ -278,7 +277,8 @@ sinks:
             <note>Swift account data will be collected using the polling mechanism in an hourly
                 interval </note>
         </section>
-        <section id="changing_meter_list"><title>Changing the List of Meters </title>
+        <section id="changing_meter_list">
+            <title>Changing the List of Meters </title>
             <p>The list of meters can be easily reduced or increased editing the pipeline.yaml and
                 subsequently restarting the central-agent (please see: Helion Ceilometer Runbook -
                 Ceilometer Central Agent) and the Collector (please see: Helion Ceilometer Runbook -
@@ -306,8 +306,8 @@ sinks:
             <note> This change will cause all non-default meters to stop receiving
                 notifications</note>
         </section>
-        <section id="update_polling_strategy"><title>Updating the Polling Strategy and Swift
-                Considerations</title>
+        <section id="update_polling_strategy">
+            <title>Updating the Polling Strategy and Swift Considerations</title>
             <p>Polling can be very taxing on the system due to the sheer amount of data that the
                 system may have to ingest. It also has severe impact on queries since the database
                 will now have very large amount of data to scan to respond to the query, usually
@@ -398,8 +398,6 @@ sinks:
                         </row>
                     </tbody>
                 </tgroup>
-
-
             </table>
             <p>This means that even a very small Swift storage with 10 containers and 100 files will
                 store 120K samples in 24H bringing to a grand total of 3.6 million samples.</p>
@@ -407,8 +405,9 @@ sinks:
                 collected. In fact the smaller is the number of container or files the better it is.
                 So the scenario where there a lot of small files and containers is the worst.</note>
         </section>
-        <section id="pipelines"><title>Separate pipeline.yaml for Ceilometer Central Agent and
-                Ceilometer Notification Agent</title>
+        <section id="pipelines">
+            <title>Separate pipeline.yaml for Ceilometer Central Agent and Ceilometer Notification
+                Agent</title>
             <ul>
                 <li>Ceilometer Central Agent and Ceilometer Notification agent use different
                     pipeline.yaml to configure meters that are fetched via polling and using
@@ -493,7 +492,8 @@ sinks:
       publishers:
          - notifier://</codeblock>
         </section>
-        <section id="ceilomter_sample_API"><title>Ceilometer Sample API</title>
+        <section id="ceilomter_sample_API">
+            <title>Ceilometer Sample API</title>
             <p>Ceilometer query-sample API uses anonymous/alias table to cache the JOIN query
                 results. When the filter parameters are not sufficiently provided, the result set
                 can grow large, to the point of exceeding the temp table space available on the
@@ -531,7 +531,8 @@ sinks:
             not recommended. e.g. -p 3600 Period parameter (value in seconds) is used to divide the
             overall time range into intervals. A small period value will translate into huge number
             of queries against the database which is not recommended </section>
-        <section id="alarm_post-meters_APIs"><title>Alarm API and Post Meters API disabled</title>
+        <section id="alarm_post-meters_APIs">
+            <title>Alarm API and Post Meters API disabled</title>
             <ul>
                 <li>Ceilometer Alarms are disabled</li>
                 <li>Post Meters API is also disabled </li>
@@ -577,7 +578,8 @@ POST /v2/query/alarms/history</codeblock>
                     Apache</li>
             </ul>
         </section>
-        <section id="failover_support"><title>Failover Support (HA)</title>
+        <section id="failover_support">
+            <title>Failover Support (HA)</title>
             <p>In the Helion environment, Ceilometer supports native Active-Active HA for
                 notification agent and central agent. Agent HA support includes
                 workload-balancing/distribution and failover. Tooz is the coordination engine that
