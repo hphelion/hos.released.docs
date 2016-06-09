@@ -1,12 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="A10_install">
-  <title>Install and Configure A10 Drivers</title>
+  <title>Install and Configure the A10 Driver</title>
   <body>
-    <p>Intro</p>
+    <p>This document describes how Helion third-party hardware testers have successfully integrated A10 Networks' load-balancing-as-a-service (LBaaS) with Helion OpenStack. After meeting all of the hardware and network requirements, you can install and configuring the driver. When you have completed these steps, you can move on to verifying integration.</p>
 
-<p>Procedure</p>
-    
+    <p>To integrate A10 Networks LBaaS with Helion:</p>
+      <ol>
+        <li><xref type="section" href="#A10_install/A10_dwnld_files">Download the A10 driver</xref></li>
+        <li><xref type="section" href="#A10_install/A10_extract">Extract and install the files</xref></li>
+        <li><xref type="section" href="#A10_install/A10_config_CN">Configure controller nodes</xref></li>
+        <li><xref type="section" href="#A10_install/install_driver">Set A10 as default LBaaS provider</xref></li>
+        <li><xref type="section" href="#A10_install/A10_final_config">Update the final configuration</xref></li>
+      </ol> 
+      
+      <section id="A10_dwnld_files">
+        <title>Download the A10 Driver</title>
+        <p>To get the most recent A10 neutron-lbaas driver, you must go through github. In these steps, to prevent conflicts, all files are downloaded from the Python Package Index (pyPI) site. PyPI is a repository of software for the Python programming language. For more information, see <xref href="https://pypi.python.org/pypi" scope="external" format="html">The Python Package Index</xref>.</p>
+          
+        <p>After you extract the relevant files you need to place them in a Neutron virtual environment. This means creating a directory in the <codeph>~/scratch</codeph> folder. This allows you to install the third-party driver into a virtual environment. For more detail, see the <xref href="http://docs-staging.hpcloud.com/hos.docs-hos-30/#helion/operations/thirdparty_driver_support.html" scope="external" format="html" >Third Party Driver Support</xref> website.</p>
+        
+        <p>To download the A10 files:</p>
+        <ol>
+          <li>To create a directory for the A10 files you will download, run:
+            <codeblock>cd ~/scratch
+            $mkdir pkg</codeblock></li>
+            <li>To clone the repository into the new directory, run:
+            <codeblock>cd ~/scratch/pkg
+            git clone https://github.com/a10networks/a10-neutron-lbaas.git</codeblock></li>
+            <li>To create a directory you will use to install the A10 driver into a virtual environment, run:
+            <codeblock>cd ~/scratch
+            mkdir third-party-wheelhouse</codeblock></li>
+          <li>To set the export proxy before installing, use the example command with values from your deployment.
+            <p>For example,</p>
+            <codeblock>export http_proxy=http://10.1.24.18:8080</codeblock></li>
+            <li>To build wheel archives for the requirements and dependencies, run:
+            <codeblock>pip wheel --wheel-dir third-party-wheelhouse pkg/a10-neutron-lbaas</codeblock>
+            <note type="attention">If building the wheel archives doesn’t work, make sure you have configured the export proxy and then move on to the last step.</note></li>
+            <li>To create multiple files with extension “.whl” based on the dependency packages, run:
+            <codeblock>pip wheel --proxy=$http_proxy --wheel-dir third-party-wheelhouse pkg/a10-neutron-lbaas</codeblock></li>
+        </ol>
+      </section>
 
   </body>
 </topic>
