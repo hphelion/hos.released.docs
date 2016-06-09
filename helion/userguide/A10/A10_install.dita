@@ -10,8 +10,7 @@
         <li><xref type="section" href="#A10_install/A10_dwnld_files">Download the A10 driver</xref></li>
         <li><xref type="section" href="#A10_install/A10_extract">Extract and install the files</xref></li>
         <li><xref type="section" href="#A10_install/A10_config_CN">Configure controller nodes</xref></li>
-        <li><xref type="section" href="#A10_install/install_driver">Set A10 as default LBaaS provider</xref></li>
-        <li><xref type="section" href="#A10_install/A10_final_config">Update the final configuration</xref></li>
+        <li><xref type="section" href="#A10_install/A10_set_default">Set A10 as default LBaaS provider</xref></li>
       </ol> 
       
       <section id="A10_dwnld_files">
@@ -43,7 +42,7 @@ mkdir third-party-wheelhouse</codeblock></li>
       </section>
 
     <section id="A10_extract">
-      <title>Extract and install the files</title>
+      <title>Extract and Install the Files</title>
       <p>In these steps you will create a virtual environment. This is something you can use to create an isolated Python development environment. This helps isolate your dependencies, especially when used with pip. The <codeph>pip</codeph> command installs the A10 driver from PyPI.</p>
     <p>To extract and install the PyPI package:</p>
     <ol>
@@ -69,13 +68,12 @@ sudo pip install ../third-party-wheelhouse/a10_neutron_lbaas-1.4.3alpha-py2-none
         <li>To copy the tar file to all the controller nodes, run:
           <codeblock>scp a10-driver.tar stack@10.2.1.6
 scp a10-driver.tar stack@10.2.1.7
-scp a10-driver.tar stack@10.2.1.8</codeblock>
-        </li>
+scp a10-driver.tar stack@10.2.1.8</codeblock></li>
     </ol>
 </section>
 
     <section id="A10_config_CN">
-      <title>Configure controller nodes</title>
+      <title>Configure Controller Nodes</title>
       <p>To Configure the controller nodes:</p>
       <ol>
         <li>To activate the virtual environment, run:
@@ -118,6 +116,48 @@ cat > config.py</codeblock></li>
           }    </codeblock></li>
       </ol>
     </section>
+
+    <section id="A10_set_default">
+      <title>Set A10 as Default LBaaS Provider</title>
+      <p>Adding the service_provider element to neutron_lbaas.conf file tells Neutron LBaaS that there is an LBaaS provider, its name, and where you can find it. When you start up the neutron-server, it imports the drivers to ensure they are available and cached.</p>
+      <ol>
+        <li>Log in to the lifecycle manager (deployer node).</li>
+        <li>To open the following file in a text editor, run:
+        <codeblock>/home/stack/helion/my_cloud/config/neutron/neutron.conf.j2</codeblock></li>
+        <li>To find the following service provider entry, run:
+        <codeblock>LOADBALANCER:Haproxy</codeblock></li>
+        <li>If you do not want to provide access to the HAProxy driver, delete the following line:
+          <codeblock>LOADBALANCER:Haproxy</codeblock></li>
+        <li>If you do want to provide access to the HAProxy driver, delete the following tag from
+          the end of the <b>HAPROXY</b> line: <codeblock>:default</codeblock><note type="caution"
+            >Only remove the ":default" tag for the HAPROXY line. The VPN line should have a
+            ":default" tag at the end. If this is not configured correctly you will have issues
+            getting the neutron-server service up and running.</note></li>
+        <li>In the neutron.conf file you have open, add the following line:
+            <codeblock>service_provider = LOADBALANCERV2:A10Networks:neutron_lbaas.drivers.a10networks.driver_v2.ThunderDriver:default</codeblock></li>
+       <li>Ensure your file is similar to the following sample of a working neutron.conf file:
+        <codeblock>[service_providers]
+        service_provider = LOADBALANCERV2:Haproxy:neutron_lbaas.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver     
+# To enable LBaaSv1, comment the above service_provider line and uncomment the below
+# service_provider = LOADBALANCER:Haproxy:neutron.services.loadbalancer.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver:default
+        service_provider = VPN:openswan:neutron_vpnaas.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default
+        service_provider = LOADBALANCERV2:A10Networks:neutron_lbaas.drivers.a10networks.driver_v2.ThunderDriver:default</codeblock></li>
+        <li>To commit and apply the changes, follow the steps in <xref href="https://docs.hpcloud.com/#helion/installation/using_git.html" scope="external" format="html">HPE Helion Openstack: Using Git for Configuration Management.</xref> </li>
+        <li>To verify the A10 service provider is working, run:
+          <codeblock>neutron service-provider-list
+#Sample output
+stack@helion-cp1-c0-m1-mgmt:~$neutron service provider list
++-----------------------------------------+
+| service type    | name        | default |
++-----------------+-------------+---------+
+| VPN             | openswan    | True    |
+| LOADBALANCERV2  | a10networks | True    |
+| LOADBALANCERV2  | haproxy     | False   |
++-----------------+-------------+---------+</codeblock>
+        </li>
+      </ol>
+    </section>
+
 
   </body>
 </topic>
