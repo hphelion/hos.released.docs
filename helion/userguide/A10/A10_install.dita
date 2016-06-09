@@ -23,14 +23,14 @@
         <p>To download the A10 files:</p>
         <ol>
           <li>To create a directory for the A10 files you will download, run:
-            <codeblock>cd ~/scratch
-            $mkdir pkg</codeblock></li>
+          <codeblock>cd ~/scratch
+mkdir pkg</codeblock></li>
             <li>To clone the repository into the new directory, run:
-            <codeblock>cd ~/scratch/pkg
-            git clone https://github.com/a10networks/a10-neutron-lbaas.git</codeblock></li>
-            <li>To create a directory you will use to install the A10 driver into a virtual environment, run:
-            <codeblock>cd ~/scratch
-            mkdir third-party-wheelhouse</codeblock></li>
+          <codeblock>cd ~/scratch/pkg
+git clone https://github.com/a10networks/a10-neutron-lbaas.git</codeblock></li>
+            <li>To create a directory you will use to install the A10 driver into a virtual
+          environment, run: <codeblock>cd ~/scratch
+mkdir third-party-wheelhouse</codeblock></li>
           <li>To set the export proxy before installing, use the example command with values from your deployment.
             <p>For example,</p>
             <codeblock>export http_proxy=http://10.1.24.18:8080</codeblock></li>
@@ -48,20 +48,18 @@
     <p>To extract and install the PyPI package:</p>
     <ol>
       <li>To create a temporary folder for A10, run:
-        <codeblock>cd ~/scratch
-        mkdir a10temp</codeblock></li>
+          <codeblock>cd ~/scratch
+mkdir a10temp</codeblock></li>
         <li>To create the virtual environment for the a10temp folder, run:.
         <codeblock>sudo virualenv a10temp</codeblock></li>
         <li>To activate the virtual environment, run:
-        <codeblock>cd ~/scratch/a10temp
-        source bin/activate</codeblock></li>
+          <codeblock>cd ~/scratch/a10temp
+source bin/activate</codeblock></li>
         <li>To install the wheel files using pip, run:
-          <codeblock>
-        sudo pip install ../third-party-wheelhouse/requests-2.9.1-py2.py3-none-any.whl
-        sudo pip install ../third-party-wheelhouse/hash_ring-1.3.1-py2-none-any.whl
-        sudo pip install ../third-party-wheelhouse/acos_client-1.3.3-py2-none-any.whl
-        sudo pip install ../third-party-wheelhouse/a10_neutron_lbaas-1.4.3alpha-py2-none-any.whl
-          </codeblock></li>
+          <codeblock>sudo pip install ../third-party-wheelhouse/requests-2.9.1-py2.py3-none-any.whl
+sudo pip install ../third-party-wheelhouse/hash_ring-1.3.1-py2-none-any.whl
+sudo pip install ../third-party-wheelhouse/acos_client-1.3.3-py2-none-any.whl
+sudo pip install ../third-party-wheelhouse/a10_neutron_lbaas-1.4.3alpha-py2-none-any.whl    </codeblock></li>
         <li>To go to the Python package distribution directory, run:
         <codeblock>cd /usr/local/lib/python2.7/dist-packages/</codeblock></li>
       <li>To compress all the files into tar file with a name of <codeph>a10-driver.tar</codeph>, run:
@@ -69,13 +67,57 @@
         <li>To change the permissions to the default user, run:
         <codeblock>sudo chown stack:stack a10-driver.tar</codeblock></li>
         <li>To copy the tar file to all the controller nodes, run:
-        <codeblock>
-        scp a10-driver.tar stack@10.2.1.6
-        scp a10-driver.tar stack@10.2.1.7
-        scp a10-driver.tar stack@10.2.1.8</codeblock>
-      </li>
+          <codeblock>scp a10-driver.tar stack@10.2.1.6
+scp a10-driver.tar stack@10.2.1.7
+scp a10-driver.tar stack@10.2.1.8</codeblock>
+        </li>
     </ol>
 </section>
+
+    <section id="A10_config_CN">
+      <title>Configure controller nodes</title>
+      <p>To Configure the controller nodes:</p>
+      <ol>
+        <li>To activate the virtual environment, run:
+          <codeblock>cd /opt/stack/service/neutron/venv
+source bin/activate</codeblock></li>
+        <li>To extract files in the <codeph>a10-driver.tar</codeph> format, run:
+          <codeblock>cd lib/python2.7/site-packages
+tar –xvf /home/stack/a10-driver.tar .</codeblock></li>
+          <li>To check the drivers list and verify A10 drivers are installed, run:
+          <codeblock>pip list</codeblock></li>
+          <li>To create an a10 directory, run:
+          <codeblock>cd /opt/stack/service/neutron/venv/etc
+mkdir a10</codeblock></li>
+          <li>To create a file with name “config.py” in the a10 directory, run:
+          <codeblock>cd a10
+cat > config.py</codeblock></li>
+          <li>To add device configuration details to the config.py file, type the following text in
+          the same command line window you used for the <codeph>cat</codeph>command:
+          <codeblock>          devices = {
+          "ax1": {
+          "name": "ax1",
+          "host": "10.2.1.254",
+          "port": 443,
+          "username": "admin",
+          "password": "a10",
+          "status": True,
+          "autosnat": False,
+          "api_version": "2.1",
+          "v_method": "LSI",
+          "max_instance": 5000,
+          "use_float": False,
+          "method": "hash",
+          "max_partitions": 10,
+          "per_partition_lif_max": 10,
+          "peer_mgmt_ip": "",
+          "peer_mgmt_port": "",
+          "vlan": 0,
+          "gateway_mode": 1,
+          }
+          }    </codeblock></li>
+      </ol>
+    </section>
 
   </body>
 </topic>
