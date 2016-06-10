@@ -4,7 +4,33 @@
   <title><ph conkeyref="HOS-conrefs/product-title"/>Ceilometer Metering APIs</title>
   <body><!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <section id="pipeline"><title>Separate pipeline.yml for Ceilometer Post Samples API</title> The
+    
+    <p>Ceilometer uses a polling agent to communicate with an API to collect information at a
+      regular interval, as shown in the diagram below.</p>
+    
+    <p><image href="../../media/metering/Ceilo_API_Polling.png"/></p>
+    
+    <p>List of APIs discussed in this topic:</p>
+    <ul>
+      <li><xref type="section" href="#topic_icq_hvc_5t/pipeline">Post Samples API</xref></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/sampleAPI">Ceilometer Sample API</xref> This API contains the following two APIs:
+        <ul>
+        <li>ceilometer sample-list(/v2/samples) </li>
+      <li>ceilometer query-sample (/v2/query/samples)</li></ul></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/statAPI">Ceilometer Statistics API</xref></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/disabled">Disabled APIs</xref>This section
+        contains the following APIs: <ul>
+          <li>Ceilometer Alarms API</li>
+          <li>Post Samples API</li>
+          <li>Query Sample API</li>
+        </ul></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/data_access">Data Access API</xref></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/resource">Ceilometer Resource API</xref></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/improve_reporting">Improving Reporting API Responsiveness</xref></li>
+    </ul>
+    
+    <section id="pipeline">
+      <title>Separate pipeline.yml for Ceilometer Post Samples API</title> The
       Post Sample API is disabled by default in <keyword keyref="kw-hos-phrase"/> and its configured
       with a pipeline configuration different than the agents. The API pipeline has no meters
       enabled, so it needs to be configured with meters when the Post Samples API is enabled.
@@ -174,7 +200,8 @@ sinks:
       </ul>
     </section>
 
-    <section><title>Data Access API</title> Ceilometer only provides a data access API. It does not
+    <section id="data_access">
+      <title>Data Access API</title> Ceilometer only provides a data access API. It does not
       by itself provide a data visualization or aggregation function. These functions are provided
       by external, downstream applications that support various use cases like usage billing and
       software license policy adherence. Each application calls the specific Ceilometer API needed
@@ -182,7 +209,8 @@ sinks:
       functions provided by each application. More information about the Ceilometer API can be found
       at http://docs.openstack.org/developer/ceilometer/webapi/v2.html. </section>
     
-    <section><title>Ceilometer Resource API</title>
+    <section id="resource">
+      <title>Ceilometer Resource API</title>
       <p>The Ceilometer Resource API can provide a list of resources that Ceilometer has collected. </p>
       
       <p>By default, meter links will be generated for each resource, which provide all meters' link associated with this resource, 
@@ -195,7 +223,8 @@ sinks:
      <codeblock>ceilometer resource-list -q "project_id=7aa0fe3f02ff4e11a70a41e97d0db5e3;timestamp>=2015-10-22T15:44:00;timestamp&lt;=2015-10-23T15:44:00"</codeblock>
     
     </section>
-    <section><title>Improving Reporting API responsiveness</title> Reporting APIs are the main
+    <section id="improve_reporting">
+      <title>Improving Reporting API Responsiveness</title> Reporting APIs are the main
       access to the Metering data stored in Ceilometer. These APIs are accessed by Horizon to
       provide basic usage data and information. However, Horizon Resources Usage Overview / Stats
       panel shows usage metrics with the following limitations: <ul>
