@@ -29,9 +29,9 @@
       <ol>
         <li>Log into the lifecycle manager.</li>
         <li>To install the screen utility, run:
-          <codeblock>$ sudo apt-get install screen</codeblock></li>
+          <codeblock>sudo apt-get install screen</codeblock></li>
         <li>To go to the directory where ansible playbooks are located, run:
-          <codeblock>$ cd ~scratch/ansible/next/hos/ansible</codeblock></li>
+          <codeblock>cd ~scratch/ansible/next/hos/ansible</codeblock></li>
         <li>Create a file with the following name:
           <codeblock>neutron-lbaas-stop.yml</codeblock></li>
         <li>Add the following lines to the neutron-lbaas-stop.yml file, replacing names with those
@@ -52,17 +52,17 @@
            - include: roles/neutron-lbaasv2-agent/tasks/stop.yml</codeblock>
         </li>
         <li>To stop existing LBaaS agents using the ansible playbook, run:
-          <codeblock>$ ansible-playbook -i hosts/verb_hosts neutron-lbaas-stop.yml</codeblock>
+          <codeblock>ansible-playbook -i hosts/verb_hosts neutron-lbaas-stop.yml</codeblock>
         </li>
         <li>To verify that lbaas agents have stopped, run:
-            <codeblock>$ neutron agent-list</codeblock><note type="attention">Keep in mind that it
+            <codeblock>neutron agent-list</codeblock><note type="attention">Keep in mind that it
             takes several minutes for an updated list to be shown by this command.</note></li>
         <li>To download the F5 driver Debian files (Version 1.0.10), run:
-          <codeblock>$ cd ~
-$ wget  --no-check-certificate  -O F5.tgz https://devcentral.f5.com/d/openstack-neutron-lbaas-driver-and-agent?download=true</codeblock>
+          <codeblock>cd ~
+wget  --no-check-certificate  -O F5.tgz https://devcentral.f5.com/d/openstack-neutron-lbaas-driver-and-agent?download=true</codeblock>
         </li>
         <li>To verify the contents of the downloaded archive, run:
-              <codeblock>$ md5sum F5.tgz</codeblock><p><b>Sample
+              <codeblock>md5sum F5.tgz</codeblock><p><b>Sample
           output</b></p><codeblock>e0a441b07874e7958de0bc5d733b9cca  F5.tgz</codeblock></li>
       </ol>
       <note type="attention">You should repeat these steps for the high-availability and virtual tunnel endpoint netowrks before installing the LBaaS driver</note>
@@ -75,20 +75,19 @@ $ wget  --no-check-certificate  -O F5.tgz https://devcentral.f5.com/d/openstack-
       <p><b>To extract the files from the F5 .deb archives and test the agent:</b></p>
 <ol>
   <li>In the same directory where you downloaded the archive, run:
-          <codeblock>$ tar xvfz F5.tgz</codeblock></li>
+          <codeblock>tar xvfz F5.tgz</codeblock></li>
   <li>Copy the .deb archives onto appropriate nodes. <note type="attention">Use the following
             guidelines: <ul>
               <li>The API driver goes onto all neutron API control plane nodes</li>
               <li>The agent and common packages go on one control plane node </li>
             </ul></note></li>
   <li>To test running the agent on multiple nodes, run the following commands:
-          <codeblock>$ cd f5
-$ scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
-$ scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m2-mgmt:
-$ scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m3-mgmt:
-$ scp f5-bigip-common_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
-$ scp f5-oslbaasv1-agent_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
-          </codeblock>
+          <codeblock>cd f5
+scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
+scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m2-mgmt:
+scp f5-oslbaasv1-driver_1.0.10-1_all.deb stack@padawan-ccp-c1-m3-mgmt:
+scp f5-bigip-common_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
+scp f5-oslbaasv1-agent_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:        </codeblock>
         </li>
 </ol>
     </section>
@@ -108,11 +107,11 @@ $ scp f5-oslbaasv1-agent_1.0.10-1_all.deb stack@padawan-ccp-c1-m1-mgmt:
       <ol>
         <li>To install the F5 API driver .deb files on all controller nodes, run the following
           commands:
-          <codeblock>$ ssh stack@padawan-ccp-c1-m1-mgmt
-$ dpkg -x f5-oslbaasv1-driver_1.0.10-1_all.deb f5-driver
-$ cd f5-driver/usr/lib/python2.7/dist-packages
-$ sudo cp -rP * /opt/stack/service/neutron/venv/lib/python2.7/site-packages/
-$ sudo touch /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/oslbaasv1driver/_init_.py</codeblock></li>
+          <codeblock>ssh stack@padawan-ccp-c1-m1-mgmt
+dpkg -x f5-oslbaasv1-driver_1.0.10-1_all.deb f5-driver
+cd f5-driver/usr/lib/python2.7/dist-packages
+sudo cp -rP * /opt/stack/service/neutron/venv/lib/python2.7/site-packages/
+sudo touch /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/oslbaasv1driver/_init_.py</codeblock></li>
       </ol>
     </section>
     <section id="set_lb_default">
@@ -160,12 +159,10 @@ $ sudo touch /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/oslb
     <ol>
       <li>Return to controller node one and open the following file:
       <codeblock>neutron-server</codeblock></li>
-      <li>Verify the following conditions:
-      <ul>
-        <li>there are no stack traces</li>
-        <li>the driver has loaded</li>
-      </ul>
-      </li>
+      <li>Verify the following conditions: <ul>
+            <li>there are no stack traces</li>
+            <li>the driver has loaded</li>
+          </ul></li>
     </ol>
   <note type="tip">If the driver does not load, verify the existence of the following file in all the F5 subdirectories in the site packages:
   <codeblock>_init_.py</codeblock>
@@ -175,15 +172,14 @@ $ sudo touch /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/oslb
    <title>F5 Agent Installation</title>
 <ol>
    <li>To install the F5 agent code on one controller node, run the following commands:
-          <codeblock>$ ssh stack@helion-ccp-c1-m1-mgmt
-$ sudo apt-get install python-suds # Needed by F5, not in hLinux.
-$ dpkg -x f5-bigip-common_1.0.10-1_all.deb f5-common
-$ dpkg -x f5-oslbaasv1-agent_1.0.10-1_all.deb f5-agent
-$ sudo cp -rP f5-common/usr/lib/python2.7/dist-packages/f5/* /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/
-$ sudo cp -rP f5-agent/usr/lib/python2.7/dist-packages/f5/* /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/
-$ sudo cp -rP f5-agent/etc/* /opt/stack/service/neutron/etc
-$ sudo cp -rP f5-agent/usr/bin/* /opt/stack/service/neutron/venv/bin
-          </codeblock></li>
+          <codeblock>ssh stack@helion-ccp-c1-m1-mgmt
+sudo apt-get install python-suds # Needed by F5, not in hLinux.
+dpkg -x f5-bigip-common_1.0.10-1_all.deb f5-common
+dpkg -x f5-oslbaasv1-agent_1.0.10-1_all.deb f5-agent
+sudo cp -rP f5-common/usr/lib/python2.7/dist-packages/f5/* /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/
+sudo cp -rP f5-agent/usr/lib/python2.7/dist-packages/f5/* /opt/stack/service/neutron/venv/lib/python2.7/site-packages/f5/
+sudo cp -rP f5-agent/etc/* /opt/stack/service/neutron/etc
+sudo cp -rP f5-agent/usr/bin/* /opt/stack/service/neutron/venv/bin        </codeblock></li>
      <li>In a text editor, open the following file:
        <codeblock>/opt/stack/service/neutron/etc/neutron/f5-oslbaasv1-agent.ini </codeblock></li>
 <li>Add the following lines to this file: <table frame="all" rowsep="1" colsep="1"
@@ -222,10 +218,10 @@ $ sudo cp -rP f5-agent/usr/bin/* /opt/stack/service/neutron/venv/bin
         <li>Log in to the lifecycle manager (deployer node).</li>
         <li>Run the agent under <codeph>screen</codeph> so that it will continue after disconnection.</li>
         <li>Run the following commands:
-          <codeblock>$ screen
-$ ssh stack@helion-cp1-c1-m1-mgmt
-$ cd /opt/stack/service/neutron/venv/bin
-$ sudo -u neutron bash
+          <codeblock>screen
+ssh stack@helion-cp1-c1-m1-mgmt
+cd /opt/stack/service/neutron/venv/bin
+sudo -u neutron bash
 # ./python2.7 f5-oslbaasv1-agent --config-file /opt/stack/service/neutron/etc/neutron.conf --config-file /opt/stack/service/neutron/etc/neutron/f5-oslbaasv1-agent.ini --log-file /var/log/neutron/f5.log</codeblock>
         </li>
       </ol>
