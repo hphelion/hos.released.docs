@@ -12,6 +12,7 @@
         <li><xref type="section" href="#A10_install/A10_config_CN">Configure controller nodes</xref></li>
         <li><xref type="section" href="#A10_install/A10_set_default">Set A10 as default LBaaS provider</xref></li>
       </ol> 
+    <note type="attention">Steps 1-3, Downloading the driver, Extracting and installing the files, and Configuring the controller nodes, need to be repeated on all controller nodes to get the A10 driver installed and running.</note>
       
       <section id="A10_dwnld_files">
         <title>Download the A10 Driver</title>
@@ -30,15 +31,17 @@ git clone https://github.com/a10networks/a10-neutron-lbaas.git</codeblock></li>
             <li>To create a directory you will use to install the A10 driver into a virtual
           environment, run: <codeblock>cd ~/scratch
 mkdir third-party-wheelhouse</codeblock></li>
-          <li>To set the export proxy before installing, use the example command with values from your deployment.
-            <p>For example,</p>
-            <codeblock>export http_proxy=http://10.1.24.18:8080</codeblock></li>
+          <li>To set the export proxy before installing, use the example command with values from
+          your deployment. <p>For
+          example,</p><codeblock>export http_proxy=http://10.1.24.18:8080</codeblock></li>
             <li>To build wheel archives for the requirements and dependencies, run:
-            <codeblock>pip wheel --wheel-dir third-party-wheelhouse pkg/a10-neutron-lbaas</codeblock>
-            <note type="attention">If building the wheel archives doesn’t work, make sure you have configured the export proxy and then move on to the last step.</note></li>
+            <codeblock>pip wheel --wheel-dir third-party-wheelhouse pkg/a10-neutron-lbaas</codeblock><note
+            type="attention">If building the wheel archives doesn’t work, make sure you have
+            configured the export proxy and then move on to the last step.</note></li>
             <li>To create multiple files with extension “.whl” based on the dependency packages, run:
             <codeblock>pip wheel --proxy=$http_proxy --wheel-dir third-party-wheelhouse pkg/a10-neutron-lbaas</codeblock></li>
         </ol>
+        <note type="attention">The steps in this section need to be repeated on all controller nodes to get the A10 driver installed and running.</note>
       </section>
 
     <section id="A10_extract">
@@ -70,6 +73,7 @@ sudo pip install ../third-party-wheelhouse/a10_neutron_lbaas-1.4.3alpha-py2-none
 scp a10-driver.tar stack@10.2.1.7
 scp a10-driver.tar stack@10.2.1.8</codeblock></li>
     </ol>
+      <note type="attention">The steps in this section need to be repeated on all controller nodes to get the A10 driver installed and running.</note>
 </section>
 
     <section id="A10_config_CN">
@@ -89,7 +93,7 @@ tar –xvf /home/stack/a10-driver.tar .</codeblock></li>
 mkdir a10</codeblock></li>
           <li>To create a file with name “config.py” in the a10 directory, run:
           <codeblock>cd a10
-cat > config.py</codeblock></li>
+sudo vi config.py</codeblock></li>
           <li>To add device configuration details to the config.py file, type the following text in
           the same command line window you used for the <codeph>cat</codeph>command:
           <codeblock>          devices = {
@@ -115,6 +119,7 @@ cat > config.py</codeblock></li>
           }
           }    </codeblock></li>
       </ol>
+      <note type="attention">The steps in this section need to be repeated on all controller nodes to get the A10 driver installed and running.</note>
     </section>
 
     <section id="A10_set_default">
@@ -124,15 +129,15 @@ cat > config.py</codeblock></li>
         <li>Log in to the lifecycle manager (deployer node).</li>
         <li>To open the following file in a text editor, run:
         <codeblock>/home/stack/helion/my_cloud/config/neutron/neutron.conf.j2</codeblock></li>
-        <li>To find the following service provider entry, run:
-        <codeblock>LOADBALANCER:Haproxy</codeblock></li>
-        <li>If you do not want to provide access to the HAProxy driver, delete the following line:
+        <li>Find the following service provider entry:
           <codeblock>LOADBALANCER:Haproxy</codeblock></li>
+        <li>If you do not want to provide access to the HAProxy driver, delete the line containing
+          the following entry: <codeblock>LOADBALANCER:Haproxy</codeblock></li>
         <li>If you do want to provide access to the HAProxy driver, delete the following tag from
-          the end of the <b>HAPROXY</b> line: <codeblock>:default</codeblock><note type="caution"
-            >Only remove the ":default" tag for the HAPROXY line. The VPN line should have a
-            ":default" tag at the end. If this is not configured correctly you will have issues
-            getting the neutron-server service up and running.</note></li>
+          the end of the line: <codeblock>:default</codeblock><note type="caution">Only remove the
+            ":default" tag for the HAPROXY line. The VPN line should have a ":default" tag at the
+            end. If this is not configured correctly you will have issues getting the neutron-server
+            service up and running.</note></li>
         <li>In the neutron.conf file you have open, add the following line:
             <codeblock>service_provider = LOADBALANCERV2:A10Networks:neutron_lbaas.drivers.a10networks.driver_v2.ThunderDriver:default</codeblock></li>
        <li>Ensure your file is similar to the following sample of a working neutron.conf file:
