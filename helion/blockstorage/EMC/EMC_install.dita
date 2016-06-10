@@ -61,10 +61,13 @@ virtualenv ~/scratch/Navisphere
      #Running virtualenv with interpreter /usr/bin/python2
      #New python executable in /home/stack/scratch/Navisphere/bin/python2
      #Also creating executable in /home/stack/scratch/Navisphere/bin/python
-     #Installing setuptools, pip...done.        </codeblock></li>
+     #Installing setuptools, pip...done.        
+ cd ~/scratch/Navisphere/         
+ cp ~/navicli-linux-64-x86-en-us_7.33.2.0.51-1_alldeb
+ dpkg -x navicli-linux-64-x86-en-us_7.33.2.0.51-1_alldeb</codeblock></li>
         <li>To list the folder content and verify that the bin file named
             <codeph>naciseccli</codeph> is available, run:
-          <codeblock>ls ~scratch/Navisphere/opt/Navisphere/bin</codeblock></li>
+          <codeblock>ls ~scratch/Navisphere/opt/Navisphere/bin/naviseccli</codeblock></li>
         <li>To begin the registration process and start the iSCSI initiator service, run:
             <codeblock>sudo /etc/init.d/open-iscsi start</codeblock></li>
         <li>To discover the iSCSI target portals on VNX, run:
@@ -116,10 +119,10 @@ sudo iscsiadm -m node -u</codeblock></li>
         <li>Login to the lifecycle manager.</li>
         <li>In a text editor, open the following file:
           <codeblock>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeblock></li>
-        <li>To enable your EMC VNX 5300 backend, in the <codeph>enabled_backends section</codeph> add the
-          following text, replacing &lt;VNX_isCSI&gt; with the name used in your deployment:
+        <li>To enable your EMC VNX 5300 backend, in the <codeph>enabled_backends section</codeph>
+          add the following text, replacing &lt;VNX_isCSI&gt; with the name used in your deployment:
           <codeblock># Configure the enabled back-ends
-enabled_backends=&lt;VNX_isCSI&gt;</codeblock></li>
+enabled_backends=VNX5300</codeblock></li>
         <li>To configure the VNX iSCSI driver, add the following entries, where: <dl>
             <dlentry>
               <dt>10.1.34.25</dt>
@@ -154,7 +157,8 @@ iscsi_initiators = {"helion-cp1-c1-m1-mgmt":["10.2.33.5"],"helion-cp1-c1-m2-mgmt
 volume_backend_name = BE_Pool_0
 host = ha-volume-manager
 <b>
-[VNX5300-1]</b>
+[VNX5300-1]
+#This section is for creating multiple pools using the same storage box</b>
 storage_vnx_pool_name = Pool_1
 san_ip = 10.1.34.15
 san_secondary_ip = 10.1.34.16
