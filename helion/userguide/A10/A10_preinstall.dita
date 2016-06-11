@@ -93,65 +93,25 @@
       </note>
     </section>
         
-        
-        
-        
-        
     <section id="A10_supp_network">
       <title>Create Supported A10 Network Configuration</title>
-      <p>The goal of this networking setup is to create the A10 provider networks, subnets, and other networking elements that are necessary to run A10 with Helion OpenStack. To integrate A10 Networks Load Balancer with Helion, there are certain network configurations that must be done.</p> 
-      <ul>
-        <li><b>Management</b> - Requires a new VLAN. This network is used for the A10 management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</li>
-      </ul>     
+      <p>Integration with A10 networks does not require any additional tasks, however, you should be aware of the following: </p>
+      <dl>
+        <dlentry>
+          <dt>A10 mgmt network</dt>
+          <dd>
+            <ul>
+              <li>The VLAN should not be part of the Helion OpenStack cluster.</li>
+              <li>The same VLAN should be used to configure the A10 device for the mgmt network.</li>
+            </ul>
+          </dd>
+        </dlentry>
+        <dlentry>
+          <dt>VTEP network</dt>
+          <dd>Should be your <codeph>GUEST_VXLAN</codeph>. Pick up an IP range to use.</dd>
+        </dlentry>
+      </dl>   
+      </section>
         
-        <note type="note">The new mgmt VLANs you create for A10 must be tagged. You can set the optional variable <b>tagged-vlan</b> to either “true” or “false”. If true, packets for the network carry the vlanid in the packet header; such packets are referred to as VLAN-tagged frames in IEEE 802.1Q. For information on how to set this option, read the <xref href="http://docs.hpcloud.com/#helion/example_configurations.html" scope="external" format="html">Helion OpenStack 2.1 Example Configurations</xref></note>
-      
-      
-      <p>To integrate A10 Networks into your HPE Helion OpenStack deployment, you must create the
-        following network and verify they are working before you can install A10 drivers.</p>
-      <p>To configure your network to prepare for A10:</p>
-      <ol>
-        <li><xref type="section" href="#A10_preinstall/config_man_net">Create a management network</xref></li>
-        <li><xref type="section" href="#A10_preinstall/verify_net">Verify your network connectivity</xref></li>
-      </ol>
-    </section>
-    <section id="config_man_net">
-      <title>Create a Management Network</title>
-      
-      <p>Integrating A10 Networks with Helion OpenStack 2.0 requires that you create an additional management network. This network is used for the A10 management interface. This management network is different from the Helion management network, so make sure to give it a unique name. In this documentation we call it the "mgmt" network.</p>
-      <p>The same VLAN that you create in these steps must be used to configure the A10 device for management
-        network. The network you create in the following steps must be the same network VLAN that
-        the A10 device management network is on.</p>
-      <p>To create a management network:</p>
-      <ol>
-        <li>To create the network, replace the sample settings with the settings from your
-          deployment in the following command and
-          run:<codeblock>neutron net-create a10-mgmt --provider:physical_network physnet1  --provider:network_type vlan --provider:segmentation_id 102</codeblock></li>
-        <li>To create a subnet, replace the sample settings with the settings from your deployment
-          in the following command and
-          run:<codeblock>neutron subnet-create a10-mgmt 10.1.36.0/24 --name a10-mgmt-subnet --gateway 10.1.36.1 --allocation-pool start=10.1.36.15,end=10.1.36.200</codeblock></li>
-        <li>To create a router for the network, run:
-          <codeblock>neutron router-create a10-mgmt-router</codeblock></li>
-        <li>To create an interface between the router and the subnet,
-          run:<codeblock>neutron router-interface-add a10-mgmt-router a10-mgmt-subnet</codeblock></li>
-        <li>To set the router gateway to the external network,
-          run:<codeblock>neutron router-gateway-set a10-mgmt-router ext-net</codeblock></li>
-      </ol>
-    </section>
-    
-    <section id="verify_net">
-      <title>Verify Your Network Connectivity</title>
-      <p>After creating the management, high availability (HA), and virtual tunnel endpoint (VTEP)
-        networks, you should verify connectivity before installing the A10 driver. Ping the IP
-        of the VM from compute nodes ONLY as the pool members will be residing on compute nodes.
-        When the PING test passes on the compute nodes, you can install the A10 LBaaS driver. </p>
-      <p>To verify connectivity:</p>
-      <ol>
-        <li>Launch a virtual machine (VM) on your mgmt (management) network.</li>
-        <li>To ping an IP address, from the compute node,
-          run:<codeblock>ping &lt;ipaddress_of_virtual_machine&gt;</codeblock></li>
-        <li>Repeat these steps for other A10 networks.</li>
-      </ol>
-    </section>    
     </body>
 </topic>
