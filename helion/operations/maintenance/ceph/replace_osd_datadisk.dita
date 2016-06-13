@@ -25,8 +25,6 @@
         command:
         <codeblock>sudo systemctl status ceph-osd@&lt;osd-number>
 sudo systemctl stop ceph-osd@&lt;osd-number></codeblock></li>
-      <li>Flush the content of your journal which will commit pending transations to the backend
-        filesystem: <codeblock>ceph-osd -i &lt;osd-number> --flush-journal</codeblock></li>
       <li>Check if the OSD disk is mounted and if it is, unmount
         it:<codeblock>sudo df -h
 sudo umount &lt;source> | &lt;directory></codeblock></li>
@@ -66,15 +64,16 @@ sudo systemctl stop ceph-osd@&lt;osd-number></codeblock></li>
 ceph osd rm &lt;osd-number> --cluster &lt;ceph-cluster></codeblock></li>
       <li>Remove the OSD's directories with this command. Ensure you run this against the affected
         OSD node
-        only.<codeblock>sudo rm -rf /var/lib/ceph/osd/&lt;ceph_cluster>-&lt;osd_number>
+        only.<codeblock>sudo rmdir /var/lib/ceph/osd/&lt;ceph_cluster>-&lt;osd_number>
 
 where:
-&lt;ceph_cluster> 	This should be replaced with the name of your Ceph cluster.
-&lt;osd_number> 	This should be replaced with the number identified in step #3 earlier.
+&lt;ceph_cluster>	This should be replaced with the name of your Ceph cluster.
+&lt;osd_number>	  This should be replaced with the number identified in step #3 earlier.
 
 Example:
 In the earlier example, where OSD ID 5 is the affected one (and Ceph cluster name is 'ceph'), following command should be executed:
-sudo rm -rf /var/lib/ceph/osd/ceph-5</codeblock></li>
+sudo rmdir  /var/lib/ceph/osd/ceph-5
+</codeblock></li>
       <li>Log in to the lifecycle manager.</li>
       <li>Execute the ceph-deploy.yml playtbook against the affected OSD node so that the OSD
         service on that node will be
