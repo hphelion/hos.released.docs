@@ -238,32 +238,31 @@ instance_usage_audit_period=hour</codeblock>
                 </ul></note>
         </section>
         
-        <section id="notification_strategy">
-            <title>Notification Whitelisting and Polling Strategies</title>
-            <p>In <keyword keyref="kw-hos-phrase"/> we have adopted a strategy to reduce the amount
-                of data that is sent to the storage. The main reason is that we are currently using
-                a SQL based cluster that is not highly indicated for big data. Ceilometer can be
-                controlled for the data that collects using the <b>pipeline.yaml</b> file. This
-                configuration file is located in the<b> /etc/ceilometer</b> folder in any of the
-                controller nodes.</p>
-            <note>The pipeline.yaml file needs to be changed in all the controller nodes to change
-                the white-listing and or polling strategy.</note>
-            <p> The pipeline file is comprised of two major elements:</p>
-            <ul>
-                <li>Sources</li>
-                <li>Sinks</li>
-            </ul>
-            <p> The Sources represents the data that is harvested either from notifications posted
-                by services or collected through polling and the Sinks represents how the data is
-                modified before is published to the internal queue for collection and storage. In
-                the Sources section there is a list of meters. These meters are the data that is
-                going to be collected. For a full list please refer to the Ceilometer documentation
-                available at: <xref
-                    href="http://docs.openstack.org/admin-guide/telemetry-measurements.html"
-                    format="html" scope="external"
-                    >http://docs.openstack.org/admin-guide/telemetry-measurements.html</xref> Here
-                it is an example of the default <b>pipeline.yaml</b> file:</p>
-            <codeblock>---
+        <section id="notification_strategy"><title>Notification White-Listing and Polling
+                Strategies</title>Helion OpenStack is designed to reduce the amount of data that is
+            stored. Helion's use of a SQL-based cluster, which is not recommended for big data,
+            means you must control the data that Ceilometer collects using the <b>pipeline.yaml</b>
+            file. This configuration file is located in the<b> /etc/ceilometer</b> folder in any of
+            the controller nodes.<note>The <codeph>pipeline.yaml</codeph> file needs to be changed
+                on all controller nodes to change the white-listing and polling strategy.</note><p>
+                The pipeline file has two major sections:</p><dl>
+                <dlentry>
+                    <dt>Sources</dt>
+                    <dd>represents the data that is collected either from notifications posted by
+                        services or through polling. In the Sources section there is a list of
+                        meters. These meters are the data that is going to be collected. For a full
+                        list refer to the Ceilometer documentation available at: <xref
+                            href="http://docs.openstack.org/admin-guide/telemetry-measurements.html"
+                            format="html" scope="external"
+                            >http://docs.openstack.org/admin-guide/telemetry-measurements.html</xref></dd>
+                </dlentry>
+                <dlentry>
+                    <dt>Sinks</dt>
+                    <dd>represents how the data is modified before it is published to the internal
+                        queue for collection and storage. </dd>
+                </dlentry>
+            </dl><p><b>Sample default
+                    <codeph>pipeline.yaml</codeph>file:</b></p><codeblock>---
 sources:
     - name: meter_source
       interval: 604800
@@ -289,21 +288,25 @@ sinks:
     - name: meter_sink
       transformers:
       publishers:
-          - notifier://</codeblock>
-            <p>The interval attribute decides the frequency of the data polling whenever the meter
-                can be polled. In general the meters that are available as notification and polling
-                (indicated as both in <xref
+          - notifier://</codeblock><p><b>Guidelines
+                    for setting the <codeph>interval</codeph> attribute:</b></p><dl>
+                <dlentry>
+                    <dt>interval</dt>
+                    <dd>sets how often a meter can be polled for data, in seconds. This interval
+                        impacts meters that are available for both notifications and polling.
+                            <note>Swift account data will be collected using the polling mechanism
+                            in an hourly interval.</note></dd>
+                </dlentry>
+            </dl><p>In the example <codeph>pipeline.yaml</codeph>file above, the interval is set so
+                that more resources are used for notifications and less for polling. To accomplish
+                this, the interval is set to a large amount of time, 604800 seconds, or 1 week.
+                Setting this interval to manage both notifications and polling is the recommended
+                procedure when using a SQL cluster back-end.</p><p>For more information, see <xref
                     href="http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html"
                     format="html" scope="external"
-                    >http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html</xref>)
-                are going to be polled at the specified interval. In our setting, since we want to
-                rely on notifications rather than polling, the interval is set to 604800 that
-                corresponds to 1 week expressed in seconds. The combination of meters and polling
-                interval is the most performing compromise that we found using the SQL cluster
-                back-end.</p>
-            <note>Swift account data will be collected using the polling mechanism in an hourly
-                interval </note>
-        </section>
+                    >http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html</xref>
+            </p></section>
+    <lines></lines>
         <section id="changing_meter_list">
             <title>Changing the List of Meters </title>
             <p>The list of meters can be easily reduced or increased editing the pipeline.yaml and
