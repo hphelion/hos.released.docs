@@ -64,7 +64,25 @@
         </ul>
       </p>
       <p> After the changes are made to the configuration files, redeploy the service.</p>
-      <!-- An example or reference could be useful here for the redeploying of a service. -->
+      <ol>
+        <li>Commit changes to git.
+          <codeblock>cd ~/helion
+git add -A
+git commit -m "My Octavia Config"</codeblock>
+        </li>
+        <li>Run the configuration processor and ready deployment.
+          <codeblock>cd ~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>
+        </li>
+        <li>Run the Octavia reconfigure.
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts octavia-reconfigure.yml</codeblock>
+        </li>
+      </ol>      
+      
+      
+      
       <p><b>Spare Pools</b></p>
       <p> The Octavia driver provides support for creating spare pools of the HAProxy software
         installed in VMs. This means instead of creating a new load balancer when loads increase,
