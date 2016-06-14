@@ -340,13 +340,24 @@ ansible-playbook -i hosts/localhost ready-deployment.yml;
 cd /home/stack/scratch/ansible/next/hos/ansible;</codeblock></li>
         </ol>
       </p></section>
-    <section id="deploy-compute-proxy-ovsvapps"><b>Deploy ESX Compute Proxy and OVSvApps</b>
-      <p>Execute the following command to deploy an ESX compute and
-        OVSvApps:<codeblock>ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></p><note>The
-        variable <b>esx-ovsvapp</b> and <b>esx-compute</b> must be taken from the <b>name</b> key in
-        the <codeph>resource-nodes</codeph> section in the <codeph>data/control_plane.yml</codeph>
-        file (<codeph>/home/stack/helion/my_cloud/definition/data/control_plane.yml</codeph>).
-      </note></section>
+    <section id="deploy-compute-proxy-ovsvapps"><b>Configuring VMDK block storage</b><p>Execute the
+        following command to configure VMDK block
+        storage:<codeblock>ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></p><!--The variable <b>esx-ovsvapp</b> and <b>esx-compute</b> must be taken from the <b>name</b> key in the <codeph>resource-nodes</codeph> section in the <codeph>data/control_plane.yml</codeph> file (<codeph>/home/stack/helion/my_cloud/definition/data/control_plane.yml</codeph>) removed as per Satya's comment. --></section>
+    <section>
+      <title>Validate the block storage</title>
+      <p>You can validate that the VMDK block storage is added to the cloud successfully using the
+        following
+        command:<codeblock># cinder service-list</codeblock><codeblock>+------------------+-------------------------+------+---------+-------+----------------------------+-----------------+
+|      Binary      |           Host          | Zone |  Status | State |         Updated_at         | Disabled Reason |
++------------------+-------------------------+------+---------+-------+----------------------------+-----------------+
+|  cinder-backup   |    ha-volume-manager    | nova | enabled |   up  | 2016-06-14T08:44:51.000000 |        -        |
+| cinder-scheduler |    ha-volume-manager    | nova | enabled |  down | 2016-06-13T08:47:07.000000 |        -        |
+| cinder-scheduler |    ha-volume-manager    | nova | enabled |   up  | 2016-06-14T08:44:57.000000 |        -        |
+|  cinder-volume   |    ha-volume-manager    | nova | enabled |  down | 2016-06-13T07:36:41.000000 |        -        |
+|  cinder-volume   | ha-volume-manager@vmdk1 | nova | enabled |   up  | 2016-06-14T08:44:55.000000 |        -        |
+|  cinder-volume   |  ha-volume-manager@vsa1 | nova | enabled |   up  | 2016-06-14T08:44:50.000000 |        -        |
++------------------+-------------------------+------+---------+-------+----------------------------+-----------------+</codeblock></p>
+    </section>
     <section id="verify">
       <title>Validate the Compute</title>
       <p>You can validate that the ESX Compute Cluster is added to the cloud successfully using the
