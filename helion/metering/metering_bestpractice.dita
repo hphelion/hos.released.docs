@@ -16,24 +16,46 @@
     <body>
         <p conkeyref="HOS-conrefs/applies-to"/>
         <p><!--PUBLISHED--><!--./commercial/GA1/ceilometer/1.1commerical.services-reporting-bestpractice.md--><!--permalink: /helion/openstack/1.1/services/reporting/bestpractices/--></p>
-        <p>Configuration changes that improve reporting API and database responsiveness by keeping
-            data storage to a reasonable level.</p>
+        <p>You can improve API and database responsiveness by configuring metering to store only the
+            data you are require. This topic provides strategies for getting the most out of
+            metering while not overloading your resources.</p>
+        <ul>
+            <li>Enable Nova Notifications</li>
+            <li>Improving Reporting API Responsiveness</li>
+            <li>Notification White-Listing and Polling Strategies</li>
+            <li>Changing the List of Meters</li>
+            <li>Updating the Polling Strategy and Swift Considerations</li>
+        </ul>
+        
+        
+        
+        
         <section id="ceilometer_nova">
-            <title>Nova</title>
-            <p>Nova can send notifications related to its usage and VM status simply enabling it
-                from its configuration file.</p>
-            <p>Nova will send following data to Ceilometer if the messaging notifications are
-                enabled:</p>
-        </section>
-        <section id="novadata">
-            <title>Nova Data Collected by Ceilometer</title>
-            <table pgwide="1">
-                <tgroup cols="5">
-                    <colspec colname="col1" colsep="1" rowsep="1"/>
-                    <colspec colname="col2" colsep="1" rowsep="1"/>
-                    <colspec colname="col3" colsep="1" rowsep="1"/>
-                    <colspec colname="col4" colsep="1" rowsep="1"/>
-                    <colspec colname="col5" colsep="1" rowsep="1"/>
+            <title>Enable Nova Notifications</title>
+            <p>You can configure Nova to send notifications by enabling the setting in the configuration file. When enabled, Nova will send information to Ceilometer related to its usage and VM status. You must restart Nova for these changes to take effect. </p>
+                
+               <p> The Openstack notification daemon, also known as a polling agent, monitors the
+                message bus for data being provided by other OpenStack components such as Nova. The
+                notification daemon loads one or more listener plugins, using the
+                    <codeph>ceilometer.notification</codeph> namespace. Each plugin can listen to
+                any topic, but by default it will listen to the <codeph>notifications.info</codeph>
+                topic. The listeners grab messages off the defined topics and redistribute them to
+                the appropriate plugins (endpoints) to be processed into Events and Samples. After
+                the Nova service is restarted, you should verify that the notification daemons are
+                receiving traffic.</p>
+            
+            <p>For a more in-depth look at how information is sent over <i>openstack.common.rpc</i>,
+                refer to the <xref
+                    href="http://docs.openstack.org/developer/ceilometer/measurements.html"
+                    scope="external" format="html">OpenStack Ceilometer documentation</xref>.</p>
+            
+            <p>Nova can be configured to send following data to Ceilometer:</p>
+            <table pgwide="1"> <tgroup cols="5">
+                    <colspec colname="col1" colsep="1" rowsep="1" colwidth="2*"/>
+                    <colspec colname="col2" colsep="1" rowsep="1" colwidth="1*"/>
+                    <colspec colname="col3" colsep="1" rowsep="1" colwidth="1.26*"/>
+                    <colspec colname="col4" colsep="1" rowsep="1" colwidth="1.54*"/>
+                    <colspec colname="col5" colsep="1" rowsep="1" colwidth="4.19*"/>
                     <tbody>
                         <row>
                             <entry>
@@ -99,76 +121,84 @@
                     </tbody>
                 </tgroup>
             </table>
-        </section>
-        <section id="novaconfigfile">
-            <title>Enable Nova Notifications</title>
-            <p>To enable Nova to publish these notifications you must edit the nova.conf file.</p>
-            <p> The following is an excerpt of the configuration file with the necessary changes to
-                enable notifications:</p>
-            <codeblock>notification_driver=messaging
+        
+            <p>To enable Nova to publish notifications:</p>
+            <ol>
+                <li>In a text editor, open the following file:
+                    <codeblock>nova.conf</codeblock></li>
+            <li>Compare the example of a working configuration file with the necessary changes to
+                    your configuration file. If there is anything missing in your file, add it, and
+                    then save the file.
+                        <codeblock>notification_driver=messaging
 notification_topics=notifications
 notify_on_state_change=vm_and_task_state
 instance_usage_audit=True
-instance_usage_audit_period=hour</codeblock>
-            <p>The <i>instance_usage_audit_period</i> interval can be set to check the instance's
-                status every hour, once a day, once a week or once a month. Every time the audit
-                period elapses, Nova sends a notification to Ceilometer to record whether or not the
-                instance is alive and running. Metering this statistic is critical if billing
-                depends on usage.</p>
-        </section>
-        <section id="restart-the-nova-service">
-            <title>Restart the Nova Service</title>
-            <note>Nova needs to be restarted in order for these changes to take effect. Please refer
-                to the latest Nova documentation for restarting nova-compute service for specific
-                platforms</note>
-            <p>For a more in-depth look at how information is sent over <i>openstack.common.rpc</i>,
-                refer to the <xref
-                    href="http://docs.openstack.org/developer/ceilometer/measurements.html"
-                    scope="external" format="html">OpenStack Ceilometer documentation</xref>.</p>
-            <p>
-                <b>Validation</b> After the Nova service is restarted, the notification daemons
-                using the namespace <i>ceilometer.notification</i> should receive some traffic. Each
-                plugin can listen to any topic(s), but by default it will listen to
-                    <i>notifications.info</i>.</p>
-        </section>
-        <section id="webserverapi">
-            <title><b>Improving Reporting API responsiveness</b></title>
-            <p>Reporting APIs are the main access to the Metering data stored in Ceilometer. These
-                APIs are access by Horizon to provide basic usage data and information.</p>
-            <p><keyword keyref="kw-hos"/> uses Apache2 Web Server to serve the API access. It is
-                possible to tune performance to optimize the front-end and back-end (database). Our
-                experience indicates that an excessive increase of concurrent access to the
-                front-end tends to put strain in the database. We are striving to improve
-                performance for the back-end but for now we have documented the best set-up
-                providing a good compromise.</p>
-        </section>
+instance_usage_audit_period=hour</codeblock><note
+                        type="important">The <codeph>instance_usage_audit_period</codeph> interval
+                        can be set to check the instance's status every hour, once a day, once a
+                        week or once a month. Every time the audit period elapses, Nova sends a
+                        notification to Ceilometer to record whether or not the instance is alive
+                        and running. Metering this statistic is critical if billing depends on
+                        usage.</note></li>
+           <li>To restart Nova service, run:
+                        <codeblock>sudo service openstack-nova-api restart
+sudo service openstack-nova-cert restart
+sudo service openstack-nova-consoleauth restart
+sudo service openstack-nova-scheduler restart
+sudo service openstack-nova-conductor restart
+sudo service openstack-nova-novncproxy restart    </codeblock><note
+                        type="important">Different platforms may use their own unique command to
+                        restart nova-compute services. If the above command does not work, please
+                        refer to the documentation for your specific platform.</note></li>
+                <li>To verify successful launch of each process, list the service components:
+                    <codeblock>nova service-list
+                        #Sample Output:
++----+------------------+------------+----------+---------+-------+----------------------------+-----------------+
+| Id | Binary           | Host       | Zone     | Status  | State | Updated_at                 | Disabled Reason |
++----+------------------+------------+----------+---------+-------+----------------------------+-----------------+
+| 1  | nova-conductor   | controller | internal | enabled | up    | 2014-09-16T23:54:02.000000 | -               |
+| 2  | nova-consoleauth | controller | internal | enabled | up    | 2014-09-16T23:54:04.000000 | -               |
+| 3  | nova-scheduler   | controller | internal | enabled | up    | 2014-09-16T23:54:07.000000 | -               |
+| 4  | nova-cert        | controller | internal | enabled | up    | 2014-09-16T23:54:00.000000 | -               |
+| 5  | nova-compute     | compute1   | nova     | enabled | up    | 2014-09-16T23:54:06.000000 | -               |
++----+------------------+------------+----------+---------+-------+----------------------------+-----------------+
+            </codeblock>
+                </li>
+            </ol>
         
-        <section id="APCM_config">
-            <title>Configure Apache2 for the Ceilometer API</title>
-            <p>To improve the responsiveness you can increase the number of threads and processes
-                in the ceilometer configuration file.</p>
-            
-            <p>The Ceilometer API runs as an WSGI processes. Each process can have a certain
-                amount of threads taking care of the filters and applications comprising the
-                processing pipeline. </p>
-            
+        </section>
+        <lines>
+        </lines>
+        <section id="webserverapi">
+            <title>Improving Reporting API Responsiveness</title>
+            <p>Reporting APIs are the main access to the metering data stored in Ceilometer. These
+                APIs are accessed by Horizon to provide basic usage data and information.</p>
+            <p><keyword keyref="kw-hos"/> uses Apache2 Web Server to provide the API access. This topic provides some
+                strategies to help you optimize the front-end and back-end databases. </p>
+            <p>To improve the responsiveness you can increase the number of threads and processes in
+                the ceilometer configuration file.</p>
+            <p>The Ceilometer API runs as an WSGI processes. Each process can have a certain amount
+                of threads taking care of the filters and applications comprising the processing
+                pipeline. </p>
             <p>To configure Apache:</p>
-                <ol>
-                    <li><xref type="section" href="#topic11470/APCM_edit_config">Edit the Ceilometer configuration files.</xref></li>
-                    <li><xref type="section" href="#topic11470/reload_apache">Reload and verify Apache2.</xref></li>
-                </ol>              
-        </section>                 
-                    
-     <section id="APCM_edit_config">         
-         <title>Edit the Ceilometer Configuration Files</title>
-         <p>To create a working file for Ceilometer with the correct settings:</p>
-         <ol>
-                    <li>To add the configuration file to the correct folder, copy the following
-                    file: <codeblock>ceilometer.conf</codeblock> to the following directory:
+            <ol>
+                <li><xref type="section" href="#topic11470/APCM_edit_config">Edit the Ceilometer
+                        configuration files.</xref></li>
+                <li><xref type="section" href="#topic11470/reload_apache">Reload and verify
+                        Apache2.</xref></li>
+            </ol>
+        </section>
+        <section id="APCM_edit_config">
+            <title>Edit the Ceilometer Configuration Files</title>
+            <p>To create a working file for Ceilometer with the correct settings:</p>
+            <ol>
+                <li>To add the configuration file to the correct folder, copy the following file:
+                    <codeblock>ceilometer.conf</codeblock> to the following directory:
                     <codeblock>/etc/apache2/sites-available</codeblock></li>
-                    <li>To verify the settings, in a text editor, open the <codeph>ceilometer.conf</codeph> file.</li>
-                    <li>The ceilometer.conf file should have the following data. If it does not
-                    exist, add it to the file. <codeblock>Listen &lt;ipaddress>:8777 
+                <li>To verify the settings, in a text editor, open the
+                        <codeph>ceilometer.conf</codeph> file.</li>
+                <li>The ceilometer.conf file should have the following data. If it does not exist,
+                    add it to the file. <codeblock>Listen &lt;ipaddress>:8777 
 &lt;VirtualHost *:8777>
     WSGIDaemonProcess ceilometer user=ceilometer group=ceilometer processes=4 threads=5 home=/opt/stack/venvs/openstack python-path=/opt/stack/venvs/openstack/lib/python2.7/site-packages
     WSGIScriptAlias / /opt/stack/venvs/openstack/lib/python2.7/site-packages/ceilometer/api/app.wsgi
@@ -188,26 +218,23 @@ instance_usage_audit_period=hour</codeblock>
                         <p>Five threads for each process is also recommended: </p>
                         <codeblock>threads=5</codeblock>
                     </note></li>
-        
-            <li>To add a softlink for the ceilometer.conf, run:
-                <codeblock>ln -s /etc/apache2/sites-available/ceilometer.conf /etc/apache2/sites-enabled</codeblock></li>
-         </ol>
-        <lines/>
-     </section>
+                <li>To add a softlink for the ceilometer.conf, run:
+                    <codeblock>ln -s /etc/apache2/sites-available/ceilometer.conf /etc/apache2/sites-enabled</codeblock></li>
+            </ol>
+            <lines/>
+        </section>
         <section id="reload_apache">
             <title>Reload and Verify Apache2</title>
             <p>For the changes to take effect, the Apache2 service needs to be reloaded. This
-                ensures that all the configuration changes are considered and the service has
-                applied them. The system administrator can change the configuration of processes and
-                threads and experiment if alternative settings if necessary. </p>
-                
-                <p>Once the Apache2 service has been reloaded you can verify that the Ceilometer APIs are running and able to
-                receive incoming traffic. The Ceilometer APIs are listening on port 8777.</p>
-                
-                <p>To reload and verify the Apache2 service:</p>
+                ensures that all the configuration changes are saved and the service has applied
+                them. The system administrator can change the configuration of processes and threads
+                and experiment if alternative settings are necessary. </p>
+            <p>Once the Apache2 service has been reloaded you can verify that the Ceilometer APIs
+                are running and able to receive incoming traffic. The Ceilometer APIs are listening
+                on port 8777.</p>
+            <p>To reload and verify the Apache2 service:</p>
             <ol>
-                <li>To reload Apache2, run:
-            <codeblock>sudo service apache2 reload</codeblock></li>
+                <li>To reload Apache2, run: <codeblock>sudo service apache2 reload</codeblock></li>
                 <li>To verify the service is running, run:
                         <codeblock>ps -ef | grep apache
     #Sample output showing Apache2 with Ceilometer Running Instances:
@@ -220,52 +247,74 @@ instance_usage_audit_period=hour</codeblock>
                         example configuration file, the recommended number of 4 is used, and the
                         number of Running Instances is also 4.</note></li>
             </ol>
-                        
             <p>You can also verify that Apache2 is accepting incoming traffic using the following
                 procedure:</p>
-                <ol>
-               <li>To verify traffic on port 8777, run:
-            <codeblock>netstat -tulpn | grep 8777</codeblock></li>
-            <li>Verify your output is similar to the following example:
-            <codeblock>tcp6 0 0 :::8777 :::* LISTEN 8959/apache2</codeblock></li>
-                </ol>
-            
-            <note type="attention">If Ceilometer fails to deploy:
-                <ul>
+            <ol>
+                <li>To verify traffic on port 8777, run:
+                    <codeblock>netstat -tulpn | grep 8777</codeblock></li>
+                <li>Verify your output is similar to the following example:
+                    <codeblock>tcp6 0 0 :::8777 :::* LISTEN 8959/apache2</codeblock></li>
+            </ol>
+            <note type="attention">If Ceilometer fails to deploy: <ul>
                     <li>check the proxy setting</li>
                     <li>unset the https_proxy, for example:
                         <codeblock>unset http_proxy HTTP_PROXY HTTPS_PROXY</codeblock></li>
                 </ul></note>
         </section>
-        
+        <lines>
+        </lines>
         <section id="notification_strategy"><title>Notification White-Listing and Polling
-                Strategies</title>Helion OpenStack is designed to reduce the amount of data that is
+                Strategies</title>
+            <p>Helion OpenStack is designed to reduce the amount of data that is
             stored. Helion's use of a SQL-based cluster, which is not recommended for big data,
-            means you must control the data that Ceilometer collects using the <b>pipeline.yaml</b>
-            file. This configuration file is located in the<b> /etc/ceilometer</b> folder in any of
-            the controller nodes.<note>The <codeph>pipeline.yaml</codeph> file needs to be changed
-                on all controller nodes to change the white-listing and polling strategy.</note><p>
-                The pipeline file has two major sections:</p><dl>
-                <dlentry>
-                    <dt>Sources</dt>
-                    <dd>represents the data that is collected either from notifications posted by
-                        services or through polling. In the Sources section there is a list of
-                        meters. These meters are the data that is going to be collected. For a full
-                        list refer to the Ceilometer documentation available at: <xref
-                            href="http://docs.openstack.org/admin-guide/telemetry-measurements.html"
-                            format="html" scope="external"
-                            >http://docs.openstack.org/admin-guide/telemetry-measurements.html</xref></dd>
-                </dlentry>
-                <dlentry>
-                    <dt>Sinks</dt>
-                    <dd>represents how the data is modified before it is published to the internal
-                        queue for collection and storage. </dd>
-                </dlentry>
-            </dl><p><b>Sample default
-                    <codeph>pipeline.yaml</codeph>file:</b></p><codeblock>---
+            means you must control the data that Ceilometer collects using the configuration files for the Ceilometer Central Agent and the Ceilometer Notification Agent.</p>
+            <p>Ceilometer Central Agent (polling agent) and Ceilometer Notification Agent
+                (notification agent) use different pipeline.yaml files to configure meters that are
+                collected. This prevents accidentally polling for meters which can be retrieved by
+                the polling agent as well as the notification agent. For example, glance image and
+                image.size are meters which can be retrieved both by polling and notifications.</p>
+            
+            <p>In both of the separate configuration files, there is a setting for
+                    <codeph>interval</codeph>. The interval attribute determines the frequency, in
+                seconds, of how often data is collected. You can use this setting to control the
+                amount of resources that are used for notifications and for polling. For example,
+                you want to use more resources for notifications and less for polling. To accomplish
+                this you would set the <codeph>interval</codeph> in the polling configuration file
+                to a large amount of time, such as 604800 seconds, which polls only once a week.
+                Then in the notifications configuration file, you can set the
+                    <codeph>interval</codeph> to a higher amount, such as collecting data every 30
+                seconds.</p>
+                
+            <note type="important">Swift account data will be collected using the polling mechanism
+                in an hourly interval.</note>
+                
+                <p>Setting this interval to manage both notifications and polling is the recommended
+                procedure when using a SQL cluster back-end.</p>
+            
+            <p><b>Sample Ceilometer Central Agent (polling agent) file:</b></p>
+            <codeblock>#File:    ~/opt/stack/service/ceilometer-common/etc/pipeline-agent-central.yaml
+---
 sources:
     - name: meter_source
-      interval: 604800
+      interval: 600
+      meters:
+          - "!*"
+      resources:
+      discovery:
+      sinks:
+          - meter_sink
+sinks:
+    - name: meter_sink
+      transformers:
+      publishers:
+         - notifier://</codeblock>         
+            
+            <p><b>Sample Ceilometer Notification Agent(notification agent) file:</b></p>
+            <codeblock>#File:    ~/opt/stack/service/ceilometer-common/etc/pipeline.yaml
+---          
+sources:
+    - name: meter_source
+      interval: 30
       meters:
           - "instance"
           - "image"
@@ -277,43 +326,108 @@ sources:
           - "snapshot"
           - "snapshot.size"
           - "ip.floating"
-          - "network.*"
-          - "compute.instance.create.end"
-          - "compute.instance.delete.end"
-          - "compute.instance.update"
-          - "compute.instance.exists"
-      sinks:
+          - "network"
+          - "network.create"
+          - "network.update"
+resources:
+discovery:
+sinks:
           - meter_sink
 sinks:
     - name: meter_sink
       transformers:
       publishers:
-          - notifier://</codeblock><p><b>Guidelines
-                    for setting the <codeph>interval</codeph> attribute:</b></p><dl>
-                <dlentry>
-                    <dt>interval</dt>
-                    <dd>sets how often a meter can be polled for data, in seconds. This interval
-                        impacts meters that are available for both notifications and polling.
-                            <note>Swift account data will be collected using the polling mechanism
-                            in an hourly interval.</note></dd>
-                </dlentry>
-            </dl><p>In the example <codeph>pipeline.yaml</codeph>file above, the interval is set so
-                that more resources are used for notifications and less for polling. To accomplish
-                this, the interval is set to a large amount of time, 604800 seconds, or 1 week.
-                Setting this interval to manage both notifications and polling is the recommended
-                procedure when using a SQL cluster back-end.</p><p>For more information, see <xref
-                    href="http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html"
-                    format="html" scope="external"
-                    >http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html</xref>
-            </p></section>
-    <lines></lines>
+         - notifier://</codeblock>
+            
+            
+            
+            <p>Both of the pipeline files have two major sections:
+                <dl>
+                    <dlentry>
+                        <dt>Sources</dt>
+                        <dd>represents the data that is collected either from notifications posted
+                            by services or through polling. In the Sources section there is a list
+                            of meters. These meters define what kind of data is collected. For a
+                            full list refer to the Ceilometer documentation available at: <xref
+                                href="http://docs.openstack.org/admin-guide/telemetry-measurements.html"
+                                format="html" scope="external">Telemetry Measurements</xref></dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Sinks</dt>
+                        <dd>represents how the data is modified before it is published to the internal
+                            queue for collection and storage. </dd>
+                    </dlentry>
+                </dl>You will only need to change a setting in the Sources section to control the data collection interval.</p>
+            
+            <p>For more information, see <xref
+                        href="http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html"
+                        format="html" scope="external"
+                        >Telemetry Measurements</xref>
+                    </p>
+            
+            <p><b>To change the Ceilometer Central Agent (polling) interval setting:</b></p>
+            <ol>
+                 <li>To find the polling agent configuration file, run:
+                    <codeblock>cd ~/opt/stack/service/ceilometer-common/etc</codeblock></li>
+                 <li>In a text editor, open the following file:       
+                        <codeblock>pipeline-agent-central.yaml</codeblock></li>
+                <li>In the following section, change the value of <codeph>interval</codeph> to the
+                    desired amount of time:
+                    <codeblock>sources:
+    - name: meter_source
+      interval: 600
+      meters:
+          - "!*"
+      resources:
+      discovery:</codeblock>
+                    In the sample code above, the polling agent will collect data every 600 seconds,
+                    or 10 minutes.</li>
+            </ol>                 
+
+                <p><b>To change the Ceilometer Notification Agent (notification agent) interval
+                    setting:</b></p>
+                <ol>
+                    <li>To find the notification agent configuration file, run:
+                    <codeblock>cd ~~/opt/stack/service/ceilometer-common/etc</codeblock></li>
+                    <li>In a text editor, open the following file:       
+                        <codeblock>pipeline.yaml</codeblock></li>
+                    <li>In the following section, change the value of <codeph>interval</codeph> to
+                    the desired amount of time:
+                    <codeblock>sources:
+    - name: meter_source
+      interval: 30
+      meters:
+          - "instance"
+          - "image"
+          - "image.size"
+          - "image.upload"
+          - "image.delete"
+          - "volume"
+          - "volume.size"
+          - "snapshot"
+          - "snapshot.size"
+          - "ip.floating"
+          - "network"
+          - "network.create"
+          - "network.update"</codeblock>
+                    In the sample code above, the notification agent will collect data every 30
+                    seconds.</li>
+                </ol> 
+            
+                <note>The <codeph>pipeline.yaml</codeph> file needs to be changed
+                on all controller nodes to change the white-listing and polling strategy.</note>
+                            
+        </section>
+        
+        
+        
+        <lines/>
         <section id="changing_meter_list">
-            <title>Changing the List of Meters </title>
-            <p>The list of meters can be easily reduced or increased editing the pipeline.yaml and
-                subsequently restarting the central-agent (please see: Helion Ceilometer Runbook -
-                Ceilometer Central Agent) and the Collector (please see: Helion Ceilometer Runbook -
-                Ceilometer Collector). Here it is an example of compute only pipeline.yaml with the
-                daily poll interval:</p>
+            <title>Changing the List of Meters</title>
+            <p>The list of meters can be easily reduced or increased by editing the pipeline.yaml
+                file and restarting the central agent. </p> 
+
+<p>Sample compute-only pipeline.yaml file with the daily poll interval:</p>
             <codeblock>---
 sources:
     - name: meter_source
@@ -336,14 +450,16 @@ sinks:
             <note> This change will cause all non-default meters to stop receiving
                 notifications</note>
         </section>
+        <lines>
+        </lines>
         <section id="update_polling_strategy">
             <title>Updating the Polling Strategy and Swift Considerations</title>
-            <p>Polling can be very taxing on the system due to the sheer amount of data that the
-                system may have to ingest. It also has severe impact on queries since the database
-                will now have very large amount of data to scan to respond to the query, usually
-                consuming large amount of cpu and memory to satisfy the requests. Clients can also
-                experience long waits for queries to come back and, in extreme cases, even timeout.
-                There are 5 polling meters in Swift:</p>
+            <p>Polling can put an excessive amount of strain on the system due to the amount of data that the
+                system may have to process. Polling also has a severe impact on queries since the database
+                will have very large amount of data to scan to respond to the query. This process usually
+                consumes a large amount of CPU and memory to complete the requests. Clients can also
+                experience long waits for queries to come back and, in extreme cases, even timeout.</p>
+               <p> There are 5 polling meters in Swift:</p>
             <ul>
                 <li> storage.objects</li>
                 <li>storage.objects.size</li>
@@ -390,9 +506,9 @@ sinks:
       transformers:
       publishers:
           - notifier://</codeblock>
-            <p>So every time the polling interval is due for polling at least 5 messages per
-                existing object/container in Swift are collected. The following table illustrate the
-                amount of data will be produce hourly in different scenarios:</p>
+            <p>Every time the polling interval is due for polling at least 5 messages per
+                existing object/container in Swift are collected. The following table illustrates the
+                amount of data produced hourly in different scenarios:</p>
             <table>
                 <tgroup cols="4">
                     <tbody>
@@ -429,74 +545,14 @@ sinks:
                     </tbody>
                 </tgroup>
             </table>
-            <p>This means that even a very small Swift storage with 10 containers and 100 files will
-                store 120K samples in 24H bringing to a grand total of 3.6 million samples.</p>
+            <p>Looking at the data we can see that even a very small Swift storage with 10 containers and 100 files will
+                store 120K samples in 24 hours, bringing it to a total of 3.6 million samples.</p>
             <note>The file size of each file does not have any impact on the number of samples
-                collected. In fact the smaller is the number of container or files the better it is.
-                So the scenario where there a lot of small files and containers is the worst.</note>
+                collected. In fact the smaller the number of containers or files, the smaller the sample size.
+                In the scenario where there a large number of small files and containers, the sample size is also large and the performance is at its worst.</note>
         </section>
-        <section id="pipelines">
-            <title>Separate pipeline.yaml for Ceilometer Central Agent and Ceilometer Notification
-                Agent</title>
-            <ul>
-                <li>Ceilometer Central Agent and Ceilometer Notification agent use different
-                    pipeline.yaml to configure meters that are fetched via polling and using
-                    notifications. This was done to prevent accidentally polling for meters which
-                    can be retrieved by polling agent as well as the notification agent. (e.g.
-                    glance image and image.size are meters which are both of pollster and
-                    notification type)</li>
-                <li>Ceilometer Central Agent's (polling agent) pipeline.yaml is located at
-                        <b>/opt/stack/service/ceilometer-common/etc/pipeline-agent-central.yaml
-                        </b><p>Here is an example of the pipeline-agent-central</p>
-                    <codeblock>---
-sources:
-    - name: meter_source
-      interval: 600
-      meters:
-          - "!*"
-      resources:
-      discovery:
-      sinks:
-          - meter_sink
-sinks:
-    - name: meter_sink
-      transformers:
-      publishers:
-         - notifier://</codeblock>
-                </li>
-                <li> Ceilometer Notification Agent (notification agent) <b>pipeline.yaml </b>is
-                    located at <b>/opt/stack/service/ceilometer-common/etc/pipeline.yaml </b><p>
-                        Here is an example of the default pipeline.yaml file:</p>
-                    <codeblock>---
-sources:
-    - name: meter_source
-      interval: 30
-      meters:
-          - "instance"
-          - "image"
-          - "image.size"
-          - "image.upload"
-          - "image.delete"
-          - "volume"
-          - "volume.size"
-          - "snapshot"
-          - "snapshot.size"
-          - "ip.floating"
-          - "network"
-          - "network.create"
-          - "network.update"
-      resources:
-      discovery:
-      sinks:
-          - meter_sink
-sinks:
-    - name: meter_sink
-      transformers:
-      publishers:
-         - notifier://</codeblock>
-                </li>
-            </ul>
-        </section>
+        <lines>
+        </lines>
         <section id="ceilometer_api"><title>Ceilometer API</title>
             <b>Separate pipeline.yaml for Ceilometer Post Sample API</b>
             <p>Post Sample API is disabled by default in <keyword keyref="kw-hos-phrase"/> and its
@@ -522,6 +578,8 @@ sinks:
       publishers:
          - notifier://</codeblock>
         </section>
+        <lines>
+        </lines>
         <section id="ceilomter_sample_API">
             <title>Ceilometer Sample API</title>
             <p>Ceilometer query-sample API uses anonymous/alias table to cache the JOIN query
@@ -534,6 +592,8 @@ sinks:
             <codeblock>ceilometer sample-list --meter image.serve -q 'resource_id=a1ec2585'</codeblock>
             <codeblock>ceilometer query-samples --filter '{"and": [{"=": {"counter_name":"cpu_util"}}, {"=": {"project":"7d4af57f557547b4a28b40b054d6ffb2"}}]}'</codeblock>
         </section>
+        <lines>
+        </lines>
         <section id="ceilometer_stats"><title>Ceilometer Statistics API</title>
             <p>Ceilometer Statistics is an open ended query and can put a significant load on the
                 database leading to unexpected results and or failures. Ceilometer Statistics API
@@ -608,6 +668,8 @@ POST /v2/query/alarms/history</codeblock>
                     Apache</li>
             </ul>
         </section>
+        <lines>
+        </lines>
         <section id="failover_support">
             <title>Failover Support (HA)</title>
             <p>In the Helion environment, Ceilometer supports native Active-Active HA for
