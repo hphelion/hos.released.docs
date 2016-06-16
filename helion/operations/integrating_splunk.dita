@@ -33,43 +33,13 @@
           href="https://www.splunk.com" format="html" scope="external">splunk.com</xref>.</p>
     </section>
 
-    <section id="setup">
-      <title>Setting up Splunk</title>
-      <p>If you already have an existing installation of Splunk that you wish to use then you can
-        skip this section and move on to the configuration section. Details on how to set up Splunk
-        can be found on their website at <xref
-          href="http://docs.splunk.com/Documentation/Splunk/latest/SearchTutorial/Systemrequirements"
-          format="html" scope="external">Splunk Tutorial</xref>.</p>
-      <p>For a quick way to install Splunk, we give the example below which use a docker-based
-        setup. This assumes that you already have a recent version (1.10+) of docker installed.</p>
-      <ol>
-        <li>Pull the Splunk docker image: <codeblock>docker pull outcoldman/splunk:6.4.1</codeblock>
-          <p>You can search all available official images with "splunk" in it by using this
-            command:</p>
-          <codeblock>docker search splunk</codeblock></li>
-        <li>Create a data container so that the Splunk configuration and login data is persisted
-          across container restarts:
-          <codeblock>docker run --name vsplunk -v /opt/splunk/etc -v /opt/splunk/var busybox</codeblock></li>
-        <li>Launch the Splunk container: <codeblock>docker run --hostname splunk --name splunk --volumes-from=vsplunk -p 8000:8000 -p 5514:5514 -d --env SPLUNK_START_ARGS="--accept-license" outcoldman/splunk:6.4.1</codeblock>
-          <p>where <codeph>8000</codeph> is the web admin port and <codeph>5514</codeph> is the port
-            that will be used to forward log messages from <keyword keyref="kw-hos-phrase"/> to
-            Splunk.</p></li>
-        <li>To verify, open a browser tab and see if you are able to access the Splunk dashboard at
-            <xref href="http://localhost:8000" format="html" scope="external"
-            >http://localhost:8000</xref>. If you are running Splunk inside a container in a
-          headless virtual machine on your workstation, use
-            <codeph>http://&lt;VM_IP_address>:8000</codeph> instead.</li>
-        <li>Once you see the dashboard, use the credentials below to log in. You will be prompted to
-          change the password after the first log in.
-          <codeblock>username: admin
-password: changeme</codeblock></li>
-        <li>If all of that was successful, Splunk is now up and ready to be integrated.</li>
-      </ol>
-    </section>
-
     <section id="configuration">
       <title>Configuring Splunk to receive log messages from <keyword keyref="kw-hos-phrase"
         /></title>
+      <p>This documentation assumes that you already have Splunk set up and running. For help with
+        installing and setting up Splunk, refer to <xref
+          href="http://docs.splunk.com/Documentation/Splunk/latest/SearchTutorial/Systemrequirements"
+          format="html" scope="external">Splunk Tutorial</xref>.</p>
       <p>There are different ways in which a log message (or "event" in Splunk's terminology) can be
         shipped to Splunk. These steps will set up a TCP port (5514) where Splunk will listen for
         messages.</p>
