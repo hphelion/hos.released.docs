@@ -5,9 +5,22 @@
   <body><!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section>
-      <p>Helion OpenStack is designed to reduce the amount of data that is
-        stored. Helion's use of a SQL-based cluster, which is not recommended for big data,
-        means you must control the data that Ceilometer collects using the configuration files for the Ceilometer Central Agent and the Ceilometer Notification Agent.</p>
+      <title>Whitelisting and Polling</title>
+      
+      <p>Helion OpenStack is designed to reduce the amount of data that is stored. Helion's use of a
+        SQL-based cluster, which is not recommended for big data, means you must control the data
+        that Ceilometer collects. You can do this by filtering (whitelisting) the data or by using
+        the configuration files for the Ceilometer Central Agent and the Ceilometer Notification
+        Agent.</p>
+      
+      <p>Whitelisting is used in a rule specification as a positive filtering parameter. Whitelist is only included in rules that can be used in direct mappings, for identity service issues such as service discovery, provisioning users, groups, roles, projects, domains as well as user authentication and authorization.</p>
+      
+      <p>You can run tests against specific scenarios to see if filtering reduces the amount of data
+        stored. You can create a test by editing or creating a run filter file (whitelist). For
+        steps on how to do this, see: <xref
+          href="../installation/api_verification.dita#api_verification/list">Run Tests Matching a
+          Series of White and Blacklists</xref>.</p>
+      
       <p>Ceilometer Central Agent (polling agent) and Ceilometer Notification Agent
         (notification agent) use different pipeline.yaml files to configure meters that are
         collected. This prevents accidentally polling for meters which can be retrieved by
@@ -159,12 +172,13 @@ sinks:
       
     </section>
    
-    <section id="list"><title>Editing the List of Meters</title> The list of meters can be easily
-      reduced or increased by editing the pipeline configuration of the respective components (which
-      are notification or central/polling agent) and subsequently restarting the respectrive agent.
-      If pollsters are modified then the Central Agent requires a restart and if notifications are
-      added, then the Notification Agent requires a restart. Also, Collector needs to be restarted.
-      Here it is an example of compute only <b>pipeline.yml </b>with the daily polling interval:
+    <section id="list"><title>Editing the List of Meters</title>The number of enabled meters can be
+      reduced or increased by editing the pipeline configuration of the notification and polling
+      agents. To deploy these changes you must then restart the agent. If pollsters and
+      notifications are both modified, then you will have to restart both the Central Agent
+      (polling) and the Notification Agent. The Collector will also need to be restarted. The
+      following code is an example of a compute-only Ceilometer Notification Agent (notification
+      agent) <b>pipeline.yml </b>file:
       <codeblock>---
 sources:
     - name: meter_source
@@ -183,12 +197,10 @@ sinks:
     - name: meter_sink
       transformers:
       publishers:
-          - notifier://</codeblock>
-      If changes are made to this configuration to enable meters at container level, every time the
-      polling interval is due for polling at least 5 messages per existing object/container in Swift
-      are collected. The following table illustrate the amount of data will be produce hourly in
-      different scenarios: Swift Containers Swift Objects per container Number of Samples/hr Samples
-      Stored in a 24H Period <table>
+          - notifier://</codeblock>If
+      you enable meters at the container level in this file, every time the polling interval
+      triggers a collection, at least 5 messages per existing container in Swift are collected. The
+      following table illustrates the amount of data produced hourly in different scenarios: <table>
         <tgroup cols="4">
           <tbody>
             <row>
@@ -223,19 +235,21 @@ sinks:
             </row>
           </tbody>
         </tgroup>
-      </table> This means that even a very small Swift storage with 10 containers and 100 files will
-      store 120,000 samples in 24 hours, generating a grand total of 3.6 million samples! <p>Note
-        that the file size of each file does not have any impact on the number of samples collected.
-        As shown above, the smallest number of samples results from polling when there are a small
-        number of files and a small number of containers. When  there a lot of small files and
-        containers,  the number of samples is the highest. </p></section>
+      </table><p>The data in the table shows that even a very small Swift storage with 10 containers
+        and 100 files will store 120,000 samples in 24 hours, generating a total of 3.6 million
+        samples.</p><note type="important">The size of each file does not have any impact on the
+        number of samples collected. As shown in the table above, the smallest number of samples
+        results from polling when there are a small number of files and a small number of
+        containers. When there are a lot of small files and containers, the number of samples is the
+        highest. </note>
+    </section>
     
-    <section><title>Updating the Polling Strategy and Swift Considerations</title>
-      <p>Polling can be very taxing on the system due to the sheer volume of data that the system
-        may have to process. It also has a severe impact on queries since the database will now have
-        a very large amount of data to scan to respond to the query. This consumes a great amount of
-        cpu and memory. This can result in long wait times for query responses, and in extreme cases
-        can result in timeouts.</p> There are 3 polling meters in Swift: <ul>
+    <section><title>Updating the Polling Strategy and Swift Considerations</title><p>Polling can be
+        very taxing on the system due to the sheer volume of data thtyat the system may have to
+        process. It also has a severe impact on queries since the database will now have a very
+        large amount of data to scan to respond to the query. This consumes a great amount of cpu
+        and memory. This can result in long wait times for query responses, and in extreme cases can
+        result in timeouts.</p> There are 3 polling meters in Swift: <ul>
         <li>storage.objects </li>
         <li>storage.objects.size </li>
         <li>storage.objects.containers</li>
