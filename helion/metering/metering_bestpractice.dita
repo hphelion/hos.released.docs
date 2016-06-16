@@ -180,90 +180,12 @@ sudo service openstack-nova-novncproxy restart    </codeblock><note
             <p><keyword keyref="kw-hos"/> uses Apache2 Web Server to provide the API access. This topic provides some
                 strategies to help you optimize the front-end and back-end databases. </p>
             <p>To improve the responsiveness you can increase the number of threads and processes in
-                the ceilometer configuration file.</p>
-            <p>The Ceilometer API runs as an WSGI processes. Each process can have a certain amount
-                of threads taking care of the filters and applications comprising the processing
+                the ceilometer configuration file. The Ceilometer API runs as an WSGI processes. Each process can have a certain amount
+                of threads managing the filters and applications, which can comprise the processing
                 pipeline. </p>
-            <p>To configure Apache:</p>
-            <ol>
-                <li><xref type="section" href="#topic11470/APCM_edit_config">Edit the Ceilometer
-                        configuration files.</xref></li>
-                <li><xref type="section" href="#topic11470/reload_apache">Reload and verify
-                        Apache2.</xref></li>
-            </ol>
-        </section>
-        <section id="APCM_edit_config">
-            <title>Edit the Ceilometer Configuration Files</title>
-            <p>To create a working file for Ceilometer with the correct settings:</p>
-            <ol>
-                <li>To add the configuration file to the correct folder, copy the following file:
-                    <codeblock>ceilometer.conf</codeblock> to the following directory:
-                    <codeblock>/etc/apache2/sites-available</codeblock></li>
-                <li>To verify the settings, in a text editor, open the
-                        <codeph>ceilometer.conf</codeph> file.</li>
-                <li>The ceilometer.conf file should have the following data. If it does not exist,
-                    add it to the file. <codeblock>Listen &lt;ipaddress>:8777 
-&lt;VirtualHost *:8777>
-    WSGIDaemonProcess ceilometer user=ceilometer group=ceilometer processes=4 threads=5 home=/opt/stack/venvs/openstack python-path=/opt/stack/venvs/openstack/lib/python2.7/site-packages
-    WSGIScriptAlias / /opt/stack/venvs/openstack/lib/python2.7/site-packages/ceilometer/api/app.wsgi
-    SetEnv APACHE_RUN_USER ceilometer
-    SetEnv APACHE_RUN_GROUP ceilometer
-    WSGIProcessGroup ceilometer
-    ErrorLog /var/log/apache2/ceilometer_error.log
-    LogLevel info
-    CustomLog /var/log/apache2/ceilometer_access.log combined
-    &lt;Directory />
-        Require all granted
-    &lt;/Directory>
-&lt;/VirtualHost></codeblock><note>
-                        <p>The WSGIDaemon Recommended Settings are to use four processes running in
-                            parallel:</p>
-                        <codeblock>processes=4</codeblock>
-                        <p>Five threads for each process is also recommended: </p>
-                        <codeblock>threads=5</codeblock>
-                    </note></li>
-                <li>To add a softlink for the ceilometer.conf, run:
-                    <codeblock>ln -s /etc/apache2/sites-available/ceilometer.conf /etc/apache2/sites-enabled</codeblock></li>
-            </ol>
-            <lines/>
-        </section>
-        <section id="reload_apache">
-            <title>Reload and Verify Apache2</title>
-            <p>For the changes to take effect, the Apache2 service needs to be reloaded. This
-                ensures that all the configuration changes are saved and the service has applied
-                them. The system administrator can change the configuration of processes and threads
-                and experiment if alternative settings are necessary. </p>
-            <p>Once the Apache2 service has been reloaded you can verify that the Ceilometer APIs
-                are running and able to receive incoming traffic. The Ceilometer APIs are listening
-                on port 8777.</p>
-            <p>To reload and verify the Apache2 service:</p>
-            <ol>
-                <li>To reload Apache2, run: <codeblock>sudo service apache2 reload</codeblock></li>
-                <li>To verify the service is running, run:
-                        <codeblock>ps -ef | grep apache
-    #Sample output showing Apache2 with Ceilometer Running Instances:
-    ceilome+ 31430 31427 10 16:29 ? 00:02:40 /usr/sbin/apache2 -k start
-    ceilome+ 31431 31427 10 16:29 ? 00:02:41 /usr/sbin/apache2 -k start
-    ceilome+ 31432 31427 10 16:29 ? 00:02:42 /usr/sbin/apache2 -k start
-    ceilome+ 31433 31427 10 16:29 ? 00:02:43 /usr/sbin/apache2 -k start</codeblock><note
-                        type="attention">In a working environment, the list of entries in the output
-                        should match the number of processes in the configuration file. In the
-                        example configuration file, the recommended number of 4 is used, and the
-                        number of Running Instances is also 4.</note></li>
-            </ol>
-            <p>You can also verify that Apache2 is accepting incoming traffic using the following
-                procedure:</p>
-            <ol>
-                <li>To verify traffic on port 8777, run:
-                    <codeblock>netstat -tulpn | grep 8777</codeblock></li>
-                <li>Verify your output is similar to the following example:
-                    <codeblock>tcp6 0 0 :::8777 :::* LISTEN 8959/apache2</codeblock></li>
-            </ol>
-            <note type="attention">If Ceilometer fails to deploy: <ul>
-                    <li>check the proxy setting</li>
-                    <li>unset the https_proxy, for example:
-                        <codeblock>unset http_proxy HTTP_PROXY HTTPS_PROXY</codeblock></li>
-                </ul></note>
+            <p><b>To configure Apache2 to use increase the number of threads</b>, use the steps in
+                    <xref href="metering_reconfig.dita#reconfig_metering/apache">Configure Apache2
+                    for the Ceilometer API</xref></p>
         </section>
         
         <lines/>
