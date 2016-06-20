@@ -8,7 +8,7 @@
 
 
 
-    <p>If you wish to install two separate <ph conkeyref="HOS-conrefs/product-title"/> systems
+    <p>If you wish to install two separate <keyword keyref="kw-hos-phrase"/> systems
         using a single subnet, you will need to consider the following notes.</p>
     <p>The <codeph>ip_cluster</codeph> service includes the <codeph>keepalived</codeph> daemon
         which maintains virtual IPs (VIPs) on cluster nodes. In order to maintain VIPs, it
@@ -21,11 +21,9 @@
 Dec 16 15:43:43 helion-cp1-c1-m1-mgmt Keepalived_vrrp[2218]: one or more VIP associated with VRID mismatch actual MASTER advert
 Dec 16 15:43:43 helion-cp1-c1-m1-mgmt Keepalived_vrrp[2218]: bogus VRRP packet received on br-bond0 !!!
 Dec 16 15:43:43 helion-cp1-c1-m1-mgmt Keepalived_vrrp[2218]: VRRP_Instance(VI_2) ignoring received advertisment...</codeblock>
-    <p>To resolve this issue, our recommendation is to install your separate <ph
-        conkeyref="HOS-conrefs/product-title"/> systems with VRRP traffic on different
+        <p>To resolve this issue, our recommendation is to install your separate <keyword keyref="kw-hos-phrase"/> systems with VRRP traffic on different
         subnets.</p>
-    <p>If this is not possible, you may also assign a unique routerid to your separate <ph
-        conkeyref="HOS-conrefs/product-title"/> system by changing the
+        <p>If this is not possible, you may also assign a unique routerid to your separate <keyword keyref="kw-hos-phrase"/> system by changing the
         <codeph>keepalived_vrrp_offset</codeph> service configurable. The routerid is currently
         derived using the <codeph>keepalived_vrrp_index</codeph> which comes from a configuration
         processor variable and the <codeph>keepalived_vrrp_offset</codeph>.</p>
@@ -39,7 +37,33 @@ Dec 16 15:43:43 helion-cp1-c1-m1-mgmt Keepalived_vrrp[2218]: VRRP_Instance(VI_2)
             <p><codeph>keepalived_vrrp_offset: 0</codeph> for the 1st vrrp cluster on this subnet.</p>
             <p><codeph>keepalived_vrrp_offset: 1</codeph> for the 2nd vrrp cluster on this subnet.</p>
             <p><codeph>keepalived_vrrp_offset: 2</codeph> for the 3rd vrrp cluster on this
-                subnet.</p></li>
+                subnet.</p>
+        
+            <note type="important">You should be aware that the file <codeph>~/helion/my_cloud/config/keepalived/defaults.yml</codeph>
+                is a symbolic link to <codeph>~/helion/hos/ansible/roles/keepalived/defaults/main.yml</codeph>
+            
+            <codeblock>
+ls -al ~/helion/my_cloud/config/keepalived/defaults.yml
+lrwxrwxrwx 1 stack stack 55 May 24 20:38 /home/stack/helion/my_cloud/config/keepalived/defaults.yml -> ../../../hos/ansible/roles/keepalived/defaults/main.yml
+</codeblock>
+                
+              If you are using a tool like <codeph>sed</codeph> to make edits to this file, you might break the symbolic link
+                and create a new copy of the file. To maintain the link, you will need to force <codeph>sed</codeph>
+                to follow the link:
+                
+<codeblock>
+sed -i <b>--follow-symlinks</b> 's$keepalived_vrrp_offset: 0$keepalived_vrrp_offset: 2$' ~/helion/my_cloud/config/keepalived/defaults.yml
+</codeblock>                
+                
+                Alternatively, you could directly edit the target of the link  <codeph>~/helion/hos/ansible/roles/keepalived/defaults/main.yml</codeph>.
+       
+            </note>
+        
+        
+        </li>
+
+
+
         <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local git
             repo</xref>, as follows:
             <codeblock>cd ~/helion/hos/ansible
