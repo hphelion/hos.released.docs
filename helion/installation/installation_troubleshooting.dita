@@ -68,7 +68,8 @@ eth0 10.242.115.18/26</codeblock>
       <p>Once you make your corrections to your configuration files, commit the changes with these
         steps:</p>
       <ol>
-        <li>Ensuring that you stay within the <codeph>~/helion</codeph> directory, commit the changes you just made:
+        <li>Ensuring that you stay within the <codeph>~/helion</codeph> directory, commit the
+          changes you just made:
           <codeblock>cd ~/helion
 git commit -a -m "commit message"</codeblock></li>
         <li>Redeploy Cobbler:
@@ -82,7 +83,8 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
         ensure Cobbler gets updated with the new server information:</p>
       <ol>
         <li>Ensure your <codeph>servers.yml</codeph> file is updated</li>
-        <li>Ensuring that you stay within the <codeph>~/helion</codeph> directory, commit the changes you just made:
+        <li>Ensuring that you stay within the <codeph>~/helion</codeph> directory, commit the
+          changes you just made:
           <codeblock>cd ~/helion
 git commit -a -m "commit message"</codeblock></li>
         <li>Determine which nodes you have entered into Cobbler by using:
@@ -180,6 +182,12 @@ bnx2x: [bnx2x_stats_update:1269(eth0)]driver assert
 bnx2x: [bnx2x_panic_dump:929(eth0)]begin crash dump -----------------  .....
 bnx2x: [bnx2x_panic_dump:1163(eth0)]end crash dump -----------------</codeblock>
         This workaround is completed by rebooting the server.</p>
+      <p><b>Subsequent runs of bm-reimage.yml sometimes fail to trigger network install</b></p>
+      <p>If you've run the <codeph>site.yml</codeph> playbook during an install and have a reason to
+        run the <codeph>bm-reimage.yml</codeph> playbook afterwards, it may fail to trigger the
+        network install over PXE due to the name of the interface changing during this process.</p>
+      <p>To resolve this issue, you can run the <codeph>cobbler-deploy.yml</codeph> playbook to
+        refresh these settings and then proceed to run <codeph>bm-reimage.yml</codeph>.</p>
       <p><b>Issue: Soft lockup at imaging</b></p>
       <p>When imaging your nodes, if you see a kernel error of the type "BUG: soft lockup - CPU#10
         stuck...." you should reset the node and make sure it is imaged properly next time. Note
@@ -380,14 +388,15 @@ FATAL: all hosts have already failed -- aborting</codeblock><p>The
           href="../architecture/input_model/configobj/networks.dita">Input Model - Networks</xref>
         for more details.</p><p>After you have made changes to your <codeph>networks.yml</codeph>
         file, follow these steps to commit the changes:</p><ol>
-          <li>Ensuring that you stay within the <codeph>~/helion</codeph> directory, commit the changes you just made:
-            <codeblock>cd ~/helion
+        <li>Ensuring that you stay within the <codeph>~/helion</codeph> directory, commit the
+          changes you just made:
+          <codeblock>cd ~/helion
 git commit -a -m "commit message"</codeblock></li>
-          <li>Run the configuration processor:
-            <codeblock>cd ~/helion/hos/ansible
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-          <li>Update your deployment directory:
-            <codeblock>cd ~/helion/hos/ansible
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>Re-run the site.yml playbook:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible 
