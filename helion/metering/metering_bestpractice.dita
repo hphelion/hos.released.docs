@@ -18,22 +18,59 @@
         <p>You can improve API and database responsiveness by configuring metering to store only the
             data you are require. This topic provides strategies for getting the most out of
             metering while not overloading your resources.</p>
+        
+        <p><b>Optimize Meters and Notifications</b></p>
         <ul>
-            <li><xref type="section" href="#Ceilo_optimize/ceilometer_nova">Enable Nova Notifications</xref></li>
-            <li><xref type="section" href="#Ceilo_optimize/webserverapi">Improve Reporting API Responsiveness</xref></li>
-            <li>Strategies for <xref href="metering_notifications.dita">Ceilometer Metering Service Notifications</xref></li>
             <li><xref type="section" href="#Ceilo_optimize/changing_meter_list">Change the List of Meters</xref></li>
-            <li><xref type="section" href="#Ceilo_optimize/update_polling_strategy">Update the Polling Strategy and Swift Considerations</xref></li>
-            <li><xref type="section" href="#Ceilo_optimize/ceilometer_post_api">Enable Ceilometer Post API</xref></li>
-            <li><xref type="section" href="#Ceilo_optimize/ceilomter_sample_API">Configure Paramters for Ceilometer Query-Sample API</xref></li>
-            <li><xref type="section" href="#Ceilo_optimize/ceilometer_stats">Provide Parameters for the Ceilometer Statistics API</xref></li>
-            <li><xref type="section" href="#Ceilo_optimize/alarm_post-meters_APIs">Enable Alarm API and Post Meters API</xref></li>
-             <li><xref type="section" href="#Ceilo_optimize/failover_support">Failover Support (HA)</xref></li>
+            <li><xref type="section" href="#Ceilo_optimize/ceilometer_nova">Enable Nova Notifications</xref></li>
+            <li>Strategies for <xref href="metering_notifications.dita">Ceilometer Metering Service Notifications</xref></li>
         </ul>
         
+        <p><b>Optimize APIs</b></p>
+        <ul>
+            <li><xref type="section" href="#Ceilo_optimize/webserverapi">Improve Reporting API Responsiveness</xref></li>
+            <li><xref href="metering_apis.dita#topic_icq_hvc_5t/pipeline">Enable Post Samples API</xref></li>
+            <li><xref href="metering_apis.dita#topic_icq_hvc_5t/sampleAPI">Configure Paramters for Ceilometer Query-Sample API</xref></li>
+            <li><xref href="metering_apis.dita#topic_icq_hvc_5t/statAPI">Provide Parameters for the Ceilometer Statistics API</xref></li>
+            <li><xref href="metering_apis.dita#topic_icq_hvc_5t/disabled">Enable Alarm API and Post Meters API</xref></li>
+        </ul>
         
+        <p><b>Additional Optimization</b></p>
+        <ul>
+            <li><xref type="section" href="#Ceilo_optimize/update_polling_strategy">Update the Polling Strategy and Swift Considerations</xref></li>
+            <li><xref href="metering_failover_ha.dita">Enable Failover Support (HA)</xref></li>
+            <li><xref href="metering_rbac.dita">Configure Role-Based Access Control</xref></li>
+        </ul>
         
-        
+        <lines/>
+        <section id="changing_meter_list">
+            <title>Change the List of Meters</title>
+            <p>The list of meters can be easily reduced or increased by editing the pipeline.yaml
+                file and restarting the central agent. </p> 
+            
+            <p>Sample compute-only pipeline.yaml file with the daily poll interval:</p>
+            <codeblock>---
+sources:
+    - name: meter_source
+      interval: 86400
+      meters:
+          - "instance"
+          - "memory"
+          - "vcpus"
+          - "compute.instance.create.end"
+          - "compute.instance.delete.end"
+          - "compute.instance.update"
+          - "compute.instance.exists"
+      sinks:
+          - meter_sink
+sinks:
+    - name: meter_sink
+      transformers:
+      publishers:
+          - notifier://</codeblock>
+            <note> This change will cause all non-default meters to stop receiving
+                notifications</note>
+        </section>
         <section id="ceilometer_nova">
             <title>Enable Nova Notifications</title>
             <p>You can configure Nova to send notifications by enabling the setting in the configuration file. When enabled, Nova will send information to Ceilometer related to its usage and VM status. You must restart Nova for these changes to take effect. </p>
@@ -173,6 +210,8 @@ sudo service openstack-nova-novncproxy restart    </codeblock><note
         </section>
         <lines>
         </lines>
+        
+        
         <section id="webserverapi">
             <title>Improve Reporting API Responsiveness</title>
             <p>Reporting APIs are the main access to the metering data stored in Ceilometer. These
@@ -188,35 +227,7 @@ sudo service openstack-nova-novncproxy restart    </codeblock><note
                     for the Ceilometer API</xref></p>
         </section>
         
-        <lines/>
-        <section id="changing_meter_list">
-            <title>Change the List of Meters</title>
-            <p>The list of meters can be easily reduced or increased by editing the pipeline.yaml
-                file and restarting the central agent. </p> 
-
-<p>Sample compute-only pipeline.yaml file with the daily poll interval:</p>
-            <codeblock>---
-sources:
-    - name: meter_source
-      interval: 86400
-      meters:
-          - "instance"
-          - "memory"
-          - "vcpus"
-          - "compute.instance.create.end"
-          - "compute.instance.delete.end"
-          - "compute.instance.update"
-          - "compute.instance.exists"
-      sinks:
-          - meter_sink
-sinks:
-    - name: meter_sink
-      transformers:
-      publishers:
-          - notifier://</codeblock>
-            <note> This change will cause all non-default meters to stop receiving
-                notifications</note>
-        </section>
+       
         <lines>
         </lines>
         <section id="update_polling_strategy">
@@ -292,167 +303,6 @@ sinks:
             <note>The file size of each file does not have any impact on the number of samples
                 collected. In fact the smaller the number of containers or files, the smaller the sample size.
                 In the scenario where there a large number of small files and containers, the sample size is also large and the performance is at its worst.</note>
-        </section>
-        <lines>
-        </lines>
-        <section id="ceilometer_post_api">
-            <title>Enable Ceilometer Post API</title>
-            <b>Separate pipeline.yaml for Ceilometer Post Sample API</b>
-            <p>Post Sample API is disabled by default in <keyword keyref="kw-hos-phrase"/> and its
-                configured with a pipeline configuration different than the agents. The api pipeline
-                has no meters enabled, so it needs to be configured with meters when the Post sample
-                API is enabled. Exercise caution when adding meters to the API pipeline. Ensure that
-                only those meters are added to this pipeline which are already present in the
-                notification agent and the central agent pipeline. Here is a sample of the API
-                pipeline:</p>
-            <codeblock>---
-sources:
-    - name: meter_source
-      interval: 600
-      meters:
-          - "!*"
-      resources:
-      discovery:
-      sinks:
-          - meter_sink
-sinks:
-    - name: meter_sink
-      transformers:
-      publishers:
-         - notifier://</codeblock>
-        </section>
-        <lines>
-        </lines>
-        <section id="ceilomter_sample_API">
-            <title>Configure Paramters for Ceilometer Query-Sample API</title>
-            <p>Ceilometer query-sample API uses anonymous/alias table to cache the JOIN query
-                results. When the filter parameters are not sufficiently provided, the result set
-                can grow large, to the point of exceeding the temp table space available on the
-                mysql database instance. If this happens, an exception is thrown, halting the query
-                execution. If the resource and sample tables have close to 80~100K records, the
-                suggestion is to use filter conditions or in case of wanting to get all the data,
-                the temp table size should be increased to avoid query interruption.</p>
-            <codeblock>ceilometer sample-list --meter image.serve -q 'resource_id=a1ec2585'</codeblock>
-            <codeblock>ceilometer query-samples --filter '{"and": [{"=": {"counter_name":"cpu_util"}}, {"=": {"project":"7d4af57f557547b4a28b40b054d6ffb2"}}]}'</codeblock>
-        </section>
-        <lines>
-        </lines>
-        <section id="ceilometer_stats">
-            <title>Provide Parameters for the Ceilometer Statistics API</title>
-            <p>Ceilometer Statistics is an open-ended query and can put a significant load on the
-                database leading to unexpected results and or failures. Ceilometer Statistics API
-                does a query on sample table and obtains the minimum and maximum timestamp for the
-                meter that is being queried. Based on the minimum and maximum timestamp it returns a
-                few statistics If a period parameter is not supplied it simply returns few
-                statistics like min, max, avg and sum If a period parameter is supplied then it
-                divides the range into equal periods and finds the min, max, avg and sum for each of
-                the periods It is recommended that you should always provide a query parameter with
-                timestamp>={$start-timestamp} and timestamp&lt;{$end-timestamp} to cover a time
-                range of at the most 1 day (24 hours) irrespective of whether you provide a period
-                or not. Example: With period parameter</p>
-            <codeblock>ceilometer statistics -q "timestamp&gt;=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" -m "instance" -p 3600</codeblock>
-            <p>Without period parameter:</p>
-            <codeblock>ceilometer statistics -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" -m "instance"</codeblock>
-            The recommended values for query (-q) parameter and period (-p) parameter are </section>
-        <section id="query_params"><b>query parameter (-q):</b> Always provide a timestamp range
-            which restricts the query to one day (24 hours). Providing a timestamp range more than a
-            day or not at all providing the time stamp range as a query parameter is not recommended
-            e.g. -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" If query
-            parameter and timestamp is not provided, it will end up querying all the records in the
-            database which is not recommended </section>
-        <section><b>period parameter(-p):</b> Provide a fairly large number for period, the
-            recommended value 3600 or more (1 hour or more). Providing a period of less than 3600 is
-            not recommended. e.g. -p 3600 Period parameter (value in seconds) is used to divide the
-            overall time range into intervals. A small period value will translate into huge number
-            of queries against the database which is not recommended </section>
-        <lines>
-        </lines>
-        <section id="alarm_post-meters_APIs">
-            <title>Enable Alarm API and Post Meters API</title>
-            <p>Helion Openstack deploys Ceilometer with the foloowing default conditions:</p>
-            <ul>
-                <li>Ceilometer Alarms are disabled</li>
-                <li>Post Meters API is also disabled </li>
-                <li>Custom rule hp_disabled_rule:not_implemented is added to each of those APIs in
-                    ceilometer's <b>policy.json
-                    </b>.<codeblock>{
-"context_is_admin": "role:admin",
-"context_is_project": "project_id:%(target.project_id)s",
-"context_is_owner": "user_id:%(target.user_id)s",
-"segregation": "rule:context_is_admin",
- 
-"telemetry:create_samples": "hp_disabled_rule:not_implemented",
- 
-"telemetry:get_alarm": "hp_disabled_rule:not_implemented",
-"telemetry:change_alarm": "hp_disabled_rule:not_implemented",
-"telemetry:delete_alarm": "hp_disabled_rule:not_implemented",
-"telemetry:alarm_history": "hp_disabled_rule:not_implemented",
-"telemetry:change_alarm_state": "hp_disabled_rule:not_implemented",
-"telemetry:get_alarm_state": "hp_disabled_rule:not_implemented",
-"telemetry:create_alarm": "hp_disabled_rule:not_implemented",
-"telemetry:get_alarms": "hp_disabled_rule:not_implemented",
- 
-"default": ""
-}</codeblock>
-                </li>
-                <li>Accessing any of the Alarm APIs or Post Meter API will result in HTTP response
-                    501 Not Implemented</li>
-                <li>The following Alarm APIs are disabled
-                    <codeblock>POST /v2/alarms
-GET /v2/alarms
-GET /v2/alarms/(alarm_id)
-PUT /v2/alarms/(alarm_id)
-DELETE /v2/alarms/(alarm_id)
-GET /v2/alarms/(alarm_id)/history
-PUT /v2/alarms/(alarm_id)/state
-GET /v2/alarms/(alarm_id)/state
-POST /v2/query/alarms
-POST /v2/query/alarms/history</codeblock>
-                </li>
-                <li>Post Meters API is disabled <codeblock>POST /v2/meters/(meter_name)</codeblock>
-                </li>
-                <li>To manually enable any of the APIs remove the corresponding rule and restart
-                    Apache</li>
-            </ul>
-        </section>
-        <lines>
-        </lines>
-        <section id="failover_support">
-            <title>Failover Support (HA)</title>
-            <p>In the Helion environment, Ceilometer supports native Active-Active HA for
-                notification agent and central agent. Agent HA support includes
-                workload-balancing/distribution and failover. Tooz is the coordination engine that
-                is used to coordinate workload among multiple active agent instances and maintain
-                the knowledge of active instance to handle failover and group membership using
-                hearbeats(pings). Zookeeper is the coordination backend used but the internals of
-                that is encapsulated using Tooz which exposes APIs to manage group membership and
-                retrieve workload specific to each agent. The following section in conf is used to
-                configure HA:</p>
-            <codeblock>[coordination]
-backend_url = &lt;IP address of Zookeeper host: port> (port is usually 2181 as a zookeeper default)
-heartbeat = 1.0
-check_watchers = 10.0</codeblock>
-            <p>For the notification agent to be configured in HA mode, additional configuration is
-                needed:</p>
-            <codeblock>[notification]
-workload_partitioning = true</codeblock>
-            <p>The notification agent HA distributes workload among multiple queues that are created
-                based on the number of unique source:sink combinations in the notification agent
-                pipeline configuration file. If there are additional services to be metered using
-                notifications, then the recommendation is to use a separate source for those events,
-                especially if the expected load of data from that source is considered high. This
-                should lead to better workload balancing among multiple active notification
-                agents.</p>
-            <p>Ceilometer-expirer is also Active-Active HA, but the key thing is to ensure that a
-                single expirer process runs when multiple processes are scheduled to run at same
-                time (using cron-based scheduling) on multiple controller nodes. Tooz is used to
-                pick an expirer process that acquires a lock when there are multiple contenders and
-                the winning process runs. There is no failover support, as expirer is not a daemon
-                anyway and is scheduled to run at pre-determined intervals. The following
-                configuration is needed to enable expirer HA:</p>
-            <codeblock>[database]
-expirer_ha = true
-expirer_ha_backend_url = &lt;IP address of coordination backend url></codeblock>
         </section>
     </body>
 </topic>

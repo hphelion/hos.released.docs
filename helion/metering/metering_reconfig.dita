@@ -10,40 +10,27 @@
         services such as Keystone, Nova, Neutron, Glance, and Swift.</p>
    <p>You can configure the Metering Service in the following ways:</p>   
       <ul>
+        <li><xref type="section" href="#reconfig_metering/upgrade">Run the Upgrade Playbook</xref></li>
+        <li><xref type="section" href="#reconfig_metering/apache">Configure Apache2 for the Ceilometer API</xref></li>
+        <li><xref type="section" href="#reconfig_metering/metering_services">Enable Services for Messaging Notifications</xref></li>
         <li><xref type="section" href="#reconfig_metering/Ceilo_StopStart">Restart the Polling Agent</xref></li>
-        <li>Configure Metering Service Components</li>
-        <li>Configure Apache2 for the Ceilometer API</li>
-        <li>Enable Services for Messaging Notifications</li>
-        <li>Configure Metering Service Notifications</li>
-        <li>Run the Upgrade Playbook</li>
-        <li>Reconfigure the Service</li>
+        <li><xref type="section" href="#reconfig_metering/ceilo_monitoring">Configure Monitoring of Ceilometer Agents</xref></li>
       </ul>
  </section>
-    
-    <section id="Ceilo_StopStart">
-      <title>Stop and Start the Polling Agent</title>
-      <p>The Central Agent is responsible for coordinating the polling activity. It parses the
-        <b>pipeline.yml</b> configuration file and identifies all the sources where data is collected. The sources are then evaluated and
-        are translated to resources that a dedicated pollster can retrieve. The Polling Agent follows this process:</p>
-      <ol>
-        <li>At each identified interval, the <b>pipeline.yml</b> configuration file is parsed.</li>
-        <li>The resource list is composed. </li> 
-        <li>The pollster collects the data.</li>
-           <li>The pollster sends data to the queue.</li>
-      </ol>
-
-      <p>Metering processes should normally be operating at all times. This need is addressed by the Upstart event engine which is designed to run on any Linux system. Upstart creates events, handles the consequences of those events, and starts and stops processes as required. Upstart will continually attempt to restart stopped processes even if the process was stopped manually. To stop or start the Polling Agent and avoid the conflict with Upstart, using the following steps.</p>
-      <p><b>To restart the Polling Agent:</b></p>
-      <ol>
-        <li>To determine whether the process is running, run:
-          <codeblock>sudo service ceilometer-agent-central status 
-#SAMPLE OUTPUT: ceilometer-agent-central start/running, process 27989</codeblock></li>
-        <li>To stop the process, run:
-          <codeblock>sudo service ceilometer-agent-central stop</codeblock></li>
-          <li>To start the process, run:
-            <codeblock>sudo service ceilometer-agent-central start</codeblock></li>
-      </ol>
+    <lines>
+      
+    </lines>
+    <section id="upgrade">
+      <title>Run the Upgrade Playbook</title> 
+      <p>Follow Standard Service upgrade mechanism available in the lifecycle manager distribution.
+        For Ceilometer, the playbook included with <keyword keyref="kw-hos"/> is
+          <b>ceilometer-upgrade.yml</b>
+      </p>
     </section>
+    <lines>
+      
+    </lines>
+
       <lines></lines>
 
     <section id="apache">
@@ -148,31 +135,44 @@
         pipeline configuration file. </p>
       <p>For steps on how to edit the pipeline configuration files, see: <xref href="metering_notifications.dita#notifications/list">Editing the List of Meters</xref></p>
     </section>
-
-    <section id="upgrade">
-      <title>Run the Upgrade Playbook</title> 
-      <p>Follow Standard Service upgrade mechanism available in the
-      lifecycle manager distribution. For Ceilometer, the playbook included with <keyword keyref="kw-hos"/>
-        is ceilometer-upgrade.yml </p>
+<lines>
+  
+</lines>
+    <section id="Ceilo_StopStart">
+      <title>Restart the Polling Agent</title>
+      <p>The Central Agent is responsible for coordinating the polling activity. It parses the
+        <b>pipeline.yml</b> configuration file and identifies all the sources where data is collected. The sources are then evaluated and
+        are translated to resources that a dedicated pollster can retrieve. The Polling Agent follows this process:</p>
+      <ol>
+        <li>At each identified interval, the <b>pipeline.yml</b> configuration file is parsed.</li>
+        <li>The resource list is composed. </li> 
+        <li>The pollster collects the data.</li>
+        <li>The pollster sends data to the queue.</li>
+      </ol>
+      
+      <p>Metering processes should normally be operating at all times. This need is addressed by the Upstart event engine which is designed to run on any Linux system. Upstart creates events, handles the consequences of those events, and starts and stops processes as required. Upstart will continually attempt to restart stopped processes even if the process was stopped manually. To stop or start the Polling Agent and avoid the conflict with Upstart, using the following steps.</p>
+      <p><b>To restart the Polling Agent:</b></p>
+      <ol>
+        <li>To determine whether the process is running, run:
+          <codeblock>sudo service ceilometer-agent-central status 
+#SAMPLE OUTPUT: ceilometer-agent-central start/running, process 27989</codeblock></li>
+        <li>To stop the process, run:
+          <codeblock>sudo service ceilometer-agent-central stop</codeblock></li>
+        <li>To start the process, run:
+          <codeblock>sudo service ceilometer-agent-central start</codeblock></li>
+      </ol>
     </section>
+<lines>
+  
+</lines>
+<section id="ceilo_monitoring">
+  <title>Configure Monitoring of Ceilometer Agents</title>
+  <p>The Monasca HTTP Process monitors the Ceilometer API service. Ceilometer's notification and polling agents are also monitored. If these agents are down, Monasca monitoring alarms are triggered. You can use the notification alarms to debug the issue and restart the notifications agent. However, for the central-agent (polling) and the collector the alarms need to be deleted. These two processes are not started after an upgrade so the monitoring process check alarms for these components will be in UNDETERMINED state. Helion does not monitor these processes anymore so the best option to resolve this issue is to manually delete orphaned alarms during an install or upgrade.</p>
+  
+  <p>To resolve notification alarms, first check the <b>ceilometer-agent-notification</b> logs for errors in the <b>/var/log/ceilometer</b> directory. You can also use the Operations Console to access Kibana and check the logs. This will help you understand and debug the error.</p>
+    
+  <p>To restart the service, run the <b>ceilometer-start.yml</b>. This playbook starts the ceilometer processes that has stopped and only restarts during install, upgrade or reconfigure which is what is needed in this case. Restarting the process that has stopped will resolve this alarm because this Monasca alarm means that ceilometer-agent-notification is no longer running on certain nodes.</p>
+</section>
 
-
-    <section id="reconfig"><title>Reconfigure the Service</title> 
-      <p>Make changes in the Ceilometer available
-      configuration files on lifecycle manager machine in
-        <codeph>/home/stack/helion/my_cloud/config/ceilometer/</codeph></p>
-      <p>Make changes in the target configuration file (ie.,
-        pipeline-agent-notification.yaml.j2)</p><codeblock>cd /home/stack/helion
-git add -A
-git commit -m "My config"</codeblock>
-      Run the configuration processor:
-      <codeblock>cd /home/stack/helion/hos/ansible/
-ansible-playbook -i hosts/localhost config-processor-run.yml -e encrypt="" -e rekey=""</codeblock>
-      Run ready-deployment:
-      <codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock> Run
-      ceilometer-reconfigure.yml:
-      <codeblock>cd /home/stack/scratch/ansible/next/hos/ansible/
-ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml</codeblock>
-    </section>
   </body>
 </topic>
