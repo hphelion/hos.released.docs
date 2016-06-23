@@ -155,42 +155,114 @@ sinks:
       are</p><codeblock>ceilometer sample-list --meter image.serve -q 'resource_id=a1ec2585' </codeblock><codeblock>ceilometer sample-list --meter instance -q 'resource_id=&lt;ResourceID>;metadata.event_type=&lt;eventType>'</codeblock>
     </section>
 
-    <section id="statAPI"><title>Ceilometer Statistics API </title><p>Ceilometer Statistics is an
-        open-ended query API and thus can put a significant load on the database leading to
-        unexpected results and or failures. Ceilometer Statistics API performs queries on the sample
-        table and obtains the minimum and maximum timestamp for the meter that is being queried.</p>
-      Based on the minimum and maximum timestamp it returns a few statistics <ul>
-        <li> If a period parameter is not supplied it simply returns few statistics like min, max,
-          avg and sum</li>
-        <li> If a period parameter is supplied then it divides the range into equal periods and
-          finds the count,min, max, avg and sum for each of the periods</li>
-      </ul> It is recommended that you always provide a query parameter with
-      <codeblock>timestamp>={$start-timestamp} and timestamp&lt;{$end-timestamp} </codeblock> to
-      cover a time period of at most 1 day (24 hours) irrespective of whether you provide a period
-      or not. Here is an example using the period parameter
-      <codeblock>ceilometer statistics -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" -m "instance" -p 3600</codeblock>
-      Without period parameter:
-      <codeblock>ceilometer statistics -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" -m "instance"</codeblock>
-      The recommended values for query (-q) parameter and period (-p) parameters are: <dl>
+    <section id="statAPI"><title>Ceilometer Statistics API </title>
+      <p>Ceilometer Statistics is an open-ended query API that performs queries on the table of data collected from a meter. The Statistics API obtains the minimum and maximum timestamp for the meter that is being queried.</p>
+      
+      <p>The Statistics API also provides a set of statistical functions. These functions perform basic aggregation for meter-specific data over a period of time. Statistics API includes the following functions:</p>
+<dl>
+  <dlentry>
+    <dt>Count</dt>
+    <dd>the number of discrete samples collected in each period</dd>
+  </dlentry>
+  <dlentry>
+    <dt>Maximum</dt>
+    <dd>the sample with the maximum value in a selected time period</dd>
+  </dlentry>
+  <dlentry>
+    <dt>Minimum</dt>
+    <dd>the sample with the minimum value in a selected time period</dd>
+  </dlentry>
+  <dlentry>
+    <dt>Average</dt>
+    <dd>the average value of a samples within a selected time period</dd>
+  </dlentry>
+  <dlentry>
+    <dt>Sum</dt>
+    <dd>the total value of all samples within a selected time period added together</dd>
+  </dlentry>
+</dl>
+      
+<note type="important">The Statistics API can put a significant load on the database leading to
+  unexpected results and or failures. Therefore, you should be careful about restricting your queries.</note>
+      
+      <b>Limitations of <b>Statistics-list</b> API</b>
+      <ul>
+        <li>filtering with metadata is not supported</li>
+        <li>the <codeph>groupby</codeph> option is only supported with only one parameter. Also, that single parameter has to be one of the following:<codeblock>user_id 
+          project_id
+          resource_id
+          source</codeblock></li>
+          <li>only the following are supported as aggregate functions: <b>average</b>, <b>minimum</b>, <b>maximum</b>, <b>sum</b>, and <b>count</b></li>
+            <li>when no time period is specified in the query, a default period of 300 seconds is used to aggregate measurements(samples)</li>
+          <li>the meter name is a required positional parameter</li>
+        <li>when a closed time range is specified, results may contain an extra row with <b>duration</b>, <b>duration start</b>, <b>duration end</b> assigned a value of <b>None</b>. This row has a time period start and end that fall outside the requested time range and can be ignored. Ceilometer doesn't remove this row because it is by design inside the backend Monasca.</li>
+      </ul>
+      
+      <b>Statistical Query Best Practices</b>
+      <p>By default, the Statistics API will return a limited number of statistics. You can control the output using the <b>period "." </b> parameter.</p>
+      <dl>
+        <dlentry>
+          <dt>Without a period parameter</dt>
+          <dd>only a few statistics like minimum, maximum, avgerage and sum</dd>
+        </dlentry>
+        <dlentry>
+          <dt>With a period parameter "."</dt>
+          <dd>the range is divided into equal periods and Statistics API finds the count, minimum, maximum,
+            avgerage, and sum for each of the periods</dd>
+        </dlentry>
+      </dl><note type="important">It is recommended that you provide a <codeph>timestamp</codeph>
+        parameter with every query, regardless of whether a period paramter is used. For example:
+        <codeblock>timestamp>={$start-timestamp} and timestamp&lt;{$end-timestamp} </codeblock> It
+        is also recommended that you query a period of time that covers at most 1 day (24
+        hours).</note>
+      <b>Examples</b>
+      <dl>
+        <dlentry>
+          <dt>Without period parameter</dt>
+          <dd>
+            <codeblock>ceilometer statistics -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" -m "instance"</codeblock>
+          </dd>
+        </dlentry>
+        <dlentry>
+          <dt>With the period parameter "."</dt>
+          <dd>
+            <codeblock>ceilometer statistics -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00" -m "instance" -p 3600</codeblock>
+          </dd>
+        </dlentry>
+      </dl>
+      <p>If the query and timestamp parameters are not provided, all records in the database will be
+        queried. This is not recommended.The recommended values for <b>query (-q)</b> parameter and
+          <b>period (-p)</b> parameters are:</p>
+      <dl>
         <dlentry>
           <dt>-q</dt>
-          <dd>Always provide a timestamp range, which restricts the query to one day (24 hours). It
-            is not recommended that you set the timestamp range to greater than a day or provide no
-            time stamp range. An acceptable range looks like
-            this:<codeblock>            -q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00"</codeblock>
-            If the query parameter and timestamp are not provided, all the records in the database
-            will be queried. This is not recommended.</dd>
+          <dd>Always provide a timestamp range, with the following guidelines: <ul>
+              <li>recommended maximum time period to query is one day (24 hours)</li>
+              <li>do not set the timestamp range to greater than a day </li>
+              <li>it is better to provide no time stamp range than to set the time period for more
+                than 1 day</li>
+              <li>Example of an acceptable range:
+                <codeblock>-q "timestamp>=2014-12-11T00:00:10;timestamp&lt;2014-12-11T23:00:00"</codeblock></li>
+            </ul>
+          </dd>
         </dlentry>
         <dlentry>
           <dt>-p</dt>
-          <dd>Provide a fairly large number for period; the recommended value is 3600 or more (1
-            hour or more). Providing a period of less than 3600 is not recommended. e.g. -p 3600
-            Period parameter (value in seconds) is used to divide the overall time range into
-            intervals. A small period value will translate into huge number of queries against the
-            database, which is not recommended.</dd>
+          <dd>Provide a large number in seconds, with the following guidelines: <ul>
+              <li>recommended minimum value is 3600 or more (1 hour or more)</li>
+              <li>providing a period of less than 3600 is not recommended</li>
+              <li>Use this parameter to divide the overall time range into smaller intervals. A
+                small period parameter value will translate into a very large number of queries
+                against the database.</li>
+              <li>Example of an acceptable range: <codeblock>-p 3600</codeblock></li>
+            </ul>
+          </dd>
         </dlentry>
       </dl>
     </section>
+    <lines>
+      
+    </lines>
     <section id="disabled"><title>Disabled APIs</title> The following Ceilometer metering APIs are disabled in
       this release: <ul>
         <li>Event API</li>
