@@ -71,15 +71,20 @@ NOT</codeblock></li>
     </section>
     
     <section id="pipeline">
-      <title>Separate pipeline.yml for Ceilometer Post Samples API</title> The
-      Post Sample API is disabled by default in <keyword keyref="kw-hos-phrase"/> and its configured
-      with a pipeline configuration different than the agents. The API pipeline has no meters
-      enabled, so it needs to be configured with meters when the Post Samples API is enabled.
-      Exercise caution when adding meters to the API pipeline. Ensure that only those meters are
-      added to this pipeline which are already present in the notification agent and the central
-      agent pipeline. <p>Ceilometer API (ceilometer-api) pipeline.yml is located at
-          /<b>opt/stack/service/ceilometer-api/etc/pipeline-api.yml</b></p> Here is a sample of the
-      API pipeline:
+      <title>Post Samples API</title> 
+      
+      <p>The Post Sample API is disabled by default in <keyword
+        keyref="kw-hos-phrase"/> and it requires a separate pipeline.yml for Ceilometer. This is because it uses a pipeline configuration different than the agents. Also by default, the API pipeline has no meters enabled. When
+      the Post Samples API is enabled, you need to configure the meters. </p>
+      
+      <note type="important">Use caution when adding meters to the API pipeline.
+      Ensure that only meters already present in the notification agent and the central agent pipeline are added to the Post Sample API pipeline.</note>
+      
+      <p>The Ceilometer API pipeline configuration file is located in the following directory:</p> 
+      <codeblock>
+      /opt/stack/service/ceilometer-api/etc/pipeline-api.yml
+        </codeblock>
+      <p>Sample API pipeline file:</p>
       <codeblock>---
 sources:
     - name: meter_source
