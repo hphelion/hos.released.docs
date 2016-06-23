@@ -42,10 +42,12 @@ bnx2x-e1-7.8.19.0.fw   bnx2x-e1h-7.8.19.0.fw   bnx2x-e2-7.8.19.0.fw
             <title>Upgrade from <keyword keyref="kw-hos-phrase-215"/> to <keyword
                     keyref="kw-hos-phrase-30"/> or from HPE Helion OpenStack 2.0.2 to <keyword
                     keyref="kw-hos-phrase-30"/> is not recommended</title>
-            <p>It is advised that you wait for the the release of <keyword keyref="kw-hos-phrase-301"/>
-                before upgrading from <keyword keyref="kw-hos-phrase-215"/> or from version 2.0.2. However, if you must
-                upgrade from <keyword keyref="kw-hos-phrase-215"/> or from HPE Helion OpenStack 2.0.2, you will need to run the
-                following commands on the deployer to work around a timestamp issue involving 2.x releases that are newer than 3.0: </p>
+            <p>It is advised that you wait for the the release of <keyword
+                    keyref="kw-hos-phrase-301"/> before upgrading from <keyword
+                    keyref="kw-hos-phrase-215"/> or from version 2.0.2. However, if you must upgrade
+                from <keyword keyref="kw-hos-phrase-215"/> or from HPE Helion OpenStack 2.0.2, you
+                will need to run the following commands on the deployer to work around a timestamp
+                issue involving 2.x releases that are newer than 3.0: </p>
             <codeblock>
 ansible resources -a "sudo rm -rf /var/lib/apt/lists"
 ansible resources -a "sudo mkdir /var/lib/apt/lists"
@@ -182,6 +184,19 @@ sudo systemctl start kibana
         </section>
 
         <section>
+            <title>Subsequent runs of bm-reimage.yml sometimes fail to trigger network
+                install</title>
+            <!-- HLM-3522 -->
+            <p>If you've run the <codeph>site.yml</codeph> playbook during an install and have a
+                reason to run the <codeph>bm-reimage.yml</codeph> playbook afterwards, it may fail
+                to trigger the network install over PXE due to the name of the interface changing
+                during this process.</p>
+            <p>To resolve this issue, you can run the <codeph>cobbler-deploy.yml</codeph> playbook
+                to refresh these settings and then proceed to run
+                <codeph>bm-reimage.yml</codeph>.</p>
+        </section>
+
+        <section>
             <title>Dashboard (Horizon)</title>
             <!-- DOCS-3177 -->
             <p><b>When creating a Swift container, the progress bar never ends</b></p>
@@ -248,9 +263,9 @@ sudo systemctl start kibana
                     <xref href="operations/compute/enabling_resize.dita"/>.</p>
             <p>If you are using encryption and are attempting to enable these features after your
                 initial installation, see: <xref
-                    href="operations/troubleshooting/ts_compute.dita#ts_compute/ts_resize"
-                    >Compute Troubleshooting</xref> for details on the workaround to ensure these
-                features work for you.</p>
+                    href="operations/troubleshooting/ts_compute.dita#ts_compute/ts_resize">Compute
+                    Troubleshooting</xref> for details on the workaround to ensure these features
+                work for you.</p>
         </section>
 
         <section>
