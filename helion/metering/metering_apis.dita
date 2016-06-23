@@ -18,11 +18,11 @@
     <ul>
       <li><xref type="section" href="#topic_icq_hvc_5t/API_changes">Ceilometer API Changes</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/pipeline">Post Samples API</xref></li>
-      <li><xref type="section" href="#topic_icq_hvc_5t/sampleAPI">Ceilometer Sample API</xref></li>
-      <li><xref type="section" href="#topic_icq_hvc_5t/statAPI">Ceilometer Statistics API</xref></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/sampleAPI">Sample API</xref></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/statAPI">Statistics API</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/disabled">Disabled APIs</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/data_access">Data Access API</xref></li>
-      <li><xref type="section" href="#topic_icq_hvc_5t/resource">Ceilometer Resource API</xref></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/resource">Resource API</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/improve_reporting">Improving Reporting API Responsiveness</xref></li>
     </ul>
     <lines>
@@ -130,10 +130,16 @@ sinks:
          - notifier://</codeblock>
     </section>
 
-    <section id="sampleAPI"><title>Ceilometer Sample API</title><p>Ceilometer Sample has two APIs: <ul>
+    <section id="sampleAPI">
+      <title>Sample API</title>
+      <p>Ceilometer Sample has two APIs:</p>
+        <ul>
           <li>ceilometer sample-list(/v2/samples) </li>
           <li>ceilometer query-sample (/v2/query/samples)</li>
-        </ul> ceilometer sample-list allows querying based on <ul>
+        </ul>
+      
+        <p>Ceilometer sample-list allows querying based on the following values:</p>
+          <ul>
           <li>meter name</li>
           <li>user_id</li>
           <li>project_id</li>
@@ -142,22 +148,30 @@ sinks:
           <li>sample timestamp (range)</li>
           <li>sample message_id</li>
           <li>resource metadata attributes</li>
-        </ul> ceilometer sample-list uses AND implicitly. However, query-sample allows finer control
-        over the filter expression by allowing the use of AND, OR, and NOT operators over any of the
+        </ul> 
+      
+      <p>Ceilometer sample-list API uses the AND operator implicitly. However, the query-sample API allows finer control
+        over the filter expression. This is because query-sample API allows the use of AND, OR, and NOT operators over any of the
         sample, meter or resource attributes.</p>
+      
+      
       <b>Limitations:</b>
-      <p> Its been observed that ceilometer query-sample API uses anonymous/alias table to cache the
-        JOIN query results and concurrent requests to this API can use up the disk space and can
-        cause service interruptions; hence it has been disabled for stability of the system.
-        </p><p>Although sample list allows you to query the sample data as well, the limitation here
-        is that it uses the AND operator for all the passed query arguments implicitly; however it
-        allows you to query on resource metadata field of samples as well.</p> The standard format
-      for queries via the CLI:
+      <ul>
+        <li>Ceilometer query-sample API does not support the JOIN operator for stability of the system. This is due to the fact that 
+          query-sample API uses an anonymous/alias table to cache the
+        JOIN query results and concurrent requests to this API. This can use up the disk space quickly and cause service interruptions.</li>
+        <li>Ceilometer sample-list API uses the AND operator implicitly for all queries. However, sample-list API does 
+        allow you to query on resource metadata field of samples.</li> 
+      </ul>
+      
+      <p><b>Sample queries from the command line:</b></p>
       <codeblock>ceilometer sample-list -m METER_NAME -q '&lt;field1>&lt;operator1>&lt;value1>;...;&lt;field_n>&lt;operator_n>&lt;value_n>'</codeblock>
       where operators can be:<b> &lt;, &lt;=, =, !=, >= ></b>
-      <p>All the key value pairs will be combined with implicit AND operator. Some example usage for
-        the sample list API
-      are</p><codeblock>ceilometer sample-list --meter image.serve -q 'resource_id=a1ec2585' </codeblock><codeblock>ceilometer sample-list --meter instance -q 'resource_id=&lt;ResourceID>;metadata.event_type=&lt;eventType>'</codeblock>
+      <note type="attention">All the key value pairs will be combined with the implicit AND operator.</note> 
+        
+       <p><b>Example usage for the sample list API</b></p>
+      <codeblock>ceilometer sample-list --meter image.serve -q 'resource_id=a1ec2585' </codeblock>
+      <codeblock>ceilometer sample-list --meter instance -q 'resource_id=&lt;ResourceID>;metadata.event_type=&lt;eventType>'</codeblock>
     </section>
 
     <section id="statAPI"><title>Ceilometer Statistics API </title>
