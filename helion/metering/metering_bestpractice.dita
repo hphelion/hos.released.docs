@@ -221,59 +221,34 @@ sinks:
         </lines>
         <section id="update_polling_strategy">
             <title>Update the Polling Strategy and Swift Considerations</title>
-            <p>Polling can put an excessive amount of strain on the system due to the amount of data that the
-                system may have to process. Polling also has a severe impact on queries since the database
-                will have very large amount of data to scan to respond to the query. This process usually
-                consumes a large amount of CPU and memory to complete the requests. Clients can also
-                experience long waits for queries to come back and, in extreme cases, even timeout.</p>
-               <p> There are 5 polling meters in Swift:</p>
+            <p>Polling can put an excessive amount of strain on the system due to the amount of data
+                the system may have to process. Polling also has a severe impact on queries since
+                the database can have very large amount of data to scan before responding to the
+                query. This process usually consumes a large amount of CPU and memory to complete
+                the requests. Clients can also experience long waits for queries to come back and,
+                in extreme cases, even timeout.</p>
+               <p> There are 3 polling meters in Swift:</p>
             <ul>
                 <li> storage.objects</li>
                 <li>storage.objects.size</li>
                 <li>storage.objects.containers</li>
-                <li>storage.containers.objects</li>
-                <li>storage.containers.objects.size </li>
             </ul>
-            <p>Here it is an example of the pipeline.yaml with Swift polling on an hourly
-                interval.</p>
+            <p>Sample section of the pipeline.yaml configuration file with Swift polling on an hourly interval:</p>
             <codeblock>---
 sources:
-    - name: meter_source
-      interval: 604800
-      meters:
-          - "instance"
-          - "image"
-          - "image.size"
-          - "image.upload"
-          - "image.delete"
-          - "volume"
-          - "volume.size"
-          - "snapshot"
-          - "snapshot.size"
-          - "ip.floating"
-          - "network.*"
-          - "compute.instance.create.end"
-          - "compute.instance.delete.end"
-          - "compute.instance.update"
-          - "compute.instance.exists"
-      sinks:
-          - meter_sink
     - name: swift_source
       interval: 3600
-      meters:
+      sources:
+            meters:
           - "storage.objects"
           - "storage.objects.size"
           - "storage.objects.containers"
-          - "storage.containers.objects"
-          - "storage.containers.objects.size"
-      sinks:
-          - meter_sink
 sinks:
     - name: meter_sink
       transformers:
       publishers:
           - notifier://</codeblock>
-            <p>Every time the polling interval is due for polling at least 5 messages per
+            <p>Every time the polling interval occurs, at least 3 messages per
                 existing object/container in Swift are collected. The following table illustrates the
                 amount of data produced hourly in different scenarios:</p>
             <table>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="topic_icq_hvc_5t">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Ceilometer Metering APIs</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Metering API Reference</title>
   <body><!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     
@@ -10,24 +10,65 @@
     
     <p><image href="../../media/metering/Ceilo_API_Polling.png"/></p>
     
-    <p>List of APIs discussed in this topic:</p>
+    <p>Ceilometer query APIs can put a significant load on the database leading to unexpected
+      results or failures. Therefore it is important to understand how the Ceilometer API works and
+      how to change the configuration to protect against failures.</p>
+    
+    <p><b>APIs in this topic:</b></p>
     <ul>
+      <li><xref type="section" href="#topic_icq_hvc_5t/API_changes">Ceilometer API Changes</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/pipeline">Post Samples API</xref></li>
-      <li><xref type="section" href="#topic_icq_hvc_5t/sampleAPI">Ceilometer Sample API</xref> This API contains the following two APIs:
-        <ul>
-        <li>ceilometer sample-list(/v2/samples) </li>
-      <li>ceilometer query-sample (/v2/query/samples)</li></ul></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/sampleAPI">Ceilometer Sample API</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/statAPI">Ceilometer Statistics API</xref></li>
-      <li><xref type="section" href="#topic_icq_hvc_5t/disabled">Disabled APIs</xref>This section
-        contains the following APIs: <ul>
-          <li>Ceilometer Alarms API</li>
-          <li>Post Samples API</li>
-          <li>Query Sample API</li>
-        </ul></li>
+      <li><xref type="section" href="#topic_icq_hvc_5t/disabled">Disabled APIs</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/data_access">Data Access API</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/resource">Ceilometer Resource API</xref></li>
       <li><xref type="section" href="#topic_icq_hvc_5t/improve_reporting">Improving Reporting API Responsiveness</xref></li>
     </ul>
+    <lines>
+      
+    </lines>
+    <section id="API_changes">
+      <title>Ceilometer API Changes</title>
+      <p>The following changes have been made in the latest release of Ceilometer for Helion OpenStack:</p>
+      <ul>
+        <li><b>Ceilometer API</b> supports a default of 100 queries. This limit is configurable in
+          the ceilometer.conf configuration file. The option is in the <codeph>DEFAULT</codeph>
+          section and is named <codeph>default_api_return_limit</codeph>.</li>
+          <li>Flexible configuration for pollster and notifications has been added. Ceilometer can now list different event types differently for these services.</li>
+          <li><b>Query-sample API</b> is now supported in Helion.</li>  
+        <li><b>Meter-list API</b> can now return a unique list of meter names with no duplicates. To
+          create this list, when running the list command, use the <codeph>--unique</codeph>
+          option.</li>
+      </ul>
+     
+      <p>The following limitations exist in the latest release of Ceilometer for Helion OpenStack:</p>
+      <ul>
+        <li><b>Event API</b> is disabled by default and is unsupported in Helion OpenStack.</li>
+        <li><b>Trait API</b> is disabled by default and is unsupported in Helion OpenStack.</li>
+        <li><b>Post Sample API</b> is disabled by default and is unsupported in Helion
+          OpenStack.</li>
+        <li><b>Alarm API</b> is disabled by default and is unsupported in Helion OpenStack.</li>
+        <li><b>Sample-Show API</b> is unsupported in Helion OpenStack.</li>
+        <li><b>Meter-List API</b> does not support filtering with metadata.</li>
+        <li><b>Query-Sample API</b> (Complex query) does not support using the following operators
+          in the same query: <codeblock>order by argument 
+NOT</codeblock></li>
+        <li><b>Query-Sample API</b> requires you to specify a meter name. Complex queries will be
+          analyzed as several simple queries according to the AND/OR logic. As meter-list is a
+          constraint, each simple query must specify a meter name. If this condition is not met, you
+          will receive a detailed 400 error.</li>
+        <li>Due to a Monasca API limitation, microsecond is no longer supported. In the
+            <b>Resource-List API</b>, <b>Sample-List API</b>, <b>Statistics API</b> and
+          <b>Query-Samples API</b>, the <codeph>timestamp</codeph> field now only supports measuring down to the
+          millisecond.</li>
+        <li><b>Sample-List API</b> does not support <codeph>message_id</codeph> as a valid search
+          parameter. This parameter is also not included in the output.</li>
+            <li><b>Sample-List API</b> now requires the meter name as a positional parameter.</li>
+        <li><b>Sample-List API</b> returns a sample with an empty <codeph>message_signature</codeph> field.</li>
+      </ul>
+     
+    </section>
     
     <section id="pipeline">
       <title>Separate pipeline.yml for Ceilometer Post Samples API</title> The
@@ -84,8 +125,7 @@ sinks:
          - notifier://</codeblock>
     </section>
 
-    <section id="sampleAPI"><title>Ceilometer Sample API</title>
-      <p>Ceilometer Sample has two APIs: <ul>
+    <section id="sampleAPI"><title>Ceilometer Sample API</title><p>Ceilometer Sample has two APIs: <ul>
           <li>ceilometer sample-list(/v2/samples) </li>
           <li>ceilometer query-sample (/v2/query/samples)</li>
         </ul> ceilometer sample-list allows querying based on <ul>
@@ -111,16 +151,15 @@ sinks:
       <codeblock>ceilometer sample-list -m METER_NAME -q '&lt;field1>&lt;operator1>&lt;value1>;...;&lt;field_n>&lt;operator_n>&lt;value_n>'</codeblock>
       where operators can be:<b> &lt;, &lt;=, =, !=, >= ></b>
       <p>All the key value pairs will be combined with implicit AND operator. Some example usage for
-        the sample list API are</p>
-      <codeblock>ceilometer sample-list --meter image.serve -q 'resource_id=a1ec2585' </codeblock>
-      <codeblock>ceilometer sample-list --meter instance -q 'resource_id=&lt;ResourceID>;metadata.event_type=&lt;eventType>'</codeblock>
+        the sample list API
+      are</p><codeblock>ceilometer sample-list --meter image.serve -q 'resource_id=a1ec2585' </codeblock><codeblock>ceilometer sample-list --meter instance -q 'resource_id=&lt;ResourceID>;metadata.event_type=&lt;eventType>'</codeblock>
     </section>
 
-    <section id="statAPI"><title>Ceilometer Statistics API</title>
-      <p>Ceilometer Statistics is an open-ended query API and thus can put a significant load on the
-        database leading to unexpected results and or failures. Ceilometer Statistics API performs
-        queries on the sample table and obtains the minimum and maximum timestamp for the meter that
-        is being queried.</p> Based on the minimum and maximum timestamp it returns a few statistics <ul>
+    <section id="statAPI"><title>Ceilometer Statistics API </title><p>Ceilometer Statistics is an
+        open-ended query API and thus can put a significant load on the database leading to
+        unexpected results and or failures. Ceilometer Statistics API performs queries on the sample
+        table and obtains the minimum and maximum timestamp for the meter that is being queried.</p>
+      Based on the minimum and maximum timestamp it returns a few statistics <ul>
         <li> If a period parameter is not supplied it simply returns few statistics like min, max,
           avg and sum</li>
         <li> If a period parameter is supplied then it divides the range into equal periods and
@@ -150,19 +189,19 @@ sinks:
             intervals. A small period value will translate into huge number of queries against the
             database, which is not recommended.</dd>
         </dlentry>
-
-
       </dl>
     </section>
-    <section id="disabled"><title>Disabled APIs</title> The Ceilometer metering APIs disabled in
-      this release are: <ul>
+    <section id="disabled"><title>Disabled APIs</title> The following Ceilometer metering APIs are disabled in
+      this release: <ul>
+        <li>Event API</li>
+        <li>Trait API</li>
         <li>Ceilometer Alarms API</li>
         <li>Post Samples API</li>
-        <li>Query Sample API</li>
-      </ul> They are disabled via a custom rule, hp_disabled_rule:not_implemented, which is added to
-      each of those APIs in Ceilometer's policy.json. (<b>/etc/ceilometer/policy.json</b> on
-      controller nodes). Attempts to access any of the Alarm APIs, Post Meter API or Query-sample
-      API will result in an HTTP response 501 Not Implemented.<p>To manually enable any of the APIs,
+      </ul> 
+      <p>These APIs are disabled through a custom rule called <codeph>hp_disabled_rule:not_implemented</codeph>. This rule is added to
+      each disabled API in Ceilometer's policy.json file <b>/etc/ceilometer/policy.json</b> on
+        controller nodes. Attempts to access any of the disabled APIs will result in an HTTP response 501 Not Implemented.</p>
+        <p>To manually enable any of the APIs,
         remove the corresponding rule and restart
       Apache</p><codeblock>{
 	"context_is_admin": "role:admin",
@@ -202,9 +241,9 @@ sinks:
 
     <section id="data_access">
       <title>Data Access API</title> 
-      <p>Ceilometer only provides a complete API for data access and not for data visualization or aggregation. These functions are provided
-      by external, downstream applications that support various use cases like usage billing and
-      software license policy adherence. </p>
+      <p>Ceilometer provides a complete API for data access only and not for data visualization or
+        aggregation. These functions are provided by external, downstream applications that support
+        various use cases like usage billing and software license policy adherence. </p>
       
       <p>Each application calls the specific Ceilometer API needed
       for their use case. The resulting data is then aggregated and visualized based on the unique
@@ -213,8 +252,7 @@ sinks:
       <p>For more information, see the OpenStack Developer documentation for <xref href="http://docs.openstack.org/developer/ceilometer/webapi/v2.html" scope="external" format="html">V2 Web API</xref>.</p>
         
  </section>
-  <lines>
-  </lines>  
+  <lines/>  
     <section id="resource">
       <title>Ceilometer Resource API</title>
       <p>The Ceilometer Resource API can provide a list of resources that Ceilometer has collected. </p>
@@ -223,7 +261,7 @@ sinks:
       but such functionality has a high cost. For a large deployment, in order to reduce the response time it is recommended that you do not return meter links. You can avoid returning them
       by passing the query filter <codeph>meter_links=0</codeph> (for the REST API only).</p>
       
-      <p><codeph>resource-list</codeph> (found in /v2/resources) can be filtered by project_id, user_id, source, resource_id, timestamp and metadata. 
+      <p><codeph>resource-list</codeph> (/v2/resources) can be filtered by project_id, user_id, source, resource_id, timestamp and metadata. 
       It is highly recommended that you use timestamp and/or project query filters to get a quick response in a scaled deployment.</p>
       
      <codeblock>ceilometer resource-list -q "project_id=7aa0fe3f02ff4e11a70a41e97d0db5e3;timestamp>=2015-10-22T15:44:00;timestamp&lt;=2015-10-23T15:44:00"</codeblock>

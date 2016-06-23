@@ -1,25 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="reconfig_metering">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Ceilometer Metering Service Config and
-    Upgrade</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configure the Ceilometer Metering Service</title>
   <body><!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="deploy">
-      <keyword keyref="kw-hos-phrase"/> automatically deploys Ceilometer to use the shared MySQL
-      database along with other OpenStack services such as Keystone. Ceilometer is configured to use
-      a common MySQL database and deployed on the same control plane nodes along with other
-      OpenStack services such as Keystone, Nova, Neutron, Glance, Swift, etc. <p>Reporting APIs are
-        the main access to the metering data stored in Ceilometer. These APIs are accessed by
-        Horizon to provide basic usage data and information.<keyword keyref="kw-hos"/> uses Apache2
-        Web Server to provide the API access. </p><note type="attention">To improve API
-        responsiveness you can increase the number of threads and processes in the Ceilometer
-        configuration file. The Ceilometer API runs as an WSGI processes. Each process can have a
-        certain amount of threads managing the filters and applications, which can comprise the
-        processing pipeline. </note></section>
+    <p><keyword keyref="kw-hos-phrase"/> automatically deploys Ceilometer to use a common MySQL
+        database. Ceilometer is deployed on the same control plane nodes along with other OpenStack
+        services such as Keystone, Nova, Neutron, Glance, and Swift.</p>
+   <p>You can configure the Metering Service in the following ways:</p>   
+      <ul>
+        <li><xref type="section" href="#reconfig_metering/Ceilo_StopStart">Restart the Polling Agent</xref></li>
+        <li>Configure Metering Service Components</li>
+        <li>Configure Apache2 for the Ceilometer API</li>
+        <li>Enable Services for Messaging Notifications</li>
+        <li>Configure Metering Service Notifications</li>
+        <li>Run the Upgrade Playbook</li>
+        <li>Reconfigure the Service</li>
+      </ul>
+ </section>
+    
+    <section id="Ceilo_StopStart">
+      <title>Stop and Start the Polling Agent</title>
+      <p>The Central Agent is responsible for coordinating the polling activity. It parses the
+        <b>pipeline.yml</b> configuration file and identifies all the sources where data is collected. The sources are then evaluated and
+        are translated to resources that a dedicated pollster can retrieve. The Polling Agent follows this process:</p>
+      <ol>
+        <li>At each identified interval, the <b>pipeline.yml</b> configuration file is parsed.</li>
+        <li>The resource list is composed. </li> 
+        <li>The pollster collects the data.</li>
+           <li>The pollster sends data to the queue.</li>
+      </ol>
+
+      <p>Metering processes should normally be operating at all times. This need is addressed by the Upstart event engine which is designed to run on any Linux system. Upstart creates events, handles the consequences of those events, and starts and stops processes as required. Upstart will continually attempt to restart stopped processes even if the process was stopped manually. To stop or start the Polling Agent and avoid the conflict with Upstart, using the following steps.</p>
+      <p><b>To restart the Polling Agent:</b></p>
+      <ol>
+        <li>To determine whether the process is running, run:
+          <codeblock>sudo service ceilometer-agent-central status 
+#SAMPLE OUTPUT: ceilometer-agent-central start/running, process 27989</codeblock></li>
+        <li>To stop the process, run:
+          <codeblock>sudo service ceilometer-agent-central stop</codeblock></li>
+          <li>To start the process, run:
+            <codeblock>sudo service ceilometer-agent-central start</codeblock></li>
+      </ol>
+    </section>
+      <lines></lines>
 
     <section id="apache">
       <title>Configure Apache2 for the Ceilometer API</title> 
+      <p>Reporting APIs provide access
+        to the metering data stored in Ceilometer. These APIs are accessed by Horizon to provide
+        basic usage data and information.<keyword keyref="kw-hos"/> uses Apache2 Web Server to
+        provide the API access. </p><note type="attention">To improve API responsiveness you can
+          increase the number of threads and processes in the Ceilometer configuration file. The
+          Ceilometer API runs as an WSGI processes. Each process can have a certain amount of threads
+          managing the filters and applications, which can comprise the processing pipeline.
+        </note>
       <p>To configure Apache:</p>
       <ol>
         <li>Edit the Ceilometer configuration files.</li>
@@ -99,7 +135,7 @@
 <lines>
 </lines>
     <section id="metering_services">
-      <title>Enabling Services for Messaging Notifications</title>
+      <title>Enable Services for Messaging Notifications</title>
       <p>After installation of Helion OpenStack, the following services are enabled by default to send notifications:</p>
 <ul>
 <li>Nova</li>
@@ -114,14 +150,17 @@
     </section>
 
     <section id="upgrade">
-      <title>Upgrade</title> Follow Standard Service upgrade mechanism available in the
+      <title>Run the Upgrade Playbook</title> 
+      <p>Follow Standard Service upgrade mechanism available in the
       lifecycle manager distribution. For Ceilometer, the playbook included with <keyword keyref="kw-hos"/>
-      is ceilometer-upgrade.yml </section>
+        is ceilometer-upgrade.yml </p>
+    </section>
 
 
-    <section id="reconfig"><title>Reconfigure</title> Make changes in the Ceilometer available
+    <section id="reconfig"><title>Reconfigure the Service</title> 
+      <p>Make changes in the Ceilometer available
       configuration files on lifecycle manager machine in
-        <codeph>/home/stack/helion/my_cloud/config/ceilometer/</codeph>
+        <codeph>/home/stack/helion/my_cloud/config/ceilometer/</codeph></p>
       <p>Make changes in the target configuration file (ie.,
         pipeline-agent-notification.yaml.j2)</p><codeblock>cd /home/stack/helion
 git add -A
