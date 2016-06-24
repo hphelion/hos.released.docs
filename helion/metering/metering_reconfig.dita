@@ -14,7 +14,8 @@
         <li><xref type="section" href="#reconfig_metering/apache">Configure Apache2 for the Ceilometer API</xref></li>
         <li><xref type="section" href="#reconfig_metering/metering_services">Enable Services for Messaging Notifications</xref></li>
         <li><xref type="section" href="#reconfig_metering/Ceilo_StopStart">Restart the Polling Agent</xref></li>
-        <li><xref type="section" href="#reconfig_metering/ceilo_monitoring">Configure Monitoring of Ceilometer Agents</xref></li>
+        <li><xref type="section" href="#reconfig_metering/ceilo_replace_cntrler">Replace a Logging, Monitoring, and Metering Controller"></xref></li>
+        <li><xref type="section" href="#reconfig_metering/ceilo_monitoring">Configure Monitoring</xref></li>
       </ul>
  </section>
     <lines>
@@ -165,13 +166,41 @@
 <lines>
   
 </lines>
-<section id="ceilo_monitoring">
-  <title>Configure Monitoring of Ceilometer Agents</title>
-  <p>The Monasca HTTP Process monitors the Ceilometer API service. Ceilometer's notification and polling agents are also monitored. If these agents are down, Monasca monitoring alarms are triggered. You can use the notification alarms to debug the issue and restart the notifications agent. However, for the central-agent (polling) and the collector the alarms need to be deleted. These two processes are not started after an upgrade so the monitoring process check alarms for these components will be in UNDETERMINED state. Helion does not monitor these processes anymore so the best option to resolve this issue is to manually delete orphaned alarms during an install or upgrade.</p>
+    <section id="ceilo_replace_cntrler">
+      <title>Replace a Logging, Monitoring, and Metering Controller</title>
+      
+      <p>In a medium-scale environment, if a metering controller has to be replaced or rebuilt, use the following steps:</p>
+      <ol>
+        <li><xref type="section" href="../operations/maintenance/controller/replace_controller.dita">Replacing a Controller Node</xref>.</li>
+        <li>If the Ceilometer nodes are not on the shared control plane, to implement the changes and replace the controller, you must reconfigure Ceilometer. To do this, run the ceilometer-reconfigure.yml ansible playbook <b>without</b> the limit option  </li>
+      </ol>
+    </section>
+<lines>
+  
+</lines>
+    <section id="ceilo_monitoring">
+  <title>Configure Monitoring</title>
+  <p>The Monasca HTTP Process monitors the Ceilometer API service. Ceilometer's notification and polling agents are also monitored. If these agents are down, Monasca monitoring alarms are triggered. You can use the notification alarms to debug the issue and restart the notifications agent. However, for Central-Agent (polling) and Collector the alarms need to be deleted. These two processes are not started after an upgrade so when the monitoring process checks the alarms for these components, they will be in UNDETERMINED state. Helion does not monitor these processes anymore so the best option to resolve this issue is to manually delete alarms that are no longer used but are installed.</p>
   
   <p>To resolve notification alarms, first check the <b>ceilometer-agent-notification</b> logs for errors in the <b>/var/log/ceilometer</b> directory. You can also use the Operations Console to access Kibana and check the logs. This will help you understand and debug the error.</p>
     
   <p>To restart the service, run the <b>ceilometer-start.yml</b>. This playbook starts the ceilometer processes that has stopped and only restarts during install, upgrade or reconfigure which is what is needed in this case. Restarting the process that has stopped will resolve this alarm because this Monasca alarm means that ceilometer-agent-notification is no longer running on certain nodes.</p>
+  
+  <p>You can access Ceilometer data through Monasca. Ceilometer publishes samples to Monasca with credentials of the following accounts:</p>
+  <ul>
+    <li><b>ceilometer</b> user</li>
+    <li><b>services</b></li>
+  </ul>
+    
+  <p>Data collected by Ceilometer can also be retrieved by the Monasca REST API. Make sure you use the following guidelines when requesting data from the Monasca REST API:</p>
+  <ul>
+<li>Verify you have the monasca-admin role. This role is configured in the monasca-api configuration file.</li>
+    <li>Specify the <codeph>tenant id</codeph> of the <b>services</b> project.</li> 
+  </ul>  
+
+  <p>For more details, read the <xref href="https://github.com/openstack/monasca-api/blob/master/docs/monasca-api-spec.md" scope="external" format="html">Monasca API Specification</xref>.</p>
+    
+<p>To run Monasca commands at the command line, you must be have the <b>admin</b> role. This allows you to use the Ceilometer account credentials to replace the default admin account credentials defined in the <b>service.osrc</b> file. When you use the Ceilometer account credentials, Monasca commands will only return data collected by Ceilometer. At this time, Monasca command line interface (CLI) does not support the data retrieval of other tenants or projects.</p>
 </section>
 
   </body>
