@@ -90,5 +90,27 @@ ansible-playbook -i hosts/verb_hosts logging-reconfigure.yml</codeblock></li>
         </ol>
       </sectiondiv>
     </section>
+    <section id="ts_beaver_logs"><title outputclass="headerH">Beaver Log Files Show Queue Overflow Errors</title>
+      <sectiondiv outputclass="insideSection">
+        <p>If the Beaver Consumer worker is being overworked and cannot keep up with the amount of logging from the nodes, you will see something similar to the example below in the <b>beaver.log</b> file.</p>
+        <codeblock>[2016-06-09 00:40:02,727] ERROR   Exception caught sending message/s : Producer async queue overfilled. Current queue size 100.
+[2016-06-09 00:40:02,729] INFO    Caught transport exception: Unspecified exception encountered
+[2016-06-09 00:40:02,729] INFO    Reconnecting in 2187 seconds</codeblock>
+        <p>This exception error is not a critical issue. Centralized Logging is still working, just very slowly. The workaround available is to increase the queue timeout setting if this issue occurs. Even after changing the timeout, it is likely that you will continue to see 'Queue is full' errors, which should not occur very often. This error does not cause any logs to be lost. It is simply letting you know that the logging rate is faster than it can work. The Beaver Consumer worker will eventually catch up and Centralized Logging will continue to function.</p> 
+        
+        <p><b>To increase the queue timeout:</b></p>
+        <ol>
+          <li>In a text editor, open:
+            <codeblock>roles/logging-common/defaults/main.yml</codeblock></li>
+          <li>To reset the timeout period, change the following parameter from 10 seconds to 30
+            seconds: <codeblock>kronos_kafka_queue_put_timeout</codeblock></li>
+          <li>To run the reconfigure playbook and implement your changes, run:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i ansible-playbook -i hosts/verb_hosts kronos-reconfigure.yml</codeblock>
+          </li>
+        </ol> 
+
+      </sectiondiv>
+    </section>
   </body>
 </topic>
