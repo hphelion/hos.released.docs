@@ -20,13 +20,12 @@
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Edit the configuration file noted below to edit the retention period. <p>The
-            configuration file to edit is:</p>
-          <codeblock>~/helion/hos/ansible/roles/monasca-variables/defaults/main.yml</codeblock>
-          <p>Change the <codeph>vertica_retention_period</codeph> value to the number of days you
-            want to hold Monasca data in Vertica. If your Vertica file system just filled up, or is
-            close to doing so, make sure you are lowering it to a value less than the amount of days
-            it took to fill in the first place.</p>
-          <p>The section looks like this, bolded for emphasis:</p>
+            configuration file to edit
+            is:</p><codeblock>~/helion/hos/ansible/roles/monasca-variables/defaults/main.yml</codeblock><p>Change
+            the <codeph>vertica_retention_period</codeph> value to the number of days you want to
+            hold Monasca data in Vertica. If your Vertica file system just filled up, or is close to
+            doing so, make sure you are lowering it to a value less than the amount of days it took
+            to fill in the first place.</p>The section looks like this, bolded for emphasis:
           <codeblock># Retention variables
 kafka_low_disk_retention: 1800000 # 30 minutes in milliseconds
 kafka_log_retention_hours: "{{ monasca_tunings.kafka_log_retention_hours }}"
@@ -44,8 +43,9 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-deploy.yml --tags monasca-schema-vertica</codeblock></li>
         <li>From your first controller node (which may be your lifecycle manager), manually run the
-          newly created Vertica cleanup cronjob: <codeblock>sudo /etc/cron.daily/vertica-cleanup</codeblock>
-          <p>After this, it will automatically run once every 24 hours.</p></li>
+          newly created Vertica cleanup cronjob:
+            <codeblock>sudo /etc/cron.daily/vertica-cleanup</codeblock><p>After this, it will
+            automatically run once every 24 hours.</p></li>
       </ol>
     </section>
 
