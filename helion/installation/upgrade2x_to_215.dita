@@ -266,16 +266,47 @@ neutron agent-list</codeblock><p>Example,
 | fe43c0e9-f1db-4b67-a474-77936f7acebf | Metadata agent       | helion-cp1-c1-m3-mgmt    | :-)   | True           | neutron-metadata-agent    |
 +--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+</codeblock></li>
           <li>Also obtain the ID for the L3 Agent of the node you are going to move the SNAT namespace service to using the same commands as the previous step.</li>
-          <li>Use these commands to move the SNAT namespace service:
-            <ol>
+          <li>Use these commands to move the SNAT namespace service, with the
+              <codeph>qrouter_id</codeph> being the same value as the ID for router:<ol>
               <li>Remove the L3 Agent for the old host:
-            <codeblock>neutron l3-agent-router-remove &lt;agent_id_of_snat_namespace_host> &lt;qrouter_uuid></codeblock></li>
+                  <codeblock>neutron l3-agent-router-remove &lt;agent_id_of_snat_namespace_host> &lt;qrouter_uuid></codeblock><p>Example:<codeblock>$ neutron l3-agent-router-remove a209c67d-c00f-4a00-b31c-0db30e9ec661 e122ea3f-90c5-4662-bf4a-3889f677aacf
+Removed router e122ea3f-90c5-4662-bf4a-3889f677aacf from L3 agent</codeblock></p></li>
               <li>Remove the SNAT namespace:
-                <codeblock>sudo ip netns delete snat-xxxxxxxxxxxxxxxx</codeblock></li>
+                  <codeblock>sudo ip netns delete snat-&lt;router_id></codeblock><p>Example:<codeblock>$ sudo ip netns delete snat-e122ea3f-90c5-4662-bf4a-3889f677aacf</codeblock></p></li>
               <li>Create a new L3 Agent for the new
-                host:<codeblock>neutron l3-agent-router-add &lt;agent_id_of_new_snat_namespace_host> &lt;qrouter_uuid></codeblock></li>
+                  host:<codeblock>neutron l3-agent-router-add &lt;agent_id_of_new_snat_namespace_host> &lt;qrouter_uuid></codeblock><p>Example:<codeblock>$ neutron l3-agent-router-add 3bc28451-c895-437b-999d-fdcff259b016 e122ea3f-90c5-4662-bf4a-3889f677aacf
+Added router e122ea3f-90c5-4662-bf4a-3889f677aacf to L3 agent</codeblock></p></li>
             </ol>
           </li>
+          <li>Confirm that it's been moved by listing the details of your port from step 1b above,
+            noting the value of <codeph>binding:host_id</codeph> which should be updated to the host
+            you moved your SNAT namespace
+              to:<codeblock>neutron port-show &lt;port_ID></codeblock><p>Example:</p><codeblock>$ neutron port-show 287746e6-7d82-4b2c-914c-191954eba342
++-----------------------+--------------------------------------------------------------------------------------------------------------+
+| Field                 | Value                                                                                                        |
++-----------------------+--------------------------------------------------------------------------------------------------------------+
+| admin_state_up        | True                                                                                                         |
+| allowed_address_pairs |                                                                                                              |
+<b>| binding:host_id       | helion-cp1-c1-m1-mgmt</b>                                                                                        |
+| binding:profile       | {}                                                                                                           |
+| binding:vif_details   | {"port_filter": true, "ovs_hybrid_plug": true}                                                               |
+| binding:vif_type      | ovs                                                                                                          |
+| binding:vnic_type     | normal                                                                                                       |
+| device_id             | e122ea3f-90c5-4662-bf4a-3889f677aacf                                                                         |
+| device_owner          | network:router_gateway                                                                                       |
+| dns_assignment        | {"hostname": "host-10-247-96-29", "ip_address": "10.247.96.29", "fqdn": "host-10-247-96-29.openstacklocal."} |
+| dns_name              |                                                                                                              |
+| extra_dhcp_opts       |                                                                                                              |
+| fixed_ips             | {"subnet_id": "f4152001-2500-4ebe-ba9d-a8d6149a50df", "ip_address": "10.247.96.29"}                          |
+| id                    | 287746e6-7d82-4b2c-914c-191954eba342                                                                         |
+| mac_address           | fa:16:3e:2e:26:ac                                                                                            |
+| name                  |                                                                                                              |
+| network_id            | d3cb12a6-a000-4e3e-82c4-ee04aa169291                                                                         |
+| security_groups       |                                                                                                              |
+| status                | DOWN                                                                                                         |
+| tenant_id             |                                                                                                              |
++-----------------------+--------------------------------------------------------------------------------------------------------------+
+</codeblock></li>
         </ol>
         <p><b>Reboot the Controllers</b></p> In order to reboot the controller nodes, you must first
         retrieve a list of nodes in your cloud running control plane services. <codeblock>for i in $(grep -w cluster-prefix ~/helion/my_cloud/definition/data/control_plane.yml | awk '{print $2}'); do grep $i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts | grep ansible_ssh_host | awk '{print $1}'; done</codeblock>
