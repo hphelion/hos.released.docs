@@ -3,6 +3,9 @@
 <topic id="scality_install_driver">
   <title>Install the Scality Drivers</title>
   <body>
+    
+    <p>Scality RING storage can integrate with Helion's datacenter. Scality provides a block storage interface for OpenStack compute through the Cinder API and integration with OpenStack Swift as an alternative storage back end.</p>
+    
     <p>To integrate Scality RING storage with Helion, you must install and configure the following drivers:</p>
 <ol>
   <li><xref type="section" href="#scality_install_driver/swift_driver">Install the Scality Driver for Swift</xref></li>
@@ -10,30 +13,37 @@
   <li><xref type="section" href="#scality_install_driver/cinder_driver">Install the Scality Driver for Cinder</xref></li>
     </ol>
 
-    <note type="caution">If the TinTri driver is not installed in a virtual environment, there is a chance the driver can be lost when Helion OpenStack is upgraded. To ensure correct installation of Helion, follow the steps in <xref href="https://docs.hpcloud.com/helion/administration/thirdparty_driver_support.html#thirdpartydriver_patching_venv" scope="external" format="html">Third Party Driver Support</xref></note>
 
-<section id="TinT_install_driver">
+
+<section id="swift_driver_overview">
   
-  <title>Install the TinTri Cinder Driver</title>
-  <p>To install the TinTri Cinder driver you must copy it to an active controller node.</p> 
-  <p>To install the driver:</p>
+  <title>Install the Scality Driver for Swift</title>
+  
+  <p>To install the Swift driver, you must complete the following tasks:</p>
   <ol>
-    <li>Copy the following file to the controller node that is running the VIP:
-          <codeblock>Tintri_Cinder_Driver_2.0.0.1.tar</codeblock></li>
-    <li> To unpack the archive with the following operands: <ul>
-            <li><b>x</b> -- extract the named file or files from the archive</li>
-            <li><b>v</b> -- write to standard error the name of each file processed</li>
-            <li><b>f</b> -- use the first file operand as the name of the archive instead of the
-              system-dependent default</li>
-          </ul> run: <codeblock>tar -zxvf Tintri_Cinder_Driver_2.0.0.1.tar</codeblock></li>
-    <li>After the file is unpacked, to change to the directory where the file is, run:
-          <codeblock>cd kilo/volume/drivers</codeblock></li>
-    <li>Verify that the following file exists in this directory:
-          <codeblock>Tintry.py</codeblock></li>
-    <li>To find the Cinder install path, run: <codeblock>sudo find / -name cinder</codeblock></li>
-    <li>Copy the <b>tintry.py</b> file to the cinder install path. The command will look like the
-          following example:
-          <codeblock>sudo cp tintri.py /opt/stack/venv/cinder-20151019T060521Z/lib/python2.7/site-packages/cinder</codeblock></li>
+    <li>Download and install the driver</li>
+    <li>Update the configuration on the controller nodes</li>
+    <li>Populate bootstrap entries on the RING storage node</li>
+    <li>Commit changes and deploy.</li>
+  </ol>
+</section>
+  
+  <section id="swift_driver">
+  <title>Download and Install the Driver</title>
+  <p>To download the driver:</p>
+  <ol>
+    <li>To create a directory for the driver package, run:
+    <codeblock>cd ~/scratch
+    mkdir pkg</codeblock></li>
+    <li>To download and extract the driver, run:
+    <codeblock>cd ~/scratch/pkg
+wget https://github.com/scality/ScalitySproxydSwift/archive/swift-scality-backend-0.4.0.tar.gz
+tar xzf swift-scality-backend-0.4.0.tar.gz
+ 
+wget  https://github.com/scality/scality-sproxyd-client/archive/scality-sproxyd-client-0.1.1.tar.gz
+tar xzf scality-sproxyd-client-0.1.1.tar.gz
+    </codeblock></li>
+    <li>To install the 3rd-party driver</li>
   </ol>
 </section>
     
