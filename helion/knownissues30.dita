@@ -235,6 +235,51 @@ sudo systemctl start kibana
                 live migrate instances between them. Instances on KVM hosts can only be live
                 migrated to other KVM hosts and the same for RHEL hosts. For more details about live
                 migration, see <xref href="operations/maintenance/live_migration.dita"/>.</p>
+            <p><!-- DOCS-3112 --><b>The Nova v2.1 API policy.json file does not cover all
+                    operations</b></p>
+            <p>The Nova v2.1 API policy does not cover every operation. The absence of the policies
+                below, which normally are admin-only actions, would allow non-admin users to perform
+                these operations against their own resources through the Nova API:</p>
+            <codeblock>For servers:
+"os_compute_api:servers:detail:get_all_tenants": "is_admin:True",
+"os_compute_api:servers:index:get_all_tenants": "is_admin:True",
+"os_compute_api:servers:create:forced_host": "rule:admin_api",
+"os_compute_api:os-lock-server:unlock:unlock_override": "rule:admin_api",
+
+For networking:
+"os_compute_api:os-floating-ip-dns:domain:update": "rule:admin_api",
+"os_compute_api:os-floating-ip-dns:domain:delete": "rule:admin_api",
+
+For quotas:
+"os_compute_api:os-quota-class-sets:update": "rule:admin_api",
+"os_compute_api:os-quota-class-sets:show": "is_admin:True or quota_class:%(quota_class)s",</codeblock>
+            <p>There are two workarounds available to fix this: you can edit the file in your
+                environment manually and add these values or you can download a modified Nova
+                policy.json file that includes these values and add it to your cloud
+                configuration.</p>
+            <p>To modify your existing file to add these values, follow these steps:</p>
+            <ol>
+                <li>Log in to the lifecycle manager.</li>
+                <li>Edit the Nova policy.json.j2 file at the following location:
+                    <codeblock>~/helion/my_cloud/config/nova/policy.json.j2</codeblock></li>
+                <li>Add the values in the codeblock above and save the file.</li>
+                <li>Commit the changes to git:
+                    <codeblock>git add -A
+git commit -a -m "changing Nova policy json file"</codeblock></li>
+                <li>Run the configuration processor:
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                <li>Update your deployment directory:
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                <li>Reconfigure the Nova service with this playbook:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
+            </ol>
+            <p>If you wish to use our modified Nova policy.json file, you can download it here:
+                    <xref href="../media/download/policy.json.j2">Download modified Nova
+                    policy.json.j2 file</xref>. Then save the file in the location in step #2 above
+                and then follow the rest of the steps to commit the change.</p>
             <!-- DOCS-3169 -->
             <p><b>Two upstream limitations regarding live migration abortion parameters that
                     exist</b></p>
