@@ -30,7 +30,9 @@
           <codeph>keystone.osrc</codeph> file created by the lifecycle manager:</p>
       <codeblock>source ~/keystone.osrc</codeblock>
       <p><b>List users in the default domain</b></p>
-      <p>These users are created by the lifecycle manager in the MySQL back end:</p>
+      <p>These users are created by the lifecycle manager in the MySQL back
+        end:<codeblock>openstack user list</codeblock></p>
+      <p>Example output:</p>
       <codeblock>$ openstack user list
 +----------------------------------+------------------+
 | ID                               | Name             |
@@ -61,7 +63,9 @@
 | fed3a599b0864f5b80420c9e387b4901 | monasca-agent    |
 +----------------------------------+------------------+
 </codeblock>
-      <p><b>List domains created by the installation process</b>:</p>
+      <p><b>List domains created by the installation
+        process</b>:<codeblock>openstack domain list</codeblock></p>
+      <p>Example output:</p>
       <codeblock>$ openstack domain list
 +----------------------------------+---------+---------+----------------------------------------------------------------------+
 | ID                               | Name    | Enabled | Description                                                          |
@@ -70,6 +74,8 @@
 | default                          | Default | True    | Owns users and tenants (i.e. projects) available on Identity API v2. |
 +----------------------------------+---------+---------+----------------------------------------------------------------------+</codeblock>
       <p><b>List the roles</b>:</p>
+      <codeblock>openstack role list</codeblock>
+      <p>Example output:</p>
       <codeblock>$ openstack role list
 +----------------------------------+---------------------------+
 | ID                               | Name                      |
@@ -97,7 +103,9 @@
 | cd61735400ca4fa19e80cebe9970d9a7 | Member                    |
 | fe010be5c57240db8f559e0114a380c1 | key-manager:creator       |
 +----------------------------------+---------------------------+</codeblock>
-      <p><b>List admin user role assignment within default domain</b>:</p>
+      <p><b>List admin user role assignment within default
+        domain</b>:<codeblock>openstack role assignment list --user admin --domain default</codeblock></p>
+      <p>Example output:</p>
       <codeblock># This indicates that the admin user is assigned the admin role within the default domain
 stack@hLinux:~$ openstack role assignment list --user admin --domain default
 +----------------------------------+----------------------------------+-------+---------+---------+
@@ -105,7 +113,11 @@ stack@hLinux:~$ openstack role assignment list --user admin --domain default
 +----------------------------------+----------------------------------+-------+---------+---------+
 | b398322103504546a070d607d02618ad | fed1c038d9e64392890b6b44c38f5bbb |       |         | default |
 +----------------------------------+----------------------------------+-------+---------+---------+</codeblock>
-      <p><b>Create a new user in default domain</b>:</p>
+      <p><b>Create a new user in default
+        domain</b>:<codeblock>openstack user create --domain default --password-prompt --email &lt;email_address> --description &lt;description> --enable &lt;username></codeblock></p>
+      <p>Example output showing the creation of a user named <codeph>testuser</codeph> with email
+        address <codeph>test@example.com</codeph> and a description of <codeph>Test
+        User</codeph>:</p>
       <codeblock>stack@hLinux:~$ openstack user create --domain default --password-prompt --email test@example.com --description "Test User" --enable testuser
 User Password:
 Repeat User Password:
@@ -119,7 +131,10 @@ Repeat User Password:
 | id          | 8aad69acacf0457e9690abf8c557754b |
 | name        | testuser                         |
 +-------------+----------------------------------+</codeblock>
-      <p><b>Assign admin role for testuser within the default domain</b>:</p>
+      <p><b>Assign admin role for testuser within the default
+        domain</b>:<codeblock>openstack role add admin --user &lt;username> --domain default
+openstack role assignment list --user &lt;username> --domain default</codeblock></p>
+      <p>Example output:</p>
       <codeblock># Just for demonstration purposes - do not do this in a production environment!
 stack@hLinux:~$ openstack role add admin --user testuser --domain default
 stack@hLinux:~$ openstack role assignment list --user testuser --domain default
@@ -130,16 +145,17 @@ stack@hLinux:~$ openstack role assignment list --user testuser --domain default
 +----------------------------------+----------------------------------+-------+---------+---------+</codeblock>
     </section>
     
-    <section><title>Assigning the default service admin roles</title>
-      <p>The following examples illustrate how you can assign each of the new service admin roles to
-        a user.</p>
-      <p><b>Assigning the glance_admin role</b></p>
-      <p>A user must have the role of admin in order to assign the glance_admin role to a test user
-        we will call "testuser." To assign the role, you will set the environment variables needed
-        for the identity service administrator. First source the identity service credentials:</p>
-      <codeblock>source keystone.osrc</codeblock>The user called testuser and project test_project
-      are used for demonstration purposes. Here you can add
-      them:<codeblock>openstack role add --user testuser --project test_project glance_admin</codeblock>Next,
+    <section><title>Assigning the default service admin roles</title><p>The following examples
+        illustrate how you can assign each of the new service admin roles to a
+          user.</p><p><b>Assigning the glance_admin role</b></p><p>A user must have the role of
+        admin in order to assign the glance_admin role. To assign the role, you will set the
+        environment variables needed for the identity service administrator. </p><p>First, source
+        the identity service credentials:</p><codeblock>source ~/keystone.osrc</codeblock>You can
+      add the glance_admin role to a user on a project with this command
+        :<codeblock>openstack role add --user &lt;username> --project &lt;project_name> glance_admin</codeblock><p>Example,
+        showing a user named <codeph>testuser</codeph> being granted the
+          <codeph>glance_admin</codeph> role in the <codeph>test_project</codeph>
+      project:</p><codeblock>openstack role add --user testuser --project test_project glance_admin</codeblock>Next,
       list role assignment for
       testuser:<codeblock>openstack role assignment list --user testuser</codeblock>Your results
       should look like
@@ -154,7 +170,7 @@ stack@hLinux:~$ openstack role assignment list --user testuser --domain default
       name:<codeblock>| 46ba80078bc64853b051c964db918816 | glance_admin  |</codeblock>To demonstrate
       that the user testuser has glance admin privileges, use testuser to upload and then publicize
       an image. Only a user with an admin role or glance_admin can publicize an image. The following
-      is a sample testuser.osrc. OS_AUTH_URL might vary from deployement to deployment.
+      is a sample testuser.osrc. OS_AUTH_URL might vary from deployment to deployment.
       <codeblock>cat testuser.osrc
 unset OS_DOMAIN_NAME
 export OS_IDENTITY_API_VERSION=3
