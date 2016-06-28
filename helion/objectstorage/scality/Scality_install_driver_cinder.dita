@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="scality_install_driver">
+  <title>Install the Scality Drivers</title>
+  <body>
+    
+    <p>Scality RING storage can integrate with Helion's datacenter. Scality provides a block storage interface for OpenStack compute through the Cinder API and integration with OpenStack Swift as an alternative storage back end.</p>
+    
+    <p>To integrate Scality RING storage with Helion, you must install and configure the following drivers:</p>
+<ol>
+  <li><xref type="section" href="#scality_install_driver/swift_driver">Install the Scality Driver for Swift</xref></li>
+  <li><xref type="section" href="#scality_install_driver/glance_driver">Install the Scality Driver for Glance</xref></li>
+  <li><xref type="section" href="#scality_install_driver/cinder_driver">Install the Scality Driver for Cinder</xref></li>
+    </ol>
+
+
+
+<section id="swift_driver_overview">
+  
+  <title>Install the Scality Driver for Swift</title>
+  
+  <p>To install the Swift driver, you must complete the following tasks:</p>
+  <ol>
+    <li><xref type="section" href="#scality_install_driver/swift_driver_1">Download and extract the driver</xref></li>
+    <li>Update the configuration on the controller nodes</li>
+    <li>Populate bootstrap entries on the RING storage node</li>
+    <li>Commit changes and deploy</li>
+  </ol>
+</section>
+  
+  <section id="swift_driver_1">
+  <title>Download and Extract the Driver</title>
+    <p>This procedure steps you through download, conversion, extraction, and compression of the Scality drivers for Swift. This procedure also includes instructions on how to distribute the compressed file to the controller nodes. This must all be completed before continuing with the installation. During this procedure you will need to understand the following concepts:</p>
+    <dl>
+      <dlentry>
+        <dt>third-party wheelhouse files</dt>
+        <dd></dd>
+      </dlentry>
+      <dlentry>
+        <dt>Python egg files</dt>
+        <dd></dd>
+      </dlentry>
+      <dlentry>
+        <dt>third-party driver support</dt>
+        <dd>For more details, see <xref href="../../administration/thirdparty_driver_support.dita">Third-party Driver Support</xref>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>virtual environments</dt>
+        <dd>Virtualenv is something you can use to create an isolated Python development environment. This helps isolate your dependencies, especially when used with pip. For more information, see</dd>
+      </dlentry>
+      <dlentry>
+        <dt>pip</dt>
+        <dd></dd>
+      </dlentry>
+      <dlentry>
+        <dt>tar</dt>
+        <dd></dd>
+      </dlentry>
+    </dl>
+    <p>To download the driver:</p>
+  <ol>
+    <li>To create a directory for the driver package, run:
+    <codeblock>cd ~/scratch
+    mkdir pkg</codeblock></li>
+    <li>To download and extract the driver, run:
+    <codeblock>cd ~/scratch/pkg
+wget https://github.com/scality/ScalitySproxydSwift/archive/swift-scality-backend-0.4.0.tar.gz
+tar xzf swift-scality-backend-0.4.0.tar.gz
+ 
+wget  https://github.com/scality/scality-sproxyd-client/archive/scality-sproxyd-client-0.1.1.tar.gz
+tar xzf scality-sproxyd-client-0.1.1.tar.gz
+    </codeblock></li>
+    <li>To install the 3rd-party driver, first create a specific directory for the file by running:
+      <codeblock>
+        cd ~/scratch
+mkdir third-party-wheelhouse
+      </codeblock>
+    </li>
+    <li>To convert downloaded packages from Python egg to wheel format, run:
+    <codeblock>pip wheel --no-deps convert ./ScalitySproxydSwift-swift-scality-backend-0.4.0/
+pip wheel --no-deps convert ./scality-sproxyd-client-scality-sproxyd-client-0.1.1/</codeblock></li>
+    <li>To copy the converted files, run:
+    <codeblock>cp wheelhouse/swift_scality_backend-0.4.0-py2-none-any.whl ../third-party-wheelhouse
+cp wheelhouse/scality_sproxyd_client-0.1.1-py2-none-any.whl ../third-party-wheelhouse</codeblock></li>
+    <li>To create a temporary directory for extraction, run:
+    <codeblock>cd ~/scratch
+mkdir scalitytemp</codeblock></li>
+    <li>To create the virtual environment, run:
+    <codeblock>sudo virtualenv scalitytemp</codeblock></li>
+    <li>To activate the virtual environment, run:
+    <codeblock>cd ~/scratch/scalitytemp
+source bin/activate</codeblock></li>
+    <li>To install the wheel files using pip, run:
+    <codeblock>sudo pip install ../third-party-wheelhouse/scality_sproxyd_client-0.1.1-py2-none-any.whl
+sudo pip install ../third-party-wheelhouse/swift_scality_backend-0.4.0-py2-none-any.whl</codeblock></li>
+    <li>To go to the installation directory, run:
+    <codeblock>cd /usr/local/lib/python2.7/dist-packages/</codeblock></li>
+    <li>To compress the files into a tar file named <b>scalitydriver.tar</b>, run:
+    <codeblock>sudo tar –cvf scalitydriver.tar .</codeblock></li>
+    <li>To change the permissions to the default user, run:
+    <codeblock>sudo chown stack:stack scalitydriver.tar</codeblock></li>
+    <li>To copy the file to all controller nodes, run:
+    <codeblock>scp scalitydriver.tar stack@10.246.62.6
+scp scalitydriver.tar stack@10.246.62.7
+scp scalitydriver.tar stack@10.246.62.8</codeblock>
+    <note type="attention">Remember to replace the IP addresses in the example with the ones used in your deployment.</note></li>
+  </ol>
+</section>
+    
+    
+  
+  </body>
+</topic>
