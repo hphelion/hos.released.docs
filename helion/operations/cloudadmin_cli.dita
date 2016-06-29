@@ -2,10 +2,12 @@
 <!DOCTYPE topic
   PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd" >
 <topic xml:lang="en-us" id="CreateCloudAdmin">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Cloud Admin Actions with the Command Line</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Cloud Admin Actions with the Command
+    Line</title>
   <abstract><shortdesc outputclass="hdphidden">Cloud admins can use the command line tools to
-    perform domain admin tasks such as user and project administration.</shortdesc>Cloud admins can use the command line tools to
-    perform domain admin tasks such as user and project administration.</abstract>
+      perform domain admin tasks such as user and project administration.</shortdesc>Cloud admins
+    can use the command line tools to perform domain admin tasks such as user and project
+    administration.</abstract>
   <body outputclass="accordionWrapper">
     <section id="intro">
       <title>Creating Additional Cloud Admins</title>
@@ -144,35 +146,54 @@ stack@hLinux:~$ openstack role assignment list --user testuser --domain default
 | b398322103504546a070d607d02618ad | 8aad69acacf0457e9690abf8c557754b |       |         | default |
 +----------------------------------+----------------------------------+-------+---------+---------+</codeblock>
     </section>
-    
-    <section><title>Assigning the default service admin roles</title><p>The following examples
-        illustrate how you can assign each of the new service admin roles to a
-          user.</p><p><b>Assigning the glance_admin role</b></p><p>A user must have the role of
-        admin in order to assign the glance_admin role. To assign the role, you will set the
-        environment variables needed for the identity service administrator. </p><p>First, source
-        the identity service credentials:</p><codeblock>source ~/keystone.osrc</codeblock>You can
-      add the glance_admin role to a user on a project with this command
-        :<codeblock>openstack role add --user &lt;username> --project &lt;project_name> glance_admin</codeblock><p>Example,
-        showing a user named <codeph>testuser</codeph> being granted the
-          <codeph>glance_admin</codeph> role in the <codeph>test_project</codeph>
-      project:</p><codeblock>openstack role add --user testuser --project test_project glance_admin</codeblock>Next,
-      list role assignment for
-      testuser:<codeblock>openstack role assignment list --user testuser</codeblock>Your results
-      should look like
-      this:<codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+
+    <section>
+      <title>Assigning the default service admin roles</title>
+      <p>The following examples illustrate how you can assign each of the new service admin roles to
+        a user.</p>
+      <p><b>Assigning the glance_admin role</b></p>
+      <p>A user must have the role of admin in order to assign the glance_admin role. To assign the
+        role, you will set the environment variables needed for the identity service
+        administrator.</p>
+      <ol>
+        <li>First, source the identity service credentials:
+          <codeblock>source ~/keystone.osrc</codeblock></li>
+        <li>You can add the glance_admin role to a user on a project with this command: <codeblock>openstack role add --user &lt;username> --project &lt;project_name> glance_admin</codeblock>
+          <p>Example, showing a user named <codeph>testuser</codeph> being granted the
+              <codeph>glance_admin</codeph> role in the <codeph>test_project</codeph>
+          project:</p><codeblock>openstack role add --user testuser --project test_project glance_admin</codeblock></li>
+        <li>You can confirm the role assignment by listing out the
+            roles:<codeblock>openstack role assignment list --user &lt;username></codeblock><p>Example
+            output:</p><codeblock>stack@hLinux:~$ openstack role assignment list --user testuser
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | Role                             | User                             | Group | Project                          | Domain | Inherited |
 +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
 | 46ba80078bc64853b051c964db918816 | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
-+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>Note
-      that only the role ID is displayed. To get the role name, execute the
-      following:<codeblock>openstack role list | grep 46ba80078bc64853b051c964db918816 </codeblock>Here
-      is the resulting role
-      name:<codeblock>| 46ba80078bc64853b051c964db918816 | glance_admin  |</codeblock>To demonstrate
-      that the user testuser has glance admin privileges, use testuser to upload and then publicize
-      an image. Only a user with an admin role or glance_admin can publicize an image. The following
-      is a sample testuser.osrc. OS_AUTH_URL might vary from deployment to deployment.
-      <codeblock>cat testuser.osrc
-unset OS_DOMAIN_NAME
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock></li>
+        <li>Note that only the role ID is displayed. To get the role name, execute the
+            following:<codeblock>openstack role show &lt;role_id></codeblock><p>Example
+          output:</p><codeblock>stack@hLinux:~$ openstack role show 46ba80078bc64853b051c964db918816
++-------+----------------------------------+
+| Field | Value                            |
++-------+----------------------------------+
+| id    | 46ba80078bc64853b051c964db918816 |
+| name  | glance_admin                     |
++-------+----------------------------------+</codeblock></li>
+        <li>To demonstrate that the user has glance admin privileges, authenticate with those user
+          creds and then upload and publish an image. Only a user with an admin role or glance_admin
+          can publish an image. <ol>
+            <li>The easiest way to do this will be to make a copy of the
+                <codeph>keystone.osrc</codeph> file and edit it with your user credentials. You can
+              do that with this command:<codeblock>cp ~/keystone.osrc ~/user.osrc</codeblock></li>
+            <li>Using your preferred editor, edit the <codeph>user.osrc</codeph> file and replace
+              the values for the following entries to match your user credentials:
+              <codeblock>export OS_USERNAME=&lt;username>
+export OS_PASSWORD=&lt;password></codeblock></li>
+            <li>You will also need to edit the following lines for your environment: <codeblock>## Change these values from 'unset' to 'export'
+export OS_PROJECT_NAME=&lt;project_name>
+export OS_PROJECT_DOMAIN_NAME=Default</codeblock>
+              <p>Here is an example output:</p>
+              <codeblock>unset OS_DOMAIN_NAME
 export OS_IDENTITY_API_VERSION=3
 export OS_AUTH_VERSION=3
 export OS_PROJECT_NAME=test_project
@@ -184,12 +205,14 @@ export OS_AUTH_URL=http://192.168.245.9:35357/v3
 export OS_ENDPOINT_TYPE=internalURL
 # OpenstackClient uses OS_INTERFACE instead of OS_ENDPOINT
 export OS_INTERFACE=internal
-export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>Source
-      the environment variables for testuser:<codeblock>source testuser.osrc</codeblock>Upload an
-      image and publicize
-      it:<codeblock>glance image-create  --name "upload me" --visibility public --container-format bare --disk-format qcow2 -
-        -file uploadme.txt</codeblock>Here
-      is the output:<codeblock>+------------------+--------------------------------------+
+export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock></li>
+          </ol>
+        </li>
+        <li>Source the environment variables for
+          testuser:<codeblock>source ~/user.osrc</codeblock></li>
+        <li>Upload an image and publicize
+          it:<codeblock>glance image-create --name "upload me" --visibility public --container-format bare --disk-format qcow2 --file uploadme.txt</codeblock>Example
+            output:<codeblock>+------------------+--------------------------------------+
 | Property         | Value                                |
 +------------------+--------------------------------------+
 | checksum         | dd75c3b840a16570088ef12f6415dd15     |
@@ -208,12 +231,101 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock>Source
 | updated_at       | 2016-01-06T23:31:31Z                 |
 | virtual_size     | None                                 |
 | visibility       | public                               |
-+------------------+--------------------------------------+</codeblock>
++------------------+--------------------------------------+</codeblock><note>You
+            can use the command <codeph>glance help image-create</codeph> to get the full syntax for
+            this command.</note></li>
+      </ol>
+      
+      <p><b>Assigning the glance_admin role</b></p>
+      <p>A user must have the role of admin in order to assign the glance_admin role. To assign the
+        role, you will set the environment variables needed for the identity service
+        administrator.</p>
+      <ol>
+        <li>First, source the identity service credentials:
+          <codeblock>source ~/keystone.osrc</codeblock></li>
+        <li>You can add the glance_admin role to a user on a project with this command: <codeblock>openstack role add --user &lt;username> --project &lt;project_name> glance_admin</codeblock>
+          <p>Example, showing a user named <codeph>testuser</codeph> being granted the
+            <codeph>glance_admin</codeph> role in the <codeph>test_project</codeph>
+            project:</p><codeblock>openstack role add --user testuser --project test_project glance_admin</codeblock></li>
+        <li>You can confirm the role assignment by listing out the
+          roles:<codeblock>openstack role assignment list --user &lt;username></codeblock><p>Example
+            output:</p><codeblock>stack@hLinux:~$ openstack role assignment list --user testuser
+              +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+              | Role                             | User                             | Group | Project                          | Domain | Inherited |
+              +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+              | 46ba80078bc64853b051c964db918816 | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
+              +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock></li>
+        <li>Note that only the role ID is displayed. To get the role name, execute the
+          following:<codeblock>openstack role show &lt;role_id></codeblock><p>Example
+            output:</p><codeblock>stack@hLinux:~$ openstack role show 46ba80078bc64853b051c964db918816
+              +-------+----------------------------------+
+              | Field | Value                            |
+              +-------+----------------------------------+
+              | id    | 46ba80078bc64853b051c964db918816 |
+              | name  | glance_admin                     |
+              +-------+----------------------------------+</codeblock></li>
+        <li>To demonstrate that the user has glance admin privileges, authenticate with those user
+          creds and then upload and publish an image. Only a user with an admin role or glance_admin
+          can publish an image. <ol>
+            <li>The easiest way to do this will be to make a copy of the
+              <codeph>keystone.osrc</codeph> file and edit it with your user credentials. You can
+              do that with this command:<codeblock>cp ~/keystone.osrc ~/user.osrc</codeblock></li>
+            <li>Using your preferred editor, edit the <codeph>user.osrc</codeph> file and replace
+              the values for the following entries to match your user credentials:
+              <codeblock>export OS_USERNAME=&lt;username>
+                export OS_PASSWORD=&lt;password></codeblock></li>
+            <li>You will also need to edit the following lines for your environment: <codeblock>## Change these values from 'unset' to 'export'
+              export OS_PROJECT_NAME=&lt;project_name>
+              export OS_PROJECT_DOMAIN_NAME=Default</codeblock>
+              <p>Here is an example output:</p>
+              <codeblock>unset OS_DOMAIN_NAME
+                export OS_IDENTITY_API_VERSION=3
+                export OS_AUTH_VERSION=3
+                export OS_PROJECT_NAME=test_project
+                export OS_PROJECT_DOMAIN_NAME=Default
+                export OS_USERNAME=testuser
+                export OS_USER_DOMAIN_NAME=Default
+                export OS_PASSWORD=testuser
+                export OS_AUTH_URL=http://192.168.245.9:35357/v3
+                export OS_ENDPOINT_TYPE=internalURL
+                # OpenstackClient uses OS_INTERFACE instead of OS_ENDPOINT
+                export OS_INTERFACE=internal
+                export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock></li>
+          </ol>
+        </li>
+        <li>Source the environment variables for
+          testuser:<codeblock>source ~/user.osrc</codeblock></li>
+        <li>Upload an image and publicize
+          it:<codeblock>glance image-create --name "upload me" --visibility public --container-format bare --disk-format qcow2 --file uploadme.txt</codeblock>Example
+          output:<codeblock>+------------------+--------------------------------------+
+            | Property         | Value                                |
+            +------------------+--------------------------------------+
+            | checksum         | dd75c3b840a16570088ef12f6415dd15     |
+            | container_format | bare                                 |
+            | created_at       | 2016-01-06T23:31:27Z                 |
+            | disk_format      | qcow2                                |
+            | id               | cf1490f4-1eb1-477c-92e8-15ebbe91da03 |
+            | min_disk         | 0                                    |
+            | min_ram          | 0                                    |
+            | name             | upload me                            |
+            | owner            | bd24897932074780a20b780c4dde34c7     |
+            | protected        | False                                |
+            | size             | 10                                   |
+            | status           | active                               |
+            | tags             | []                                   |
+            | updated_at       | 2016-01-06T23:31:31Z                 |
+            | virtual_size     | None                                 |
+            | visibility       | public                               |
+            +------------------+--------------------------------------+</codeblock><note>You
+              can use the command <codeph>glance help image-create</codeph> to get the full syntax for
+              this command.</note></li>
+      </ol>
+      
       <p><b>Assigning the nova_admin role</b></p>A user must have the role of admin in order to
       assign the nova_admin role to the user called testuser. To accomplish this, set the
       environment variables needed for the identity service administrator.
-      <codeblock>source keystone.osrc</codeblock>User testuser and project test_project are used for
-      demonstration purpose. Assign the nova_admin role to user testuser:
+      <codeblock>source ~/keystone.osrc</codeblock>User testuser and project test_project are used
+      for demonstration purpose. Assign the nova_admin role to user testuser:
       <codeblock>openstack role add --user testuser --project test_project nova_admin list</codeblock>Get
       the role assignment for
       testuser:<codeblock>openstack role assignment list --user testuser</codeblock>Your output
@@ -365,7 +477,7 @@ openstack role add --user testuser --project test_project swiftoperator</codeblo
       not recommended that you make policy.json changes without a way to validate the desired policy
       behavior. Updated policy.json files can be deployed using the appropriate
       &lt;service_name>-reconfigure.yml playbook. </section>
-    
+
     <section><title>Roles</title>
       <p>Service roles represent the functionality used to implement the OpenStack role based access
         control (RBAC), model used to manage access to each OpenStack service. Roles are named and
@@ -379,11 +491,11 @@ openstack role add --user testuser --project test_project swiftoperator</codeblo
       <p>Each service has its own service policy file with the /etc/[SERVICE_CODENAME]/policy.json
         file name format where [SERVICE_CODENAME] represents a specific OpenStack service name. For
         example, the OpenStack Nova service would have a policy file called /etc/nova/policy.json.
-        With <keyword keyref="kw-hos-phrase-20"/> and above, service policy files can be modified and deployed
-        to control nodes from the lifecycle manager. Administrators are advised to validate policy
-        changes before checking in the changes to the site branch of the local git repository before
-        rolling the changes into production. Do not make changes to policy files without having a
-        way to validate them.</p>
+        With <keyword keyref="kw-hos-phrase-20"/> and above, service policy files can be modified
+        and deployed to control nodes from the lifecycle manager. Administrators are advised to
+        validate policy changes before checking in the changes to the site branch of the local git
+        repository before rolling the changes into production. Do not make changes to policy files
+        without having a way to validate them.</p>
       <p>The policy files are located at the following site branch locations on the lifecycle
         manager.</p>
       <codeblock>~/helion/hos/ansible/roles/GLA-API/templates/policy.json.j2
