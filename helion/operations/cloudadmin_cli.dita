@@ -179,7 +179,7 @@ stack@hLinux:~$ openstack role assignment list --user testuser --domain default
 | id    | 46ba80078bc64853b051c964db918816 |
 | name  | glance_admin                     |
 +-------+----------------------------------+</codeblock></li>
-        <li>To demonstrate that the user has glance admin privileges, authenticate with those user
+        <li>To demonstrate that the user has Glance admin privileges, authenticate with those user
           creds and then upload and publish an image. Only a user with an admin role or glance_admin
           can publish an image. <ol>
             <li>The easiest way to do this will be to make a copy of the
@@ -208,8 +208,8 @@ export OS_INTERFACE=internal
 export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock></li>
           </ol>
         </li>
-        <li>Source the environment variables for
-          testuser:<codeblock>source ~/user.osrc</codeblock></li>
+        <li>Source the environment variables for your
+          user:<codeblock>source ~/user.osrc</codeblock></li>
         <li>Upload an image and publicize
           it:<codeblock>glance image-create --name "upload me" --visibility public --container-format bare --disk-format qcow2 --file uploadme.txt</codeblock>Example
             output:<codeblock>+------------------+--------------------------------------+
@@ -235,153 +235,99 @@ export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock></li>
             can use the command <codeph>glance help image-create</codeph> to get the full syntax for
             this command.</note></li>
       </ol>
-      
-      <p><b>Assigning the glance_admin role</b></p>
-      <p>A user must have the role of admin in order to assign the glance_admin role. To assign the
+      <p><b>Assigning the nova_admin role</b></p>
+      <p>A user must have the role of admin in order to assign the nova_admin role. To assign the
         role, you will set the environment variables needed for the identity service
         administrator.</p>
       <ol>
         <li>First, source the identity service credentials:
           <codeblock>source ~/keystone.osrc</codeblock></li>
-        <li>You can add the glance_admin role to a user on a project with this command: <codeblock>openstack role add --user &lt;username> --project &lt;project_name> glance_admin</codeblock>
+        <li>You can add the glance_admin role to a user on a project with this command: <codeblock>openstack role add --user &lt;username> --project &lt;project_name> nova_admin</codeblock>
           <p>Example, showing a user named <codeph>testuser</codeph> being granted the
-            <codeph>glance_admin</codeph> role in the <codeph>test_project</codeph>
-            project:</p><codeblock>openstack role add --user testuser --project test_project glance_admin</codeblock></li>
+              <codeph>glance_admin</codeph> role in the <codeph>test_project</codeph>
+          project:</p><codeblock>openstack role add --user testuser --project test_project nova_admin</codeblock></li>
         <li>You can confirm the role assignment by listing out the
-          roles:<codeblock>openstack role assignment list --user &lt;username></codeblock><p>Example
+            roles:<codeblock>openstack role assignment list --user &lt;username></codeblock><p>Example
             output:</p><codeblock>stack@hLinux:~$ openstack role assignment list --user testuser
-              +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
-              | Role                             | User                             | Group | Project                          | Domain | Inherited |
-              +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
-              | 46ba80078bc64853b051c964db918816 | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
-              +----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock></li>
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+| Role                             | User                             | Group | Project                          | Domain | Inherited |
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
+| 8cdb02bab38347f3b65753099f3ab73c | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
++----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock></li>
         <li>Note that only the role ID is displayed. To get the role name, execute the
-          following:<codeblock>openstack role show &lt;role_id></codeblock><p>Example
-            output:</p><codeblock>stack@hLinux:~$ openstack role show 46ba80078bc64853b051c964db918816
-              +-------+----------------------------------+
-              | Field | Value                            |
-              +-------+----------------------------------+
-              | id    | 46ba80078bc64853b051c964db918816 |
-              | name  | glance_admin                     |
-              +-------+----------------------------------+</codeblock></li>
-        <li>To demonstrate that the user has glance admin privileges, authenticate with those user
+            following:<codeblock>openstack role show &lt;role_id></codeblock><p>Example
+          output:</p><codeblock>stack@hLinux:~$ openstack role show 8cdb02bab38347f3b65753099f3ab73c
++-------+----------------------------------+
+| Field | Value                            |
++-------+----------------------------------+
+| id    | 8cdb02bab38347f3b65753099f3ab73c |
+| name  | nova_admin                       |
++-------+----------------------------------+</codeblock></li>
+        <li>To demonstrate that the user has Nova admin privileges, authenticate with those user
           creds and then upload and publish an image. Only a user with an admin role or glance_admin
           can publish an image. <ol>
             <li>The easiest way to do this will be to make a copy of the
-              <codeph>keystone.osrc</codeph> file and edit it with your user credentials. You can
+                <codeph>keystone.osrc</codeph> file and edit it with your user credentials. You can
               do that with this command:<codeblock>cp ~/keystone.osrc ~/user.osrc</codeblock></li>
             <li>Using your preferred editor, edit the <codeph>user.osrc</codeph> file and replace
               the values for the following entries to match your user credentials:
               <codeblock>export OS_USERNAME=&lt;username>
-                export OS_PASSWORD=&lt;password></codeblock></li>
+export OS_PASSWORD=&lt;password></codeblock></li>
             <li>You will also need to edit the following lines for your environment: <codeblock>## Change these values from 'unset' to 'export'
-              export OS_PROJECT_NAME=&lt;project_name>
-              export OS_PROJECT_DOMAIN_NAME=Default</codeblock>
+export OS_PROJECT_NAME=&lt;project_name>
+export OS_PROJECT_DOMAIN_NAME=Default</codeblock>
               <p>Here is an example output:</p>
               <codeblock>unset OS_DOMAIN_NAME
-                export OS_IDENTITY_API_VERSION=3
-                export OS_AUTH_VERSION=3
-                export OS_PROJECT_NAME=test_project
-                export OS_PROJECT_DOMAIN_NAME=Default
-                export OS_USERNAME=testuser
-                export OS_USER_DOMAIN_NAME=Default
-                export OS_PASSWORD=testuser
-                export OS_AUTH_URL=http://192.168.245.9:35357/v3
-                export OS_ENDPOINT_TYPE=internalURL
-                # OpenstackClient uses OS_INTERFACE instead of OS_ENDPOINT
-                export OS_INTERFACE=internal
-                export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock></li>
+export OS_IDENTITY_API_VERSION=3
+export OS_AUTH_VERSION=3
+export OS_PROJECT_NAME=test_project
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_USERNAME=testuser
+export OS_USER_DOMAIN_NAME=Default
+export OS_PASSWORD=testuser
+export OS_AUTH_URL=http://192.168.245.9:35357/v3
+export OS_ENDPOINT_TYPE=internalURL
+# OpenstackClient uses OS_INTERFACE instead of OS_ENDPOINT
+export OS_INTERFACE=internal
+export OS_CACERT=/etc/ssl/certs/ca-certificates.crt</codeblock></li>
           </ol>
         </li>
-        <li>Source the environment variables for
-          testuser:<codeblock>source ~/user.osrc</codeblock></li>
-        <li>Upload an image and publicize
-          it:<codeblock>glance image-create --name "upload me" --visibility public --container-format bare --disk-format qcow2 --file uploadme.txt</codeblock>Example
-          output:<codeblock>+------------------+--------------------------------------+
-            | Property         | Value                                |
-            +------------------+--------------------------------------+
-            | checksum         | dd75c3b840a16570088ef12f6415dd15     |
-            | container_format | bare                                 |
-            | created_at       | 2016-01-06T23:31:27Z                 |
-            | disk_format      | qcow2                                |
-            | id               | cf1490f4-1eb1-477c-92e8-15ebbe91da03 |
-            | min_disk         | 0                                    |
-            | min_ram          | 0                                    |
-            | name             | upload me                            |
-            | owner            | bd24897932074780a20b780c4dde34c7     |
-            | protected        | False                                |
-            | size             | 10                                   |
-            | status           | active                               |
-            | tags             | []                                   |
-            | updated_at       | 2016-01-06T23:31:31Z                 |
-            | virtual_size     | None                                 |
-            | visibility       | public                               |
-            +------------------+--------------------------------------+</codeblock><note>You
-              can use the command <codeph>glance help image-create</codeph> to get the full syntax for
-              this command.</note></li>
+        <li>Source the environment variables for your
+          user:<codeblock>source ~/user.osrc</codeblock></li>
+        <li>List all of the virtual machines in the project specified in
+          user.osrc:<codeblock>openstack server list</codeblock>Example output showing no virtual
+          machines, because there are no virtual machines created on the project specified in the
+          user.osrc
+          file:<codeblock>+--------------------------------------+-------------------------------------------------------+--------+-----------------------------------------------------------------+
+| ID                                   | Name                                                  | Status | Networks                                                        |
++--------------------------------------+-------------------------------------------------------+--------+-----------------------------------------------------------------+
++--------------------------------------+-------------------------------------------------------+--------+-----------------------------------------------------------------+</codeblock></li>
+        <li>For this demonstration, we do have a virtual machine associated with a different project
+          and because your user has nova_admin permissions, you can view those virtual machines
+          using a slightly different
+            command:<codeblock>openstack server list --all-projects</codeblock><p>Example output,
+            now showing a virtual
+            machine:<codeblock>stack@hLinux:~$ openstack server list --all-projects
++--------------------------------------+-------------------------------------------------------+--------+-----------------------------------------------------------------+
+| ID                                   | Name                                                  | Status | Networks                                                        |
++--------------------------------------+-------------------------------------------------------+--------+-----------------------------------------------------------------+
+| da4f46e2-4432-411b-82f7-71ab546f91f3 | testvml                                               | ACTIVE |                                                                 |
++--------------------------------------+-------------------------------------------------------+--------+-----------------------------------------------------------------+</codeblock></p></li>
+        <li>You can also now delete virtual machines in other projects by using the
+            <codeph>--all-tenants</codeph>
+            switch:<codeblock>openstack server delete --all-projects &lt;instance_id></codeblock><p>Example,
+            showing us deleting the instance in the previous
+            step:<codeblock>openstack server delete --all-projects da4f46e2-4432-411b-82f7-71ab546f91f3</codeblock></p></li>
+        <li>You can get a full list of available commands by using
+          this:<codeblock>openstack -h</codeblock></li>
       </ol>
-      
-      <p><b>Assigning the nova_admin role</b></p>A user must have the role of admin in order to
-      assign the nova_admin role to the user called testuser. To accomplish this, set the
-      environment variables needed for the identity service administrator.
-      <codeblock>source ~/keystone.osrc</codeblock>User testuser and project test_project are used
-      for demonstration purpose. Assign the nova_admin role to user testuser:
-      <codeblock>openstack role add --user testuser --project test_project nova_admin list</codeblock>Get
-      the role assignment for
-      testuser:<codeblock>openstack role assignment list --user testuser</codeblock>Your output
-      should look like
-      this:<codeblock>+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
-| Role                             | User                             | Group | Project                          | Domain | Inherited |
-+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+
-| 8cdb02bab38347f3b65753099f3ab73c | 8bcfe10101964e0c8ebc4de391f3e345 |       | 0ebbf7640d7948d2a17ac08bbbf0ca5b |        | False     |
-+----------------------------------+----------------------------------+-------+----------------------------------+--------+-----------+</codeblock>
-      Note that only the role ID is displayed. To get the role name, execute the following:
-      <codeblock>openstack role list | grep 8cdb02bab38347f3b65753099f3ab73c</codeblock> Here is the
-      resulting role
-      name:<codeblock>| 8cdb02bab38347f3b65753099f3ab73c | nova_admin                |</codeblock>To
-      demonstrate that the user called testuser has nova admin privileges, you can use testuser to
-      delete a VM from a project other than test_project. Only a user with either the admin role or
-      the nova_admin role can delete a VM on a different project. To try this, begin by sourcing the
-      environment variables for testuser: <codeblock>source testuser.osrc</codeblock>List all the
-      VMs in project
-      test_project:<codeblock>set | grep OS_PROJECT_NAME OS_PROJECT_NAME=test_project
-nova list</codeblock>There
-      are no VMs in test_project, therefore running "nova list" yields an empty
-      list:<codeblock>+----+------+--------+------------+-------------+----------+
-| ID | Name | Status | Task State | Power State | Networks |
-+----+------+--------+------------+-------------+----------+
-+----+------+--------+------------+-------------+----------+</codeblock>Next,
-      list VMs from all projects. In this particular case, for demonstration purposes, there is a VM
-      associated with project admin (project id, dc0f8b0076d4403b83ad517021803d30).
-      <codeblock>nova list --all-tenants</codeblock>Here is the
-      result:<codeblock>+--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
-| ID                                   | Name    | Tenant ID                        | Status | Task State | Power State | Networks |
-+--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+
-| da4f46e2-4432-411b-82f7-71ab546f91f3 | testvm1 | dc0f8b0076d4403b83ad517021803d30 | ACTIVE | -          | Running     |          |
-+--------------------------------------+---------+----------------------------------+--------+------------+-------------+----------+</codeblock>Since
-      testuser has the nova_admin role, testuser can delete a VM in another project. This is
-      accomplished using the -all-tenants
-      argument:<codeblock>nova delete --all-tenants da4f46e2-4432-411b-82f7-71ab546f91f3</codeblock>Next,
-      confirm that the VM with id da4f46e2-4432-411b-82f7-71ab546f91f3 was deleted by running nova
-      list again:<codeblock>nova list --all-tenants</codeblock>Here you see the VM is
-      gone:<codeblock>+----+------+-----------+--------+------------+-------------+----------+
-| ID | Name | Tenant ID | Status | Task State | Power State | Networks |
-+----+------+-----------+--------+------------+-------------+----------+
-+----+------+-----------+--------+------------+-------------+----------+</codeblock>The
-      following is a list of nova commands with --all-tenants support. <ul>
-        <li>nova start -all-tenants </li>
-        <li>nova stop -all-tenants </li>
-        <li>nova delete -all-tenants </li>
-        <li>nova flavor-list -all </li>
-        <li>nova list -all-tenants 1 </li>
-        <li>nova reset-state -all-tenants </li>
-        <li>nova secgroup-list -all-tenants 1 </li>
-        <li>nova server-group-list -all-projects</li>
-      </ul>
-      <p><b>Assigning the neutron_admin role</b></p>A user must have the role of admin in order to
+   
+         <p><b>Assigning the neutron_admin role</b></p>
+      <p>A user must have the role of admin in order to
       assign the neutron_admin role to the user called testuser. To begin, set the environment
       variables needed for the identity service
-      administrator:<codeblock>source keystone.osrc</codeblock>Next, assign the neutron_admin role
+      administrator:</p>
+      <codeblock>source keystone.osrc</codeblock>Next, assign the neutron_admin role
       to the user called
       testuser:<codeblock>openstack role add --user testuser --project test_project neutron_admin</codeblock>For
       demonstration purposes, an existing Neutron network named mynet is used. Mynet is associated
