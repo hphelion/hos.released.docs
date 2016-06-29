@@ -1,113 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="scality_install_driver">
-  <title>Install the Scality Drivers</title>
+<topic id="scality_install_driver_cinder">
+  <title>Integrating RING with Cinder</title>
   <body>
     
-    <p>Scality RING storage can integrate with Helion's datacenter. Scality provides a block storage interface for OpenStack compute through the Cinder API and integration with OpenStack Swift as an alternative storage back end.</p>
-    
-    <p>To integrate Scality RING storage with Helion, you must install and configure the following drivers:</p>
-<ol>
-  <li><xref type="section" href="#scality_install_driver/swift_driver">Install the Scality Driver for Swift</xref></li>
-  <li><xref type="section" href="#scality_install_driver/glance_driver">Install the Scality Driver for Glance</xref></li>
-  <li><xref type="section" href="#scality_install_driver/cinder_driver">Install the Scality Driver for Cinder</xref></li>
+    <p>This procedure steps you through the following tasks:</p>
+    <ol>
+      <li><xref type="section" href="#scality_install_driver_cinder/scality_dwnld_cinder">Download and install drivers on all controller and compute nodes</xref>.</li>
+      <li><xref type="section" href="#scality_install_driver_cinder/scality_install_cinder1">Edit configuration files</xref>.</li>
+      <li><xref type="section" href="#scality_install_driver_cinder/cdv_function_cl">Commit changes and deploy</xref>.</li>
+      <li><xref type="section" href="#scality_install_driver_cinder/scality_cinder_vol">Set Cinder volume types</xref>.</li>
     </ol>
-
-
-
-<section id="swift_driver_overview">
-  
-  <title>Install the Scality Driver for Swift</title>
-  
-  <p>To install the Swift driver, you must complete the following tasks:</p>
-  <ol>
-    <li><xref type="section" href="#scality_install_driver/swift_driver_1">Download and extract the driver</xref></li>
-    <li>Update the configuration on the controller nodes</li>
-    <li>Populate bootstrap entries on the RING storage node</li>
-    <li>Commit changes and deploy</li>
-  </ol>
-</section>
-  
-  <section id="swift_driver_1">
-  <title>Download and Extract the Driver</title>
-    <p>This procedure steps you through download, conversion, extraction, and compression of the Scality drivers for Swift. This procedure also includes instructions on how to distribute the compressed file to the controller nodes. This must all be completed before continuing with the installation. During this procedure you will need to understand the following concepts:</p>
-    <dl>
-      <dlentry>
-        <dt>third-party wheelhouse files</dt>
-        <dd></dd>
-      </dlentry>
-      <dlentry>
-        <dt>Python egg files</dt>
-        <dd></dd>
-      </dlentry>
-      <dlentry>
-        <dt>third-party driver support</dt>
-        <dd>For more details, see <xref href="../../administration/thirdparty_driver_support.dita">Third-party Driver Support</xref>.</dd>
-      </dlentry>
-      <dlentry>
-        <dt>virtual environments</dt>
-        <dd>Virtualenv is something you can use to create an isolated Python development environment. This helps isolate your dependencies, especially when used with pip. For more information, see</dd>
-      </dlentry>
-      <dlentry>
-        <dt>pip</dt>
-        <dd></dd>
-      </dlentry>
-      <dlentry>
-        <dt>tar</dt>
-        <dd></dd>
-      </dlentry>
-    </dl>
-    <p>To download the driver:</p>
-  <ol>
-    <li>To create a directory for the driver package, run:
-    <codeblock>cd ~/scratch
-    mkdir pkg</codeblock></li>
-    <li>To download and extract the driver, run:
-    <codeblock>cd ~/scratch/pkg
-wget https://github.com/scality/ScalitySproxydSwift/archive/swift-scality-backend-0.4.0.tar.gz
-tar xzf swift-scality-backend-0.4.0.tar.gz
- 
-wget  https://github.com/scality/scality-sproxyd-client/archive/scality-sproxyd-client-0.1.1.tar.gz
-tar xzf scality-sproxyd-client-0.1.1.tar.gz
-    </codeblock></li>
-    <li>To install the 3rd-party driver, first create a specific directory for the file by running:
-      <codeblock>
-        cd ~/scratch
-mkdir third-party-wheelhouse
-      </codeblock>
-    </li>
-    <li>To convert downloaded packages from Python egg to wheel format, run:
-    <codeblock>pip wheel --no-deps convert ./ScalitySproxydSwift-swift-scality-backend-0.4.0/
-pip wheel --no-deps convert ./scality-sproxyd-client-scality-sproxyd-client-0.1.1/</codeblock></li>
-    <li>To copy the converted files, run:
-    <codeblock>cp wheelhouse/swift_scality_backend-0.4.0-py2-none-any.whl ../third-party-wheelhouse
-cp wheelhouse/scality_sproxyd_client-0.1.1-py2-none-any.whl ../third-party-wheelhouse</codeblock></li>
-    <li>To create a temporary directory for extraction, run:
-    <codeblock>cd ~/scratch
-mkdir scalitytemp</codeblock></li>
-    <li>To create the virtual environment, run:
-    <codeblock>sudo virtualenv scalitytemp</codeblock></li>
-    <li>To activate the virtual environment, run:
-    <codeblock>cd ~/scratch/scalitytemp
-source bin/activate</codeblock></li>
-    <li>To install the wheel files using pip, run:
-    <codeblock>sudo pip install ../third-party-wheelhouse/scality_sproxyd_client-0.1.1-py2-none-any.whl
-sudo pip install ../third-party-wheelhouse/swift_scality_backend-0.4.0-py2-none-any.whl</codeblock></li>
-    <li>To go to the installation directory, run:
-    <codeblock>cd /usr/local/lib/python2.7/dist-packages/</codeblock></li>
-    <li>To compress the files into a tar file named <b>scalitydriver.tar</b>, run:
-    <codeblock>sudo tar –cvf scalitydriver.tar .</codeblock></li>
-    <li>To change the permissions to the default user, run:
-    <codeblock>sudo chown stack:stack scalitydriver.tar</codeblock></li>
-    <li>To copy the file to all controller nodes, run:
-    <codeblock>scp scalitydriver.tar stack@10.246.62.6
-scp scalitydriver.tar stack@10.246.62.7
-scp scalitydriver.tar stack@10.246.62.8</codeblock>
-    <note type="attention">Remember to replace the IP addresses in the example with the ones used in your deployment.</note></li>
-  </ol>
-</section>
     
+    <section id="scality_dwnld_cinder">
+      <title>Download and install drivers on all controller and compute nodes</title>
+
+      <ol>
+        <li>To download and install drivers on all compute and controller nodes run:
+          <codeblock>wget http://scalitycs:DoNotUseAtCustomers@packages.scality.com/stable_lorien_515/debian/pool/main/wheezy/scality-sfused-common_5.1.5.r160314110459.ff50500-1_amd64.deb
+wget http://scalitycs:DoNotUseAtCustomers@packages.scality.com/stable_lorien_515/debian/pool/main/wheezy/scality-sfused_5.1.5.r160314110459.ff50500-1_amd64.deb
+wget http://security.debian.org/debian-security/pool/updates/main/t/tdb/libtdb1_1.3.6-0+deb8u1_amd64.deb
+apt-get install --yes attr fuse
+dpkg -i libtdb1_1.3.6-0+deb8u1_amd64.deb
+dpkg --ignore-depends scality-tracer-tools -i scality-sfused-common_5.1.5.r160314110459.ff50500-1_amd64.deb
+dpkg -i --ignore-depends=scality-sagentd,scality-upgrade-tools scality-sfused_5.1.5.r160314110459.ff50500-1_amd64.deb</codeblock></li>
+      </ol>
+    </section>
     
-  
+    <section id="scality_install_cinder1">
+      <title>Edit Configuration Files</title>
+      <ol>
+      <li>To retreive the Scality configuration file, run:
+          <codeblock>scp -i ~/.ssh/scalitykey.pem 10.246.65.19:/etc/sfused.conf .</codeblock></li>
+        <li>Distribute this file to all controller and compute nodes in the cluster in the following
+          directory: <codeblock>/etc</codeblock></li>
+        <li>To change to the directory where the Cinder configuration file exists, run:
+          <codeblock>cd /home/stack/helion/my_cloud/config/cinder</codeblock></li>
+        <li>To edit the Cinder configuration file, in a text editor, open:
+          <codeblock>cinder.conf.j2</codeblock></li>
+          <li>Find the following line:
+          <codeblock>enabled_backends=vsa-1</codeblock></li>
+          <li>Edit the text to match the following:
+          <codeblock>default_volume_type=sofs-1
+# Configure the enabled backends
+enabled_backends=vsa-1,sofs-1
+{%- if cinder_lvm_device_group %},lvm-1{% endif %}
+[sofs-1]
+scality_sofs_mount_point = /sofs
+scality_sofs_config = /etc/sfused.conf
+volume_driver = cinder.volume.drivers.scality.ScalityDriver
+volume_backend_name = sofs-1</codeblock></li>
+        <li>To change to the directory where the Nova configuration file exists, run:
+          <codeblock>cd /home/stack/helion/my_cloud/config/nova</codeblock></li>
+        <li>To edit the Nova configuration file, in a text editor, open:
+          <codeblock>nova.conf.j2</codeblock></li>
+        <li>Find the following text:
+          <codeblock># Volumes (Cinder)
+volume_api_class = nova.volume.cinder.API
+volume_usage_poll_interval = 3600
+# End of [DEFAULT] section
+[cinder]</codeblock></li>
+          <li>Edit the text to match the following:
+          <codeblock># Volumes (Cinder)
+volume_api_class = nova.volume.cinder.API
+volume_usage_poll_interval = 3600
+scality_sofs_mount_point = /sofs
+scality_sofs_config = /etc/sfused.conf
+# End of [DEFAULT] section
+
+[libvirt]
+scality_sofs_mount_point = /sofs
+scality_sofs_config = /etc/sfused.conf
+[cinder]</codeblock></li>
+      </ol>
+    </section>
+    
+    <section id="cdv_function_cl">
+      <title>Commit changes and deploy</title>
+      <p>To commit changes and deploy:</p>
+      <ol>
+        <li>Run the following commands:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"
+ansible-playbook –i hosts/localhost config-processor-run.yml
+ansible-playbook –i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook –i hosts/verb_hosts site.yml</codeblock></li>
+      </ol>
+    </section>
+
+    <section id="scality_cinder_vol">
+      <title>Set Cinder Volume Types</title>
+      <ol>
+        <li>To Mount the <b>sofs</b> volume on all hosts in the cluster, run:
+          <codeblock>for i in {6,7,8,9,10}; do    ssh -t stack@10.246.62.$i "sudo mkdir /sofs; sudo mount -t sofs /etc/sfused.conf /sofs"; done</codeblock></li>
+          <li>To set volume cinder volume types, run:
+          <codeblock>cinder type-create scality-sofs
+cinder type-key scality-sofs set volume_backend_name=sofs-1</codeblock></li>
+      </ol>
+    </section>
+
   </body>
 </topic>
