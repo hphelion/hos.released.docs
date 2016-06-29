@@ -1,79 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="tintri_verify">
-  <title>Verify TinTri Integration</title>
+<topic id="scality_verify">
+  <title>Verify Scality Integration</title>
   <body>
 
-    <p>To verify TinTri integration, you will use the graphical user interface in Horizon to verify the backend is running and that you can create a virtual machine (VM). Horizon is an OpenStack project that provides a dashboard to bring together all OpenStack projects in one place. By building custom dashboards it is possible to seamlessly integrate external components or services with OpenStack.</p>
+    <p>To verify Scality integration, Helion testers created a volume, attached to the volume, and created a file system.</p>
 
-    <p>To verify TinTri integration:</p>
+    <p><b>To create a volume:</b></p>
     <ol>
-      <li><xref type="section" href="#TinT_config_verify/TinT_Horizon">Access the Horizon dashboard.</xref></li>
-      <li><xref type="section" href="#TinT_config_verify/TinT_verify_backend">Verify the TinTri backend.</xref></li>
-      <li><xref type="section" href="#TinT_config_verify/TinT_VM">Create a new VM.</xref></li>
+      <li>Run the following command:
+            <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ cinder create --volume-type scality-sofs 1</codeblock><p><b>Sample
+            output:</b></p><codeblock>+---------------------+--------------------------------------+
+| Property | Value |
++---------------------+--------------------------------------+
+| attachments | [] |
+| availability_zone | nova |
+| bootable | false |
+| created_at | 2016-05-04T20:50:25.817152 |
+| display_description | None |
+| display_name | None |
+| encrypted | False |
+| id | 3154aba8-730a-4b89-9b7c-93672a04ca00 |
+| metadata | {} |
+| multiattach | false |
+| size | 1 |
+| snapshot_id | None |
+| source_volid | None |
+| status | creating |
+| volume_type | scality-sofs |
++---------------------+--------------------------------------+</codeblock></li>
+      <li>To list the volumes and verify the new volume was successfully created, run:
+            <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ cinder list</codeblock><p><b>Sample
+            output:</b></p><codeblock>+--------------------------------------+-----------+--------------+------+--------------+----------+-------------+
+|                  ID                  |   Status  | Display Name | Size | Volume Type  | Bootable | Attached to |
++--------------------------------------+-----------+--------------+------+--------------+----------+-------------+
+| 3154aba8-730a-4b89-9b7c-93672a04ca00 | available |     None     |  1   | scality-sofs |  false   |             |
+| 493421a2-2298-43ec-855a-f06b204d9f9c | available |     None     |  1   | scality-sofs |  false   |             |
++--------------------------------------+-----------+--------------+------+--------------+----------+-------------+</codeblock></li>
     </ol>
-<note type="important"> TinTri storage does support the below configurations and they have not been
-      tested with Helion OpenStack 2.0. <ul>
-        <li>Configuring Cinder for “Multi-VMstore” backend</li>
-        <li>Configuring Nova for data path to instances on VMstore</li>
-      </ul></note>
-
-<section id="TinTri_Horizon">
-  <title>Accessing Horizon</title>
-  <p>Horizon dashboards provide a web-based user interface to HPE Helion OpenStack services including Compute, Volume Operations, Networking, and Identity.</p> 
-  <p>To access a Horizon dashboard, you must know its hostname or IP address. If your administrator set a hostname value during the configuration process for your cloud, then Horizon will be accessed over port 80 on that hostname. If your administrator did not set a hostname value, then you can run a command to determine which IP address to use.</p>
-  <p>To log on to a Horizon dashboard, you must also know the username and password. The default username for the Administrator user is admin. In order to find the randomized password that is created by default you will need to look into a service file on the lifecycle manager.</p>
-  
-  <p><b>To find the hostname or IP address:</b></p>
-<ol>
-  <li>Log on to the lifecycle manager node (deployer node).</li>
-  <li>Find and open the following file in a text editor:
-          <codeblock>network_groups.yml</codeblock></li>
-    <li>To check if your administrator set a hostname, find the following variable:
-          <codeblock>external_name</codeblock></li>
-  <li>If there is a value for external_name, then Horizon will be accessed over port 80 on that hostname. 
-    <note type="note">For example: If external_name=mycloud, then use <codeblock>mycloud:80</codeblock> to access Horizon.</note></li>
-    <li>If there is no value set for external_name, then to find the IP address, run:
-<codeblock>grep vip-HZN-WEB /etc/hosts</codeblock></li>
-  <li>Use the output of that command as the virtual IP address to access the Horizon dashboard.</li>
-</ol>  
+    
+    <p><b>To attach to the volume you just created:</b></p>
+    <ol>
+      <li>Run the following command:
+        <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ nova volume-attach 5587e557-ba82-499e-928e-4f65dea7c3e1 3154aba8-730a-4b89-9b7c-93672a04ca00 /dev/vdc</codeblock></li>
+    </ol>
+    <p><b>Sample output:</b></p>
+    <codeblock>+----------+--------------------------------------+
+| Property | Value                                |
++----------+--------------------------------------+
+| device   | /dev/vdc                             |
+| id       | 3154aba8-730a-4b89-9b7c-93672a04ca00 |
+| serverId | 5587e557-ba82-499e-928e-4f65dea7c3e1 |
+| volumeId | 3154aba8-730a-4b89-9b7c-93672a04ca00 |
++----------+--------------------------------------+</codeblock>
+    
+    <p><b>To create a file system on the volume:</b></p>
+    <ol>
+      <li>Run the following command:
+        <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ ssh -i .ssh/scalitykey.pem centos@10.246.65.28</codeblock></li>
+    </ol>
+    <p><b>Sample output:</b></p>
+    <codeblock>Last login: Wed May  4 21:03:44 2016 from 10.246.62.5
  
-  <p><b> To find the password:</b></p>
-  <ol>
-    <li>Log on to the lifecycle manager node (deployer node).</li>
-    <li>To find the password, run: <codeblock>cat ~/service.osrc</codeblock></li>
-  </ol>
-    
-  <p><b>To access and log on to a Horizon dashboard:</b></p>
-  <ol>
-    <li>Open a web browser that has both JavaScript and cookies enabled.</li>
-    <li>In the address bar, enter the host name or IP address for the dashboard.</li>
-    <li> On the <b>Log In</b> page, enter your user name and password and then click <b>Sign
-          In</b>.</li>
-  </ol>
-</section>
-    
-    <section id="TinT_verify_backend">
-      <title>Verify the TinTri Backend</title><p>To verify the TinTri backend is running:</p><ol>
-        <li>In the Horizon dashboard, look in the list on the left side. Verify you can see
-            <b>Admin</b>.</li>
-        <li>In the list on the left side, click on <b>System Information</b>.</li>
-        <li>At the top, click <b>Block Storage Services</b>.</li>
-        <li>Verify that the cinder volume for the TinTri host you created is listed.</li>
-      </ol><p>Use the graphic below to navigate the user interface.</p>
-      <image href="verify_be_graphic.jpg"/>
-    </section>
-    
-    <section id="TinT_VM">
-      <title>Create a New Virtual Machine (VM)</title><p>To create a new VM in Horizon:</p><ol>
-        <li>In the Horizon dashboard, on the left side, click <b>Project</b>.</li>
-        <li>In the list on the left side, click <b>Compute</b>.</li>
-        <li>Under Compute, click <b>Volumes</b>.</li>
-        <li>At the top of the screen on the right side, click <b>+Create Volume</b>.</li>
-        <li>Verify that it is listed on the Volumes tab.</li>
-      </ol><p>Use the graphic below to navigate the user interface.</p>
-      <image href="new_vm_graphic.jpg"/>
-    </section>
-    
+[centos@junk ~]$ sudo fdisk -l /dev/vdc
+Disk /dev/vdc: 1073 MB, 1073741824 bytes
+16 heads, 63 sectors/track, 2080 cylinders
+Units = cylinders of 1008 * 512 = 516096 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+ 
+[centos@junk ~]$ sudo fdisk -l /dev/vdc
+Disk /dev/vdc: 1073 MB, 1073741824 bytes
+16 heads, 63 sectors/track, 2080 cylinders
+Units = cylinders of 1008 * 512 = 516096 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xd6a4374a
+   Device Boot      Start         End      Blocks   Id  System
+/dev/vdc1               1        2080     1048288+  83  Linux
+ 
+[centos@junk ~]$ sudo mkfs -V /dev/vdc1
+mkfs (util-linux-ng 2.17.2)
+mkfs.ext2 /dev/vdc1
+mke2fs 1.41.12 (17-May-2010)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+65536 inodes, 262072 blocks
+13103 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=268435456
+8 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376
+Writing inode tables: done
+Writing superblocks and filesystem accounting information: done
+This filesystem will be automatically checked every 28 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
+ 
+[centos@junk ~]$ sudo mount /dev/vdc1 /mnt
+ 
+[centos@junk ~]$ df -lh
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1       7.8G  716M  6.7G  10% /
+tmpfs           939M     0  939M   0% /dev/shm
+/dev/vdb1      1008M  1.3M  956M   1% /a
+/dev/vdc1      1008M  1.3M  956M   1% /mnt</codeblock>
   </body>
 </topic>
