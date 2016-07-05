@@ -110,8 +110,8 @@
             </p><p>The disk model has the following parameters:</p><p>
               <table frame="all" rowsep="1" colsep="1" id="ceph1">
                 <tgroup cols="2">
-                  <colspec colname="c1" colnum="1"/>
-                  <colspec colname="c2" colnum="2"/>
+                  <colspec colname="c1" colnum="1" colwidth="1*"/>
+                  <colspec colname="c2" colnum="2" colwidth="2.29*"/>
                   <thead>
                     <row>
                       <entry>Value</entry>
@@ -219,128 +219,136 @@
                     deploy your cluster without altering any of the parameter but it is advised to
                     review and understand the parameters before deploying your cluster. Below table
                     provide details about the parameter that can be changed and its
-                      description.</p><p><b>Core service parameter</b></p><p>
-                    <simpletable frame="all" relcolwidth="1.0* 1.0* 1.0* 1.0*"
-                      id="simpletable_ztr_22v_kw">
-                      <sthead>
-                        <stentry>Parameter</stentry>
-                        <stentry>Description</stentry>
-                        <stentry>Default Value</stentry>
-                        <stentry>Recommendation</stentry>
-                      </sthead>
-                      <strow>
-                        <stentry>ceph_cluster</stentry>
-                        <stentry>The name of the Ceph clusters. The default value is Ceph.</stentry>
-                        <stentry>Ceph</stentry>
-                        <stentry>Customize to suit your requirements.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>ceph_release</stentry>
-                        <stentry>The name of the Ceph release.</stentry>
-                        <stentry>firefly</stentry>
-                        <stentry>Do not change the default value.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>osd_pool_default_size</stentry>
-                        <stentry>The number of replicas for objects in the pool.</stentry>
-                        <stentry>3</stentry>
-                        <stentry>Do not lower the default value. The value can be increased to
-                          maximum number of OSD nodes in the environment (increasing it beyond this
-                          limit will cause the cluster to never reach an active+clean
-                          state).</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>osd_pool_default_pg_num</stentry>
-                        <stentry>The default number of placement groups for a pool. This value will
-                          change based on the number of OSDs available. Please refer Ceph PG
-                          calculator at <xref href="http://ceph.com/pgcalc/" format="html"
-                            scope="external">http://ceph.com/pgcalc/</xref></stentry>
-                        <stentry>128</stentry>
-                        <stentry>The value can be changed based on the number of OSD servers/nodes
-                          in the deployment. Please refer Ceph pg calculator at <xref
-                            href="http://ceph.com/pgcalc/" format="html" scope="external"
-                            >http://ceph.com/pgcalc/</xref> to customize it.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>fstype</stentry>
-                        <stentry>Storage filesystem type for OSDs.</stentry>
-                        <stentry>xfs</stentry>
-                        <stentry>Only xfs file system is certified.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>zap_data_disk</stentry>
-                        <stentry>Zap partition table and contents of the disk.</stentry>
-                        <stentry>True</stentry>
-                        <stentry>Not recommended to change the default value.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>persist_mountpoint</stentry>
-                        <stentry>Place to persist OSD data disk mount point.</stentry>
-                        <stentry>fstab</stentry>
-                        <stentry>Not recommended to change the default value (as it ensures the OSD
-                          data disks are mounted automatically on a system reboot).</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>osd_settle_time</stentry>
-                        <stentry>The time in seconds to wait for after starting/restarting the Ceph
-                          OSD services.</stentry>
-                        <stentry>10 seconds</stentry>
-                        <stentry>It is recommended to increase this value if the number of OSD
-                          servers is more than 3 or the servers have a slow network.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>osd_journal_size</stentry>
-                        <stentry>The size of the journal in megabytes.</stentry>
-                        <stentry>5120</stentry>
-                        <stentry>The value can be increased to achieve optimal utilization of the
-                          journal disk (if it is shared between multiple OSDs).</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>data_disk_poll_attempts</stentry>
-                        <stentry>The maximum number of attempts before attempting to activate an OSD
-                          for a new disk (default value 5). </stentry>
-                        <stentry>5</stentry>
-                        <stentry>It is recommended to increase this value if the OSD data disk
-                          drives are under performing/slower. Since this parameter and the
-                          data_disk_poll_interval (below) have a combined effect, it is recommended
-                          to consider both while tweaking either of them.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>data_disk_poll_interval</stentry>
-                        <stentry>The time interval in seconds to wait between
-                            <codeph>data_disk_poll_attempts</codeph></stentry>
-                        <stentry>12</stentry>
-                        <stentry>The value can be customized to suit your requirements. However,
-                          since this parameter and data_disk_poll_attempts (above) have a combined
-                          effect, it is recommended to consider both while tweaking either of
-                          them</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>osd_max_open_files</stentry>
-                        <stentry>Maximum number of file descriptors for OSD.</stentry>
-                        <stentry>32768</stentry>
-                        <stentry>Do not change the default value.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>mon_default_dir</stentry>
-                        <stentry>Directory to store monitor data.</stentry>
-                        <stentry><codeph>/var/lib/ceph/mon/&lt;ceph_cluster></codeph></stentry>
-                        <stentry>Do not change the default value.</stentry>
-                      </strow>
-                      <strow>
-                        <stentry>mon_max_open_files</stentry>
-                        <stentry>Maximum number of file descriptors for monitor.</stentry>
-                        <stentry>16384</stentry>
-                        <stentry>Do not change the default value.</stentry>
-                      </strow>
-                    </simpletable>
-                  </p><p><b>RADOS Gateway parameter</b><table frame="all" rowsep="1" colsep="1"
-                      id="table_gc4_c5t_5t">
+                      description.</p><p><b>Core service parameter</b><table frame="all" rowsep="1"
+                      colsep="1" id="table_hlb_cz3_nw">
                       <tgroup cols="4">
                         <colspec colname="c1" colnum="1"/>
                         <colspec colname="c2" colnum="2"/>
                         <colspec colname="newCol3" colnum="3" colwidth="1*"/>
                         <colspec colname="newCol4" colnum="4" colwidth="1*"/>
+                        <thead>
+                          <row>
+                            <entry>Parameter</entry>
+                            <entry>Description</entry>
+                            <entry>Default Value</entry>
+                            <entry>Recommendation</entry>
+                          </row>
+                        </thead>
+                        <tbody>
+                          <row>
+                            <entry>ceph_cluster</entry>
+                            <entry>The name of the Ceph clusters. The default value is Ceph.</entry>
+                            <entry>Ceph</entry>
+                            <entry>Customize to suit your requirements.</entry>
+                          </row>
+                          <row>
+                            <entry>ceph_release</entry>
+                            <entry>The name of the Ceph release</entry>
+                            <entry>firefly</entry>
+                            <entry>Do not change the default value.</entry>
+                          </row>
+                          <row>
+                            <entry>osd_pool_default_size</entry>
+                            <entry>The number of replicas for objects in the pool.</entry>
+                            <entry>3</entry>
+                            <entry>Do not lower the default value. The value can be increased to
+                              maximum number of OSD nodes in the environment (increasing it beyond
+                              this limit will cause the cluster to never reach an active+clean
+                              state).</entry>
+                          </row>
+                          <row>
+                            <entry>osd_pool_default_pg_num</entry>
+                            <entry>The default number of placement groups for a pool. This value
+                              will change based on the number of OSDs available. Please refer Ceph
+                              PG calculator at <xref href="http://ceph.com/pgcalc/" format="html"
+                                scope="external">http://ceph.com/pgcalc/</xref></entry>
+                            <entry>128</entry>
+                            <entry>The value can be changed based on the number of OSD servers/nodes
+                              in the deployment. Please refer Ceph pg calculator at <xref
+                                href="http://ceph.com/pgcalc/" format="html" scope="external"
+                                >http://ceph.com/pgcalc/</xref> to customize it</entry>
+                          </row>
+                          <row>
+                            <entry>fstype</entry>
+                            <entry>Storage filesystem type for OSDs.</entry>
+                            <entry>xfs</entry>
+                            <entry>Only xfs file system is certified.</entry>
+                          </row>
+                          <row>
+                            <entry>zap_data_disk</entry>
+                            <entry>Zap partition table and contents of the disk.</entry>
+                            <entry>True</entry>
+                            <entry>Not recommended to change the default value.</entry>
+                          </row>
+                          <row>
+                            <entry>persist_mountpoint</entry>
+                            <entry>Place to persist OSD data disk mount point</entry>
+                            <entry>fstab</entry>
+                            <entry>Not recommended to change the default value (as it ensures the
+                              OSD data disks are mounted automatically on a system reboot)</entry>
+                          </row>
+                          <row>
+                            <entry>osd_settle_time</entry>
+                            <entry>The time in seconds to wait for after starting/restarting the
+                              Ceph OSD services.</entry>
+                            <entry>10 seconds</entry>
+                            <entry>It is recommended to increase this value if the number of OSD
+                              servers is more than 3 or the servers have a slow network.</entry>
+                          </row>
+                          <row>
+                            <entry>osd_journal_size</entry>
+                            <entry>The size of the journal in megabytes.</entry>
+                            <entry>5120</entry>
+                            <entry>The value can be increased to achieve optimal utilization of the
+                              journal disk (if it is shared between multiple OSDs).</entry>
+                          </row>
+                          <row>
+                            <entry>data_disk_poll_attempts</entry>
+                            <entry>The maximum number of attempts before attempting to activate an
+                              OSD for a new disk (default value 5). </entry>
+                            <entry>5</entry>
+                            <entry>It is recommended to increase this value if the OSD data disk
+                              drives are under performing/slower. Since this parameter and the
+                              data_disk_poll_interval (below) have a combined effect, it is
+                              recommended to consider both while tweaking either of them.</entry>
+                          </row>
+                          <row>
+                            <entry>data_disk_poll_interval</entry>
+                            <entry>The time interval in seconds to wait between
+                                <codeph>data_disk_poll_attempts</codeph></entry>
+                            <entry>12</entry>
+                            <entry>The value can be customized to suit your requirements. However,
+                              since this parameter and data_disk_poll_attempts (above) have a
+                              combined effect, it is recommended to consider both while tweaking
+                              either of them</entry>
+                          </row>
+                          <row>
+                            <entry>osd_max_open_files</entry>
+                            <entry>Maximum number of file descriptors for OSD.</entry>
+                            <entry>32768</entry>
+                            <entry>Do not change the default value.</entry>
+                          </row>
+                          <row>
+                            <entry>mon_default_dir</entry>
+                            <entry>Directory to store monitor data.</entry>
+                            <entry><codeph>/var/lib/ceph/mon/&lt;ceph_cluster></codeph></entry>
+                            <entry>Do not change the default value.</entry>
+                          </row>
+                          <row>
+                            <entry>mon_max_open_files</entry>
+                            <entry>Maximum number of file descriptors for monitor.</entry>
+                            <entry>16384</entry>
+                            <entry>Do not change the default value.</entry>
+                          </row>
+                        </tbody>
+                      </tgroup>
+                    </table></p><p><b>RADOS Gateway parameter</b><table frame="all" rowsep="1"
+                      colsep="1" id="table_gc4_c5t_5t">
+                      <tgroup cols="4">
+                        <colspec colname="c1" colnum="1" colwidth="1.09*"/>
+                        <colspec colname="c2" colnum="2" colwidth="1.09*"/>
+                        <colspec colname="newCol3" colnum="3" colwidth="1*"/>
+                        <colspec colname="newCol4" colnum="4" colwidth="1.17*"/>
                         <thead>
                           <row>
                             <entry>Parameter</entry>
@@ -395,10 +403,10 @@
                     </table></p><b>Ceph client parameter</b><table frame="all" rowsep="1" colsep="1"
                     id="table_fgv_c3m_hw">
                     <tgroup cols="4">
-                      <colspec colname="c1" colnum="1"/>
-                      <colspec colname="c2" colnum="2"/>
+                      <colspec colname="c1" colnum="1" colwidth="1.34*"/>
+                      <colspec colname="c2" colnum="2" colwidth="1.59*"/>
                       <colspec colname="newCol3" colnum="3" colwidth="1*"/>
-                      <colspec colname="newCol4" colnum="4" colwidth="1*"/>
+                      <colspec colname="newCol4" colnum="4" colwidth="1.96*"/>
                       <thead>
                         <row>
                           <entry>Value</entry>
