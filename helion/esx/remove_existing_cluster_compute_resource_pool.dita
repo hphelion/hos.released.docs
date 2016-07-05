@@ -3,7 +3,8 @@
 <topic id="topic_lfq_3wf_rt">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Removing a Cluster from the Compute Resource
     Pool</title>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <p>Perform the following steps to remove an existing cluster from the compute resource pool.<ol
         id="ol_dq1_pwf_rt">
@@ -35,11 +36,11 @@ ansible-playbook -i hosts/verb_hosts neutron-stop --limit &lt;hostname>;</codebl
                   cluster.</p>
               </li>
             </ul></p></li>
-        <li>Deactivate the ESX Cluster <p>
-            <codeblock>eon resource-deactivate &lt;RESOURCE_ID></codeblock>
-          </p>This command deletes the ESX compute proxy, OVSvApp VMs in the cluster, and triggers
-          the ansible playbooks<p><b>Sample Output</b></p><p>
-            <codeblock>eon resource-deactivate 9ab2196d-37d2-4006-a2c7-08946b5194ea
+        <li>Deactivate the ESX Cluster
+            <codeblock>eon resource-deactivate &lt;RESOURCE_ID></codeblock><p>This command deletes
+            the ESX compute proxy, OVSvApp VMs in the cluster, and triggers the ansible
+            playbooks.</p><p><b>Sample
+            Output</b><codeblock>eon resource-deactivate 9ab2196d-37d2-4006-a2c7-08946b5194ea
 +-----------------+--------------------------------------+
 | Property        | Value                                |
 +-----------------+--------------------------------------+
@@ -52,19 +53,21 @@ ansible-playbook -i hosts/verb_hosts neutron-stop --limit &lt;hostname>;</codebl
 | state           | cleanup-initiated                    |
 | type            | esxcluster                           |
 | username        | UNSET                                |
-+-----------------+--------------------------------------+ </codeblock>
-          </p></li>
-      </ol></p>
-    <p>Once the deactivation is successful, the state of the cluster is set to
-        <codeph>imported</codeph>.</p>
-    <p>
-      <codeblock>eon resource-list
++-----------------+--------------------------------------+ </codeblock></p><p>Once
+            the deactivation is successful, the state of the cluster is set to
+              <codeph>imported</codeph>.<codeblock>eon resource-list
 +--------------------------------------+-----------+-------------+--------------------------------------+------------+-------+------------+------------+
 | ID                                   | Name      | Moid        | Resource Manager ID                  | IP Address | Port  | Type       | State      |
 +--------------------------------------+-----------+-------------+--------------------------------------+------------+-------+------------+------------+
 | 9ab2196d-37d2-4006-a2c7-08946b5194ea | compute   | domain-c104 | 9FDCFA66-6677-42A1-83FF-16DC32448021 | UNSET      | UNSET | esxcluster | imported   |
-+--------------------------------------+-----------+-------------+--------------------------------------+------------+-------+------------+------------+
-</codeblock>
-    </p>
++--------------------------------------+-----------+-------------+--------------------------------------+------------+-------+------------+------------+</codeblock></p></li>
+        <li>Force Clean-up<p>Cleans-up the OVSvApp and Compute Proxy
+              VM's.<codeblock>eon resource-deactivate --force true &lt;RESOURCE_ID></codeblock><note
+              type="important">If there is any error in cleaning up the OVSvApp and Compute Proxy
+              VM's, the exceptions are ignored and cluster are set to imported state. If the cluster
+              is not moved back to the imported state, there is no other way that the cluster can be
+              activated again. In this scenario, you need to manually clean up the
+          VM's.</note></p></li>
+      </ol></p>
   </body>
 </topic>
