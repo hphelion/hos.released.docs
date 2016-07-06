@@ -143,42 +143,48 @@
                     <li>Cluster traffic (often termed as replication traffic): data replication and
                         recovery traffic among OSD daemons.</li>
                 </ul></p><p>For a high performance cluster, proper network configuration is very important. Segregate
-                different categories of  traffic on separate networks. For a cluster of reasonable
+                different categories of traffic on separate networks. For a cluster of reasonable
                 size (a few TBs), it is recommended to have a cluster with at least two networks,
-                i.e., single network for management and client data traffic (front-side) and a
-                cluster (back-side) network. For large Ceph cluster, it is recommended to segregate
-                all three traffics. Segregating networks helps for a secure connection because a
-                cluster network is not required to be connected to the internet directly. It allows
-                OSD daemons to keep communicating without intervention so that placement groups can
-                be brought to active and clean state relatively, whenever required. Apart from
-                separation of network (using VLANs), we need to consider NICs used for Ceph servers
-                too. We strongly recommend to use bonded NICs to prevent single point of failure.
-                Note that the network (and hence VLAN) separation is different from NIC separation
-                though linked to each other. In case of multi-network model, emphasis is on VLAN
-                separation and ideally should be complimented by NIC separation as mentioned below
-                in order of priority. <ol id="ol_dwc_rbl_jw">
+                i.e., a single network for management and client data traffic (front-side) and a
+                second network for cluster traffic (back-side). For a large Ceph cluster, we
+                recommended segregating each traffic category onto its own network. Segregating
+                network traffic also provides for a more secure environment, as the network for
+                cluster traffic does not require direct internet connectivity. Apart from the
+                virtual separation of networks (using VLANs), we need to consider the physical NICs
+                used for Ceph servers as well. We strongly recommend the use of bonded NICs to
+                provide redundancy and prevent a single point of failure. Please note the difference
+                between network separation through the use of VLANs and through the use of separate
+                NICs. In a multi-network model, network segregation through VLANs should be
+                prioritized and ideally complimented by NIC separation. Please see below for our
+                recommended order of priority for the method of network segregation: <ol
+                    id="ol_dwc_rbl_jw">
                     <li>Separation of VLAN</li>
                     <li>Separation of NIC for VLANs.</li>
-                </ol> In this case, it all depends on how many NICs one have with a preference given
-                to bonded interface. So, the following guideline will help: <ol id="ol_ssd_tbl_jw">
-                    <li>Three bonded interface with 6 NICs: first for management, second for OSD
-                        client and third for OSD internal (ideally
+                </ol> The network architecture that you choose will depend on how many NICs you
+                have. As stated earlier, we recommend using bonded interfaces when possible. The
+                following configuration examples may help you choose your preferred setup: <ol
+                    id="ol_ssd_tbl_jw">
+                    <li>6 NICs configured as 3 bonded interfaces: The first bonded interface for the
+                        management traffic VLAN, the second for OSD client traffic VLAN, and the
+                        third for OSD internal traffic VLAN (ideally
                         preferred<!--, will done by very few customers hosting very large ceph clusters-->) </li>
-                    <li>Two bonded interface with 4 NICs with management VLANs hooked to first
-                        bonded interface while OSD networks hooked to second bonded interface
-                        (mostly used<!-- practical pattern followed-->) </li>
-                    <li>Only one bonded interface with two NICs for all VLANs
-                        (<!--pattern followed in cases where we have--> for a few NICs only)</li>
-                </ol></p><p><keyword keyref="kw-hos-tm"/>Ceph software offers significant
-                flexibility when defining and deploying OpenStack based clouds. It provides the
-                capability to implement a wide variety of different Ceph configurations. This allows
-                you to design, model and deploy cloud based on your requirements. One can have
-                following VLAN choices based on types of traffic:</p><p>
+                    <li>4 NICs configured as 2 bonded interfaces: First bonded interface is a member
+                        of the Management traffic VLAN while the second interface is a member of the
+                        Client traffic and Cluster traffic VLANs (mostly
+                        used<!-- practical pattern followed. I'm unclear on which networks share an interface-->) </li>
+                    <li>2 NICs configured as one bonded interface: Interface is a member of all
+                        VLANs (<!--pattern followed in cases where we have--> for a few NICs
+                        only)</li>
+                </ol></p><p><keyword keyref="kw-hos-tm"/>Ceph software offers significant flexibility when defining and
+                deploying OpenStack based clouds. It provides the capability to implement a wide
+                variety of configurations. This allows you to design, model and deploy a cloud based
+                on your requirements. Based on your needs and limitations, one of the following
+                network architectures can be implemented:</p><p>
                 <ol id="ol_m3x_vhn_fw">
-                    <li>A single VLANs based deployment: A single VLAN is used for all traffic and
-                        primarily it is meant for a small cluster. </li>
-                    <li>Two VLANs based deployment: One VLAN is used for cloud management and client
-                        traffic and another VLAN is used for Ceph internal traffic.</li>
+                    <li>Single VLAN deployment: A single VLAN is used for all traffic. Primarily
+                        implemented on a small cluster. </li>
+                    <li>Two VLAN deployment: One VLAN is used for cloud management and client
+                        traffic and another VLAN is used for Ceph internal traffic.<!--I'm unclear on which traffic should share a VLAN. There doesn't seem to be a consistent naming convention for the networks--></li>
                     <li>Three VLANs based deployment: A separate VLAN is used for management,
                         client, and internal traffic.<p>As mentioned above, you can decided to link
                             all VLANs to a same bonded interface or to a separate bonded interface
