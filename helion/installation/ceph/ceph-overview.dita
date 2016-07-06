@@ -6,7 +6,7 @@
         <shortdesc outputclass="hdphidden">ceph overview.</shortdesc>
     </abstract>
     <body>
-        <!--not tested-->
+        <!--not tested. Should we define RBD? Also, let's include Ceph's block storage ability.-->
         <p conkeyref="HOS-conrefs/applies-to"/>
         <section>
             <title>Overview</title>
@@ -24,19 +24,20 @@
                     limit).</li>
                 <li>Self healing, self managing.</li>
                 <li>High Availability - No single point of failure.</li>
-                <li>Support various client protocol for block device access, object storage access
+                <li>Supports various client protocols for block device access, object storage access
                     using S3/Swift API etc.</li>
             </ul>
-            <p>Ceph is flexible in its deployment. Although, it supports a wide variety of storage
-                protocol based on deployed components, one can add extra component (except
-                manadatory one) ONLY if there is a need to support specific storage protocol. For
-                example: If you are not going to support S3/Swift protocol then you might choose not
-                to deploy rados gateway. For easy readability,
-                <!--is categorized into sections to segregate--> the various aspect of cluster
-                deployment i.e., hardware configuration, service configuration parameters,
-                deployment architecture etc is categorized into separate sections. Keeping the
-                sub-component aspect in mind, each major section is further categorized into
-                following segements: <ul id="ul_enh_4sp_kw">
+            <p>Ceph is flexible in its deployment. Though all data are stored as objects, Ceph can
+                be configured with additional components that provide access to the data through
+                multiple storage protocols. The addition of such components should only be done if
+                use of the related storage protocol is necessary. For example: If you are not going
+                to support the S3/Swift protocol then deployment of the RADOS gateway is not
+                necessary. For easy readability, this documentation is categorized into sections
+                that segregate<!--is categorized into sections to segregate--> the various aspects
+                of Ceph cluster deployment. For instance, hardware configuration, service
+                configuration parameters, and deployment architecture are categorized into separate
+                sections. Keeping this sub-component organiztion in mind, each major section is
+                further categorized into following segements: <ul id="ul_enh_4sp_kw">
                     <li>Core Ceph</li>
                     <li>RADOS gateway</li>
                 </ul></p>
@@ -269,24 +270,20 @@
                                             node</xref>. </p></li>
                             </ul></p></li>
                 </ul>
-            </p><p/><p>
                 <ul id="ul_r3n_nrq_kw">
                     <li><b>RADOS Gateway</b><p>RADOS Gateway service can be co-hosted with other
                                 <keyword keyref="kw-hos-tm"/> services as listed below.</p><p>
-                            <ul id="ul_e2l_4xl_fw">
+                            <ul>
                                 <li>Alternate RADOS Gateway deployment architecture choice <ul
                                         id="ul_jjw_bsq_kw">
-                                        <li>
-                                            <p>Co-hosted on cluster nodes hosting monitor service
-                                                components </p>
-                                        </li>
-                                        <li>
-                                            <p>Co-hosted on controller nodes</p>
-                                        </li>
-                                    </ul><p>The default <codeph>entry-scale-kvm-ceph</codeph> input
-                                        model deploys the <codeph>radosgw</codeph> services on 2
-                                        dedicated cluster nodes. However, RADOS Gateway can also be
-                                        installed on cluster node hosting Ceph monitor service or on
+                                        <li>Co-hosted on cluster nodes hosting monitor service
+                                            components</li>
+                                        <li>Co-hosted on controller nodes</li>
+                                    </ul>
+                                    <p>The default <codeph>entry-scale-kvm-ceph</codeph> input model
+                                        deploys the <codeph>radosgw</codeph> services on 2 dedicated
+                                        cluster nodes. However, RADOS Gateway can also be installed
+                                        on cluster node hosting Ceph monitor service or on
                                         Controller nodes. Refer to <xref
                                             href="alternative-supported-choice.dita#config_ceph/install-rados-gateway-on-cluster-node-that-host-ceph-monitor"
                                             >Installing RADOS Gateway on (dedicated) cluster node(s)
