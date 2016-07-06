@@ -10,13 +10,14 @@
         <p conkeyref="HOS-conrefs/applies-to"/>
         <section>
             <title>Overview</title>
-            <p><keyword keyref="kw-hos-phrase"/> supports the Firefly version of Ceph. Ceph is a
-                distributed object storage solution which can horizontally scale up to multiple
-                petabytes of storage and is fundamentally based on a reliable autonomic distributed
-                object store (RADOS) object-based storage system. It stores all data as an object,
-                however, it provides various components which act as a gateway to support different
-                storage protocols. For example, RBD supports the block storage protocol, RADOS
-                Gateway supports the S3/Swift API protocol for object storage access and so on.</p>
+            <p>Ceph is a distributed object storage solution which can horizontally scale up to
+                multiple petabytes of storage and is fundamentally based on a reliable autonomic
+                distributed object store (RADOS) object-based storage system. <keyword
+                    keyref="kw-hos-phrase"/> supports and utilizes the Firefly version of Ceph. Ceph
+                stores all data as objects, however, it provides various optional components which
+                act as a gateways to support different storage protocols. For example, RBD (RADOS
+                Block Device) provides support for the block storage protocol, and the RADOS Gateway
+                provides support for the S3/Swift API protocol for object storage access.</p>
             <p>The salient features of Ceph are:</p>
             <ul>
                 <li>Hardware Agnostic - Use of any commodity hardware.</li>
@@ -28,28 +29,30 @@
                     using S3/Swift API etc.</li>
             </ul>
             <p>Ceph is flexible in its deployment. Though all data are stored as objects, Ceph can
-                be configured with additional components that provide access to the data through
+                be configured with optional components that provide access to the data through
                 multiple storage protocols. The addition of such components should only be done if
                 use of the related storage protocol is necessary. For example: If you are not going
                 to support the S3/Swift protocol then deployment of the RADOS gateway is not
-                necessary. For easy readability, this documentation is categorized into sections
-                that segregate<!--is categorized into sections to segregate--> the various aspects
-                of Ceph cluster deployment. For instance, hardware configuration, service
-                configuration parameters, and deployment architecture are categorized into separate
-                sections. Keeping this sub-component organiztion in mind, each major section is
-                further categorized into following segements: <ul id="ul_enh_4sp_kw">
+                necessary. </p>
+            <p>For easy readability, this documentation is categorized into sections that
+                segregate<!--is categorized into sections to segregate--> the various aspects of a
+                Ceph cluster deployment. For instance, the topics describing hardware configuration,
+                service configuration parameters, and deployment architecture are categorized into
+                separate sections. In keeping with this sub-component organization, each major
+                section is further categorized into following subsections: <ul id="ul_enh_4sp_kw">
                     <li>Core Ceph</li>
                     <li>RADOS gateway</li>
                 </ul></p>
-            <p>Also in each sub-section, we mention about recommendation vs. supported
-                configuration. We encourage to go for production configuration although supported
-                configuration is tested and validated. You should go for alternative supported
-                configuration only if there is a strong need for it with an evaluation of pros and
-                cons. </p>
+            <p>Also, in each section we describe recommended vs. supported configurations. We
+                encourage the use of our recommended configurations whenever possible, although the
+                supported configurations are fully tested and validated. The supported configuration
+                should be used in place of the recommended configuration only when necessary, and a
+                thorough assessment of the benefits and drawbacks of each option should be performed
+                before choosing a supported configuration rather than a recommended one.</p>
             <p><b>Core Ceph</b></p>
-            <p>Core Ceph is comprised of primarily two components: OSD and monitor. These components
-                are mandatory for the functioning of the cluster. The following table provides a
-                brief description of the components.</p>
+            <p>Core Ceph is comprised of  two primary components: OSD (Object Storage Daemon) and
+                monitor. These components are mandatory for the functioning of the cluster. The
+                following table provides a brief description of the components.</p>
             <p>
                 <table frame="all" rowsep="1" colsep="1" id="ceph1">
                     <tgroup cols="2">
@@ -83,19 +86,19 @@
                 </table>
             </p>
             <p><b>RADOS Gateway</b></p>
-            <p>The RADOS Gateway service is an object storage interface that allows end user to
-                perform HTTP based CRUD operations on an object. It supports both the OpenStack
-                Swift and Amazon S3 REST APIs. Note that it has following two types of users unlike
-                rest of OpenStack services which they rely completely on keystone for user
-                management (see more details at <xref
+            <p>The RADOS Gateway service is an object storage interface that allows an end user to
+                perform HTTP-based CRUD operations on an object. It supports both the OpenStack
+                Swift and Amazon S3 REST APIs. Note that unlike other OpenStack services which rely
+                solely on the Keystone component for user management, RADOS Gateway uses the
+                following users and user management services: (see more details at <xref
                     href="usage_ceph_storage_helion.dita#config_ceph/rados-gw-object-storage">Use
                     RADOS Gateway to access objects using S3/Swift API</xref> ).</p>
             <ul>
                 <li>Keystone</li>
                 <li>RADOS Gateway user (managed by Ceph itself and does not require Keystone)</li>
             </ul>
-            <p>RADOS Gateway is an optional component. It is advised to deploy only if you need to
-                access objects storage functionality using Swift or S3 API. Features of RADOS
+            <p>RADOS Gateway is an optional component. We advise deploying RADOS Gateway only if you
+                need to access your object storage using the Swift or S3 API. Features of RADOS
                 Gateway are:</p>
             <ul>
                 <li>RADOS Gateway is configured to run in a simple (non-federated or single region)
@@ -103,13 +106,13 @@
                 <li>The HAProxy on the <keyword keyref="kw-hos-tm"/> controller node acts as a load
                     balancer (in least connection mode, the load balancer selects the server with
                     the least number of connections) for RADOS Gateway servers. </li>
-                <li>Provides OpenStack Keystone integration (users having configured set of roles
-                    can access Swift APIs served by <codeph>radosgw</codeph>). </li>
+                <li>Provides OpenStack Keystone integration (users with the appropriate roles can
+                    access Swift APIs served by <codeph>radosgw</codeph>). </li>
                 <li>The default <keyword keyref="kw-hos-tm"/> configuration installs RADOS Gateway
                     on standalone nodes. </li>
                 <li>Amazon S3 APIs can be accessed only by RADOS Gateway users. </li>
-                <li>The RADOS Gateway external and internal endpoints are SSL/TLS enabled including
-                    the public end points represented by HAProxy.<p> </p>.</li>
+                <li>The RADOS Gateway external and internal endpoints are SSL/TLS enabled, including
+                    the public endpoints represented by HAProxy.<p> </p>.</li>
             </ul>
         </section>
         <section>
@@ -118,39 +121,42 @@
             <ul>
                 <li>Ceph networking </li>
                 <li>Placement of service components (like OSD, monitor, RADOS Gateway) across nodes.
-                    For example, RADOS Gateway and monitor can be deployed on standalone node or
-                    together</li>
+                    For example, the RADOS Gateway and monitor components can be deployed on
+                    standalone nodes or together on the same node</li>
             </ul>
             <p><b>Ceph networking</b></p>
-            <p>Ceph clients transmits traffic direct to OSD daemons for storage operations instead
-                of client routing request to a specific gateway. OSD daemons perform data
-                replication and participate in recovery activities. In general, a storage pool is
-                configured with replica count of 3 causing daemons to transact three times of client
-                data over cluster network. Therefore, every 4 MB of write results in extra traffic
-                of 4 * 3 = 12 MB data movement in the Ceph clusters. Also, it is very imperative
-                that Ceph cluster is communicative in its nature. Considering these points, it is
-                very important to segregate various Ceph data traffic. The Ceph data traffic is
-                categorized into three segments: <ul id="ul_iqq_shn_fw">
-                    <li>Management traffic includes monitoring, logging etc </li>
-                    <li>Client traffic (often termed as data traffic) includes client request sent
-                        to OSD daemons </li>
-                    <li>Cluster traffic (often termed as replication traffic) includes replication
-                        and recovery data traffic among OSD daemons.</li>
-                </ul></p><p>For a high performance cluster, a proper network configuration is very
-                important. Use multiple networks for different data traffics. For a cluster of
-                reasonable size (few TBs), it is recommended to have a cluster with at least two
-                networks, i.e., single network for management and client data traffic (front-side)
-                and a cluster (back-side) network. For large Ceph cluster, it is recommended to
-                segregate all three traffics. Segregating networks helps for a secure connection
-                because a cluster network is not required to be connected to the internet directly.
-                It allows OSD daemons to keep communicating without intervention so that placement
-                groups can be brought to active and clean state relatively, whenever required. Apart
-                from separation of network (using VLANs), we need to consider NICs used for Ceph
-                servers too. We strongly recommend to use bonded NICs to prevent single point of
-                failure. Note that the network (and hence VLAN) separation is different from NIC
-                separation though linked to each other. In case of multi-network model, emphasis is
-                on VLAN separation and ideally should be complimented by NIC separation as mentioned
-                below in order of priority. <ol id="ol_dwc_rbl_jw">
+            <p>Rather than routing requests to a specific gateway for storage operations, Ceph
+                clients transmit traffic directly to OSD daemons. OSD daemons perform data
+                replication and participate in recovery activities. In general, a Ceph storage pool
+                is configured to maintain 3 replicas of any stored object. This can result in a
+                large amount of network traffic as the daemons maintain up-to-date versions of the
+                object replicas. A single transaction on an object in a Ceph storage pool results in
+                3 times the initial transaction traffic as the 3 replicas are kept in a consistent
+                state. Therefore, a 4 MB write transaction results in 12 MB (4MB * 3 replicas) of
+                network data movement in the Ceph clusters. In addition, a Ceph cluster is
+                communicative by design, resulting in an abundance of network traffic. Considering
+                these points, it is very important to segregate various Ceph data traffic. The Ceph
+                data traffic is categorized into three segments: <ul id="ul_iqq_shn_fw">
+                    <li>Management traffic: monitoring, logging etc </li>
+                    <li>Client traffic (often termed as data traffic): client requests sent to OSD
+                        daemons </li>
+                    <li>Cluster traffic (often termed as replication traffic): data replication and
+                        recovery traffic among OSD daemons.</li>
+                </ul></p><p>For a high performance cluster, proper network configuration is very important. Segregate
+                different categories of  traffic on separate networks. For a cluster of reasonable
+                size (a few TBs), it is recommended to have a cluster with at least two networks,
+                i.e., single network for management and client data traffic (front-side) and a
+                cluster (back-side) network. For large Ceph cluster, it is recommended to segregate
+                all three traffics. Segregating networks helps for a secure connection because a
+                cluster network is not required to be connected to the internet directly. It allows
+                OSD daemons to keep communicating without intervention so that placement groups can
+                be brought to active and clean state relatively, whenever required. Apart from
+                separation of network (using VLANs), we need to consider NICs used for Ceph servers
+                too. We strongly recommend to use bonded NICs to prevent single point of failure.
+                Note that the network (and hence VLAN) separation is different from NIC separation
+                though linked to each other. In case of multi-network model, emphasis is on VLAN
+                separation and ideally should be complimented by NIC separation as mentioned below
+                in order of priority. <ol id="ol_dwc_rbl_jw">
                     <li>Separation of VLAN</li>
                     <li>Separation of NIC for VLANs.</li>
                 </ol> In this case, it all depends on how many NICs one have with a preference given
