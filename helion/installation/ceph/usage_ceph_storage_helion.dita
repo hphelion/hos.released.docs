@@ -136,112 +136,128 @@ ceph_user_models:
             consumer: cinder-backup</codeblock>
                         </p><p>The following table provides the descriptions of the parameters
                             listed above. </p><p>
-                            <simpletable frame="all" relcolwidth="1.05* 1.0* 1.02* 1.02*"
-                                id="simpletable_k14_jyf_kw">
-                                <sthead>
-                                    <stentry>Paramter</stentry>
-                                    <stentry>Value</stentry>
-                                    <stentry>Description</stentry>
-                                    <stentry>Recommendation</stentry>
-                                </sthead>
-                                <strow>
-                                    <stentry>user.name</stentry>
-                                    <stentry>A user defined string</stentry>
-                                    <stentry>Defines user name who can access a set of pools. A user
-                                        is created with same name in the Ceph system.</stentry>
-                                    <stentry>It is recommended to retain default names for some of
-                                        the well-known OpenStack users as described in the default
-                                        user model. For example: cinder user for volume access who
-                                        needs to access volumes, vms, images pool as defined in
-                                        default model.</stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>user.type</stentry>
-                                    <stentry>openstack | user</stentry>
-                                    <stentry>Indicates whether the user is specific for OpenStack
-                                        services. Presently, it does not have semantic implication. </stentry>
-                                    <stentry>Use <b>openstack</b> for pools used by cinder-volume,
-                                        cinder-backup, glance and nova services. For other services,
-                                        you can choose <b>user</b>.</stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>user.secret_id</stentry>
-                                    <stentry>UUID instance</stentry>
-                                    <stentry>A unique UUID. </stentry>
-                                    <stentry>Generate a value for your cluster before setting up the
-                                        cinder client. The <codeph>libvirt</codeph> process needs it
-                                        to access the cluster while attaching a block device from
-                                        Cinder. </stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>pools.name</stentry>
-                                    <stentry>A user defined string</stentry>
-                                    <stentry>A user defined name.</stentry>
-                                    <stentry>Name has to be unique in Ceph namespace.</stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>pools.attrs.creation_policy</stentry>
-                                    <stentry>eager | lazy</stentry>
-                                    <stentry><p>If creation_policy is ‘eager’, the playbooks will
-                                            create the user.</p> The creation_policy is set to
-                                        ‘lazy’, the pool will be created externally (not by Ceph
-                                        ansible playbooks) out of band.</stentry>
-                                    <stentry>It is recommended to retain default values for pools
-                                        meant to be consumed by the OpenStack services.</stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>pools.attrs.type</stentry>
-                                    <stentry>Replicated</stentry>
-                                    <stentry>Defines the type of pool. Ceph supports erasure coded
-                                        and replicated pool. </stentry>
-                                    <stentry>Retain value as replicated if you do want to use
-                                            <codeph>ceph-client-prepare.yml</codeph> for pool
-                                        creation. <p>It does not mean that you cannot create erasure
-                                            code pool with your cluster deployed using Helion
-                                            OpenStack. It just means that erasure codes pools are
-                                            not officially supported and you have to take help of
-                                            technical support.</p></stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>pools.attrs.replica_size</stentry>
-                                    <stentry>1..n </stentry>
-                                    <stentry>Replica count.</stentry>
-                                    <stentry>It is recommended to use 3 as replica count because it
-                                        is used in most common scenarios.</stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>pools.attrs.permission</stentry>
-                                    <stentry>rwx</stentry>
-                                    <stentry>Read, write and execute permission a given user will
-                                        have on given pool.</stentry>
-                                    <stentry>Please retain the values for OpenStack user as
-                                        mentioned in the default user model. Altering the values
-                                        might affect your client setup configuration.</stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>pools.attrs.pg</stentry>
-                                    <stentry>Placement group number.</stentry>
-                                    <stentry>Number of placement groups.</stentry>
-                                    <stentry>Default value is 128. You can change the value of this
-                                        parameter if your disk size is larger.</stentry>
-                                </strow>
-                                <strow>
-                                    <stentry>pools.usage.consumer</stentry>
-                                    <stentry>Pre-defined choices.</stentry>
-                                    <stentry>Defines consumer of pool. It indicates which services
-                                        is expected to consume a given pool with what access. It has
-                                        semantic meaning for pre-defined following choices:<ol
-                                            id="ol_zp1_s5d_lw">
-                                            <li>nova</li>
-                                            <li>glance-datastore</li>
-                                            <li>cinder-volume</li>
-                                            <li>cinder-back-up</li>
-                                        </ol></stentry>
-                                    <stentry>Do not pick the value from (glance-datastore, nova,
-                                        cinder-volume, cinder-backup) for user defined pools. For
-                                        user defined pool, you can skip it. </stentry>
-                                </strow>
-                            </simpletable>
+                            <table frame="all" rowsep="1" colsep="1" id="table_c4f_hjw_nw">
+                                <tgroup cols="4">
+                                    <colspec colname="c1" colnum="1" colwidth="1.1*"/>
+                                    <colspec colname="c2" colnum="2" colwidth="1*"/>
+                                    <colspec colname="newCol3" colnum="3" colwidth="1.38*"/>
+                                    <colspec colname="newCol4" colnum="4" colwidth="1.34*"/>
+                                    <thead>
+                                        <row>
+                                            <entry>Paramter</entry>
+                                            <entry>Value</entry>
+                                            <entry>Description</entry>
+                                            <entry>Recommendation</entry>
+                                        </row>
+                                    </thead>
+                                    <tbody>
+                                        <row>
+                                            <entry>user.name</entry>
+                                            <entry>A user defined string</entry>
+                                            <entry>Defines user name who can access a set of pools.
+                                                A user is created with same name in the Ceph
+                                                system.</entry>
+                                            <entry>It is recommended to retain default names for
+                                                some of the well-known OpenStack users as described
+                                                in the default user model. For example: cinder user
+                                                for volume access who needs to access volumes, vms,
+                                                images pool as defined in default model.</entry>
+                                        </row>
+                                        <row>
+                                            <entry>user.type</entry>
+                                            <entry>openstack | user</entry>
+                                            <entry>Indicates whether the user is specific for
+                                                OpenStack services. Presently, it does not have
+                                                semantic implication.</entry>
+                                            <entry>Use <b>openstack</b> for pools used by
+                                                cinder-volume, cinder-backup, glance and nova
+                                                services. For other services, you can choose
+                                                  <b>user</b>.</entry>
+                                        </row>
+                                        <row>
+                                            <entry>user.secret_id</entry>
+                                            <entry>UUID instance</entry>
+                                            <entry>A unique UUID. </entry>
+                                            <entry>Generate a value for your cluster before setting
+                                                up the cinder client. The <codeph>libvirt</codeph>
+                                                process needs it to access the cluster while
+                                                attaching a block device from Cinder</entry>
+                                        </row>
+                                        <row>
+                                            <entry>pools.name</entry>
+                                            <entry>A user defined string</entry>
+                                            <entry>
+                                                <p>A user defined name.</p>
+                                            </entry>
+                                            <entry>Name has to be unique in Ceph namespace.</entry>
+                                        </row>
+                                        <row>
+                                            <entry>pools.attrs.creation_policy</entry>
+                                            <entry>eager | lazy</entry>
+                                            <entry><p>If creation_policy is ‘eager’, the playbooks
+                                                  will create the user.</p> The creation_policy is
+                                                set to ‘lazy’, the pool will be created externally
+                                                (not by Ceph ansible playbooks) out of band.</entry>
+                                            <entry>It is recommended to retain default values for
+                                                pools meant to be consumed by the OpenStack
+                                                services.</entry>
+                                        </row>
+                                        <row>
+                                            <entry>pools.attrs.type</entry>
+                                            <entry>Replicated</entry>
+                                            <entry>Defines the type of pool. Ceph supports erasure
+                                                coded and replicated pool. </entry>
+                                            <entry>Retain value as replicated if you do want to use
+                                                  <codeph>ceph-client-prepare.yml</codeph> for pool
+                                                creation. <p>It does not mean that you cannot create
+                                                  erasure code pool with your cluster deployed using
+                                                  Helion OpenStack. It just means that erasure codes
+                                                  pools are not officially supported and you have to
+                                                  take help of technical support.</p></entry>
+                                        </row>
+                                        <row>
+                                            <entry>pools.attrs.replica_size</entry>
+                                            <entry>1..n </entry>
+                                            <entry>Replica count.</entry>
+                                            <entry>It is recommended to use 3 as replica count
+                                                because it is used in most common scenarios.</entry>
+                                        </row>
+                                        <row>
+                                            <entry>pools.attrs.permission</entry>
+                                            <entry>rwx</entry>
+                                            <entry>Read, write and execute permission a given user
+                                                will have on given pool.</entry>
+                                            <entry>Retain the values for OpenStack user as mentioned
+                                                in the default user model. Altering the values might
+                                                affect your client setup configuration.</entry>
+                                        </row>
+                                        <row>
+                                            <entry>pools.attrs.pg</entry>
+                                            <entry>Placement group number</entry>
+                                            <entry>Number of placement groups.</entry>
+                                            <entry>Default value is 128. You can change the value of
+                                                this parameter if your disk size is larger.</entry>
+                                        </row>
+                                        <row>
+                                            <entry>pools.usage.consumer</entry>
+                                            <entry>Pre-defined choices</entry>
+                                            <entry>Defines consumer of pool. It indicates which
+                                                services is expected to consume a given pool with
+                                                what access. It has semantic meaning for pre-defined
+                                                following choices:<ol id="ol_zp1_s5d_lw">
+                                                  <li>nova</li>
+                                                  <li>glance-datastore</li>
+                                                  <li>cinder-volume</li>
+                                                  <li>cinder-back-up</li>
+                                                </ol></entry>
+                                            <entry>Do not pick the value from (glance-datastore,
+                                                nova, cinder-volume, cinder-backup) for user defined
+                                                pools. For user defined pool, you can skip
+                                                it.</entry>
+                                        </row>
+                                    </tbody>
+                                </tgroup>
+                            </table>
                         </p></li>
                 </ol></p>
         </section>
