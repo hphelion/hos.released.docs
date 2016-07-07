@@ -31,7 +31,7 @@
             <p>Ceph is flexible in its deployment. Though all data are stored as objects, Ceph can
                 be configured with optional components that provide access to the data through
                 multiple storage protocols. The addition of such components should only be done if
-                use of the related storage protocol is necessary. For example: If you are not going
+                use of the related storage protocol is necessary. For example, if you are not going
                 to support the S3/Swift protocol then deployment of the RADOS gateway is not
                 necessary. </p>
             <p>For easy readability, this documentation is categorized into sections that
@@ -113,7 +113,7 @@
                 <li>Amazon S3 APIs can be accessed only by RADOS Gateway users. </li>
 
                 <li>The RADOS Gateway external and internal endpoints are SSL/TLS enabled including
-                        the public end points represented by HAProxy.<p> </p></li>
+                    the public endpoints represented by HAProxy.<p> </p></li>
             </ul>
 
            </section>
@@ -131,35 +131,36 @@
                 clients transmit traffic directly to OSD daemons. OSD daemons perform data
                 replication and participate in recovery activities. In general, a Ceph storage pool
                 is configured to maintain 3 replicas of any stored object. This can result in a
-                large amount of network traffic as the daemons maintain up-to-date versions of the
-                object replicas. A single transaction on an object in a Ceph storage pool results in
-                3 times the initial transaction traffic as the 3 replicas are kept in a consistent
-                state. Therefore, a 4 MB write transaction results in 12 MB (4MB * 3 replicas) of
-                network data movement in the Ceph clusters. In addition, a Ceph cluster is
-                communicative by design, resulting in an abundance of network traffic. Considering
-                these points, it is very important to segregate various Ceph data traffic. The Ceph
-                data traffic is categorized into three segments: <ul id="ul_iqq_shn_fw">
+                large amount of network traffic as the daemons maintain up-to-date versions of all
+                the object replicas. A single transaction on an object in a Ceph storage pool
+                results in 3 times the initial transaction traffic as the 3 replicas are kept in a
+                consistent state. Therefore, a 4 MB write transaction results in 12 MB (4MB * 3
+                replicas) of network data movement in the Ceph clusters. In addition, a Ceph cluster
+                is communicative by design, resulting in an abundance of network traffic.
+                Considering these points, it is very important to segregate the different types of
+                Ceph network traffic. The Ceph data traffic is grouped into three main categories:
+                    <ul id="ul_iqq_shn_fw">
                     <li>Management traffic: monitoring, logging etc </li>
                     <li>Client traffic (often termed as data traffic): client requests sent to OSD
                         daemons </li>
                     <li>Cluster traffic (often termed as replication traffic): data replication and
                         recovery traffic among OSD daemons.</li>
-                </ul></p><p>For a high performance cluster, proper network configuration is very important. Segregate
-                different categories of traffic on separate networks. For a cluster of reasonable
-                size (a few TBs), it is recommended to have a cluster with at least two networks,
-                i.e., a single network for management and client data traffic (front-side) and a
-                second network for cluster traffic (back-side). For a large Ceph cluster, we
-                recommended segregating each traffic category onto its own network. Segregating
-                network traffic also provides for a more secure environment, as the network for
-                cluster traffic does not require direct internet connectivity. Apart from the
-                virtual separation of networks (using VLANs), we need to consider the physical NICs
-                used for Ceph servers as well. We strongly recommend the use of bonded NICs to
-                provide redundancy and prevent a single point of failure. Please note the difference
-                between network separation through the use of VLANs and through the use of separate
-                NICs. In a multi-network model, network segregation through VLANs should be
-                prioritized and ideally complimented by NIC separation. Please see below for our
-                recommended order of priority for the method of network segregation: <ol
-                    id="ol_dwc_rbl_jw">
+                </ul></p><p>For a high performance cluster, proper network configuration is very
+                important. We recommend segregating the different categories of traffic on separate
+                networks. For a cluster of reasonable size (a few TBs), the use of at least two
+                networks is recommended, i.e., a single network for management and client data
+                traffic (front-side) and a second network for cluster traffic (back-side). For a
+                large Ceph cluster, we recommended segregating each traffic category onto its own
+                network. Segregating network traffic also provides for a more secure environment, as
+                the network used for Ceph cluster traffic does not require direct internet
+                connectivity. Apart from the virtual separation of networks (using VLANs), it's
+                important to consider the physical NICs used for Ceph servers as well. We strongly
+                recommend the use of bonded NICs to provide redundancy and prevent a single point of
+                failure. Also, please note the difference between network separation through the use
+                of VLANs and through the use of separate NICs. In a multi-network model, network
+                segregation through VLANs should be prioritized and ideally complimented by NIC
+                separation. Please see below for our recommended order of priority for the method of
+                network segregation: <ol id="ol_dwc_rbl_jw">
                     <li>Separation of VLAN</li>
                     <li>Separation of NIC for VLANs.</li>
                 </ol> The network architecture that you choose will depend on how many NICs you
@@ -170,35 +171,36 @@
                         management traffic VLAN, the second for OSD client traffic VLAN, and the
                         third for OSD internal traffic VLAN (ideally
                         preferred<!--, will done by very few customers hosting very large ceph clusters-->) </li>
-                    <li>4 NICs configured as 2 bonded interfaces: First bonded interface is a member
-                        of the Management traffic VLAN while the second interface is a member of the
-                        Client traffic and Cluster traffic VLANs (mostly
+                    <li>4 NICs configured as 2 bonded interfaces: The first bonded interface for the
+                        Management traffic VLAN, the second interface for the Client traffic and
+                        Cluster traffic VLANs (mostly
                         used<!-- practical pattern followed. I'm unclear on which networks share an interface-->) </li>
-                    <li>2 NICs configured as one bonded interface: Interface is a member of all
-                        VLANs (<!--pattern followed in cases where we have--> for a few NICs
-                        only)</li>
-                </ol></p><p><keyword keyref="kw-hos-tm"/>Ceph software offers significant flexibility when defining and
-                deploying OpenStack based clouds. It provides the capability to implement a wide
-                variety of configurations. This allows you to design, model and deploy a cloud based
-                on your requirements. Based on your needs and limitations, one of the following
-                network architectures can be implemented:</p><p>
+                    <li>2 NICs configured as one bonded interface: Interface used for all VLANs
+                        (<!--pattern followed in cases where we have--> for a few NICs only)</li>
+                </ol></p><p><keyword keyref="kw-hos-tm"/>Ceph software offers significant
+                flexibility when defining and deploying OpenStack based clouds, and provides the
+                ability to implement a wide variety of configurations. This allows you to design,
+                model and deploy a cloud based on your requirements. Based on your needs and
+                limitations, one of the following network architectures can be implemented:</p><p>
                 <ol id="ol_m3x_vhn_fw">
                     <li>Single VLAN deployment: A single VLAN is used for all traffic. Primarily
                         implemented on a small cluster. </li>
                     <li>Two VLAN deployment: One VLAN is used for cloud management and client
-                        traffic and another VLAN is used for Ceph internal traffic.<!--I'm unclear on which traffic should share a VLAN. There doesn't seem to be a consistent naming convention for the networks--></li>
-                    <li>Three VLANs based deployment: A separate VLAN is used for management,
-                        client, and internal traffic.<p>As mentioned above, you can decided to link
-                            all VLANs to a same bonded interface or to a separate bonded interface
-                            or a combination of above. For a large cluster, you can use a separate
-                            bonded interface which in turn necessiates the need to have at least 6
-                            NICs for OSD nodes and 4 NICs for monitor nodes.</p></li>
+                        traffic and another VLAN is used for Ceph internal
+                        traffic.<!--I'm unclear on which traffic should share a VLAN. There doesn't seem to be a consistent naming convention for the traffic types--></li>
+                    <li>Three VLAN deployment: Separate VLANs are used for management, client, and
+                        internal traffic.<p>As mentioned above, you may choose to make a single
+                            interface a member of all VLANs, or keep each interface isolated to a
+                            single VLAN. You may also choose a combination of the above options. For
+                            a large cluster, you can use a separate bonded interface for each VLAN,
+                            which in turn necessitates the need to have at least 6 NICs for OSD
+                            nodes and 4 NICs for monitor nodes.</p></li>
                 </ol>
             </p>
             <p><b>Placement of service component</b></p>
-            <p>Although there are multiple choice of placing service component, this section focus
-                only about recommended deployment composition. The section explains deployment of
-                placement of following components:<ul id="ul_qll_xbd_jw">
+            <p>Although there are multiple options for the placement of the service components, this
+                section details only the recommended configuration. The section explains placement
+                of the following components:<ul id="ul_qll_xbd_jw">
                     <li>Core Ceph (i.e. OSD and monitors)</li>
                     <li>Rados Gateway </li>
                 </ul>For details on alternative supported deployment architecture, please refer to
@@ -207,31 +209,34 @@
             <p/>
             <p>
                 <ul id="ul_tyr_tnq_kw">
-                    <li><b>Core Ceph</b><p>The following deployment composition is recommended to
-                            avoid single point of failure for the deployment of Ceph cluster.<ol
+                    <li><b>Core Ceph</b><p>The following deployment architecture is recommended to
+                            avoid a single point of failure for a Ceph cluster.<ol
                                 id="ol_ecm_qtq_kw">
-                                <li>Three monitor (to retain odd number criteria of monitor quorum)
-                                    nodes </li>
-                                <li>At least three OSD nodes. This ensures that the object is
-                                    replicated on three separate physical nodes, if replica count of
-                                    pool is set to three. The recommended configuration for the
-                                    storage pool is to set replica count to three. </li>
+                                <li>Three monitor nodes (to retain odd number criteria of monitor
+                                    quorum).</li>
+                                <li>At least three OSD nodes. This ensures that any storage object
+                                    is replicated on three separate physical nodes, as long as the
+                                    replica count of the Ceph storage pool is set to three. The
+                                    recommended configuration for the storage pool is to set the
+                                    replica count to three. </li>
                             </ol></p><p>As mentioned in <xref href="#config_ceph/ceph-networking"
-                                format="dita">Ceph networking</xref>, it is recommend to use a
-                            separate VLANS to separate various Ceph traffic. Cloud management
-                            network is used for logging and/or monitoring, OSD client network is
-                            used for Ceph client traffic and OSD internal network is used for
-                            internal Ceph traffic like replication.</p></li>
-                    <li><p><b>Rados Gateway</b></p><p>It is recommended to deploy at least two
-                            instances of RADOS Gateway on standalone node
-                            <?oxy_custom_start type="oxy_content_highlight" color="255,255,0"?>front
-                            ended by<?oxy_custom_end?> HAProxy. </p> The following diagram
-                        illustrates the physical architecture of RADOS Gateway and it reflects the
-                            <codeph>entry-scale-kvm-ceph</codeph> configuration. <p><image
+                                format="dita">Ceph networking</xref>, the use of separate VLANs to
+                            segregate Ceph traffic types is recommended. In this type of
+                            architecture, a Cloud management network is used for logging and/or
+                            monitoring, an OSD client network is used for Ceph client traffic, and
+                            an OSD internal network is used for internal Ceph traffic, such as
+                            replication.</p></li>
+                    <li><p><b>Rados Gateway</b></p><p>The recommended configuration involves
+                            deploying at least two RADOS Gateway instances on standalone nodes.
+                            Access to these instances is provided by a HAProxy front end. </p> The
+                        following diagram illustrates the physical architecture of RADOS Gateway and
+                        it reflects the <codeph>entry-scale-kvm-ceph</codeph> configuration.
+                                <p><image
                                 href="../../../media/ceph/ceph/physical-architecture_ceph.jpg"
                                 id="image_m25_12x_lw"/></p><p>The default example model
-                                (<codeph>entry-scale-kvm-ceph</codeph>) is recommended mechanism to
-                            deploy Ceph cluster with RADOS Gateway. </p></li>
+                                (<codeph>entry-scale-kvm-ceph</codeph>) is the recommended
+                            configuration for deployment of a Ceph cluster with RADOS Gateway.
+                        </p></li>
                 </ul>
             </p>
             <p/>
@@ -239,17 +244,17 @@
             <p>The following diagram illustrates the deployment architecture of Ceph.</p>
             <p>
                 <image href="../../../media/ceph/ceph/ceph_rgw_architecture.png"
-
                     id="image_t5j_lzp_kw"/></p> The above diagram illustrates the Ceph deployment
             scenario of <codeph>entry-scale-kvm-ceph input model</codeph>. Monitors are deployed on
-            three controller node. Three standalone nodes are used for OSD and two standalone nodes
-            are used for RADOS Gateway front ended by HAProxy running on controller nodes. And
-            Management, client and internal data traffics are separated using independent VLANs. </section>
+            three controller nodes. Three standalone nodes are used for OSD, and two standalone
+            nodes are used for RADOS Gateway, with access provided by HAProxy front ends running on
+            controller nodes. Management, client, and internal data traffic are separated through
+            the use of independent VLANs for each traffic type. </section>
         <p/>
-        <section id="alternative-supported-architecture"><b>Alternative supported architecture</b><p><keyword keyref="kw-hos-tm"/> 3.0 also
-                supports an alternate deployment architecture. Consider the following points for
-                alternate supported architecture deployment.<ul id="ul_asz_bqq_kw">
-
+        <section id="alternative-supported-architecture"><b>Alternative supported
+                    architecture</b><p><keyword keyref="kw-hos-tm"/> 3.0 also supports an alternate
+                deployment architecture. Consider the following points for alternate supported
+                architecture deployment:<ul id="ul_asz_bqq_kw">
                     <li>Core networking</li>
                     <li>Placement of service components<ul id="ul_hst_dqq_kw">
                             <li>Core Ceph<ul id="ul_p13_2qq_kw">
@@ -261,20 +266,19 @@
                                     <li>RadosGateway on controller nodes</li>
                                 </ul></li>
                         </ul></li>
-                </ul></p>
-        </section>
+                </ul></p></section>
 
-        <section><b>Core networking</b><p>Ceph clients transmits traffic direct to OSD daemons for
-                storage operations instead of client routing request to a specific gateway. For more
+        <section><b>Core networking</b><p>Rather than routing requests to a specific gateway, Ceph
+                clients transmit traffic directly to OSD daemons for storage operations. For more
                 information refer to <xref href="#config_ceph/ceph-networking" format="dita"> Ceph
                     networking</xref>.</p></section>
         <p/>
         <section><b>Placement of service components</b><p>
                 <ul id="ul_edw_xql_hw">
-                    <li><b>Core Ceph</b><p>The architecture choices which is supported in <keyword
-                                keyref="kw-hos-tm"/> 3.0 is as follows.<ul id="ul_fnt_wtq_kw">
+                    <li><b>Core Ceph</b><p>The architecture choices supported in <keyword
+                                keyref="kw-hos-tm"/> 3.0 are as follows.<ul id="ul_fnt_wtq_kw">
                                 <li>Monitor on standalone node<p>You can deploy the Ceph monitor
-                                        service on a dedicated cluster or resource node (s). Ensure
+                                        service on a dedicated cluster or resource node(s). Ensure
                                         you modify your environment after installing the lifecycle
                                         manager. For more details, refer to <xref
                                             href="alternative-supported-choice.dita#config_ceph/deploying-monitor-on-standalone-node"
@@ -295,7 +299,7 @@
                                     <p>The default <codeph>entry-scale-kvm-ceph</codeph> input model
                                         deploys the <codeph>radosgw</codeph> services on 2 dedicated
                                         cluster nodes. However, RADOS Gateway can also be installed
-                                        on cluster node hosting Ceph monitor service or on
+                                        on cluster nodes hosting Ceph monitor service or on
                                         Controller nodes. Refer to <xref
                                             href="alternative-supported-choice.dita#config_ceph/install-rados-gateway-on-cluster-node-that-host-ceph-monitor"
                                             >Installing RADOS Gateway on (dedicated) cluster node(s)
