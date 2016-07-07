@@ -10,15 +10,15 @@
     <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <!--<section id="expandCollapse"> <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv> <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv> </section>-->
-    <p><keyword keyref="kw-hos-tm"/> Ceph deployment leverage the cloud lifecycle operations
-      supported by Helion lifecycle management and provides the simplified lifecycle management of
+    <p><keyword keyref="kw-hos-tm"/> Ceph deployment leverages the cloud lifecycle operations
+      supported by Helion lifecycle management and provides simplified lifecycle management of
       critical cluster operations like service check, upgrade, reconfiguring service components.
-      This section assumes that the reader has an understanding of cloud input model and highlights
-      only the important aspects of cloud input model pertaining to Ceph. Here we focus on the
-      deployment aspects of <codeph>entry-scale-kvm-ceph</codeph> input model, which is most widely
-      used configuration. For alternative supported choices, refer <xref
+      This section assumes that the reader has an understanding of the cloud input model, and as
+      such, only highlights important aspects of the cloud input model that pertain to Ceph. Here we
+      focus on the deployment aspects of <codeph>entry-scale-kvm-ceph</codeph> input model, which is
+      the most widely used configuration. For alternative supported choices, refer <xref
         href="alternative-supported-choice.dita#config_ceph">here</xref>. To ensure a proper
-      deployment and verification of the Ceph, it is important to read the topics and perform the
+      deployment and verification of Ceph, it is important to read the topics and perform the
       described steps in order. <ol id="ol_axm_tdq_kw">
         <li><xref href="#config_ceph/pre-deployment" format="dita">Pre-Deployment</xref><ol
             id="ol_ycb_13z_jw">
@@ -33,16 +33,16 @@
     <section>
       <title id="pre-deployment">Pre-Deployment</title>
       <p>Before starting the deployment of <keyword keyref="kw-hos-tm"/> cloud with Ceph, you must
-        understand the following aspects of Ceph cluster:<ul id="ul_hn5_3vh_gw">
-          <li id="define-osd"><b>Define OSD disk model for OSD disk</b><p>This section focus on
-              expressing the storage requirements of an OSD node. OSD nodes have following type of
-                disks:<ul id="ul_hth_g2q_kw">
+        understand the following aspects of a Ceph cluster:<ul id="ul_hn5_3vh_gw">
+          <li id="define-osd"><b>Define OSD disk model for OSD disk</b><p>This section focuses on
+              expressing the storage requirements of an OSD node. OSD nodes have the following disk
+                types:<ul id="ul_hth_g2q_kw">
                 <li>system disks </li>
                 <li>data disk </li>
                 <li> journal disks</li>
-              </ul></p><p>System disks is used for OSD components, logging etc. The configuration of
-              data and journal disks in important for Ceph deployment. The sample file of disk model
-              of <codeph>entry-scale-kvm-ceph</codeph> cloud is as follows.</p><p>
+              </ul></p><p>System disks are used for OSD components, logging, etc. The configuration
+              of data and journal disks is important for Ceph deployment. The sample file of disk
+              model of <codeph>entry-scale-kvm-ceph</codeph> cloud is as follows.</p><p>
               <codeblock>---
   product:
     version: 2
@@ -166,26 +166,27 @@
             </p><p>The above sample file represents the following:<ul id="ul_g4v_m2q_kw">
                 <li>The first disk is used for OS and system purpose.</li>
                 <li>There are three OSD data disks (sdc, sde, sdf) and two journal disks (sdd and
-                  sdg). It illustrates that we can share journal disks for multiple OSDs. It is
-                  recommended to use OSD journal disk for four OSD data disks. Please see section
-                    <i>Usage of journal disk</i> for more details.</li>
+                  sdg). It illustrates that we can share journal disks for multiple OSDs. The
+                  recommended configuration is to use one OSD journal disk for every four OSD data
+                  disks. Please see section <i>Usage of journal disk</i> for more details.</li>
                 <li>The drive type is not mentioned for journal or data disk. You can consume any
-                  drive type but it is <b>recommended</b> to use SSD for journal disk.</li>
-              </ul></p><p>Although above model illustrates mixed usage of journal disk, it is
-              strongly advised to keep journal data separate from OSD data which means that your
-              disk model <b>should not</b> have journal disks shared on same data disks. For more
-              information, see <i>Usage of journal disk below</i>.</p><p><b>Usage of journal
-                disk</b></p><p><keyword keyref="kw-hos-tm"/> recommends storing the Ceph OSD
-              (object-storage daemon) journal on an SSD (solid-state drive ) and the OSD object data
-              on a separate hard disk drive. Considering that SSD drives are costly, you can use
-              multiple partitions in a single SSD drive for multiple OSD journals. We recommend not
-              more than four or five OSD journals on each SSD disk as a reasonable balance between
-              cost and optimal performance. If you have too many OSD journals on a single SSD, and
-              the journal disk crashes, you might lose your data on those disks. Also, too many
-              journals in a single SSD can negatively affect the performance.</p><p>Using an OSD
-              journal as a partition on the data disk itself is supported. However, you might see a
-              significant decline in Ceph performance due the fact that each client request to store
-              an object is first written to the journal disk before sending an acknowledgement to
+                  drive type but it is <b>recommended</b> to use an SSD for the journal disk.</li>
+              </ul></p><p>Although the above model illustrates mixed usage of a journal disk, it is
+              strongly advised to keep journal data separate from OSD data. In other words, we
+              recommend that your disk model <b>should not</b> have journal data and OSD data on the
+              same disks. For more information, see <i>Usage of journal disk
+                below</i>.</p><p><b>Usage of journal disk</b></p><p><keyword keyref="kw-hos-tm"/>
+              recommends storing the Ceph OSD (object-storage daemon) journal on a SSD (solid-state
+              drive ) and the OSD object data on a separate hard disk drive. Considering that SSD
+              drives are costly, you can use multiple partitions on a single SSD for multiple OSD
+              journals. We recommend not more than four or five OSD journals on each SSD as a
+              reasonable balance between cost and optimal performance. If you have too many OSD
+              journals on a single SSD, and the journal disk crashes, you risk losing the data on
+              those disks. Also, too many journals in a single SSD can negatively affect the
+              performance.</p><p>Creating a separate OSD journal partition on an OSD data disk is
+              supported. However, you might see a significant decline in Ceph performance with this
+              configuration, due the fact that each client request to store an object is first
+              written to the journal disk before sending an acknowledgement to the
               client.</p><p>Ceph OSD journal size defaults to 5120MB (i.e. 5GB) in <keyword
                 keyref="kw-hos-tm"/>. This value can be changed, however, it does not apply to any
               existing journal partitions. It will be effective on any new OSDs created after the
@@ -193,33 +194,33 @@
               data disk). To change the journal size, edit the <codeph>osd_journal_size</codeph>
               parameter in the <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph>
               file.</p><p>To summarize: <ol id="ol_sbp_v3z_jw">
-                <li>Use SSD for journal disk </li>
-                <li> Ratio of OSD data disks to journal disk is recommended to 4:100% </li>
-                <li> Default journal partition size is 5 GB which you can change. Actual journal
-                  size depends upon your disk drive <codeph>rpm</codeph> and expected throughput.
-                  The formula is: osd journal size = {2 * (expected throughput * filestore max sync
-                  interval)} </li>
+                <li>Use a SSD for journal disk </li>
+                <li> The recommended ratio of OSD data disks to journal disks is 4:1 </li>
+                <li> Default journal partition size is 5 GB, though this can be changed. Actual
+                  journal size depends upon your disk drive <codeph>rpm</codeph> and expected
+                  throughput. The formula is: osd journal size = {2 * (expected throughput *
+                  filestore max sync interval)} </li>
                 <li> Journal size for ALREADY configured OSD disks<!-- (post day zero case) --> does
                   not get changed even if you change the <codeph>osd_journal_size</codeph> parameter
                   in the <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file. If you
-                  want to re-size journal partition of ALREADY configured OSD disks, flush journal
-                  data, remove OSD from cluster, and re-add it. </li>
+                  want to re-size the journal partition of ALREADY configured OSD disks, flush the
+                  journal data, remove the OSD disk from the cluster, and re-add it. </li>
               </ol></p></li>
         </ul></p>
       <p/>
       <p>
         <ul id="ul_ldl_p5q_kw">
-          <li><b>Customize your service configuration</b><p>You must customize the paramters in
+          <li><b>Customize your service configuration</b><p>You must customize parameters in the
               following files:<ul id="ul_crx_hfq_kw">
                 <li>Customize parameters at
                     <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file<p><keyword
-                      keyref="kw-hos-tm"/> provides easy to configure service parameter. All the
+                      keyref="kw-hos-tm"/> provides easy to configure service parameters. All the
                     common parameters are available in
                       <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file. You can
-                    deploy your cluster without altering any of the parameter but it is advised to
-                    review and understand the parameters before deploying your cluster. Below table
-                    provide details about the parameter that can be changed and its
-                      description.</p><p><b>Core service parameter</b><table frame="all" rowsep="1"
+                    deploy your cluster without altering any of the parameters but it is recommended
+                    that you review and understand the parameters before deploying your cluster. The
+                    table below provides details and descriptions of the parameters that can be
+                    changed.</p><p><b>Core service parameter</b><table frame="all" rowsep="1"
                       colsep="1" id="table_hlb_cz3_nw">
                       <tgroup cols="4">
                         <colspec colname="c1" colnum="1"/>
@@ -319,7 +320,7 @@
                             <entry>12</entry>
                             <entry>The value can be customized to suit your requirements. However,
                               since this parameter and data_disk_poll_attempts (above) have a
-                              combined effect, it is recommended to consider both while tweaking
+                              combined effect, it is recommended to consider both while changing
                               either of them</entry>
                           </row>
                           <row>
