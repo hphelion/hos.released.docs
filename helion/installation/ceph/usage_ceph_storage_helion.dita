@@ -11,17 +11,18 @@
         <p conkeyref="HOS-conrefs/applies-to"/>
         <section id="expandCollapse"
             ><!-- <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv> <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv> --></section>
-        <p>Ceph is a very versatile storage technology and facilitates consumption of storage using
-            multiple protocols. Also, Ceph is very closely integrated with Helion OpenStack services
-            to support various storage use cases like usage of storage pool for cinder-volume, usage
-            of storage-pool for glance data store. Helion OpenStack further simplifies admin life by
-            providing automated playbooks for various storage use cases. <ul id="ul_gx3_sdd_jw">
-                <li>Creating storage pool</li>
-                <li>Deploying Ceph client component on client node</li>
-                <li>Configuring OpenStack services with storage pool</li>
+        <p>Ceph is a very versatile storage technology and facilitates the utilization of storage
+            via multiple protocols. Ceph's integration with Helion OpenStack services provides
+            support for various storage use cases, such as the use of the storage pool for
+            cinder-volumes as well as glance data stores. Helion OpenStack further simplifies
+            administrative overhead by providing Ansible playbooks that automate tasks related to
+            various storage use cases, such as: <ul id="ul_gx3_sdd_jw">
+                <li>Creating a storage pool</li>
+                <li>Deploying a Ceph client component on a client node</li>
+                <li>Configuring OpenStack services with a storage pool</li>
             </ul></p>
-        <p>This section guides through the following common scenarios which you might come across
-            while consuming Ceph for various storage use cases. </p>
+        <p>This section provides guidance for the following scenarios commonly encountered in
+            various Ceph implementations:</p>
         <p>
             <ol id="ol_ix2_bdd_jw">
                 <li><xref href="#config_ceph/setup-deployer-node" format="dita">Setup Deployer as
@@ -40,39 +41,40 @@
                         as Object Storage</xref></li>
             </ol>
         </p>
-        <p> One can use Ceph storage pool as ephemeral storage backend for nova as well
-            <?oxy_custom_start type="oxy_content_highlight" color="166,89,220"?>which is not
-            formally supported<?oxy_custom_end?>. </p>
-        <section id="setup-deployer-node"><title>Setup Deployer as Client Node</title>
+        <p> Ceph storage pool can be used an as ephemeral storage backend for nova as well, though
+            this is not<?oxy_custom_start type="oxy_content_highlight" color="166,89,220"?> formally
+            supported<?oxy_custom_end?>. </p>
+        <section id="setup-deployer-node"><title>Set up Deployer as Client Node</title>
             
-            <p>By default, your deployer node is not configured as Ceph client node and hence you
-                    can not start your Ceph operation from here. Generally, it is more helpful to
-                    set up deployer node as admin client node to perform various Ceph operations. It
-                    will help you in managing various aspects of Ceph cluster without logging to the
-                    monitor node. You can turn your deployer node into client node by executing the
-                    following
-                    playbook.<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codeblock></p><p>After successful operation of the above playbook, your deployer node is configured with admin key
-                ring and hence act as an admin node.</p>
+            <p>By default, your deployer node is not configured as a Ceph client node, and as a
+                result, you can not perform Ceph operations from it. Generally, it is more helpful
+                to set up a deployer node as an admin client node in order to perform various Ceph
+                operations. Doing so will help you manage various aspects of a Ceph cluster without
+                logging to the monitor node. You can turn your deployer node into client node by
+                executing the following
+                playbook.<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codeblock></p><p>After successful execution of the above playbook, your deployer node will be configured with an
+                admin key ring and subsequently act as an admin node.</p>
             
         </section>
         <section id="using-core-ceph-openstack-service">
             <title>Using Core Ceph OpenStack Services</title>
-            <p>Usage of cinder for glance, cinder volume and cinder backup requires pool creation
-                and setting up ceph-client on respective OpenStack Service nodes. To make the work
-                flow simpler, the playbook <codeph>ceph-client-prepare.yml</codeph> is provided. The
-                playbook reads pool configuration as per specification provided in
-                    <codeph>ceph_user_model.yml</codeph> and sets up OpenStack client node. Perform
-                the following: <ol id="ol_g2z_rrf_kw">
+            <p>The use of cinder for glance, cinder volume, and cinder backup requires pool creation
+                and configuring ceph-client on respective OpenStack Service nodes. To simplify the
+                tasks required for this setup, the playbook <codeph>ceph-client-prepare.yml</codeph>
+                has been provided. This playbook reads the storage pool configuration specified in
+                    <codeph>ceph_user_model.yml</codeph> and sets up an OpenStack client node
+                accordingly. To implement this configuration, perform the following: <ol
+                    id="ol_g2z_rrf_kw">
                     <li>Define user model </li>
-                    <li>Run <codeph>hosts/verb_hosts ceph-client-prepare.yml </codeph><p>Default
-                            user model provided with <keyword keyref="kw-hos-tm"/> is mentioned
-                            below. The default configuration contains pool configuration for
+                    <li>Run <codeph>hosts/verb_hosts ceph-client-prepare.yml </codeph><p>The default
+                            user model provided with <keyword keyref="kw-hos-tm"/> is shown below.
+                            The default configuration contains storage pool configuration for
                             cinder-volume, glance and cinder-backup. You can edit the file if you do
-                            not intend to use Ceph for all services or want to change pool
+                            not intend to use Ceph for all services, or want to change pool
                             attributes based on your cluster configuration. For example: if you have
                             large number of disk then you can increase PG number for a given
-                            pool.</p><p>
+                            pool.<!-- Is this referring to the size of individual disks or the total number of disks? --></p><p>
                             <codeblock>---
 
 product:
@@ -322,8 +324,8 @@ ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
                 </ol></p>
                    
                </section>
-        <p>After the successful execution of the above command, the glance is configured to use Ceph
-            as data store. You can use glance operations to upload image which will get stored in
+        <p>After the successful execution of the above command, glance is configured to use Ceph as
+            a data store. You can use glance operations to upload images which will be stored in the
             Ceph cluster.</p>
         <section id="cinder-volume-backend">
             <title>Use Ceph Storage Pool as Cinder Volume Backend</title>
@@ -588,11 +590,11 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
         <!--<p>After the successful execution of the above command, the cinder-volume is configured to use Ceph as data store. You can use volume lifecycle operations as described at  <xref href="../installation_verification.dita#install_verification/volume_verify"/></p>-->
         <section id="rados-gw-object-storage"><title>Use RADOS Gateway to Access Objects Using S3/Swift AP</title>
             
-                <p>RADOS Gateway provides object storage functionality through S3 and Swift API. It
-                has built-in authentication mechanism and it can use Keystone as authentication
-                backend unlike OpenStack service where keystone is the only authentication backend.
-                Primarily, these are following permutation and combination of object accessibility
-                from end user perspective (also expressed pictorially):</p>
+                <p>RADOS Gateway provides object storage functionality through S3 and Swift API.
+                Unlike the OpenStack service, which uses Keystone as its only authentication
+                backend, RADOS Gateway can use its built-in authentication mechanism in addition to
+                Keystone for user authentication. From an end-user perspective, the following are
+                the primary channels for accessing objects (also expressed pictorially):</p>
                 <p>
                     <ol>
                         <li>Keystone users using <ol id="ol_uc3_dfd_jw">
@@ -607,34 +609,41 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
                 </p>
                 <p>Pictorial view of above perspective:</p>
                 <p><image href="../../../media/ceph/ceph/rgw.jpg" id="image_lf4_tmt_jw"/></p>
-                <p>First one uses keystone as authentication backend while second one uses RADOS
-                Gateway (internal authentication backend). Default deployment of RADOS Gateway in
-                HPE Helion OpenStack 3.0 enables (1.a), (2.a) and (2.b) only. </p>
-                <p>Enabling choice (1.b) for making Keystone users accessing S3 API requires
-                keystone to be made as default authentication backend. In this case all user
-                authentication goes first to Keystone and then failover to RADOS Gateway even for
-                non-Keystone users (i.e. use case 2.b) but it causes serious performance drop for
-                RADOS Gateway user. </p>
-                <p>Our observation based on lab tests performed on 10 TB Ceph cluster is that
-                enabling S3 API access for keystone users degrades the performance of S3 API access
-                for RADOS Gateway user roughly by 50%. We ran rest-bench tool for 10 seconds with
-                concurrency 16 and object size 4096 (4k) bytes on Ceph deployed using
-                    <codeph>entry-scale-kvm-ceph</codeph> input model. And our lab finding is that
-                system performed on an average 1350 (object size 4K) write operations when keystone
-                was enabled as default authentication backend in contrast to 2500 (object size 4K)
-                operations in default configuration which is degradation of 49% roughly. Please note
-                that the numbers are for illustration purpose to provide an insight on degree of
-                degradation. However, this aspect has one advantage and that is of reduction
-                maintenance burden as all credentials will be stored in Keystone. It is not required
-                to create or manage credentials database specific for the S3 authentication.
-                Standard administrative tools like Horizon can be used instead. Aspect (1.b) does
-                not apply if you do not intend to enable S3 API access for Keystone users. </p>
+                <p>Example 1 uses Keystone as the authentication backend while example 2 uses RADOS
+                Gateway (internal authentication backend). The default deployment of RADOS Gateway
+                in HPE Helion OpenStack 3.0 enables (1.a), (2.a) and (2.b) only.</p>
+                <p>Enabling Keystone users to access the S3 API (option 1.b) requires Keystone to be
+                configured as the default authentication backend. In this configuration, user
+                authentication requests are first routed to Keystone, then on to RADOS Gateway as a
+                secondary authority. All authentication requests will follow this pattern, whether
+                the user in question is a Keystone or non-Keystone user (i.e., use case 2.b) Please
+                note that this authentication pattern will cause serious performance degredation
+                when RADOS Gateway users attempt to authenticate, due to the request being routed
+                first to Keystone, then on to RADOS Gateway. </p>
+                <p>Our observations, based on lab tests performed on 10 TB Ceph clusters, is that
+                enabling S3 API access for Keystone users degrades the performance of S3 API access
+                for RADOS Gateway users by roughly 50%. We ran rest-bench tool for 10 seconds with
+                concurrency 16 and object size 4096 (4k) bytes on a Ceph cluster deployed using the
+                    <codeph>entry-scale-kvm-ceph</codeph> input model. Our lab finding is that the
+                system performed an average of 1350 write operations (object size 4K) when keystone
+                was enabled as the default authentication backend. This is in contrast to 2500 write
+                operations (object size 4K) with a system running the default configuration. This
+                illustrates a roughly 49% degradation. Please note that the numbers presented here
+                are for illustration purposes only, and are meant to provide  insight into the
+                degree of degradation involved in a particular configuration. </p>
+            <p>In spite of this drawback, this configuration can reduce the administrative overhead
+                of user management. Since all authentication requests are initially routed to
+                Keystone, all user accounts can be created and managed through that service. In this
+                case, a database of credentials specific to the S3 authentication is not necessary.
+                Standard administrative tools like Horizon can be used instead. Please note that
+                option (1.b) and its related configuration is not necessary if you do not intend to
+                enable S3 API access for Keystone users. </p>
                 <p><b>Steps to Access S3 API for RADOS Gateway User</b></p>
                 <p>Perform the following:<ol id="ol_asx_xfd_jw">
                         <li>Create a user by executing the following command:
                                 <codeblock>sudo radosgw-admin user create --uid="{username}" --display-name="{Display Name}" --email="{email}"</codeblock><p>Example:<codeblock>sudo radosgw-admin user create --uid=rgwuser --display-name="RadosGatewayUser" --email=rgwuser@test.com</codeblock></p></li>
                         <li>Perform object operation. You can use S3 clients. Example:
-                                <codeph>python-boto</codeph>.</li>
+                                <codeph>python-boto</codeph>.<!-- Should there be an object operation example here? --></li>
                     </ol></p>
                 <p><b>Steps to Access Swift API for RADOS Gateway User</b></p>
                 <p>Perform the following:</p>
@@ -657,8 +666,8 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
                 <p>When RADOS Gateway is deployed as per the default
                     <codeph>entry-scale-kvm-ceph</codeph> model, it exists alongside OpenStack Swift
                 (since the Keystone service type for RADOS Gateway defaults to ceph-object-store).
-                In this (co-existing) mode, the OpenStack Horizon communicates only with OpenStack
-                Swift for all the Object Store operations. However, the OpenStack Swift command line
+                In this (co-existing) mode, OpenStack Horizon communicates only with OpenStack Swift
+                for all the Object Store operations. However, the OpenStack Swift command line
                 interface can be tuned to communicate with both OpenStack Swift and RADOS Gateway as
                     below:<ul id="ul_p4x_4zd_jw">
                     <li><?oxy_custom_start type="oxy_content_highlight" color="255,255,0"?># to
@@ -667,7 +676,7 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
                     <li># to interact with RADOS
                         Gateway<?oxy_custom_end?><codeblock> <codeph>export OS_SERVICE_TYPE=ceph-object-store</codeph></codeblock></li>
                 </ul></p>
-                <p> One can use Swift CLI to perform object operations on Ceph.</p>
+                <p> One can use the Swift CLI to perform object operations on Ceph.</p>
             <p><b>Example</b>:</p>
             <p>In the following example we login to to the monitor node to list the objects in Ceph
                 using the credentials available in <codeph>~/service.osrc</codeph>
@@ -684,20 +693,19 @@ swift list</codeblock></p>
                 <b>Steps to Access S3 API for Keystone User</b>
             </p>
                 <p>As mentioned above, S3 API access for keystone user is not enabled by default. It
-                    requires following sets of changes:<ol id="ol_sxv_rky_jw">
-                        <li>Configure RADOS Gateway to use keystone for authenticating S3
-                            requests.</li>
-                        <li>Change RADOS Gateway endpoints to use port 35357 in
-                                <codeph>ceph.conf</codeph> of RADOS Gateway. Ensure that iptable
-                            rules are configured to allow access of port 35357. </li>
-                        <li>Create EC2 credentials.<p>Execute the following commands to generate the
-                            EC2 credentials for the OpenStack
+                requires fthe ollowing sets of changes:<ol id="ol_sxv_rky_jw">
+                    <li>Configure RADOS Gateway to use keystone for authenticating S3 requests.</li>
+                    <li>Change RADOS Gateway endpoints to use port 35357 in
+                            <codeph>ceph.conf</codeph> of RADOS Gateway. Ensure that iptables rules
+                        are configured to allow access over port 35357. </li>
+                    <li>Create EC2 credentials.<p>Execute the following commands to generate the EC2
+                            credentials for the OpenStack
                             user:<pre>openstack ec2 credentials create --project &lt;project-name&gt; --user &lt;user-name&gt;</pre></p><p>For
                             more information, refer to OpenStack documentation.</p><p>
                             <note type="important">Please contact Professional Services team for
                                 details on how to perform above steps. </note>
                         </p></li>
-                    </ol></p>
+                </ol></p>
             
         </section>
     </body>
