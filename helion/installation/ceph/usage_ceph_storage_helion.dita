@@ -513,17 +513,18 @@ ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
                 href="../installation_verification.dita#install_verification/volume_verify"/></p>
         <section id="cinder-backup-device"><title>Use Ceph Storage Pool as Cinder Backup Device</title>
             
-                <p>To enable Cinder backup device to Ceph, make the following changes to the
-                        <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph> file: <ol
-                        id="ol_f11_zqm_2w">
-                        <li>Uncomment the <codeph>ceph backup</codeph> section and fill the values:
-                                <codeblock>[DEFAULT]
+                <p>To enable the Ceph storage pool to function as a Cinder backup device, make the
+                following changes to the
+                    <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph> file: <ol
+                    id="ol_f11_zqm_2w">
+                    <li>Uncomment the <codeph>ceph backup</codeph> section and fill the values:
+                            <codeblock>[DEFAULT]
 backup_driver = cinder.backup.drivers.ceph
 backup_ceph_conf = &#60;ceph-config-file>
 backup_ceph_user = &#60;ceph-backup-user>
 backup_ceph_pool = &#60;ceph-backup-pool></codeblock><p>where:</p><table
-                                frame="all" rowsep="1" colsep="1" id="ceph_backup">
-                                <tgroup cols="2">
+                            frame="all" rowsep="1" colsep="1" id="ceph_backup">
+                            <tgroup cols="2">
                                 <colspec colname="c1" colnum="1" colwidth="1*"/>
                                 <colspec colname="c2" colnum="2" colwidth="1.27*"/>
                                 <thead>
@@ -564,26 +565,25 @@ pools:
                                     </row>
                                 </tbody>
                             </tgroup>
-                            </table></li>
-                        <li>Commit your configuration to the <xref
-                                href="../installation/using_git.dita">local git repo</xref>, as
-                            follows:
-                            <codeblock>cd ~/helion/hos/ansible
+                        </table></li>
+                    <li>Commit your configuration to the <xref href="../installation/using_git.dita"
+                            >local git repo</xref>, as follows:
+                        <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
-                        <li>Run the configuration processor:
-                            <codeblock>cd ~/helion/hos/ansible
+                    <li>Run the configuration processor:
+                        <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-                        <li>Update your deployment directory:
-                            <codeblock>cd ~/helion/hos/ansible
+                    <li>Update your deployment directory:
+                        <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
-                        <li>Run the Cinder Reconfigure Playbook:
-                            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+                    <li>Run the Cinder Reconfigure Playbook:
+                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
-                    </ol></p>
+                </ol></p>
             </section>
         <p>After the successful execution of the above command, the cinder-backup service is
-            configured to use Ceph as data store. You can use volume lifecycle operations as
+            configured to use Ceph as a data store. You can use volume lifecycle operations as
             described <xref
                 href="../../operations/blockstorage/creating_voltype.dita#creating_voltype/associate_volumetype"
             />.</p>
@@ -692,8 +692,8 @@ swift list</codeblock></p>
             <p>
                 <b>Steps to Access S3 API for Keystone User</b>
             </p>
-                <p>As mentioned above, S3 API access for keystone user is not enabled by default. It
-                requires fthe ollowing sets of changes:<ol id="ol_sxv_rky_jw">
+                <p>As mentioned above, S3 API access for keystone users is not enabled by default.
+                It requires the following sets of changes:<ol id="ol_sxv_rky_jw">
                     <li>Configure RADOS Gateway to use keystone for authenticating S3 requests.</li>
                     <li>Change RADOS Gateway endpoints to use port 35357 in
                             <codeph>ceph.conf</codeph> of RADOS Gateway. Ensure that iptables rules
