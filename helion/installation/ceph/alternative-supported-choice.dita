@@ -1,58 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="config_ceph">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Alternative Supported Choices</title>
-  <abstract>
-    <shortdesc outputclass="hdphidden">Installation and configuration steps for your Ceph
-      backend.</shortdesc>
-  </abstract>
-  <body>
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Alternative Supported Choices</title>
+    <abstract>
+        <shortdesc outputclass="hdphidden">Installation and configuration steps for your Ceph
+            backend.</shortdesc>
+    </abstract>
+    <body>
         <!--not tested-->
         <p conkeyref="HOS-conrefs/applies-to"/>
-        <p>This section provides insight on how one can alter the
-                <codeph>entry-scale-kvm-ceph</codeph> input model to deploy Ceph with various other
-            supported options. It is recommended that you evaluate all pros and cons before
-            selecting a supported configuration in place of a recommended one. The various
-            configuration choices can impact the performance and scale of your cluster. For any
-            technical details, please consult the technical support team. The configuration choices
-            detailed here are for reference purposes, and you can combine one or more of them to
-            suit your needs. The content is categorized in the following ways:</p>
-        <p> </p>
-        <p>
-            <ol id="ol_sqb_mrg_kw">
-                <li>Core Ceph<ul id="ul_ejq_yrg_kw">
+        <section>
+            <p>This section provides insight on how one can alter the
+                    <codeph>entry-scale-kvm-ceph</codeph> input model to deploy Ceph with various
+                other supported options. It is recommended that you evaluate all pros and cons
+                before selecting a supported configuration in place of a recommended one. The
+                various configuration choices can impact the performance and scale of your cluster.
+                For any technical details, please consult the technical support team. The
+                configuration choices detailed here are for reference purposes, and you can combine
+                one or more of them to suit your needs. The content is categorized in the following
+                ways:</p>
+            <ul>
+                <li>Core Ceph <ul>
                         <li><xref href="#config_ceph/deploying-monitor-on-standalone-node"
-                                format="dita">Installing monitor on standalone node</xref>
-                        </li>
+                                format="dita">Installing monitor on standalone node</xref></li>
                         <li><xref href="#config_ceph/single-vlan-for-all-ceph-traffic" format="dita"
                                 >Using Single VLAN for all Ceph traffic (management, client and
                                 internal OSD)</xref></li>
                         <li><xref href="#config_ceph/using-two-vlan" format="dita">Using Two VLANs
                                 for Ceph (one for (management, client) and another for (internal
-                                OSD) traffic)</xref>
-                        </li>
+                                OSD) traffic)</xref></li>
                     </ul>
                 </li>
-                <li>RADOS Gateway<ul id="ul_qpj_zs1_nw">
+                <li>RADOS Gateway <ul>
                         <li><xref
                                 href="#config_ceph/install-rados-gateway-on-cluster-node-that-host-ceph-monitor"
                                 format="dita">Installing RADOS Gateway on Dedicated Monitor Cluster
-                                Node</xref>
-                        </li>
+                                Node</xref></li>
                         <li><xref href="#config_ceph/install-rados-gateway-on-controller-nodes"
                                 format="dita">Installing RADOS Gateway on Controller
                             Node</xref></li>
-                        <li>
-                            <p><xref href="#config_ceph/install-more-two-rados-gateway-servers"
-                                    format="dita">Installing More Than Two RADOS Gateway as
-                                    Standalone Node</xref></p>
-                        </li>
-                    </ul></li>
+                        <li><xref href="#config_ceph/install-more-two-rados-gateway-servers"
+                                format="dita">Installing More Than Two RADOS Gateway as Standalone
+                                Node</xref></li>
+                    </ul>
+                </li>
                 <li><xref href="#config_ceph/managing-ceph-cluster-post-deployment" format="dita"
                         >Managing Ceph Cluster Post Deployment</xref></li>
-            </ol>
-        </p>
-        <p/>
+            </ul>
+        </section>
         <section>
             <title>Core Ceph</title>
         </section>
@@ -680,53 +675,55 @@ ansible-playbook -i hosts/verb_hosts site.yml</codeblock></li>-->
                 example, supported operations include: changing the configuration of Ceph service
                 components and scaling up storage nodes. The following section provides details
                 about the various aspects of maintenance that you might encounter during cluster
-                    management.<ol id="ol_ykc_2sw_mw">
-                    <li>Modify service configuration </li>
-                    <li>Scale out cluster <ol id="ol_skt_hsw_mw">
-                            <li>Add a Ceph monitor node. See <xref
-                                    href="../../operations/maintenance/ceph/add_monitor_node.dita#add_monitor_node"
-                                    >here</xref></li>
-                            <li>Add a data disk to an existing storage node. See <xref
-                                    href="../../operations/maintenance/ceph/add_osd_datadisk.dita#add_datadisk_osd"
-                                    >here</xref></li>
-                            <li>Add new OSD node. See <xref
-                                    href="../../operations/maintenance/ceph/add_osd_node.dita#add_osdnode"
-                                    >here</xref></li>
-                        </ol></li>
-                    <li>Scale down cluster <ol id="ol_xj1_jsw_mw">
-                            <li>Remove a Ceph monitor node. See <xref
-                                    href="../../operations/maintenance/ceph/remove_monitor_node.dita#remove_monitor_node"
-                                    >here</xref></li>
-                            <li>Remove a RADOS gateway node. See <xref
-                                    href="../../operations/maintenance/ceph/remove_ceph_rados_node.dita#remove_rgw_node"
-                                    >here</xref></li>
-                            <li>Remove a data disk from an OSD node. See <xref
-                                    href="../../operations/maintenance/ceph/remove_osd_datadisk.dita#remove_datadisk_osd"
-                                    >here</xref></li>
-                        </ol></li>
-                    <li> Repair scenarios <ol id="ol_kqt_ksw_mw">
-                            <li>Replace a failed OSD node. See <xref
-                                    href="../../operations/maintenance/ceph/replace_ceph_osd_node.dita#replace_osd_node"
-                                    >here</xref></li>
-                            <li>Replace a failed monitor node. See <xref
-                                    href="../../operations/maintenance/ceph/replace_ceph_monitor_node.dita#replace_monitor_node"
-                                    >here</xref></li>
-                            <li>Replace a failed OS disk in an OSD node. See <xref
-                                    href="../../operations/maintenance/ceph/replace_osd_osdisk.dita#replacing_os_disks"
-                                    >here</xref></li>
-                            <li> Replace a failed data disk in an OSD node. See <xref
-                                    href="../../operations/maintenance/ceph/replace_osd_datadisk.dita#topic_ryt_gt4_zv"
-                                    >here</xref></li>
-                            <li> Replace a failed journal disk in an OSD node. See <xref
-                                    href="../../operations/maintenance/ceph/replace_osd_journaldisk.dita#replacing_osd_journal_disks"
-                                    >here</xref></li>
-                        </ol></li>
-                    <li>Recovering ceph nodes after reboot. See <xref
-                            href="../../operations/maintenance/ceph/restart_ceph.dita#restart_ceph"
-                            >here</xref></li>
-                </ol></p>
+                management.</p>
+            <ul>
+                <li>Modify service configuration </li>
+                <li>Scale out cluster <ul>
+                        <li>Add a Ceph monitor node. See <xref
+                                href="../../operations/maintenance/ceph/add_monitor_node.dita#add_monitor_node"
+                                >here</xref></li>
+                        <li>Add a data disk to an existing storage node. See <xref
+                                href="../../operations/maintenance/ceph/add_osd_datadisk.dita#add_datadisk_osd"
+                                >here</xref></li>
+                        <li>Add new OSD node. See <xref
+                                href="../../operations/maintenance/ceph/add_osd_node.dita#add_osdnode"
+                                >here</xref></li>
+                    </ul></li>
+                <li>Scale down cluster <ul>
+                        <li>Remove a Ceph monitor node. See <xref
+                                href="../../operations/maintenance/ceph/remove_monitor_node.dita#remove_monitor_node"
+                                >here</xref></li>
+                        <li>Remove a RADOS gateway node. See <xref
+                                href="../../operations/maintenance/ceph/remove_ceph_rados_node.dita#remove_rgw_node"
+                                >here</xref></li>
+                        <li>Remove a data disk from an OSD node. See <xref
+                                href="../../operations/maintenance/ceph/remove_osd_datadisk.dita#remove_datadisk_osd"
+                                >here</xref></li>
+                    </ul></li>
+                <li> Repair scenarios <ul>
+                        <li>Replace a failed OSD node. See <xref
+                                href="../../operations/maintenance/ceph/replace_ceph_osd_node.dita#replace_osd_node"
+                                >here</xref></li>
+                        <li>Replace a failed monitor node. See <xref
+                                href="../../operations/maintenance/ceph/replace_ceph_monitor_node.dita#replace_monitor_node"
+                                >here</xref></li>
+                        <li>Replace a failed OS disk in an OSD node. See <xref
+                                href="../../operations/maintenance/ceph/replace_osd_osdisk.dita#replacing_os_disks"
+                                >here</xref></li>
+                        <li> Replace a failed data disk in an OSD node. See <xref
+                                href="../../operations/maintenance/ceph/replace_osd_datadisk.dita#topic_ryt_gt4_zv"
+                                >here</xref></li>
+                        <li> Replace a failed journal disk in an OSD node. See <xref
+                                href="../../operations/maintenance/ceph/replace_osd_journaldisk.dita#replacing_osd_journal_disks"
+                                >here</xref></li>
+                    </ul>
+                </li>
+                <li>Recovering ceph nodes after reboot. See <xref
+                        href="../../operations/maintenance/ceph/restart_ceph.dita#restart_ceph"
+                        >here</xref></li>
+            </ul>
         </section>
-        <p>Please note that the above maintenance procedure is based on the
+        <p>Please note that the above maintenance procedures are based on the
                 <codeph>entry-scale-kvm-ceph</codeph> input model. If you have implemented an
             alternate configuration, such as deploying monitor on standalone node, you may have to
             adjust the above procedure accordingly.</p>

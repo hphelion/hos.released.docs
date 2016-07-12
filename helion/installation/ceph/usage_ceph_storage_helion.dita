@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="config_ceph">
-    <title><ph conkeyref="HOS-conrefs/product-title"/>Usage of Ceph Storage in Helion OpenStack  </title>
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Usage of Ceph Storage in Helion OpenStack </title>
     <abstract>
         <shortdesc outputclass="hdphidden">Installation and configuration steps for your Ceph
             backend.</shortdesc>
@@ -9,14 +9,12 @@
     <body>
         <!--not tested-->
         <p conkeyref="HOS-conrefs/applies-to"/>
-        <section id="expandCollapse"
-            ><!-- <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv> <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv> --></section>
-        <p>Ceph is a very versatile storage technology and facilitates the utilization of storage
-            via multiple protocols. Ceph's integration with Helion OpenStack services provides
-            support for various storage use cases, such as the use of the storage pool for
-            cinder-volumes as well as glance data stores. Helion OpenStack further simplifies
-            administrative overhead by providing Ansible playbooks that automate tasks related to
-            various storage use cases, such as: <ul id="ul_gx3_sdd_jw">
+        <p>Ceph is a versatile storage technology and facilitates the utilization of storage via
+            multiple protocols. Ceph's integration with Helion OpenStack services provides support
+            for various storage use cases, such as the use of the storage pool for cinder-volumes as
+            well as glance data stores. Helion OpenStack further simplifies administrative overhead
+            by providing Ansible playbooks that automate tasks related to various storage use cases,
+            such as: <ul id="ul_gx3_sdd_jw">
                 <li>Creating a storage pool</li>
                 <li>Deploying a Ceph client component on a client node</li>
                 <li>Configuring OpenStack services with a storage pool</li>
@@ -24,11 +22,11 @@
         <p>This section provides guidance for the following scenarios commonly encountered in
             various Ceph implementations:</p>
         <p>
-            <ol id="ol_ix2_bdd_jw">
+            <ul>
                 <li><xref href="#config_ceph/setup-deployer-node" format="dita">Setup Deployer as
                         Client Node</xref></li>
                 <li><xref href="#config_ceph/using-core-ceph-openstack-service" format="dita">Using
-                        Core Ceph for OpenStack Services</xref><ol id="ol_kxs_nqf_kw">
+                        Core Ceph for OpenStack Services</xref><ul>
                         <li><xref href="#config_ceph/preq" format="dita">Prerequisite</xref></li>
                         <li><xref href="#config_ceph/glance-data-store" format="dita">Use Ceph
                                 Storage Pool as Glance Data Store</xref></li>
@@ -36,16 +34,15 @@
                                 Storage Pool as Cinder Volume Backend</xref></li>
                         <li><xref href="#config_ceph/cinder-backup-device" format="dita">Use Ceph
                                 Storage Pool as Cinder Backup Device</xref></li>
-                    </ol></li>
+                    </ul></li>
                 <li><xref href="#config_ceph/rados-gw-object-storage" format="dita">Use RadosGateway
                         as Object Storage</xref></li>
-            </ol>
+            </ul>
         </p>
         <p> Ceph storage pool can be used an as ephemeral storage backend for nova as well, though
             this is not<?oxy_custom_start type="oxy_content_highlight" color="166,89,220"?> formally
             supported<?oxy_custom_end?>. </p>
         <section id="setup-deployer-node"><title>Set up Deployer as Client Node</title>
-            
             <p>By default, your deployer node is not configured as a Ceph client node, and as a
                 result, you can not perform Ceph operations from it. Generally, it is more helpful
                 to set up a deployer node as an admin client node in order to perform various Ceph
@@ -53,9 +50,9 @@
                 logging to the monitor node. You can turn your deployer node into client node by
                 executing the following
                 playbook.<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codeblock></p><p>After successful execution of the above playbook, your deployer node will be configured with an
-                admin key ring and subsequently act as an admin node.</p>
-            
+ansible-playbook -i hosts/verb_hosts ceph-setup-deployer-as-client.yml</codeblock></p><p>After
+                successful execution of the above playbook, your deployer node will be configured
+                with an admin key ring and subsequently act as an admin node.</p>
         </section>
         <section id="using-core-ceph-openstack-service">
             <title>Using Core Ceph OpenStack Services</title>
@@ -275,10 +272,8 @@ ansible-playbook -i hosts/verb_hosts ceph-client-prepare.yml</codeblock>
                     Ceph cluster, just execute the above playbook with the addition of the
                         <codeph>--limit &lt;new-client-node></codeph> switch.</note>
             </p></section>
-               <section id="glance-data-store"><title>Use Ceph Storage Pool as Glance Data Store</title>
-                   
-            <p>To enable Ceph as a Glance data
-                store, perform the following:<ol id="ol_syr_kwd_jw">
+        <section id="glance-data-store"><title>Use Ceph Storage Pool as Glance Data Store</title>
+            <p>To enable Ceph as a Glance data store, perform the following:<ol id="ol_syr_kwd_jw">
                     <li>Login to lifecycle manager.</li>
                     <li>Make the following changes in the the
                             <codeph>~/helion/my_cloud/config/glance/glance-api.conf.j2</codeph>
@@ -307,8 +302,9 @@ default_store = {{ glance_default_store }}</codeblock></li>
                             <li>Delete all of the images from Glance.</li>
                         </ol><p>After you have finished the Ceph configuration you will need to
                             re-add those images.</p></li>
-                    <li>Commit your configuration to the <xref href="../installation/using_git.dita"
-                            >local git repo</xref>, as follows:
+                    <li>Commit your configuration to the <xref
+                            href="../../installation/using_git.dita">local git repo</xref>, as
+                        follows:
                         <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
@@ -322,14 +318,12 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
                         <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts glance-reconfigure.yml</codeblock></li>
                 </ol></p>
-                   
-               </section>
+        </section>
         <p>After the successful execution of the above command, glance is configured to use Ceph as
             a data store. You can use glance operations to upload images which will be stored in the
             Ceph cluster.</p>
         <section id="cinder-volume-backend">
             <title>Use Ceph Storage Pool as Cinder Volume Backend</title>
-            
             <p>To enable Ceph as a Cinder volume backend, perform the following:</p>
             <p>
                 <ol>
@@ -440,16 +434,16 @@ pools:
                                 </table>
                             </li>
                         </ol></li>
-                        <li>To enable attaching Ceph volumes to Nova provisioned instances, make the
-                            following changes to the
-                                <codeph>~/helion/my_cloud/config/nova/kvm-hypervisor.conf.j2</codeph>
-                            file: <ol id="ol_p31_zqm_2w">
-                                <li>Uncomment the Ceph backend lines and edit them as follows:
-                                        <codeblock>[libvirt]
+                    <li>To enable attaching Ceph volumes to Nova provisioned instances, make the
+                        following changes to the
+                            <codeph>~/helion/my_cloud/config/nova/kvm-hypervisor.conf.j2</codeph>
+                        file: <ol id="ol_p31_zqm_2w">
+                            <li>Uncomment the Ceph backend lines and edit them as follows:
+                                    <codeblock>[libvirt]
 rbd_user = &lt;ceph-user>
 rbd_secret_uuid = &lt;secret-uuid></codeblock><p>where:</p><table
-                                        frame="all" rowsep="1" colsep="1" id="nova_volume">
-                                        <tgroup cols="2">
+                                    frame="all" rowsep="1" colsep="1" id="nova_volume">
+                                    <tgroup cols="2">
                                         <colspec colname="c1" colnum="1" colwidth="1*"/>
                                         <colspec colname="c2" colnum="2" colwidth="1.63*"/>
                                         <thead>
@@ -481,13 +475,14 @@ rbd_secret_uuid = &lt;secret-uuid></codeblock><p>where:</p><table
                                             </row>
                                         </tbody>
                                     </tgroup>
-                                    </table><note>To attach a volume provisioned out of a
-                                        newly-added Ceph backend to an existing OpenStack instance,
-                                        the instance must be rebooted after the new backend has been
-                                        added.</note></li>
-                            </ol></li>
-                    <li>Commit your configuration to the <xref href="../installation/using_git.dita"
-                            >local git repo</xref>, as follows:
+                                </table><note>To attach a volume provisioned out of a newly-added
+                                    Ceph backend to an existing OpenStack instance, the instance
+                                    must be rebooted after the new backend has been
+                                added.</note></li>
+                        </ol></li>
+                    <li>Commit your configuration to the <xref
+                            href="../../installation/using_git.dita">local git repo</xref>, as
+                        follows:
                         <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
@@ -500,20 +495,19 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
                     <li>Run the Cinder Reconfigure Playbook:
                         <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
-                        <li>If Nova has been configured to attach Ceph backend volumes, run the Nova
-                            reconfigure playbook:
-                            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+                    <li>If Nova has been configured to attach Ceph backend volumes, run the Nova
+                        reconfigure playbook:
+                        <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
                 </ol>
             </p>
-              
         </section>
         <p>After the successful execution of the above command, the cinder-volume is configured to
-            use Ceph as data store. You can use volume lifecycle operations as described at  <xref
+            use Ceph as data store. You can use volume lifecycle operations as described at <xref
                 href="../installation_verification.dita#install_verification/volume_verify"/></p>
-        <section id="cinder-backup-device"><title>Use Ceph Storage Pool as Cinder Backup Device</title>
-            
-                <p>To enable the Ceph storage pool to function as a Cinder backup device, make the
+        <section id="cinder-backup-device"><title>Use Ceph Storage Pool as Cinder Backup
+                Device</title>
+            <p>To enable the Ceph storage pool to function as a Cinder backup device, make the
                 following changes to the
                     <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph> file: <ol
                     id="ol_f11_zqm_2w">
@@ -566,8 +560,9 @@ pools:
                                 </tbody>
                             </tgroup>
                         </table></li>
-                    <li>Commit your configuration to the <xref href="../installation/using_git.dita"
-                            >local git repo</xref>, as follows:
+                    <li>Commit your configuration to the <xref
+                            href="../../installation/using_git.dita">local git repo</xref>, as
+                        follows:
                         <codeblock>cd ~/helion/hos/ansible
 git add -A
 git commit -m "My config or other commit message"</codeblock></li>
@@ -581,38 +576,38 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
                         <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
                 </ol></p>
-            </section>
+        </section>
         <p>After the successful execution of the above command, the cinder-backup service is
             configured to use Ceph as a data store. You can use volume lifecycle operations as
             described <xref
                 href="../../operations/blockstorage/creating_voltype.dita#creating_voltype/associate_volumetype"
             />.</p>
         <!--<p>After the successful execution of the above command, the cinder-volume is configured to use Ceph as data store. You can use volume lifecycle operations as described at  <xref href="../installation_verification.dita#install_verification/volume_verify"/></p>-->
-        <section id="rados-gw-object-storage"><title>Use RADOS Gateway to Access Objects Using S3/Swift AP</title>
-            
-                <p>RADOS Gateway provides object storage functionality through S3 and Swift API.
-                Unlike the OpenStack service, which uses Keystone as its only authentication
-                backend, RADOS Gateway can use its built-in authentication mechanism in addition to
-                Keystone for user authentication. From an end-user perspective, the following are
-                the primary channels for accessing objects (also expressed pictorially):</p>
-                <p>
-                    <ol>
-                        <li>Keystone users using <ol id="ol_uc3_dfd_jw">
-                                <li>Swift API</li>
-                                <li>S3 API</li>
-                            </ol></li>
-                        <li>RADOS Gateway users using <ol id="ol_pf1_cfd_jw">
-                                <li>Swift API</li>
-                                <li>S3 API</li>
-                            </ol></li>
-                    </ol>
-                </p>
-                <p>Pictorial view of above perspective:</p>
-                <p><image href="../../../media/ceph/ceph/rgw.jpg" id="image_lf4_tmt_jw"/></p>
-                <p>Example 1 uses Keystone as the authentication backend while example 2 uses RADOS
+        <section id="rados-gw-object-storage"><title>Use RADOS Gateway to Access Objects Using
+                S3/Swift AP</title>
+            <p>RADOS Gateway provides object storage functionality through S3 and Swift API. Unlike
+                the OpenStack service, which uses Keystone as its only authentication backend, RADOS
+                Gateway can use its built-in authentication mechanism in addition to Keystone for
+                user authentication. From an end-user perspective, the following are the primary
+                channels for accessing objects (also expressed pictorially):</p>
+            <p>
+                <ul>
+                    <li>Keystone users using <ul>
+                            <li>Swift API</li>
+                            <li>S3 API</li>
+                        </ul></li>
+                    <li>RADOS Gateway users using <ul>
+                            <li>Swift API</li>
+                            <li>S3 API</li>
+                        </ul></li>
+                </ul>
+            </p>
+            <p>Pictorial view of above perspective:</p>
+            <p><image href="../../../media/ceph/ceph/rgw.jpg" id="image_lf4_tmt_jw"/></p>
+            <p>Example 1 uses Keystone as the authentication backend while example 2 uses RADOS
                 Gateway (internal authentication backend). The default deployment of RADOS Gateway
                 in HPE Helion OpenStack 3.0 enables (1.a), (2.a) and (2.b) only.</p>
-                <p>Enabling Keystone users to access the S3 API (option 1.b) requires Keystone to be
+            <p>Enabling Keystone users to access the S3 API (option 1.b) requires Keystone to be
                 configured as the default authentication backend. In this configuration, user
                 authentication requests are first routed to Keystone, then on to RADOS Gateway as a
                 secondary authority. All authentication requests will follow this pattern, whether
@@ -620,7 +615,7 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
                 note that this authentication pattern will cause serious performance degredation
                 when RADOS Gateway users attempt to authenticate, due to the request being routed
                 first to Keystone, then on to RADOS Gateway. </p>
-                <p>Our observations, based on lab tests performed on 10 TB Ceph clusters, is that
+            <p>Our observations, based on lab tests performed on 10 TB Ceph clusters, is that
                 enabling S3 API access for Keystone users degrades the performance of S3 API access
                 for RADOS Gateway users by roughly 50%. We ran rest-bench tool for 10 seconds with
                 concurrency 16 and object size 4096 (4k) bytes on a Ceph cluster deployed using the
@@ -629,8 +624,8 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
                 was enabled as the default authentication backend. This is in contrast to 2500 write
                 operations (object size 4K) with a system running the default configuration. This
                 illustrates a roughly 49% degradation. Please note that the numbers presented here
-                are for illustration purposes only, and are meant to provide  insight into the
-                degree of degradation involved in a particular configuration. </p>
+                are for illustration purposes only, and are meant to provide insight into the degree
+                of degradation involved in a particular configuration. </p>
             <p>In spite of this drawback, this configuration can reduce the administrative overhead
                 of user management. Since all authentication requests are initially routed to
                 Keystone, all user accounts can be created and managed through that service. In this
@@ -638,32 +633,32 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
                 Standard administrative tools like Horizon can be used instead. Please note that
                 option (1.b) and its related configuration is not necessary if you do not intend to
                 enable S3 API access for Keystone users. </p>
-                <p><b>Steps to Access S3 API for RADOS Gateway User</b></p>
-                <p>Perform the following:<ol id="ol_asx_xfd_jw">
-                        <li>Create a user by executing the following command:
-                                <codeblock>sudo radosgw-admin user create --uid="{username}" --display-name="{Display Name}" --email="{email}"</codeblock><p>Example:<codeblock>sudo radosgw-admin user create --uid=rgwuser --display-name="RadosGatewayUser" --email=rgwuser@test.com</codeblock></p></li>
-                        <li>Perform object operation. You can use S3 clients. Example:
-                                <codeph>python-boto</codeph>.<!-- Should there be an object operation example here? --></li>
-                    </ol></p>
-                <p><b>Steps to Access Swift API for RADOS Gateway User</b></p>
-                <p>Perform the following:</p>
-                <p>
-                    <ol id="ol_up5_2gd_jw">
-                        <li>Create a user by executing the following command:
-                                <p><codeblock>sudo radosgw-admin user create --uid="{username}" --display-name="{Display Name}" --email="{email}"</codeblock>
-                                Example: </p><p>
-                                <codeblock>sudo radosgw-admin user create --uid=rgwuser --display-name="RadosGatewayUser" --email=rgwuser@test.com</codeblock>
-                            </p></li>
-                        <li>Create sub-user by executing the following command:  <p>
-                                <codeblock>sudo radosgw-admin subuser create --uid={username} --subuser={username}:{subusername} --access=full --key-type=swift --gen-secret</codeblock>
-                            </p><p> Example: </p><p>
-                                <codeblock>sudo radosgw-admin subuser create --uid="rgwuser" --subuser="rgwuser:rgwswiftuser" --access=full --key-type=swift --gen-secret</codeblock>
-                            </p></li>
-                        <li>Perform object operation using Swift CLI or any compatible clients.</li>
-                    </ol>
-                </p>
-                <p><b>Steps to Access Swift API for Keystone User</b></p>
-                <p>When RADOS Gateway is deployed as per the default
+            <p><b>Steps to Access S3 API for RADOS Gateway User</b></p>
+            <p>Perform the following:<ol id="ol_asx_xfd_jw">
+                    <li>Create a user by executing the following command:
+                            <codeblock>sudo radosgw-admin user create --uid="{username}" --display-name="{Display Name}" --email="{email}"</codeblock><p>Example:<codeblock>sudo radosgw-admin user create --uid=rgwuser --display-name="RadosGatewayUser" --email=rgwuser@test.com</codeblock></p></li>
+                    <li>Perform object operation. You can use S3 clients. Example:
+                            <codeph>python-boto</codeph>.<!-- Should there be an object operation example here? --></li>
+                </ol></p>
+            <p><b>Steps to Access Swift API for RADOS Gateway User</b></p>
+            <p>Perform the following:</p>
+            <p>
+                <ol id="ol_up5_2gd_jw">
+                    <li>Create a user by executing the following command:
+                            <p><codeblock>sudo radosgw-admin user create --uid="{username}" --display-name="{Display Name}" --email="{email}"</codeblock>
+                            Example: </p><p>
+                            <codeblock>sudo radosgw-admin user create --uid=rgwuser --display-name="RadosGatewayUser" --email=rgwuser@test.com</codeblock>
+                        </p></li>
+                    <li>Create sub-user by executing the following command: <p>
+                            <codeblock>sudo radosgw-admin subuser create --uid={username} --subuser={username}:{subusername} --access=full --key-type=swift --gen-secret</codeblock>
+                        </p><p> Example: </p><p>
+                            <codeblock>sudo radosgw-admin subuser create --uid="rgwuser" --subuser="rgwuser:rgwswiftuser" --access=full --key-type=swift --gen-secret</codeblock>
+                        </p></li>
+                    <li>Perform object operation using Swift CLI or any compatible clients.</li>
+                </ol>
+            </p>
+            <p><b>Steps to Access Swift API for Keystone User</b></p>
+            <p>When RADOS Gateway is deployed as per the default
                     <codeph>entry-scale-kvm-ceph</codeph> model, it exists alongside OpenStack Swift
                 (since the Keystone service type for RADOS Gateway defaults to ceph-object-store).
                 In this (co-existing) mode, OpenStack Horizon communicates only with OpenStack Swift
@@ -676,7 +671,7 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml </codeblock></li>
                     <li># to interact with RADOS
                         Gateway<?oxy_custom_end?><codeblock> <codeph>export OS_SERVICE_TYPE=ceph-object-store</codeph></codeblock></li>
                 </ul></p>
-                <p> One can use the Swift CLI to perform object operations on Ceph.</p>
+            <p> One can use the Swift CLI to perform object operations on Ceph.</p>
             <p><b>Example</b>:</p>
             <p>In the following example we login to to the monitor node to list the objects in Ceph
                 using the credentials available in <codeph>~/service.osrc</codeph>
@@ -692,8 +687,8 @@ swift list</codeblock></p>
             <p>
                 <b>Steps to Access S3 API for Keystone User</b>
             </p>
-                <p>As mentioned above, S3 API access for keystone users is not enabled by default.
-                It requires the following sets of changes:<ol id="ol_sxv_rky_jw">
+            <p>As mentioned above, S3 API access for keystone users is not enabled by default. It
+                requires the following sets of changes:<ol id="ol_sxv_rky_jw">
                     <li>Configure RADOS Gateway to use keystone for authenticating S3 requests.</li>
                     <li>Change RADOS Gateway endpoints to use port 35357 in
                             <codeph>ceph.conf</codeph> of RADOS Gateway. Ensure that iptables rules
@@ -706,7 +701,6 @@ swift list</codeblock></p>
                                 details on how to perform above steps. </note>
                         </p></li>
                 </ol></p>
-            
         </section>
     </body>
 </topic>
