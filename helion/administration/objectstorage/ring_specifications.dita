@@ -226,6 +226,12 @@
         more than the minimum to achieve quorum.</p>
       <p>Unlike replication rings, none of the erasure coded parameters may be edited after the
         initial creation. Otherwise there is potential for permanent loss of access to the data.</p>
+      <p>On the face of it, you would expect that an erasure coded configuration that uses a data to
+        parity ratio of 10:4 that the data consumed storing the object is 1.4 times the size of the
+        object. Just like the x3 replication takes x3 times the size of the data when storing the
+        object. However, for erasure coding, this 1:4 ratio is not correct. The efficiency (ie. how
+        much storage is needed to store the object) is very poor for small objects and improves as
+        the object size grows. However, the improvement is not linear.</p>
     </section>
 
     <section id="selecting-partition-power">
@@ -398,8 +404,7 @@
         <p>An ideal number of partition directories per drive is 100. However, the system can
           operate normally with a wide range of number of partition directories per drive. The table
             <xref href="#ring-specification/partition-power" format="dita">Partition Power
-            Matrix</xref> is based on the following: </p>
-        <ul>
+            Matrix</xref> is based on the following: </p><ul>
           <li>A replica count of 3.</li>
           <li>For a given partition power, the minimum number of drives results in approximately
             10,000 partition directories per drive. More directories on a drive results in
@@ -407,18 +412,15 @@
           <li>For a given partition power, using the maximum number of drives results in
             approximately 10 partition directories per drive. Using fewer directories per drive
             results in an uneven distribution of space usage.</li>
-        </ul>
-        <p> It is easy to select an appropriate partition power if your system is a fixed size.
-          Select a value that gives the closest value to 100 partition directories per drive. If
-          your system starts smaller and then grows, the issue is more complicated. The following
-          two techniques may help:</p>
-        <p>
+        </ul>It is easy to select an appropriate partition power if your system is a fixed size.
+        Select a value that gives the closest value to 100 partition directories per drive. If your
+        system starts smaller and then grows, the issue is more complicated. The following two
+        techniques may help:<p>
           <ul>
             <li>Start with a system that is closer to your final anticipated system size - this
               means that you can use a high partition power that suits your final system.</li>
           </ul>
-        </p>
-        <ul>
+        </p><ul>
           <li>You can add additional storage policies as the system grows. These storage policies
             can have a higher partition power because there will be more drives in a larger system.
             Note that this does not help account and container rings - storage policies are only
