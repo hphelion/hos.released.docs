@@ -9,7 +9,6 @@
   <body>
     <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <!--<section id="expandCollapse"> <sectiondiv outputclass="expandall">Expand All Sections</sectiondiv> <sectiondiv outputclass="collapseall">Collapse All Sections</sectiondiv> </section>-->
     <p><keyword keyref="kw-hos-tm"/> Ceph deployment leverages the cloud lifecycle operations
       supported by Helion lifecycle management and provides simplified lifecycle management of
       critical cluster operations like service check, upgrade, reconfiguring service components.
@@ -30,20 +29,23 @@
             Status</xref></li>
       </ol></p>
     <p/>
+
     <section>
       <title id="pre-deployment">Pre-Deployment</title>
       <p>Before starting the deployment of <keyword keyref="kw-hos-tm"/> cloud with Ceph, you must
-        understand the following aspects of a Ceph cluster:<ul id="ul_hn5_3vh_gw">
-          <li id="define-osd"><b>Define OSD disk model for OSD disk</b><p>This section focuses on
-              expressing the storage requirements of an OSD node. OSD nodes have the following disk
-                types:<ul id="ul_hth_g2q_kw">
-                <li>system disks </li>
-                <li>data disk </li>
-                <li> journal disks</li>
-              </ul></p><p>System disks are used for OSD components, logging, etc. The configuration
-              of data and journal disks is important for Ceph deployment. The sample file of disk
-              model of <codeph>entry-scale-kvm-ceph</codeph> cloud is as follows.</p><p>
-              <codeblock>---
+        understand the following aspects of a Ceph cluster:</p>
+      <p id="define-osd"><b>Define OSD disk model for OSD disk</b></p>
+      <p>This section focuses on expressing the storage requirements of an OSD node. OSD nodes have
+        the following disk types:</p>
+      <ul>
+        <li>system disks</li>
+        <li>data disk</li>
+        <li>journal disks</li>
+      </ul>
+      <p>System disks are used for OSD components, logging, etc. The configuration of data and
+        journal disks is important for Ceph deployment. The sample file of disk model of
+          <codeph>entry-scale-kvm-ceph</codeph> cloud is as follows.</p>
+      <codeblock>---
   product:
     version: 2
 
@@ -107,107 +109,104 @@
            attrs:
              usage: data
              journal_disk: /dev/sdg</codeblock>
-            </p><p>The disk model has the following parameters:</p><p>
-              <table frame="all" rowsep="1" colsep="1" id="ceph1">
-                <tgroup cols="2">
-                  <colspec colname="c1" colnum="1" colwidth="1*"/>
-                  <colspec colname="c2" colnum="2" colwidth="2.29*"/>
-                  <thead>
-                    <row>
-                      <entry>Value</entry>
-                      <entry>Description</entry>
-                    </row>
-                  </thead>
-                  <tbody>
-                    <row>
-                      <entry><b>device-groups</b></entry>
-                      <entry>The name of the device group. There can be several device groups. This
-                        allows different sets of disks to be used for different purposes.</entry>
-                    </row>
-                    <row>
-                      <entry><b>name</b></entry>
-                      <entry>An arbitrary name for the device group. The name must be
-                        unique.</entry>
-                    </row>
-                    <row>
-                      <entry><b>devices</b></entry>
-                      <entry>A list of devices allocated to the device group. A
-                          <codeph>name</codeph> field containing <codeph>/dev/sdb</codeph>,
-                          <codeph>/dev/sdc</codeph>, <codeph>/dev/sde</codeph> and
-                          <codeph>/dev/sdf</codeph> indicates that the device group is used by
-                        Ceph.</entry>
-                    </row>
-                    <row>
-                      <entry><b>consumer</b></entry>
-                      <entry>The service that uses the device group. A <codeph>name</codeph> field
-                        containing <b>ceph</b> indicates that the device group is used by
-                        Ceph.</entry>
-                    </row>
-                    <row>
-                      <entry><b>attrs</b></entry>
-                      <entry>The attributes associated with the consumer.</entry>
-                    </row>
-                    <row>
-                      <entry><b>usage</b></entry>
-                      <entry>There can be several uses of devices for a particular service. In the
-                        above sample, <codeph>usage</codeph> field contains <b>data</b> which
-                        indicates that the device is used for data storage.</entry>
-                    </row>
-                    <row>
-                      <entry><b>journal_disk</b> [OPTIONAL]</entry>
-                      <entry>The disk to be used for storing the journal data. When running multiple
-                        Ceph OSD daemons on a single node, a journal disk can be shared between OSDs
-                        of the node.<p>If you do not specify this value, Ceph stores the journal on
-                          the OSD's data disk (in a separate partition).</p></entry>
-                    </row>
-                  </tbody>
-                </tgroup>
-              </table>
-            </p><p>The above sample file represents the following:<ul id="ul_g4v_m2q_kw">
-                <li>The first disk is used for OS and system purpose.</li>
-                <li>There are three OSD data disks (sdc, sde, sdf) and two journal disks (sdd and
-                  sdg). It illustrates that we can share journal disks for multiple OSDs. The
-                  recommended configuration is to use one OSD journal disk for every four OSD data
-                  disks. Please see section <i>Usage of journal disk</i> for more details.</li>
-                <li>The drive type is not mentioned for journal or data disk. You can consume any
-                  drive type but it is <b>recommended</b> to use an SSD for the journal disk.</li>
-              </ul></p><p>Although the above model illustrates mixed usage of a journal disk, it is
-              strongly advised to keep journal data separate from OSD data. In other words, we
-              recommend that your disk model <b>should not</b> have journal data and OSD data on the
-              same disks. For more information, see <i>Usage of journal disk
-                below</i>.</p><p><b>Usage of journal disk</b></p><p><keyword keyref="kw-hos-tm"/>
-              recommends storing the Ceph OSD (object-storage daemon) journal on a SSD (solid-state
-              drive ) and the OSD object data on a separate hard disk drive. Considering that SSD
-              drives are costly, you can use multiple partitions on a single SSD for multiple OSD
-              journals. We recommend not more than four or five OSD journals on each SSD as a
-              reasonable balance between cost and optimal performance. If you have too many OSD
-              journals on a single SSD, and the journal disk crashes, you risk losing the data on
-              those disks. Also, too many journals in a single SSD can negatively affect the
-              performance.</p><p>Creating a separate OSD journal partition on an OSD data disk is
-              supported. However, you might see a significant decline in Ceph performance with this
-              configuration, due the fact that each client request to store an object is first
-              written to the journal disk before sending an acknowledgement to the
-              client.</p><p>Ceph OSD journal size defaults to 5120MB (i.e. 5GB) in <keyword
-                keyref="kw-hos-tm"/>. This value can be changed, however, it does not apply to any
-              existing journal partitions. It will be effective on any new OSDs created after the
-              journal size is changed (whether the journal is on same disk or separate disk than the
-              data disk). To change the journal size, edit the <codeph>osd_journal_size</codeph>
-              parameter in the <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph>
-              file.</p><p>To summarize: <ol id="ol_sbp_v3z_jw">
-                <li>Use a SSD for journal disk </li>
-                <li> The recommended ratio of OSD data disks to journal disks is 4:1 </li>
-                <li> Default journal partition size is 5 GB, though this can be changed. Actual
-                  journal size depends upon your disk drive <codeph>rpm</codeph> and expected
-                  throughput. The formula is: osd journal size = {2 * (expected throughput *
-                  filestore max sync interval)} </li>
-                <li> Journal size for ALREADY configured OSD disks<!-- (post day zero case) --> does
-                  not get changed even if you change the <codeph>osd_journal_size</codeph> parameter
-                  in the <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file. If you
-                  want to re-size the journal partition of ALREADY configured OSD disks, flush the
-                  journal data, remove the OSD disk from the cluster, and re-add it. </li>
-              </ol></p></li>
-        </ul></p>
-      <p/>
+      <p>The disk model has the following parameters:</p>
+      <table frame="all" rowsep="1" colsep="1" id="ceph1">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="2.29*"/>
+          <thead>
+            <row>
+              <entry>Value</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><b>device-groups</b></entry>
+              <entry>The name of the device group. There can be several device groups. This allows
+                different sets of disks to be used for different purposes.</entry>
+            </row>
+            <row>
+              <entry><b>name</b></entry>
+              <entry>An arbitrary name for the device group. The name must be unique.</entry>
+            </row>
+            <row>
+              <entry><b>devices</b></entry>
+              <entry>A list of devices allocated to the device group. A <codeph>name</codeph> field
+                containing <codeph>/dev/sdb</codeph>, <codeph>/dev/sdc</codeph>,
+                  <codeph>/dev/sde</codeph> and <codeph>/dev/sdf</codeph> indicates that the device
+                group is used by Ceph.</entry>
+            </row>
+            <row>
+              <entry><b>consumer</b></entry>
+              <entry>The service that uses the device group. A <codeph>name</codeph> field
+                containing <b>ceph</b> indicates that the device group is used by Ceph.</entry>
+            </row>
+            <row>
+              <entry><b>attrs</b></entry>
+              <entry>The attributes associated with the consumer.</entry>
+            </row>
+            <row>
+              <entry><b>usage</b></entry>
+              <entry>There can be several uses of devices for a particular service. In the above
+                sample, <codeph>usage</codeph> field contains <b>data</b> which indicates that the
+                device is used for data storage.</entry>
+            </row>
+            <row>
+              <entry><b>journal_disk</b> [OPTIONAL]</entry>
+              <entry>The disk to be used for storing the journal data. When running multiple Ceph
+                OSD daemons on a single node, a journal disk can be shared between OSDs of the
+                  node.<p>If you do not specify this value, Ceph stores the journal on the OSD's
+                  data disk (in a separate partition).</p></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <p>The above sample file represents the following:</p>
+      <ul>
+        <li>The first disk is used for OS and system purpose.</li>
+        <li>There are three OSD data disks (sdc, sde, sdf) and two journal disks (sdd and sdg). It
+          illustrates that we can share journal disks for multiple OSDs. The recommended
+          configuration is to use one OSD journal disk for every four OSD data disks. Please see
+          section <i>Usage of journal disk</i> for more details.</li>
+        <li>The drive type is not mentioned for journal or data disk. You can consume any drive type
+          but it is <b>recommended</b> to use an SSD for the journal disk.</li>
+      </ul>
+      <p>Although the above model illustrates mixed usage of a journal disk, it is strongly advised
+        to keep journal data separate from OSD data. In other words, we recommend that your disk
+        model <b>should not</b> have journal data and OSD data on the same disks. For more
+        information, see <i>Usage of journal disk below</i>.</p>
+      <p><b>Usage of journal disk</b></p>
+      <p><keyword keyref="kw-hos-tm"/> recommends storing the Ceph OSD (object-storage daemon)
+        journal on a SSD (solid-state drive ) and the OSD object data on a separate hard disk drive.
+        Considering that SSD drives are costly, you can use multiple partitions on a single SSD for
+        multiple OSD journals. We recommend not more than four or five OSD journals on each SSD as a
+        reasonable balance between cost and optimal performance. If you have too many OSD journals
+        on a single SSD, and the journal disk crashes, you risk losing the data on those disks.
+        Also, too many journals in a single SSD can negatively affect the performance.</p>
+      <p>Creating a separate OSD journal partition on an OSD data disk is supported. However, you
+        might see a significant decline in Ceph performance with this configuration, due the fact
+        that each client request to store an object is first written to the journal disk before
+        sending an acknowledgement to the client.</p>
+      <p>Ceph OSD journal size defaults to 5120MB (i.e. 5GB) in <keyword keyref="kw-hos-tm"/>. This
+        value can be changed, however, it does not apply to any existing journal partitions. It will
+        be effective on any new OSDs created after the journal size is changed (whether the journal
+        is on same disk or separate disk than the data disk). To change the journal size, edit the
+          <codeph>osd_journal_size</codeph> parameter in the
+          <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file.</p>
+      <p>To summarize:</p>
+      <ul>
+        <li>Use a SSD for journal disk.</li>
+        <li>The recommended ratio of OSD data disks to journal disks is 4:1.</li>
+        <li>Default journal partition size is 5 GB, though this can be changed. Actual journal size
+          depends upon your disk drive <codeph>rpm</codeph> and expected throughput. The formula is:
+          osd journal size = {2 * (expected throughput * filestore max sync interval)}.</li>
+        <li>Journal size for ALREADY configured OSD disks<!-- (post day zero case) --> does not get
+          changed even if you change the <codeph>osd_journal_size</codeph> parameter in the
+            <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file. If you want to re-size
+          the journal partition of ALREADY configured OSD disks, flush the journal data, remove the
+          OSD disk from the cluster, and re-add it.</li>
+      </ul>
       <p>
         <ul id="ul_ldl_p5q_kw">
           <li><b>Customize your service configuration</b><p>You must customize parameters in the
