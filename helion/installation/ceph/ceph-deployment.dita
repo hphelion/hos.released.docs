@@ -207,269 +207,259 @@
           the journal partition of ALREADY configured OSD disks, flush the journal data, remove the
           OSD disk from the cluster, and re-add it.</li>
       </ul>
-      <p>
-        <ul id="ul_ldl_p5q_kw">
-          <li><b>Customize your service configuration</b><p>You must customize parameters in the
-              following files:<ul id="ul_crx_hfq_kw">
-                <li>Customize parameters at
-                    <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file<p><keyword
-                      keyref="kw-hos-tm"/> provides easy to configure service parameters. All the
-                    common parameters are available in
-                      <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file. You can
-                    deploy your cluster without altering any of the parameters but it is recommended
-                    that you review and understand the parameters before deploying your cluster. The
-                    table below provides details and descriptions of the parameters that can be
-                    changed.</p><p><b>Core service parameter</b><table frame="all" rowsep="1"
-                      colsep="1" id="table_hlb_cz3_nw">
-                      <tgroup cols="4">
-                        <colspec colname="c1" colnum="1"/>
-                        <colspec colname="c2" colnum="2"/>
-                        <colspec colname="newCol3" colnum="3" colwidth="1*"/>
-                        <colspec colname="newCol4" colnum="4" colwidth="1*"/>
-                        <thead>
-                          <row>
-                            <entry>Parameter</entry>
-                            <entry>Description</entry>
-                            <entry>Default Value</entry>
-                            <entry>Recommendation</entry>
-                          </row>
-                        </thead>
-                        <tbody>
-                          <row>
-                            <entry>ceph_cluster</entry>
-                            <entry>The name of the Ceph clusters. The default value is Ceph.</entry>
-                            <entry>Ceph</entry>
-                            <entry>Customize to suit your requirements.</entry>
-                          </row>
-                          <row>
-                            <entry>ceph_release</entry>
-                            <entry>The name of the Ceph release</entry>
-                            <entry>firefly</entry>
-                            <entry>Do not change the default value.</entry>
-                          </row>
-                          <row>
-                            <entry>osd_pool_default_size</entry>
-                            <entry>The number of replicas for objects in the pool.</entry>
-                            <entry>3</entry>
-                            <entry>Do not lower the default value. The value can be increased to
-                              maximum number of OSD nodes in the environment (increasing it beyond
-                              this limit will cause the cluster to never reach an active+clean
-                              state).</entry>
-                          </row>
-                          <row>
-                            <entry>osd_pool_default_pg_num</entry>
-                            <entry>The default number of placement groups for a pool. This value
-                              will change based on the number of OSDs available. Please refer Ceph
-                              PG calculator at <xref href="http://ceph.com/pgcalc/" format="html"
-                                scope="external">http://ceph.com/pgcalc/</xref></entry>
-                            <entry>128</entry>
-                            <entry>The value can be changed based on the number of OSD servers/nodes
-                              in the deployment. Please refer Ceph pg calculator at <xref
-                                href="http://ceph.com/pgcalc/" format="html" scope="external"
-                                >http://ceph.com/pgcalc/</xref> to customize it</entry>
-                          </row>
-                          <row>
-                            <entry>fstype</entry>
-                            <entry>Storage filesystem type for OSDs.</entry>
-                            <entry>xfs</entry>
-                            <entry>Only xfs file system is certified.</entry>
-                          </row>
-                          <row>
-                            <entry>zap_data_disk</entry>
-                            <entry>Zap partition table and contents of the disk.</entry>
-                            <entry>True</entry>
-                            <entry>Not recommended to change the default value.</entry>
-                          </row>
-                          <row>
-                            <entry>persist_mountpoint</entry>
-                            <entry>Place to persist OSD data disk mount point</entry>
-                            <entry>fstab</entry>
-                            <entry>Not recommended to change the default value (as it ensures the
-                              OSD data disks are mounted automatically on a system reboot)</entry>
-                          </row>
-                          <row>
-                            <entry>osd_settle_time</entry>
-                            <entry>The time in seconds to wait for after starting/restarting the
-                              Ceph OSD services.</entry>
-                            <entry>10 seconds</entry>
-                            <entry>It is recommended to increase this value if the number of OSD
-                              servers is more than 3 or the servers have a slow network.</entry>
-                          </row>
-                          <row>
-                            <entry>osd_journal_size</entry>
-                            <entry>The size of the journal in megabytes.</entry>
-                            <entry>5120</entry>
-                            <entry>The value can be increased to achieve optimal utilization of the
-                              journal disk (if it is shared between multiple OSDs).</entry>
-                          </row>
-                          <row>
-                            <entry>data_disk_poll_attempts</entry>
-                            <entry>The maximum number of attempts before attempting to activate an
-                              OSD for a new disk (default value 5). </entry>
-                            <entry>5</entry>
-                            <entry>It is recommended to increase this value if the OSD data disk
-                              drives are under performing/slower. Since this parameter and the
-                              data_disk_poll_interval (below) have a combined effect, it is
-                              recommended to consider both while tweaking either of them.</entry>
-                          </row>
-                          <row>
-                            <entry>data_disk_poll_interval</entry>
-                            <entry>The time interval in seconds to wait between
-                                <codeph>data_disk_poll_attempts</codeph></entry>
-                            <entry>12</entry>
-                            <entry>The value can be customized to suit your requirements. However,
-                              since this parameter and data_disk_poll_attempts (above) have a
-                              combined effect, it is recommended to consider both while changing
-                              either of them</entry>
-                          </row>
-                          <row>
-                            <entry>osd_max_open_files</entry>
-                            <entry>Maximum number of file descriptors for OSD.</entry>
-                            <entry>32768</entry>
-                            <entry>Do not change the default value.</entry>
-                          </row>
-                          <row>
-                            <entry>mon_default_dir</entry>
-                            <entry>Directory to store monitor data.</entry>
-                            <entry><codeph>/var/lib/ceph/mon/&lt;ceph_cluster></codeph></entry>
-                            <entry>Do not change the default value.</entry>
-                          </row>
-                          <row>
-                            <entry>mon_max_open_files</entry>
-                            <entry>Maximum number of file descriptors for monitor.</entry>
-                            <entry>16384</entry>
-                            <entry>Do not change the default value.</entry>
-                          </row>
-                        </tbody>
-                      </tgroup>
-                    </table></p><p><b>RADOS Gateway parameter</b><table frame="all" rowsep="1"
-                      colsep="1" id="table_gc4_c5t_5t">
-                      <tgroup cols="4">
-                        <colspec colname="c1" colnum="1" colwidth="1.09*"/>
-                        <colspec colname="c2" colnum="2" colwidth="1.09*"/>
-                        <colspec colname="newCol3" colnum="3" colwidth="1*"/>
-                        <colspec colname="newCol4" colnum="4" colwidth="1.17*"/>
-                        <thead>
-                          <row>
-                            <entry>Parameter</entry>
-                            <entry>Description</entry>
-                            <entry>Default Value</entry>
-                            <entry>Recommendation</entry>
-                          </row>
-                        </thead>
-                        <tbody>
-                          <row>
-                            <entry>radosgw_user</entry>
-                            <entry>The name of the Ceph client user for
-                              <codeph>radosgw</codeph>.</entry>
-                            <entry>gateway</entry>
-                            <entry>Customize to suit your requirements.</entry>
-                          </row>
-                          <row>
-                            <entry>radosgw_admin_email </entry>
-                            <entry>The email address of the server administrator. </entry>
-                            <entry>
-                              <codeph>admin@hpe.com</codeph></entry>
-                            <entry>Update appropriately the email address of the server
-                              administrator.</entry>
-                          </row>
-                          <row>
-                            <entry>rgw_keystone_service_type</entry>
-                            <entry>The <codeph>service_type</codeph> with which
-                                <codeph>radosgw</codeph> gets registered as a service in OpenStack
-                              Keystone inventory. If you want to replace Swift with Ceph
-                                <codeph>radosgw</codeph> for all your object storage requirements,
-                              the value should be <b>object-store</b>.</entry>
-                            <entry><codeph>ceph-object-store</codeph>
-                            </entry>
-                            <entry>
-                              <p>Recommended to default value if OpenStack Swift and Ceph
-                                  <codeph>radosgw</codeph> will be used for your cloud’s object
-                                storage requirements.</p>
-                              <p>If only Ceph <codeph>radosgw</codeph> will be used for your cloud’s
-                                object storage requirements, the value should be updated to
-                                  <b>object-store</b>.</p>
-                            </entry>
-                          </row>
-                          <row>
-                            <entry>rgw_keystone_accepted_roles </entry>
-                            <entry>Only users having either of the roles listed here will be able to
-                              access the Swift APIs of <codeph>radosgw</codeph>.</entry>
-                            <entry><codeph>admin</codeph>, <i>_member_</i></entry>
-                            <entry>Do not change the default value.</entry>
-                          </row>
-                        </tbody>
-                      </tgroup>
-                    </table></p><b>Ceph client parameter</b><table frame="all" rowsep="1" colsep="1"
-                    id="table_fgv_c3m_hw">
-                    <tgroup cols="4">
-                      <colspec colname="c1" colnum="1" colwidth="1.34*"/>
-                      <colspec colname="c2" colnum="2" colwidth="1.59*"/>
-                      <colspec colname="newCol3" colnum="3" colwidth="1*"/>
-                      <colspec colname="newCol4" colnum="4" colwidth="1.96*"/>
-                      <thead>
-                        <row>
-                          <entry>Value</entry>
-                          <entry>Description</entry>
-                          <entry>Default Value</entry>
-                          <entry>Recommendation</entry>
-                        </row>
-                      </thead>
-                      <tbody>
-                        <row>
-                          <entry>pg_active_delay_time</entry>
-                          <entry>The delay time for Ceph PG’s to come into active state. </entry>
-                          <entry>10</entry>
-                          <entry>The value can be increased if the number of OSD servers/nodes in
-                            the deployment are more than 3. Since this parameter and the
-                              <b>pg_active_retries</b> (below) have a combined effect, it is
-                            recommended to consider both while tweaking either of them.</entry>
-                        </row>
-                        <row>
-                          <entry>pg_active_retries</entry>
-                          <entry>The number of retries for Ceph placement groups to come into active
-                            state with a duration of <codeph>pg_active_delay_time</codeph> seconds
-                            between entries.</entry>
-                          <entry>5</entry>
-                          <entry>The value can be customized to suit your requirements. However,
-                            since this parameter and <b>pg_active_delay_time</b> (above) have a
-                            combined effect, it is recommended to consider both while tweaking
-                            either of them.</entry>
-                        </row>
-                      </tbody>
-                    </tgroup>
-                  </table></li>
-                <li>Customize parameter at
-                    <codeph>~/helion/hos/ansible/roles/_CEP-CMN/defaults/main.yml</codeph><p>The
-                    following table provides the description of the parameter. You can edit the
-                    parameter in <codeph>main.yml</codeph> file.</p><p>
-                    <table frame="all" rowsep="1" colsep="1" id="table_n3k_lrc_5v">
-                      <tgroup cols="2">
-                        <colspec colname="c1" colnum="1" colwidth="1*"/>
-                        <colspec colname="c2" colnum="2" colwidth="3.38*"/>
-                        <thead>
-                          <row>
-                            <entry>Value</entry>
-                            <entry>Description</entry>
-                          </row>
-                        </thead>
-                        <tbody>
-                          <row>
-                            <entry>fsid</entry>
-                            <entry>A unique identifier, File System ID, for the Ceph cluster that
-                              you should generate prior to deploying a cluster (use the
-                                <codeph>uuidgen</codeph> command to generate a new FSID). Once set,
-                              this value cannot be changed.</entry>
-                          </row>
-                        </tbody>
-                      </tgroup>
-                    </table>
-                  </p></li>
-              </ul></p></li>
-        </ul>
-      </p>
+      <p><b>Customize your service configuration</b></p>
+      <p>You must customize parameters in the following files:</p>
+      <ul>
+        <li>Customize parameters at <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file
+              <p><keyword keyref="kw-hos-tm"/> provides easy to configure service parameters. All
+            the common parameters are available in
+              <codeph>~/helion/my_cloud/config/ceph/settings.yml</codeph> file. You can deploy your
+            cluster without altering any of the parameters but it is recommended that you review and
+            understand the parameters before deploying your cluster. The table below provides
+            details and descriptions of the parameters that can be changed.</p>
+          <p><b>Core service parameter</b></p>
+          <table frame="all" rowsep="1" colsep="1" id="table_hlb_cz3_nw">
+            <tgroup cols="4">
+              <colspec colname="c1" colnum="1"/>
+              <colspec colname="c2" colnum="2"/>
+              <colspec colname="newCol3" colnum="3" colwidth="1*"/>
+              <colspec colname="newCol4" colnum="4" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Parameter</entry>
+                  <entry>Description</entry>
+                  <entry>Default Value</entry>
+                  <entry>Recommendation</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>ceph_cluster</entry>
+                  <entry>The name of the Ceph clusters. The default value is Ceph.</entry>
+                  <entry>Ceph</entry>
+                  <entry>Customize to suit your requirements.</entry>
+                </row>
+                <row>
+                  <entry>ceph_release</entry>
+                  <entry>The name of the Ceph release</entry>
+                  <entry>firefly</entry>
+                  <entry>Do not change the default value.</entry>
+                </row>
+                <row>
+                  <entry>osd_pool_default_size</entry>
+                  <entry>The number of replicas for objects in the pool.</entry>
+                  <entry>3</entry>
+                  <entry>Do not lower the default value. The value can be increased to maximum
+                    number of OSD nodes in the environment (increasing it beyond this limit will
+                    cause the cluster to never reach an active+clean state).</entry>
+                </row>
+                <row>
+                  <entry>osd_pool_default_pg_num</entry>
+                  <entry>The default number of placement groups for a pool. This value will change
+                    based on the number of OSDs available. Please refer Ceph PG calculator at <xref
+                      href="http://ceph.com/pgcalc/" format="html" scope="external"
+                      >http://ceph.com/pgcalc/</xref></entry>
+                  <entry>128</entry>
+                  <entry>The value can be changed based on the number of OSD servers/nodes in the
+                    deployment. Please refer Ceph pg calculator at <xref
+                      href="http://ceph.com/pgcalc/" format="html" scope="external"
+                      >http://ceph.com/pgcalc/</xref> to customize it</entry>
+                </row>
+                <row>
+                  <entry>fstype</entry>
+                  <entry>Storage filesystem type for OSDs.</entry>
+                  <entry>xfs</entry>
+                  <entry>Only xfs file system is certified.</entry>
+                </row>
+                <row>
+                  <entry>zap_data_disk</entry>
+                  <entry>Zap partition table and contents of the disk.</entry>
+                  <entry>True</entry>
+                  <entry>Not recommended to change the default value.</entry>
+                </row>
+                <row>
+                  <entry>persist_mountpoint</entry>
+                  <entry>Place to persist OSD data disk mount point</entry>
+                  <entry>fstab</entry>
+                  <entry>Not recommended to change the default value (as it ensures the OSD data
+                    disks are mounted automatically on a system reboot)</entry>
+                </row>
+                <row>
+                  <entry>osd_settle_time</entry>
+                  <entry>The time in seconds to wait for after starting/restarting the Ceph OSD
+                    services.</entry>
+                  <entry>10 seconds</entry>
+                  <entry>It is recommended to increase this value if the number of OSD servers is
+                    more than 3 or the servers have a slow network.</entry>
+                </row>
+                <row>
+                  <entry>osd_journal_size</entry>
+                  <entry>The size of the journal in megabytes.</entry>
+                  <entry>5120</entry>
+                  <entry>The value can be increased to achieve optimal utilization of the journal
+                    disk (if it is shared between multiple OSDs).</entry>
+                </row>
+                <row>
+                  <entry>data_disk_poll_attempts</entry>
+                  <entry>The maximum number of attempts before attempting to activate an OSD for a
+                    new disk (default value 5). </entry>
+                  <entry>5</entry>
+                  <entry>It is recommended to increase this value if the OSD data disk drives are
+                    under performing/slower. Since this parameter and the data_disk_poll_interval
+                    (below) have a combined effect, it is recommended to consider both while
+                    tweaking either of them.</entry>
+                </row>
+                <row>
+                  <entry>data_disk_poll_interval</entry>
+                  <entry>The time interval in seconds to wait between
+                      <codeph>data_disk_poll_attempts</codeph></entry>
+                  <entry>12</entry>
+                  <entry>The value can be customized to suit your requirements. However, since this
+                    parameter and data_disk_poll_attempts (above) have a combined effect, it is
+                    recommended to consider both while changing either of them</entry>
+                </row>
+                <row>
+                  <entry>osd_max_open_files</entry>
+                  <entry>Maximum number of file descriptors for OSD.</entry>
+                  <entry>32768</entry>
+                  <entry>Do not change the default value.</entry>
+                </row>
+                <row>
+                  <entry>mon_default_dir</entry>
+                  <entry>Directory to store monitor data.</entry>
+                  <entry><codeph>/var/lib/ceph/mon/&lt;ceph_cluster></codeph></entry>
+                  <entry>Do not change the default value.</entry>
+                </row>
+                <row>
+                  <entry>mon_max_open_files</entry>
+                  <entry>Maximum number of file descriptors for monitor.</entry>
+                  <entry>16384</entry>
+                  <entry>Do not change the default value.</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+          <p><b>RADOS Gateway parameter</b></p>
+          <table frame="all" rowsep="1" colsep="1" id="table_gc4_c5t_5t">
+            <tgroup cols="4">
+              <colspec colname="c1" colnum="1" colwidth="1.09*"/>
+              <colspec colname="c2" colnum="2" colwidth="1.09*"/>
+              <colspec colname="newCol3" colnum="3" colwidth="1*"/>
+              <colspec colname="newCol4" colnum="4" colwidth="1.17*"/>
+              <thead>
+                <row>
+                  <entry>Parameter</entry>
+                  <entry>Description</entry>
+                  <entry>Default Value</entry>
+                  <entry>Recommendation</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>radosgw_user</entry>
+                  <entry>The name of the Ceph client user for <codeph>radosgw</codeph>.</entry>
+                  <entry>gateway</entry>
+                  <entry>Customize to suit your requirements.</entry>
+                </row>
+                <row>
+                  <entry>radosgw_admin_email </entry>
+                  <entry>The email address of the server administrator. </entry>
+                  <entry>
+                    <codeph>admin@hpe.com</codeph></entry>
+                  <entry>Update appropriately the email address of the server administrator.</entry>
+                </row>
+                <row>
+                  <entry>rgw_keystone_service_type</entry>
+                  <entry>The <codeph>service_type</codeph> with which <codeph>radosgw</codeph> gets
+                    registered as a service in OpenStack Keystone inventory. If you want to replace
+                    Swift with Ceph <codeph>radosgw</codeph> for all your object storage
+                    requirements, the value should be <b>object-store</b>.</entry>
+                  <entry><codeph>ceph-object-store</codeph>
+                  </entry>
+                  <entry>
+                    <p>Recommended to default value if OpenStack Swift and Ceph
+                        <codeph>radosgw</codeph> will be used for your cloud’s object storage
+                      requirements.</p>
+                    <p>If only Ceph <codeph>radosgw</codeph> will be used for your cloud’s object
+                      storage requirements, the value should be updated to <b>object-store</b>.</p>
+                  </entry>
+                </row>
+                <row>
+                  <entry>rgw_keystone_accepted_roles </entry>
+                  <entry>Only users having either of the roles listed here will be able to access
+                    the Swift APIs of <codeph>radosgw</codeph>.</entry>
+                  <entry><codeph>admin</codeph>, <i>_member_</i></entry>
+                  <entry>Do not change the default value.</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+          <p><b>Ceph client parameter</b></p>
+          <table frame="all" rowsep="1" colsep="1" id="table_fgv_c3m_hw">
+            <tgroup cols="4">
+              <colspec colname="c1" colnum="1" colwidth="1.34*"/>
+              <colspec colname="c2" colnum="2" colwidth="1.59*"/>
+              <colspec colname="newCol3" colnum="3" colwidth="1*"/>
+              <colspec colname="newCol4" colnum="4" colwidth="1.96*"/>
+              <thead>
+                <row>
+                  <entry>Value</entry>
+                  <entry>Description</entry>
+                  <entry>Default Value</entry>
+                  <entry>Recommendation</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>pg_active_delay_time</entry>
+                  <entry>The delay time for Ceph PG’s to come into active state. </entry>
+                  <entry>10</entry>
+                  <entry>The value can be increased if the number of OSD servers/nodes in the
+                    deployment are more than 3. Since this parameter and the
+                      <b>pg_active_retries</b> (below) have a combined effect, it is recommended to
+                    consider both while tweaking either of them.</entry>
+                </row>
+                <row>
+                  <entry>pg_active_retries</entry>
+                  <entry>The number of retries for Ceph placement groups to come into active state
+                    with a duration of <codeph>pg_active_delay_time</codeph> seconds between
+                    entries.</entry>
+                  <entry>5</entry>
+                  <entry>The value can be customized to suit your requirements. However, since this
+                    parameter and <b>pg_active_delay_time</b> (above) have a combined effect, it is
+                    recommended to consider both while tweaking either of them.</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table></li>
+        <li>Customize parameter at
+            <codeph>~/helion/hos/ansible/roles/_CEP-CMN/defaults/main.yml</codeph>
+          <p>The following table provides the description of the parameter. You can edit the
+            parameter in <codeph>main.yml</codeph> file.</p>
+          <table frame="all" rowsep="1" colsep="1" id="table_n3k_lrc_5v">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="3.38*"/>
+              <thead>
+                <row>
+                  <entry>Value</entry>
+                  <entry>Description</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>fsid</entry>
+                  <entry>A unique identifier, File System ID, for the Ceph cluster that you should
+                    generate prior to deploying a cluster (use the <codeph>uuidgen</codeph> command
+                    to generate a new FSID). Once set, this value cannot be changed.</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table>
+        </li>
+      </ul>
     </section>
-    <p/>
+
     <section>
       <title id="deploying-ceph">Deploying Ceph</title>
       <p>To deploy a new <keyword keyref="kw-hos-tm"/> Ceph cloud using the default
