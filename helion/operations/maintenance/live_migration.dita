@@ -28,9 +28,10 @@
           live migrate.</li>
         <li>Instances in a <codeph>Paused</codeph> state cannot be live migrated using the Horizon
           GUI. You will need to utilize the CLI to perform these.</li>
-        <li>Live migration will not work between compute hosts that are not using shared ephemeral
-          storage and have both Cinder block storage volumes and ephemeral volumes attached.
-          <!-- DOCS-3134 --></li>
+        <li>If you are using HPE Helion OpenStack 3.0, then live migration will not work between
+          compute hosts that are not using shared ephemeral storage and have both Cinder block
+          storage volumes and ephemeral volumes attached. This limitation does not exist in HPE
+          Helion OpenStack 3.0.1 and later versions. <!-- DOCS-3134 --></li>
         <li>The <codeph>nova host-evacuate-live</codeph> command cannot be used for a Compute host
           that has a mix of instances that use ephemeral storage and instances that are booted from
           a block storage volume or have any number of block storage volumes attached. It will only
@@ -155,7 +156,8 @@ Optional arguments:
               is booted from a block storage volume or has any number of block storage volumes
               attached, use the <codeph>nova live-migration</codeph> command with this syntax:</p>
             <codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
-            <p>If your instance has local (ephemeral) disk(s) only, you should use the
+            <p>If your instance has local (ephemeral) disk(s) only or if your instance has a mix of
+              ephemeral disk(s) and block storage volume(s), you should use the
                 <codeph>--block-migrate</codeph> option:</p>
             <codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
             <note>The [&lt;target compute host&gt;] option is optional. If you do not specify a
