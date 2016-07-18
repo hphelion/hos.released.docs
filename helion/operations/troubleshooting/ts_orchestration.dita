@@ -43,25 +43,6 @@ ansible-playbook -i hosts/verb_hosts heat-reconfigure.yml</codeblock></li>
         time-out in Heat stack create, you should look at the logs of the underlying services, most
         importantly the Nova service, to understand the reason for the timeout.</p>
     </section>
-    <section>
-      <title>Heat stack delete failures</title>
-      <p>When attempting <codeph>heat stack-delete</codeph>, most often after the <codeph>heat stack-create</codeph> failure, if you
-        experience a resource conflict stating that "one or more ports have an IP allocation resource" you can
-        work around the issue by following steps below.</p>
-      <p>An example of the error is:</p>
-      <codeblock>'Resource DELETE failed: Conflict: resources.XXX.resources.YYY: Unable to complete operation
-   on subnet ae43a819-07da-4ec1-b1b9-7843c41b2b92. One or more ports have an IP allocation from
-   this subnet.'</codeblock>
-      <ol>
-        <li>Check all the ports used by the failed Heat stack:
-          <codeblock>neutron port-list | awk '{ print $4 }' | grep -e ^&lt;failed_stack_name>-</codeblock></li>
-        <li>Delete all the ports used by the failed Heat
-          stack:<codeblock>for p in $(neutron port-list | awk '{ print $4 }' | grep -e ^&lt;failed_stack_name>-); do neutron port-delete $p; done</codeblock></li>
-        <li>Re-run the <codeph>heat stack-delete</codeph> command to remove the failed Heat
-          stack:<codeblock>heat stack-delete &lt;failed_stack_name>"</codeblock></li>
-      </ol>
-    </section>
-    
-    
+   
   </body>
 </topic>
