@@ -8,7 +8,7 @@
       OSD node.</shortdesc>
   </abstract>
   <body>
-    <p>The following steps can be used to replacing a failed data disk in a Ceph OSD node.</p>
+    <p>The following steps can be used to replace a failed data disk in a Ceph OSD node.</p>
     <ol>
       <li>Once the failed data disk has been identified, determine what the corresponding journal
         partition and the affected OSD ID is by SSH'ing to the Ceph OSD node and using this command: <codeblock>sudo ceph-disk list |grep &lt;failed_disk></codeblock>
@@ -21,7 +21,7 @@
             <codeph>/dev/sdg3</codeph>.</p></li>
       <li>Determine that the OSD that is consuming the failed drive is still running by using this
         command:
-        <codeblock>ceph osd tree --cluster &lt;ceph-cluster> | grep -i osd.&lt;osd-number></codeblock></li>
+        <!--Let's add some output for this command. Show what a running vs not running OSD looks like--><codeblock>ceph osd tree --cluster &lt;ceph-cluster> | grep -i osd.&lt;osd-number></codeblock></li>
       <li>If the OSD is still running, check the status and stop the OSD service by using this
         command:
         <codeblock>sudo systemctl status ceph-osd@&lt;osd-number>
@@ -30,7 +30,7 @@ sudo systemctl stop ceph-osd@&lt;osd-number></codeblock></li>
         it:<codeblock>sudo df -h
 sudo umount &lt;source> | &lt;directory></codeblock></li>
       <li>You will also need to remove the mount instruction for the failed disk from the fstab
-        file. You can determine what the failed drive's UUID is by using this command:<codeblock>sudo blkid | grep "ceph data"</codeblock>
+        file. You can determine what the failed drive's UUID is by using this command:<!--This resulted in no output for me. Running it without the pipe to grep returned UUIDs though...--><codeblock>sudo blkid | grep "ceph data"</codeblock>
         <p>Example output, where the UUID <codeph>51c32ca1-0ee1-4c75-bfbc-5d113a4b4402</codeph>
           corresponds to the data disk being replaced in our series of examples
             (<codeph>/dev/sde</codeph>).</p>
@@ -41,10 +41,10 @@ sudo umount &lt;source> | &lt;directory></codeblock></li>
       <li>Remove the line in the <codeph>/etc/fstab</codeph> file pertaining to the failed
         disk.</li>
       <li>Delete the journal partition for the OSD and instruct the kernel to reload the
-        table:<codeblock>(echo d; echo &lt;partition-number>; echo w) | sudo fdisk &lt;failed_disk>
+        table:<!--I'm unclear on what <partition number> is in the command. When I ran (echo d; echo /dev/sdd1; echo w) | sudo fdisk /dev/sdc I got the error: "fdisk: cannot open /dev/sdc/ not a directory". Also, this command is strange; we're deleting the partition on the failed disk, but the instructions say we're deleting the journal partition, which exists on another disk...--><codeblock>(echo d; echo &lt;partition-number>; echo w) | sudo fdisk &lt;failed_disk>
 sudo partprobe</codeblock></li>
       <li>Remove the failed drive and insert a new, replacement, physical drive. After replacing the
-        drive, wait for some time so that the new drive becomes stable. Ensure that there no
+        drive, wait for some time so that the new drive becomes stable. Ensure that there are no
         pre-existing partitions on the new disk.</li>
       <li>If the replacement data disk gets the same device name, proceed with the steps below to
         create a new OSD with the replacement data disk.</li>
@@ -52,7 +52,7 @@ sudo partprobe</codeblock></li>
         command:<codeblock>ceph osd out osd.&lt;osd-number> --cluster &lt;ceph-cluster>
 sudo systemctl status ceph-osd@&lt;osd-number>
 sudo systemctl stop ceph-osd@&lt;osd-number></codeblock></li>
-      <li>Remover this OSD from the CRUSH
+      <li>Remove this OSD from the CRUSH
         map:<codeblock>ceph osd crush remove osd.&lt;osd-number> --cluster &lt;ceph-cluster></codeblock></li>
       <li>As soon as it is removed from the CRUSH map, Ceph starts making PG copies that were
         located on the failed disk and it places these PG on other disks. So a recovery process will
@@ -76,8 +76,8 @@ In the earlier example, where OSD ID 5 is the affected one (and Ceph cluster nam
 sudo rmdir  /var/lib/ceph/osd/ceph-5
 </codeblock></li>
       <li>Log in to the lifecycle manager.</li>
-      <li>Execute the ceph-deploy.yml playtbook against the affected OSD node so that the OSD
-        service on that node will be
+      <li>Execute the ceph-deploy.yml playbook against the affected OSD node so that the OSD service
+        on that node will be
         started:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts ceph-deploy.yml --limit &lt;OSD_node_with_replaced_disk></codeblock></li>
     </ol>

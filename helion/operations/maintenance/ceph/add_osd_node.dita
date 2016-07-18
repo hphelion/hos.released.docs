@@ -60,14 +60,15 @@ git checkout site</codeblock></li>
               <codeph>~/helion/my_cloud/info/address_info.yml</codeph> file on your lifecycle
             manager.</note>
         </li>
-        <li>In your <codeph>control_plane.yml</codeph> file you will need to check the values for
-            <codeph>member-count</codeph>, <codeph>min-count</codeph>, and
-            <codeph>max-count</codeph>, if you specified them, to ensure that they match up with
-          your new total node count. So for example, if you had previously specified
-            <codeph>member-count: 3</codeph> and are adding a fourth OSD node, you will need to
-          change that value to <codeph>member-count: 4</codeph>. <p>See <xref
-              keyref="configobj_controlplane">Input Model - Control Plane</xref> for more
-            details.</p></li>
+        <li>In your <codeph>control_plane.yml</codeph> file, in the section that details the OSD
+          server-role, you will need to check the values for <codeph>member-count</codeph>,
+            <codeph>min-count</codeph>, and <codeph>max-count</codeph>, if you specified them, to
+          ensure that they match up with your new total node count. So for example, if you had
+          previously specified <codeph>member-count: 3</codeph> and are adding a fourth OSD node,
+          you will need to change that value to <codeph>member-count: 4</codeph>. Note that these
+          values may not be specified in your  <codeph>control_plane.yml</codeph> file. If not,
+          proceed to Step 5.<p>See <xref keyref="configobj_controlplane">Input Model - Control
+              Plane</xref> for more details.</p></li>
         <li>Commit the changes to git:
           <codeblock>git add -A
 git commit -a -m "Add node &lt;name>"</codeblock></li>
@@ -96,8 +97,9 @@ ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></
           node(s) to your Ceph cluster: <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml --tags "generate_hosts_file"
 ansible-playbook -i hosts/verb_hosts site.yml --limit &lt;hostname&gt;</codeblock>
-          <p>The hostname of the newly added node can be found in the list generated from the output
-            of the following command:</p>
+          <!--The last above command is erroring on "Run Monasca Agent detection plugin..." "failed detection of plugin MonAgent"--><p>The
+            hostname of the newly added node can be found in the list generated from the output of
+            the following command:</p>
           <codeblock>grep hostname ~/helion/my_cloud/info/server_info.yml</codeblock></li>
       </ol>
     </section>

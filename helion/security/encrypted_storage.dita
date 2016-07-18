@@ -97,11 +97,32 @@
           the plain text passwords at the password prompt.</li>
       </ul>
     </section>
-   <section><title>Reading Encrypted Files</title> To view a file encrypted using Vault, you can use
-      ansible-vault to edit the file:
-      <codeblock>ansible-vault edit &lt;file>
-Vault password:</codeblock> Provide the encryption
-      password that you supplied to the configuration processor during installation when prompted. </section>
+ 
+    <section>
+      <title>Interacting with Encrypted Files</title>
+      <p>Once you have enabled encryption in your environment you may have a need to interact with
+        these encrypted files at a later time. This section will show you how.</p>
+      <p><b>hosencrypt.py script password encryption</b></p>
+      <p>If you used the <codeph>hosencrypt.py</codeph> script to encrypt your iLO or other
+        passwords and have a need to view them later, you can do so with these steps.</p>
+      <p>You will want to ensure that the <codeph>HOS_USER_PASSWORD_ENCRYPT_KEY</codeph> environment
+        variable is set prior to running these commands:</p>
+      <codeblock>export HOS_USER_PASSWORD_ENCRYPT_KEY="&lt;encryption_key>"</codeblock>
+      <p>To view an encrypted password, you can use this command below which will promot you for the
+        encrypted password value. It will then output the decrypted value:</p>
+      <codeblock>./hosencrypt.py -d</codeblock>
+      <p><b>Configuration processor encryption key</b></p>
+      <p>If you have used the encryption options available with the configuration processor, which
+        uses Ansible vault, you can do so with these commands. Each of these commands will prompt
+        you for the password you used when setting the encryption initially.</p>
+      <p>To view an encrypted file in read-only mode, use this command:</p>
+      <codeblock>ansible-vault view &lt;filename></codeblock>
+      <p>To edit an encrypted file, use this command. This allows you to edit a decrypted version of
+        the file without the need to decrypt and re-encrypt it:</p>
+      <codeblock>ansible-vault edit &lt;filename></codeblock>
+      <p>For other available commands, use the help file:</p>
+      <codeblock>ansible-vault -h</codeblock>
+    </section>
     
 <!--    <section><title>Data Not Encrypted in Previous Versions</title>
     
