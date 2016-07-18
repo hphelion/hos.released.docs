@@ -2,7 +2,7 @@
 <!--Edit status: not edited-->
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="F5_BIGIP_3600">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Integrating F5 BIG IP 3600 with LBaaS</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Integrating F5 BIG-IP 3600 with LBaaS</title>
   <body><!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="F53600_about">
@@ -19,29 +19,645 @@
       </ul>
       <note>Keep in mind that flexible licensing options are available, based on where you want to deploy.</note>
 
-    <p>
+      <p>The HPE Helion Third-Paty Hardware team integrated F5 BIG-IP into a Helion Openstack 3.0 deployment by configuring an F5 BIG-IP 3600 device to run as a load balancer for Neutron LBaaSv2. The installation uses a VXLAN tunnel (VTEP) to connect a private network from the Helion OpenStack cloud to the F5 BIG-IP appliance.</p>
+      
+      <note type="important">Helion OpenStack 3.0 must be deployed before the F5 installation is performed. This is due to the following facts: the F5 driver is not built into Helion OpenStack, and the F5 installation depends on the existence of Helion OpenStack Neutron environment.</note>
+    
+      <p>To learn about how the Helion team deployed F5 BIG-IP 3600 features into a Helion
+        deployment, use the following topics:</p>
       <ul id="F53600_LBaaSlist">
         <li><xref type="section" href="#F5_BIGIP_3600/F53600_Preinstall">F5 Pre-Installation Checklist</xref></li>
-        <li><xref type="section" href="#F5_BIGIP_3600/F53600_Config">F5 Configuration</xref></li>
-        <li><xref type="section" href="#F5_BIGIP_3600/F53600_Install">F5 Installation</xref></li>
+        <li><xref type="section" href="#F5_BIGIP_3600/F53600_Install">F5 Integration</xref></li>
       </ul>
-    </p>
+
     </section>
+    
+    
+    <lines> </lines>
+    
+    
+    
     <section id="F53600_Preinstall">
       <title>F5 Pre-Installation Checklist</title>
+      <p>Before installing the F5-BIG-IP driver into a Helion OpenStack 3.0 deployment, the Helion team met all of the following requirements:</p>
       
+      <note type="important">Helion OpenStack 3.0 must be deployed before the F5 installation is performed. This is due to the following facts: the F5 driver is not built into Helion OpenStack, and the F5 installation depends on the existence of Helion OpenStack Neutron environment.</note>
       
-    </section>
+      <table frame="all" rowsep="1" colsep="1" id="table_ckx_F53600_ht">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="25pt"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>&#9744;</entry>
+              <entry>Item</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_3600/F53600_Preinstall_HW">Use the supported hardware configuration</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_3600/F53600_Preinstall_NW">Create the supported network configuration</xref></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+        </section>
     
     
-    <section id="F53600_Config">
-      <title><keyword keyref="kw-hos-phrase"/> F5 Configuration</title>
+<section id="F53600_Preinstall_HW">
+  <title>Use the supported hardware configuration</title>
+  <p>HPE Helion OpenStack supports the F5 hardware configurations listed in the 
+    <xref href="http://helionready.hpcloud.com/search?title=f5" scope="external" format="html">HPE Helion Ready Solution Catalog</xref>.</p>
+  <p>For testing purposes, the following hardware configuration was used to integrate an F5 BIG-IP 3600 deployment with Helion OpenStack 3.0:</p>
+  <table frame="all" rowsep="1" colsep="1" id="table_F53600_shw">
+    <tgroup cols="2">
+      <colspec colname="c1" colnum="1" colwidth="1*"/>
+      <colspec colname="c2" colnum="2" colwidth="3.14*"/>
+      <thead>
+        <row>
+          <entry>Appliance</entry>
+          <entry>Requirement</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry>Make</entry>
+          <entry><xref href="https://f5.com/" scope="external" format="html">F5 Networks</xref></entry>
+        </row>
+        <row>
+          <entry>Model</entry>
+          <entry>F5 BIG-IP 3600</entry>
+        </row>
+        <row>
+          <entry>Operating System</entry>
+          <entry>12.0.0 (Build 0.0.606)</entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </table>  
+</section>   
+    
+  <lines>
+  </lines>  
+    
+    
+    <section id="F53600_Preinstall_NW">
+      <title>Create the Supported Network Configuration</title>
+      
+<p>The tested network configuration uses tagged VLANs for different networks in the cloud.</p>    
+      
+      <note type="important">Helion OpenStack 3.0 must be deployed before the F5 installation is performed. This is due to the following facts: the F5 driver is not built into Helion OpenStack, and the F5 installation depends on the existence of Helion OpenStack Neutron environment.</note>
+      
+      <p>The HElion team integrated F5 Networks BIG-IP 3600 into an HPE Helion OpenStack deployment
+        using the following steps:</p>
+      <ol>
+        <li><xref href="../installation/cloudinstallation_overview.dita">Deploy Helion OpenStack 3.0</xref></li>
+        <li><xref type="section" href="#F5_BIGIP_3600/F53600_man_net">Verify a working Management network</xref></li>
+        <li><xref type="section" href="#F5_BIGIP_3600/F53600_verify_VTEP">Verify a Virtual Tunnel Endpoint (VTEP) network</xref></li>
+        <li><xref type="section" href="#F5_BIGIP_3600/F53600_verify_F5_pre">Verify your F5 device</xref></li>
+      </ol>
     </section>
       
+    <section id="F53600_man_net">
+      <title>Verify a Working Management Network</title>
+      
+      <p>The recommended configuration is to have both the Helion OpenStack controller nodes and the
+        F5 appliance on the Management network. The Management network is created during the Helion
+        OpenStack installation process. The Management network is the backbone for the majority of
+        HPE Helion OpenStack management communications. Control messages are exchanged between the
+        Controllers, Compute hosts, and Cinder backends through this network. The Management network
+        is implemented as VLANs on the physical network.</p>
+      
+      <p>To see an example of a Management Network in a deployment diagram, see, <xref href="../architecture/examples/entryscale_esx_kvm_vsa.dita">Entry-scale KVM with VSA Model</xref>.</p>
+        
+        <p>The Management network configuration is used so that Neutron can reach the F5 iControl
+        API. <note type="important">It does not matter if you put the F5 iControl API on a different
+          VLAN from the Helion OpenStack Management network. You can use any network as long as it
+          meets the following requirement: <ul>
+            <li>Controller nodes can access the F5 iControl API</li>
+          </ul></note></p>
+     <p>To verify a working Management network:</p>
+      <ol>
+        <li>From a controller node, at a command line, run a <codeph>curl</codeph> command similar
+          to this: <codeblock>curl -kiL https://&lt;iControl_IP&gt;</codeblock></li>
+      </ol>    
+      <p>Where:</p>
+        <dl>
+          <dlentry>
+            <dt>&lt;iControl_IP&gt;</dt>
+            <dd>IP address or hostname of the BIG-IP appliance</dd>
+          </dlentry>
+        </dl>
+      <p>If the iControl API is accessible, then the command will return output from BIG-IP.</p>
+      
+    </section>  
+      
+
+<section id="F53600_verify_VTEP">
+  <title>Verify a Virtual Tunnel Endpoint (VTEP) Network</title>
+  <p>This endpoint is one IP address on the network group that provides private networks to virtual machines. In the sample Helion OpenStack definition, the network group is called "GUEST".</p> 
+  
+  <note type="attention">The administrator needs to ensure that a VTEP address is configured on the BIG-IP appliance. The configuration of the address will depend on your specific network, but ensure you meet the following minimum requirement:
+<ul>
+  <li>Configure one IP address on a tagged network to use for the VXLAN tunnel (VTEP)</li>
+</ul></note>
+    
+</section>
+    
+    <section id="F53600_verify_F5_pre">
+      <title>Verify your F5 device</title>
+    
+      <table frame="all" rowsep="1" colsep="1" id="table_ckx_F53600_config">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="25pt"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <colspec colname="c3" colnum="3" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>&#9744;</entry>
+              <entry>Item</entry>
+              <entry>Requirement</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry/>
+              <entry><b>Add the F5 appliance to your Helion OpenStack deployment.</b></entry>
+              <entry>For more information, refer to the <xref href="https://f5.com/support" scope="external" format="html">F5 Networks Support</xref> site</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><b>Ensure that the F5 appliance has the correct license.</b> The license needs
+                to contain <codeph>SDN Services</codeph> as an active module so that the F5
+                appliance can activate the VXLAN listener.</entry>
+              <entry>To view the license, do one of the following: <ul>
+                  <li>In the BIG-IP control panel, navigate to <b>System</b>, then <b>License</b>,
+                    then <b>Active Modules</b>.</li>
+                  <li>From the command line, run: <codeph>tmsh show sys license</codeph>.</li>
+                </ul></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><b>Configure the VLAN</b>. Define a VLAN with a name and the correct tag. There
+                is no required name for the VLAN, however this documentation uses
+                  <codeph>HOS_GUEST_VXLAN</codeph>. </entry>
+              <entry>To define a VLAN: <ol>
+                  <li>In the BIG-IP control panel, navigate to <b>Network</b>, and then
+                    <b>VLANs</b>.</li>
+                  <li>Either choose to edit an existing VLAN or create a new one.</li>
+                  <li>To define a VLAN with the correct tag, in the <codeph>Common</codeph>
+                    partition, enter the tag information for your specific deployment. </li>
+                </ol>
+              </entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><b>Create a self IP.</b>A self IP address is an IP address on the BIG-IP®
+                system that you associate with a VLAN, to access hosts in that VLAN. By virtue of
+                its netmask, a self IP address represents an address space, that is, a range of IP
+                addresses spanning the hosts in the VLAN, rather than a single host address. For
+                more information, see the F5 Networks <xref
+                  href="https://support.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/tmos_management_guide_10_1/tmos_selfips.html"
+                  scope="external" format="html">Introducing Self IP</xref> documentation.</entry>
+              <entry>
+                To create a self-IP:
+                <ol>
+                  <li>In the BIG-IP control panel, navigate to <b>Network</b>, then <b>Self IPs</b>.</li>
+                  <li>Us the following settings:
+                    <dl>
+                      <dlentry>
+                        <dt>VLAN / Tunnel</dt>
+                        <dd>HOS_GUEST_VXLAN</dd>
+                      </dlentry>
+                      <dlentry>
+                        <dt>Name</dt>
+                        <dd>VTEP</dd>
+                      </dlentry>
+                      <dlentry>
+                        <dt>IP Address</dt>
+                        <dd>Choose any free IP address in the data network</dd>
+                      </dlentry>
+                    </dl></li></ol></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+     
+     <lines>
+       
+     </lines>
            
     <section id="F53600_Install">
-      <title>F5 Installation</title>
+      <title>F5 Integration</title>
       
+      
+      <p>To integrate F5 BIG-IP 3600 with Helion:</p>
+      <ol>
+        <li><xref type="section" href="#F5_BIGIP_3600/F53600_PrepareEnv">Prepare the environment</xref>.</li>
+        <li><xref type="section" href="#F5_BIGIP_3600/F53600_playbooks">Create a Deployment Playbook and Run It</xref></li>
+        <li>Reconfigure Neutron.</li>
+      </ol>
     </section>
+      
+      <section id="F53600_PrepareEnv">
+      <title>Prepare the Environment</title>
+      <p>To prepare the environment for integration:</p><ol>
+        <li>To verify that the following file:
+          <codeblock>~/helion/my_cloud/config/neutron/neutron.conf.j2</codeblock> is a symbolic link
+          to the following location:
+          <codeblock>../../../hos/ansible/roles/neutron-common/templates/neutron.conf.j2</codeblock>
+          run: <codeblock>~$ file ~/helion/my_cloud/config/neutron/neutron.conf.j2</codeblock>
+          <b>Sample output:</b>
+          <codeblock>/home/stack/helion/my_cloud/config/neutron/neutron.conf.j2: <b>symbolic link to </b> ../../../hos/ansible/roles/neutron-common/templates/neutron.conf.j2</codeblock><p>
+            <note type="attention">The absolute path should be:
+              <codeblock>/home/stack/helion/hos/ansible/roles/neutron-common/templates/neutron.conf.j2</codeblock></note>
+          </p></li>
+        <li>Open the following file in a text editor of your choice:
+          <codeblock>~/helion/my_cloud/config/neutron/neutron.conf.j2</codeblock></li>
+        <li>In the <codeph>service_providers</codeph> section, add the following line:
+          <codeblock>service_provider = LOADBALANCERV2:F5Networks:neutron_lbaas.drivers.f5.driver_v2.F5LBaaSV2Driver:default</codeblock></li>
+        <li>If you want to use F5 LBaaSv2 as the default driver, in the
+            <codeph>service_providers</codeph> section, add a hashtag before the following line to
+          comment it out: <codeblock>{{ neutron_lbaas_providers }}</codeblock> So that it now reads:
+            <codeblock># {{ neutron_lbaas_providers }}</codeblock><note type="attention">If you do
+            not want to use F5 LBaaSv2 as the default driver, use the following settings: <ul>
+              <li>In the following line that you added in a previous step,
+                <codeblock>service_provider = LOADBALANCERV2:F5Networks:neutron_lbaas.drivers.f5.driver_v2.F5LBaaSV2Driver:default</codeblock>
+                remove <codeph>:default</codeph></li>
+              <li>in the <codeph>service_providers</codeph> section, at the beginning of the
+                following line, remove the hashtag if it exists, so that it reads:
+                <codeblock>{{ neutron_lbaas_providers }}</codeblock></li>
+            </ul></note></li>
+        <li>To update the local repository with the changes, run:
+            <codeblock>cd ~/helion
+git add -A
+git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
+            type="important">If you need to redeploy Helion OpenStack in the future, you will need
+            to undo the changes in these steps first, or the redeployment will not
+          succeed.</note></li>
+      <li>To run the configuration preprocessor:
+          <codeblock>ansible-playbook -i ~/helion/hos/ansible/hosts/localhost ~/helion/hos/ansible/config-processor-run.yml   </codeblock></li>
+        <li>To run the scratch playbook generator:
+          <codeblock>ansible-playbook -i ~/helion/hos/ansible/hosts/localhost ~/helion/hos/ansible/ready-deployment.yml</codeblock></li>
+        <li>To verify that the binary for the <codeph>f5-oslbaasv2-agent</codeph> Neutron agent is
+          not present, run:<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ source ~/service.osrc</codeblock>
+          <b>Sample output:</b>
+          <codeblock>      stack@helion-cp1-c0-m1-mgmt:~$ neutron agent-list
+      +--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+      | id | agent_type | host | alive | admin_state_up | binary |
+      +--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+      | 0d2cc9c3-3e9e-4106-9c20-3ea1279e9b1b | Metadata agent | helion-cp1-comp0003-mgmt | :-) |
+      True | neutron-metadata-agent | | 10fca118-a3aa-4ff4-bee9-d0b529c367be | Open vSwitch agent |
+      helion-cp1-c1-m3-mgmt | :-) | True | neutron-openvswitch-agent | |
+      141da94a-acad-4368-bcfc-456d8e46020e | Loadbalancerv2 agent | helion-cp1-comp0002-mgmt | :-) |
+      True | neutron-lbaasv2-agent | | 1dcdaa86-fde0-42fc-8e80-10dbb763a9c2 | L3 agent |
+      helion-cp1-c1-m1-mgmt | :-) | True | neutron-vpn-agent | |
+      259cbbca-cfbd-4535-b0ec-86e55ac3fe1e | Open vSwitch agent | helion-cp1-c1-m1-mgmt | :-) | True
+      | neutron-openvswitch-agent | | 3268887d-dfb3-454d-9b88-a113b86cef51 | DHCP agent |
+      helion-cp1-c1-m3-mgmt | :-) | True | neutron-dhcp-agent | |
+      3e267a6e-4547-48ab-8a0f-ee1627568d32 | Metadata agent | helion-cp1-c1-m3-mgmt | :-) | True |
+      neutron-metadata-agent | | 3fc32632-ee72-41d4-bcfb-5675341959e7 | L3 agent |
+      helion-cp1-comp0001-mgmt | :-) | True | neutron-l3-agent | |
+      6c72185e-a518-4638-a03c-79af90750e63 | DHCP agent | helion-cp1-c1-m2-mgmt | :-) | True |
+      neutron-dhcp-agent | | 768a61cd-d203-4ea6-a807-b6adf894fc54 | Loadbalancerv2 agent |
+      helion-cp1-comp0001-mgmt | :-) | True | neutron-lbaasv2-agent | |
+      7aa9bf81-fac7-4202-8b81-a47012731134 | Loadbalancerv2 agent | helion-cp1-comp0003-mgmt | :-) |
+      True | neutron-lbaasv2-agent | | 8ac2bdd6-dbe1-4872-a425-b15d72a8fe69 | Metadata agent |
+      helion-cp1-c1-m2-mgmt | :-) | True | neutron-metadata-agent | |
+      91aaa427-d847-4218-8314-592d1402ffd4 | Metadata agent | helion-cp1-comp0001-mgmt | :-) | True
+      | neutron-metadata-agent | | 96b6521c-d43d-4b5e-8e9a-4014dee72223 | L3 agent |
+      helion-cp1-c1-m2-mgmt | :-) | True | neutron-vpn-agent | |
+      b32af791-a71d-469c-aa27-f846d1187a58 | L3 agent | helion-cp1-c1-m3-mgmt | :-) | True |
+      neutron-vpn-agent | | b3bf9a60-fb03-4b2f-a725-77976fa51a6c | L3 agent |
+      helion-cp1-comp0003-mgmt | :-) | True | neutron-l3-agent | |
+      b86ab2e9-81b1-4c5f-bb5e-3dfcfbdb98dd | Open vSwitch agent | helion-cp1-c1-m2-mgmt | :-) | True
+      | neutron-openvswitch-agent | | c1321e6c-2261-4829-8228-ece4548c1efd | Metadata agent |
+      helion-cp1-comp0002-mgmt | :-) | True | neutron-metadata-agent | |
+      c6689820-3917-457a-ab41-aacd78b5ac6d | Open vSwitch agent | helion-cp1-comp0001-mgmt | :-) |
+      True | neutron-openvswitch-agent | | d80d4cb1-8ec7-46ca-ab8e-52d4d67e9822 | DHCP agent |
+      helion-cp1-c1-m1-mgmt | :-) | True | neutron-dhcp-agent | |
+      de2b6cad-4f60-4fc6-be57-8a63e22a4483 | L3 agent | helion-cp1-comp0002-mgmt | :-) | True |
+      neutron-l3-agent | | eb4df5f4-d818-4268-82d9-fb110c2c8d0a | Open vSwitch agent |
+      helion-cp1-comp0002-mgmt | :-) | True | neutron-openvswitch-agent | |
+      f4792434-bb90-4947-be2d-674d26dd7b3c | Open vSwitch agent | helion-cp1-comp0003-mgmt | :-) |
+      True | neutron-openvswitch-agent | | fddee5b2-98aa-412d-8705-abecc2fe0ab7 | Metadata agent |
+      helion-cp1-c1-m1-mgmt | :-) | True | neutron-metadata-agent |
+      +--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+ 
+          </codeblock></li>
+      </ol>
+      </section>
+      
+      <section id="F53600_playbooks">
+        <title>Create the Deployment Playbook and Run It</title>
+        
+        <p>Now you are ready to integrate F5 BIG-IP 3600 into your Helion deployment.</p> 
+        
+        <p>To complete F5 integration with Helion:</p>
+        <ol>
+          <li><xref type="section" href="#F5_BIGIP_3600/F53600_Playbooks1">Create the deployment playbook</xref>.</li>
+          <li><xref type="section" href="#F5_BIGIP_3600/F53600_Playbooks2">Create an Interface Driver</xref></li>
+          <li><xref type="section" href="#F5_BIGIP_3600/F53600_Playbooks3">Run the Deployment Playbook</xref>.</li>
+        </ol>
+      </section>
+    
+        <section id="F53600_playbooks1">
+          <title>Create the deployment playbook</title>
+        <p>The Ansible playbook created in this section automates the deployment of the F5 LBaaSv2 driver and the F5 OpenStack agent to the three Helion OpenStack controller nodes.</p>
+        
+        <p>To create the deployment playbook:</p>
+        <ol>
+          <li>To add a file for the code, create the following file:
+            <codeblock>~/f5-deploy.yml</codeblock></li>
+          <li>Add the following code to the deployment playbook:
+          <codeblock>---
+- hosts: localhost
+  environment:
+    http_proxy: "{{ proxy }}"
+    https_proxy: "{{ proxy }}"
+  tasks:
+  - name: F5 Integration | HLM Resources | Clean scratch working environment
+    sudo: yes
+    file: path=/tmp/scratch
+      state=absent
+    when: keep_scratch is undefined
+ 
+  - name: F5 Integration | HLM Resources | Download LBaaSv2 driver from Git
+    sudo: yes
+    git: repo=https://github.com/F5Networks/f5-openstack-lbaasv2-driver
+      clone=yes
+      dest=/tmp/scratch/f5-openstack-lbaasv2-driver
+      version="{{ version | default('HEAD') }}"
+ 
+  - name: F5 Integration | HLM Resources | Download F5 OpenStack agent from Git
+    sudo: yes
+    git: repo=https://github.com/F5Networks/f5-openstack-agent
+      clone=yes
+      dest=/tmp/scratch/f5-openstack-agent
+      version="{{ version | default('HEAD') }}"
+ 
+  - name: F5 Integration | HLM Resources | Make scratch wheel directory
+    sudo: yes
+    file: path=/tmp/scratch/third-party-wheelhouse
+      state=directory
+ 
+  - name: F5 Integration | HLM Resources | Check for existing wheel files
+    sudo: yes
+    command: find '/tmp/scratch/third-party-wheelhouse'
+    register: wheelhouse_contents
+    changed_when: false
+ 
+  - name: F5 Integration | HLM Resources | Make F5 OpenStack agent wheel
+    sudo: yes
+    command: pip wheel --wheel-dir /tmp/scratch/third-party-wheelhouse /tmp/scratch/f5-openstack-agent
+    when: "'f5_openstack_agent' not in wheelhouse_contents.stdout"
+ 
+  - name: F5 Integration | HLM Resources | Make LBaaSv2 driver wheel
+    sudo: yes
+    command: pip wheel --wheel-dir /tmp/scratch/third-party-wheelhouse /tmp/scratch/f5-openstack-lbaasv2-driver
+    when: "'f5_openstack_lbaasv2_driver' not in wheelhouse_contents.stdout"
+ 
+- hosts: NEU-SVR
+  vars:
+    # Stored in base64 to work around an Ansible copy module content= bug
+    f5_service_provider: ''
+    default_f5_openstack_agent_ini: |
+      [DEFAULT]
+      debug = True
+      periodic_interval = 10
+      f5_ha_type = standalone
+      f5_sync_mode = replication
+      f5_external_physical_mappings = default:PortChannel1:True
+      advertised_tunnel_types = vxlan
+      f5_vtep_folder = 'Common'
+      f5_vtep_selfip_name = 'VTEP'
+      l2_population = True
+      f5_global_routed_mode = False
+      use_namespaces = True
+      max_namespaces_per_tenant = 1
+      f5_route_domain_strictness = False
+      f5_snat_mode = True
+      f5_snat_addresses_per_subnet = 1
+      f5_common_external_networks = True
+      f5_bigip_lbaas_device_driver = f5_openstack_agent.lbaasv2.drivers.bigip.icontrol_driver.iControlDriver
+      icontrol_hostname = 10.246.70.6
+      icontrol_username = admin
+      icontrol_password = admin
+    f5_openstack_agent_service: |
+      [Unit]
+      Description=F5 LBaaSv2 BIG-IP Agent
+      After=syslog.target network.target
+      Requires=network.target
+       
+      [Service]
+      User=neutron
+      ExecStart=/opt/stack/service/neutron/venv/bin/f5-oslbaasv2-agent --log-file /var/log/neutron/f5-openstack-agent.log --config-file /opt/stack/service/neutron/etc/neutron.conf --config-file /opt/stack/service/neutron/venv/lib/python2.7/site-packages/etc/neutron/services/f5/f5-openstack-agent.ini
+      Restart=always
+       
+      [Install]
+      WantedBy=multi-user.target
+  tasks:
+  - name: F5 Integration | Neutron Controllers | Create folder for F5 service provider package
+    sudo: yes
+    file: path=/opt/stack/service/neutron/venv/lib/python2.7/site-packages/neutron_lbaas/drivers/f5/
+      state=directory
+ 
+  - name: F5 Integration | Neutron Controllers | Write __init__.py in F5 service provider package
+    sudo: yes
+    copy: dest=/opt/stack/service/neutron/venv/lib/python2.7/site-packages/neutron_lbaas/drivers/f5/__init__.py
+      content=''
+ 
+  - name: F5 Integration | Neutron Controllers | Install F5 service provider package (not compatible with pip wheel)
+    sudo: yes
+    shell: 'DEST=''/opt/stack/service/neutron/venv/lib/python2.7/site-packages/neutron_lbaas/drivers/f5/driver_v2.py'' ; CHECKSUM='''' ; if [[ -e "$DEST" ]] ; then CHECKSUM="$(md5sum "$DEST" | awk ''{print $1}'')" ; fi ; if [[ "$CHECKSUM" == ''{{ f5_service_provider|b64decode|hash(''md5'') }}'' ]] ; then echo "No-op" ; else echo ''{{ f5_service_provider }}'' | base64 -d > "$DEST" ; fi'
+    register: install_f5_service_provider
+    changed_when: install_f5_service_provider.stdout == ""
+    args:
+      executable: /bin/bash
+ 
+  - name: F5 Integration | Neutron Controllers | Copy wheel files to controllers
+    synchronize: src=/tmp/scratch
+      dest=/tmp/
+      archive=yes
+      delete=yes
+ 
+  - name: F5 Integration | Neutron Controllers | Identify target wheel files
+    sudo: yes
+    command: find '/tmp/scratch/third-party-wheelhouse'
+    register: wheelhouse_contents
+    changed_when: false
+ 
+  - name: F5 Integration | Neutron Controllers | Install LBaaSv2 driver
+    sudo: yes
+    shell: 'source /opt/stack/service/neutron/venv/bin/activate ; pip --proxy ''{{ proxy }}'' install ''{{ item }}'''
+    with_items: "{{ wheelhouse_contents.stdout_lines }}"
+    when: "'f5_openstack_lbaasv2_driver' in item"
+    register: install_f5_lbaasv2_driver
+    changed_when: install_f5_lbaasv2_driver.stdout.find('Successfully installed') != -1
+    args:
+      executable: /bin/bash
+ 
+  - name: F5 Integration | Neutron Controllers | Install F5 OpenStack agent
+    sudo: yes
+    shell: 'source /opt/stack/service/neutron/venv/bin/activate ; pip --proxy ''{{ proxy }}'' install ''{{ item }}'''
+    with_items: "{{ wheelhouse_contents.stdout_lines }}"
+    when: >
+      'f5_icontrol_rest' in item or
+      'f5_sdk' in item or
+      'requests' in item or
+      'f5_openstack_agent' in item
+    register: install_f5_agent
+    changed_when: install_f5_agent.stdout.find('Successfully installed') != -1
+    args:
+      executable: /bin/bash
+ 
+  - name: F5 Integration | HLM Resources | Find ~/helion/my_cloud/config/neutron/f5-openstack-agent.ini
+    sudo: yes
+    stat: path=/home/stack/helion/my_cloud/config/neutron/f5-openstack-agent.ini
+    delegate_to: localhost
+    register: f5_openstack_agent_ini_stat
+    when: f5_openstack_agent_ini is not defined
+ 
+  - name: F5 Integration | HLM Resources | Note the source path of f5-openstack-agent.ini
+    set_fact: f5_openstack_agent_ini='{{ f5_openstack_agent_ini_stat.stat.path }}'
+    when: f5_openstack_agent_ini is not defined and f5_openstack_agent_ini_stat.stat.exists
+ 
+  - name: F5 Integration | Neutron Controllers | Copy built-in f5-openstack-agent.ini
+    sudo: yes
+    copy: dest=/opt/stack/service/neutron/venv/lib/python2.7/site-packages/etc/neutron/services/f5/f5-openstack-agent.ini
+      content='{{ default_f5_openstack_agent_ini }}'
+    when: f5_openstack_agent_ini is not defined
+ 
+  - name: F5 Integration | Neutron Controllers | Copy f5-openstack-agent.ini from provided source
+    sudo: yes
+    copy: src='{{ f5_openstack_agent_ini }}'
+      dest=/opt/stack/service/neutron/venv/lib/python2.7/site-packages/etc/neutron/services/f5/f5-openstack-agent.ini
+    when: f5_openstack_agent_ini is defined
+ 
+  - name: F5 Integration | Neutron Controllers | Copy f5-openstack-agent.service
+    sudo: yes
+    copy: dest=/etc/systemd/system/f5-openstack-agent.service
+      content='{{ f5_openstack_agent_service }}'
+ 
+  - name: F5 Integration | Neutron Controllers | Reload systemd unit files
+    sudo: yes
+    command: systemctl daemon-reload
+ 
+  - name: F5 Integration | Neutron Controllers | Stop F5 OpenStack agent
+    sudo: yes
+    service: name=f5-openstack-agent state=stopped
+ 
+  - name: F5 Integration | Neutron Controllers | Enable and start F5 OpenStack agent
+    sudo: yes
+    service: name=f5-openstack-agent state=started enabled=yes
+ 
+  - name: F5 Integration | Neutron Controllers | Remove scratch temporary files
+    sudo: yes
+    file: path=/tmp/scratch
+      state=absent
+    when: keep_scratch is undefined
+ 
+- hosts: localhost
+  tasks:
+  - name: F5 Integration | HLM Resources | Remove scratch temporary files
+    sudo: yes
+    file: path=/tmp/scratch
+      state=absent
+    when: keep_scratch is undefined</codeblock>
+        </li>
+        </ol>
+        </section>
+    
+    <section id="F53600_Playbooks2">
+      <title>Create an Interface Driver</title> 
+      <p><b>To create an interface driver:</b></p>
+        <ol>
+          <li>Create a new file with the following name and directory location:
+            <codeblock>~/helion/my_cloud/config/neutron/f5-openstack-agent.ini</codeblock></li>
+          <li>In a text editor, write the code necessary to define an F5 OpenStack configuration for
+          your cloud. <b>Sample configuration:</b>
+          <note type="caution">You must provide the correct credentials used in your deployment in
+            the lines beginning with
+          <codeph>icontrol_:</codeph></note><codeblock>[DEFAULT]
+            debug = True
+            periodic_interval = 10
+            f5_ha_type = standalone
+            f5_sync_mode = replication
+            f5_external_physical_mappings = default:PortChannel1:True
+            advertised_tunnel_types = vxlan
+            f5_vtep_folder = 'Common'
+            f5_vtep_selfip_name = 'VTEP'
+            l2_population = True
+            f5_global_routed_mode = False
+            use_namespaces = True
+            max_namespaces_per_tenant = 1
+            f5_route_domain_strictness = False
+            f5_snat_mode = True
+            f5_snat_addresses_per_subnet = 1
+            f5_common_external_networks = True
+            f5_bigip_lbaas_device_driver = f5_openstack_agent.lbaasv2.drivers.bigip.icontrol_driver.iControlDriver
+            icontrol_hostname = 10.246.70.6
+            icontrol_username = admin
+            icontrol_password = admin</codeblock></li>
+        </ol>
+      </section>
+      
+      <section id="F53600_playbooks3">
+        <title>Run the Deployment Playbook</title>
+        <p>When you run the F5 integration playbook, there are optional switches that you can use to specify information about your environment. Review the table below to see if there are any switches you need to use.</p>
+       
+        <table frame="all" rowsep="1" colsep="1" id="table_ckx_F53600_plbk">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="1*"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>Switch</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>-e proxy="&lt;proxy_address:port&gt;" Optional.</entry>
+                <entry>If your environment requires a proxy to reach the Internet, specify the proxy information in &lt;proxy_address:port&gt;</entry> 
+              </row>
+              <row>
+           <entry> -e version="&lt;version&gt;" Optional.</entry>
+                <entry>By default, this playbook installs the master branch of the F5 LBaaSv2 driver and the F5 OpenStack agent from Git. Set &lt;version&gt; to the alternate version you want to install. Other versions (releases/tags) can be found here for the F5 LBaaSv2 driver and here for the F5 OpenStack agent. For example, set &lt;version&gt; to v8.0.2 to install version 8.0.2 of both the F5 LBaaSv2 driver and the F5 OpenStack agent.</entry>
+              </row>
+              <row>
+              <entry>-e keep_scratch=&lt;bool&gt; Optional.</entry>
+            <entry>By default, this playbook deletes its temporary files located in /tmp/scratch after running. Set &lt;bool&gt; to True if you want to preserve the temporary files. </entry>
+            </row>
+                <row>
+                  <entry>-e f5_openstack_agent_ini="&lt;path&gt;"</entry> 
+                  <entry>Optional. By default, this playbook looks for the file /home/stack/helion/my_cloud/config/neutron/f5-openstack-agent.ini, and if that file is present, it will be used as the configuration file for the F5 OpenStack agent. Set &lt;path&gt; to the path of the configuration file for the F5 OpenStack agent if you have the configuration file at a different location. If no f5-openstack-agent.ini file is provided at all, the one embedded/built-in the playbook will be used. You may modify the default_f5_openstack_agent_ini variable in the playbook if you do not want to provide a f5-openstack-agent.ini file. </entry>
+                </row>
+            </tbody>
+          </tgroup>
+        </table>
+                  
+                 <p><b>For example:</b></p>
+        <codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts ~/f5-deploy.yml -e proxy="http://proxy.atlanta.hp.com:8080" -e keep_scratch=True -e version="v8.0.2"</codeblock>
+        <p>This command uses the following switches:</p>
+        <ul>
+          <li>HTTP and HTTPS proxy http://proxy.atlanta.hp.com:8080</li>
+          <li>caches the temporary files</li>
+          <li>installs version 8.0.2 of the F5 LBaaSv2 driver and F5 OpenStack Agent</li>
+        </ul>
+        
+        
+        <p><b>To run the F5 integration playbook:</b></p>
+                  <ol>
+                    <li>From a controller node, at a command line, add any switches to the following command and run:
+                      <codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts ~/f5-deploy.yml</codeblock></li>
+                  </ol>
+                 
+      </section>
+      
   </body>
 </topic>
