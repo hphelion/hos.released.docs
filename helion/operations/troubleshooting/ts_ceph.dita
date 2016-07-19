@@ -433,5 +433,40 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node></c
 ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;radosgw-node> </codeblock>
       </sectiondiv>
     </section>
+   
+      <section><title outputclass="headerH">Issue: Failure of horizon-status.yml</title>
+        <sectiondiv outputclass="insideSection">
+          <p>If you deploy <codeph>hrados</codeph> gateway on a controller node, the
+              <codeph>horizon-status.yml</codeph> fails.</p>
+          <p><b>Resolution</b></p>
+          <p>Perform the following steps to rectify the issue.</p>
+          <p>
+            <ol id="ol_r2d_mzg_rw">
+              <li>Log in to the lifecycle manager.</li>
+              <li>Change the directory:
+                <codeblock>cd ~/helion/hos/ansible/roles/HZN-WEB/tasks</codeblock></li>
+              <li>Edit the status of the Horizon in <codeph>status.yml</codeph> file. The default
+                value of Horizon in <codeph>status.yml</codeph> is shown
+                  below:<codeblock>- name: HZN-WEB | status | Check status of horizon vhost
+  sudo: no
+  shell: . /etc/apache2/envvars &amp;&amp; /usr/sbin/apache2 -S | grep 'horizon.conf'
+  ignore_errors: yes
+  register: sbin_apache2_status_result</codeblock><p>The
+                  edited value of Horizon in <codeph>status.yml</codeph> file is shown
+                  below:<codeblock>- name: HZN-WEB | status | Check status of horizon vhost
+  become: <b>yes</b>
+  shell: . /etc/apache2/envvars &amp;&amp; /usr/sbin/apache2 -S | grep 'horizon.conf'
+  ignore_errors: yes
+  register: sbin_apache2_status_result</codeblock></p></li>
+              <li>Commit the changes to git:
+                <codeblock>git add -A 
+git commit -m "Changed the status of Horizon in status YAML file"</codeblock></li>
+              <li> After your configuration files are setup, continue with the <xref
+                  href="../../installation/installing_kvm.dita#install_kvm/config_processor"
+                  >Entry-scale KVM Cloud installation steps</xref>. </li>
+            </ol>
+          </p>
+        </sectiondiv>
+      </section>
   </body>
 </topic>
