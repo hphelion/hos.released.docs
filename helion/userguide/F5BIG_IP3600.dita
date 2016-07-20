@@ -7,8 +7,12 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="F53600_about">
     
-      <p>Adding F5 Network products to your deployment can provide critical application delivery services consistently across the data center, private cloud, and public cloud. This allows hybrid users to experience the availability and performance they expect.</p>
-      <p> F5 Networks BIG-IP product family includes purpose-built hardware, software, and virtualized solutions. Depending on the appliance you use, one or more BIG-IP modules can be added to get the functionality your deployment requires.</p>
+      <p>Adding F5 Networks products to your deployment can provide critical application delivery
+        services consistently across the data center, private cloud, and public cloud. This allows
+        hybrid users to experience the availability and performance they expect.</p>
+      <p> The F5 Networks BIG-IP product family includes purpose-built hardware, software, and
+        virtualized solutions. Depending on the appliance you use, one or more BIG-IP modules can be
+        added to get the functionality your deployment requires.</p>
       <p>Creating an application centered strategy using F5 BIG-IP is supported in all of the following scenarios:</p>
       <ul>
         <li>architecting a private cloud</li>
@@ -45,7 +49,7 @@
       <p>Before installing the F5-BIG-IP driver into a Helion OpenStack 3.0 deployment, the Helion team met all of the following requirements:</p>
       
       <note type="important">Helion OpenStack 3.0 must be deployed before the F5 installation is
-        performed. This is due to the F5 driver not being builtdirectly into Helion OpenStack by
+        performed. This is due to the F5 driver not being built directly into Helion OpenStack by
         default, and because the F5 installation depends on the existence of Helion OpenStack
         Neutron environment.</note>
       
@@ -119,9 +123,9 @@
       <note type="important">Helion OpenStack 3.0 must be deployed before the F5 installation is
         performed. This is due to the F5 driver not being built directly into Helion OpenStack by
         default, and because the F5 installation depends on the existence of Helion OpenStack
-        Neutron environmen.</note>
+        Neutron environment.</note>
       
-      <p>The HElion team integrated F5 Networks BIG-IP 3600 into an HPE Helion OpenStack deployment
+      <p>The Helion team integrated F5 Networks BIG-IP 3600 into an HPE Helion OpenStack deployment
         using the following steps:</p>
       <ol>
         <li><xref href="../installation/cloudinstallation_overview.dita">Deploy Helion OpenStack
@@ -230,7 +234,7 @@
             </row>
             <row>
               <entry/>
-              <entry><b>Create a self IP.</b>A self IP address is an IP address on the BIG-IP®
+              <entry><b>Create a self IP.</b> A self IP address is an IP address on the BIG-IP®
                 system that you associate with a VLAN, to access hosts in that VLAN. By virtue of
                 its netmask, a self IP address represents an address space, that is, a range of IP
                 addresses spanning the hosts in the VLAN, rather than a single host address. For
@@ -240,7 +244,7 @@
               <entry> To create a self-IP: <ol>
                   <li>In the BIG-IP control panel, navigate to <b>Network</b>, then <b>Self
                     IPs</b>.</li>
-                  <li>Us the following settings: <dl>
+                  <li>Use the following settings: <dl>
                       <dlentry>
                         <dt>VLAN / Tunnel</dt>
                         <dd>HOS_GUEST_VXLAN</dd>
@@ -274,7 +278,7 @@
         <li><xref type="section" href="#F5_BIGIP_3600/F53600_PrepareEnv">Prepare the
             environment.</xref></li>
         <li><xref type="section" href="#F5_BIGIP_3600/F53600_playbooks">Create a deployment playbook
-            and run It.</xref></li>
+            and run it.</xref></li>
         <li><xref type="section" href="#F5_BIGIP_3600/F53600_reconfig_Neutron">Reconfigure
             Neutron.</xref></li>
       </ol>
@@ -313,9 +317,8 @@
             <codeblock>cd ~/helion
 git add -A
 git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
-            type="important">If you need to redeploy Helion OpenStack in the future, you will need
-            to undo the changes in these steps first, or the redeployment will not
-          succeed.</note></li>
+            type="important">If you need to redeploy Helion OpenStack in the future, you must undo
+            the changes in these steps first, or the redeployment will not succeed.</note></li>
       <li>To run the configuration preprocessor:
           <codeblock>ansible-playbook -i ~/helion/hos/ansible/hosts/localhost ~/helion/hos/ansible/config-processor-run.yml   </codeblock></li>
         <li>To run the scratch playbook generator:
@@ -324,47 +327,34 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
           not present, run:<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ source ~/service.osrc</codeblock>
           <b>Sample output:</b>
           <codeblock>~$ neutron agent-list
-      +--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
-      | id | agent_type | host | alive | admin_state_up | binary |
-      +--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
-      | 0d2cc9c3-3e9e-4106-9c20-3ea1279e9b1b | Metadata agent | helion-cp1-comp0003-mgmt | :-) |
-      True | neutron-metadata-agent | | 10fca118-a3aa-4ff4-bee9-d0b529c367be | Open vSwitch agent |
-      helion-cp1-c1-m3-mgmt | :-) | True | neutron-openvswitch-agent | |
-      141da94a-acad-4368-bcfc-456d8e46020e | Loadbalancerv2 agent | helion-cp1-comp0002-mgmt | :-) |
-      True | neutron-lbaasv2-agent | | 1dcdaa86-fde0-42fc-8e80-10dbb763a9c2 | L3 agent |
-      helion-cp1-c1-m1-mgmt | :-) | True | neutron-vpn-agent | |
-      259cbbca-cfbd-4535-b0ec-86e55ac3fe1e | Open vSwitch agent | helion-cp1-c1-m1-mgmt | :-) | True
-      | neutron-openvswitch-agent | | 3268887d-dfb3-454d-9b88-a113b86cef51 | DHCP agent |
-      helion-cp1-c1-m3-mgmt | :-) | True | neutron-dhcp-agent | |
-      3e267a6e-4547-48ab-8a0f-ee1627568d32 | Metadata agent | helion-cp1-c1-m3-mgmt | :-) | True |
-      neutron-metadata-agent | | 3fc32632-ee72-41d4-bcfb-5675341959e7 | L3 agent |
-      helion-cp1-comp0001-mgmt | :-) | True | neutron-l3-agent | |
-      6c72185e-a518-4638-a03c-79af90750e63 | DHCP agent | helion-cp1-c1-m2-mgmt | :-) | True |
-      neutron-dhcp-agent | | 768a61cd-d203-4ea6-a807-b6adf894fc54 | Loadbalancerv2 agent |
-      helion-cp1-comp0001-mgmt | :-) | True | neutron-lbaasv2-agent | |
-      7aa9bf81-fac7-4202-8b81-a47012731134 | Loadbalancerv2 agent | helion-cp1-comp0003-mgmt | :-) |
-      True | neutron-lbaasv2-agent | | 8ac2bdd6-dbe1-4872-a425-b15d72a8fe69 | Metadata agent |
-      helion-cp1-c1-m2-mgmt | :-) | True | neutron-metadata-agent | |
-      91aaa427-d847-4218-8314-592d1402ffd4 | Metadata agent | helion-cp1-comp0001-mgmt | :-) | True
-      | neutron-metadata-agent | | 96b6521c-d43d-4b5e-8e9a-4014dee72223 | L3 agent |
-      helion-cp1-c1-m2-mgmt | :-) | True | neutron-vpn-agent | |
-      b32af791-a71d-469c-aa27-f846d1187a58 | L3 agent | helion-cp1-c1-m3-mgmt | :-) | True |
-      neutron-vpn-agent | | b3bf9a60-fb03-4b2f-a725-77976fa51a6c | L3 agent |
-      helion-cp1-comp0003-mgmt | :-) | True | neutron-l3-agent | |
-      b86ab2e9-81b1-4c5f-bb5e-3dfcfbdb98dd | Open vSwitch agent | helion-cp1-c1-m2-mgmt | :-) | True
-      | neutron-openvswitch-agent | | c1321e6c-2261-4829-8228-ece4548c1efd | Metadata agent |
-      helion-cp1-comp0002-mgmt | :-) | True | neutron-metadata-agent | |
-      c6689820-3917-457a-ab41-aacd78b5ac6d | Open vSwitch agent | helion-cp1-comp0001-mgmt | :-) |
-      True | neutron-openvswitch-agent | | d80d4cb1-8ec7-46ca-ab8e-52d4d67e9822 | DHCP agent |
-      helion-cp1-c1-m1-mgmt | :-) | True | neutron-dhcp-agent | |
-      de2b6cad-4f60-4fc6-be57-8a63e22a4483 | L3 agent | helion-cp1-comp0002-mgmt | :-) | True |
-      neutron-l3-agent | | eb4df5f4-d818-4268-82d9-fb110c2c8d0a | Open vSwitch agent |
-      helion-cp1-comp0002-mgmt | :-) | True | neutron-openvswitch-agent | |
-      f4792434-bb90-4947-be2d-674d26dd7b3c | Open vSwitch agent | helion-cp1-comp0003-mgmt | :-) |
-      True | neutron-openvswitch-agent | | fddee5b2-98aa-412d-8705-abecc2fe0ab7 | Metadata agent |
-      helion-cp1-c1-m1-mgmt | :-) | True | neutron-metadata-agent |
-      +--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+ 
-          </codeblock></li>
+   +-------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+   | id                      | agent_type         | host                       | alive | admin_state_up | binary                    |
+   +-------------------------+----------------------+--------------------------+-------+----------------+----------------------------
+   | 0d2cc9c3-3e9e-4106-9c20 | Metadata agent       | helion-cp1-comp0003-mgmt | :-)   |True            | neutron-metadata-agent    | 
+   | 10fca118-a3aa-4ff4-bee9 | Open vSwitch agent   | helion-cp1-c1-m3-mgmt    | :-)   | True           | neutron-openvswitch-agent |
+   | 141da94a-acad-4368-bcfc | Loadbalancerv2 agent | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-lbaasv2-agent     | 
+   | 1dcdaa86-fde0-42fc-8e80 | L3 agent             | helion-cp1-c1-m1-mgmt    | :-)   | True           | neutron-vpn-agent         |
+   | 259cbbca-cfbd-4535-b0ec | Open vSwitch agent   | helion-cp1-c1-m1-mgmt    | :-)   | True           | neutron-openvswitch-agent | 
+   | 3268887d-dfb3-454d-9b88 | DHCP agent           | helion-cp1-c1-m3-mgmt    | :-)   | True           | neutron-dhcp-agent        |
+   | 3e267a6e-4547-48ab-8a0f | Metadata agent       | helion-cp1-c1-m3-mgmt    | :-)   | True           | neutron-metadata-agent    | 
+   | 3fc32632-ee72-41d4-bcfb | L3 agent             | helion-cp1-comp0001-mgmt | :-)   | True           | neutron-l3-agent          |
+   | 6c72185e-a518-4638-a03c | DHCP agent           | helion-cp1-c1-m2-mgmt    | :-)   | True           | neutron-dhcp-agent        | 
+   | 768a61cd-d203-4ea6-a807 | Loadbalancerv2 agent | helion-cp1-comp0001-mgmt | :-)   | True           | neutron-lbaasv2-agent     |
+   | 7aa9bf81-fac7-4202-8b81 | Loadbalancerv2 agent | helion-cp1-comp0003-mgmt | :-)   | True           | neutron-lbaasv2-agent     | 
+   | 8ac2bdd6-dbe1-4872-a425 | Metadata agent       | helion-cp1-c1-m2-mgmt    | :-)   | True           | neutron-metadata-agent    |
+   | 91aaa427-d847-4218-8314 | Metadata agent       | helion-cp1-comp0001-mgmt | :-)   | True           | neutron-metadata-agent    | 
+   | 96b6521c-d43d-4b5e-8e9a | L3 agent             | helion-cp1-c1-m2-mgmt    | :-)   | True           | neutron-vpn-agent         |
+   | b32af791-a71d-469c-aa27 | L3 agent             | helion-cp1-c1-m3-mgmt    | :-)   | True           | neutron-vpn-agent         | 
+   | b3bf9a60-fb03-4b2f-a725 | L3 agent             | helion-cp1-comp0003-mgmt | :-)   | True           | neutron-l3-agent          |
+   | b86ab2e9-81b1-4c5f-bb5e | Open vSwitch agent   | helion-cp1-c1-m2-mgmt    | :-)   | True           | neutron-openvswitch-agent | 
+   | c1321e6c-2261-4829-8228 | Metadata agent       | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-metadata-agent    |
+   | c6689820-3917-457a-ab41 | Open vSwitch agent   | helion-cp1-comp0001-mgmt | :-)   | True           | neutron-openvswitch-agent | 
+   | d80d4cb1-8ec7-46ca-ab8e | DHCP agent           | helion-cp1-c1-m1-mgmt    | :-)   | True           | neutron-dhcp-agent        |
+   | de2b6cad-4f60-4fc6-be57 | L3 agent             | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-l3-agent          | 
+   | eb4df5f4-d818-4268-82d9 | Open vSwitch agent   | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-openvswitch-agent |
+   | f4792434-bb90-4947-be2d | Open vSwitch agent   | helion-cp1-comp0003-mgmt | :-)   | True           | neutron-openvswitch-agent | 
+   | fddee5b2-98aa-412d-8705 | Metadata agent       | helion-cp1-c1-m1-mgmt    | :-)   | True           | neutron-metadata-agent    |
+      +--------------------------------------+----------------------+--------------------------+-------+----------------+-----------+ </codeblock></li>
       </ol>
       </section>
       
@@ -377,8 +367,8 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
         <ol>
           <li><xref type="section" href="#F5_BIGIP_3600/F53600_Playbooks1">Create the deployment
             playbook.</xref></li>
-          <li><xref type="section" href="#F5_BIGIP_3600/F53600_Playbooks2">Create an interface
-            driver.</xref></li>
+          <li><xref type="section" href="#F5_BIGIP_3600/F53600_Playbooks2">Create the F5 OpenStack
+            agent configuration.</xref></li>
           <li><xref type="section" href="#F5_BIGIP_3600/F53600_Playbooks3">Run the deployment
             playbook.</xref></li>
         </ol>
@@ -394,10 +384,11 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
             <codeblock>~/f5-deploy.yml</codeblock></li>
           <li>Add the following code to the deployment playbook:
           <codeblock>---
+---
 - hosts: localhost
   environment:
-    http_proxy: "{{ proxy }}"
-    https_proxy: "{{ proxy }}"
+    http_proxy: "{{ proxy | default(None) }}"
+    https_proxy: "{{ proxy | default(None) }}"
   tasks:
   - name: F5 Integration | HLM Resources | Clean scratch working environment
     sudo: yes
@@ -429,6 +420,10 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
     command: find '/tmp/scratch/third-party-wheelhouse'
     register: wheelhouse_contents
     changed_when: false
+    
+  - name: F5 Integration | HLM Resources | Install python-pip
+    sudo: yes
+    apt: name=python-pip state=installed
  
   - name: F5 Integration | HLM Resources | Make F5 OpenStack agent wheel
     sudo: yes
@@ -443,7 +438,7 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
 - hosts: NEU-SVR
   vars:
     # Stored in base64 to work around an Ansible copy module content= bug
-    f5_service_provider: ''
+    f5_service_provider: 'IyBDb3B5cmlnaHQgMjAxNiBGNSBOZXR3b3JrcyBJbmMuCiMKIyBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKIyB5b3UgbWF5IG5vdCB1c2UgdGhpcyBmaWxlIGV4Y2VwdCBpbiBjb21wbGlhbmNlIHdpdGggdGhlIExpY2Vuc2UuCiMgWW91IG1heSBvYnRhaW4gYSBjb3B5IG9mIHRoZSBMaWNlbnNlIGF0CiMKIyAgICBodHRwOi8vd3d3LmFwYWNoZS5vcmcvbGljZW5zZXMvTElDRU5TRS0yLjAKIwojIFVubGVzcyByZXF1aXJlZCBieSBhcHBsaWNhYmxlIGxhdyBvciBhZ3JlZWQgdG8gaW4gd3JpdGluZywgc29mdHdhcmUKIyBkaXN0cmlidXRlZCB1bmRlciB0aGUgTGljZW5zZSBpcyBkaXN0cmlidXRlZCBvbiBhbiAiQVMgSVMiIEJBU0lTLAojIFdJVEhPVVQgV0FSUkFOVElFUyBPUiBDT05ESVRJT05TIE9GIEFOWSBLSU5ELCBlaXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLgojIFNlZSB0aGUgTGljZW5zZSBmb3IgdGhlIHNwZWNpZmljIGxhbmd1YWdlIGdvdmVybmluZyBwZXJtaXNzaW9ucyBhbmQKIyBsaW1pdGF0aW9ucyB1bmRlciB0aGUgTGljZW5zZS4KIwoKaW1wb3J0IGY1bGJhYXNkcml2ZXIKZnJvbSBmNWxiYWFzZHJpdmVyLnYyLmJpZ2lwLmRyaXZlcl92MiBpbXBvcnQgRjVEcml2ZXJWMgoKZnJvbSBvc2xvX2xvZyBpbXBvcnQgbG9nIGFzIGxvZ2dpbmcKCmZyb20gbmV1dHJvbl9sYmFhcy5kcml2ZXJzIGltcG9ydCBkcml2ZXJfYmFzZQoKVkVSU0lPTiA9ICIwLjEuMSIKTE9HID0gbG9nZ2luZy5nZXRMb2dnZXIoX19uYW1lX18pCgoKY2xhc3MgVW5kZWZpbmVkRW52aXJvbm1lbnQoRXhjZXB0aW9uKToKICAgIHBhc3MKCgpjbGFzcyBGNUxCYWFTVjJEcml2ZXIoZHJpdmVyX2Jhc2UuTG9hZEJhbGFuY2VyQmFzZURyaXZlcik6CgogICAgZGVmIF9faW5pdF9fKHNlbGYsIHBsdWdpbiwgZW52PSdQcm9qZWN0Jyk6CiAgICAgICAgc3VwZXIoRjVMQmFhU1YyRHJpdmVyLCBzZWxmKS5fX2luaXRfXyhwbHVnaW4pCgogICAgICAgIHNlbGYubG9hZF9iYWxhbmNlciA9IExvYWRCYWxhbmNlck1hbmFnZXIoc2VsZikKICAgICAgICBzZWxmLmxpc3RlbmVyID0gTGlzdGVuZXJNYW5hZ2VyKHNlbGYpCiAgICAgICAgc2VsZi5wb29sID0gUG9vbE1hbmFnZXIoc2VsZikKICAgICAgICBzZWxmLm1lbWJlciA9IE1lbWJlck1hbmFnZXIoc2VsZikKICAgICAgICBzZWxmLmhlYWx0aF9tb25pdG9yID0gSGVhbHRoTW9uaXRvck1hbmFnZXIoc2VsZikKCiAgICAgICAgaWYgbm90IGVudjoKICAgICAgICAgICAgbXNnID0gIkY1TEJhYVNWMkRyaXZlciBjYW5ub3QgYmUgaW50aWFsaXplZCBiZWNhdXNlIHRoZSBlbnZpcm9ubWVudCJcCiAgICAgICAgICAgICAgICAiIGlzIG5vdCBkZWZpbmVkLiBUbyBzZXQgdGhlIGVudmlyb25tZW50LCBlZGl0ICJcCiAgICAgICAgICAgICAgICAibmV1dHJvbl9sYmFhcy5jb25mIGFuZCBhcHBlbmQgdGhlIGVudmlyb25tZW50IG5hbWUgdG8gdGhlICJcCiAgICAgICAgICAgICAgICAic2VydmljZV9wcm92aWRlciBjbGFzcyBuYW1lLiIKICAgICAgICAgICAgTE9HLmRlYnVnKG1zZykKICAgICAgICAgICAgcmFpc2UgVW5kZWZpbmVkRW52aXJvbm1lbnQobXNnKQoKICAgICAgICBMT0cuZGVidWcoIkY1TEJhYVNWMkRyaXZlcjogaW5pdGlhbGl6aW5nLCB2ZXJzaW9uPSVzLCBpbXBsPSVzLCBlbnY9JXMiCiAgICAgICAgICAgICAgICAgICUgKFZFUlNJT04sIGY1bGJhYXNkcml2ZXIuX192ZXJzaW9uX18sIGVudikpCgogICAgICAgIHNlbGYuZjUgPSBGNURyaXZlclYyKHBsdWdpbiwgZW52KQoKCmNsYXNzIEY1TEJhYVNWMkRyaXZlclRlc3QoRjVMQmFhU1YyRHJpdmVyKToKCiAgICBkZWYgX19pbml0X18oc2VsZiwgcGx1Z2luLCBlbnY9J1Rlc3QnKToKICAgICAgICBzdXBlcihGNUxCYWFTVjJEcml2ZXJUZXN0LCBzZWxmKS5fX2luaXRfXyhwbHVnaW4sIGVudikKCiAgICAgICAgTE9HLmRlYnVnKAogICAgICAgICAgICAiRjVMQmFhU1YyRHJpdmVyVGVzdDogaW5pdGlhbGl6aW5nLCB2ZXJzaW9uPSVzLCBmNT0lcywgZW52PSVzIgogICAgICAgICAgICAlIChWRVJTSU9OLCBmNWxiYWFzZHJpdmVyLl9fdmVyc2lvbl9fLCBlbnYpKQoKY2xhc3MgRjVMQmFhU1YyRHJpdmVyUHJvamVjdChGNUxCYWFTVjJEcml2ZXIpOgoKICAgIGRlZiBfX2luaXRfXyhzZWxmLCBwbHVnaW4sIGVudj0nUHJvamVjdCcpOgogICAgICAgIHN1cGVyKEY1TEJhYVNWMkRyaXZlclByb2plY3QsIHNlbGYpLl9faW5pdF9fKHBsdWdpbiwgZW52KQoKICAgICAgICBMT0cuZGVidWcoCiAgICAgICAgICAgICJGNUxCYWFTVjJEcml2ZXJQcm9qZWN0OiBpbml0aWFsaXppbmcsIHZlcnNpb249JXMsIGY1PSVzLCBlbnY9JXMiCiAgICAgICAgICAgICUgKFZFUlNJT04sIGY1bGJhYXNkcml2ZXIuX192ZXJzaW9uX18sIGVudikpCgoKY2xhc3MgTG9hZEJhbGFuY2VyTWFuYWdlcihkcml2ZXJfYmFzZS5CYXNlTG9hZEJhbGFuY2VyTWFuYWdlcik6CgogICAgZGVmIGNyZWF0ZShzZWxmLCBjb250ZXh0LCBsYik6CiAgICAgICAgc2VsZi5kcml2ZXIuZjUubG9hZGJhbGFuY2VyLmNyZWF0ZShjb250ZXh0LCBsYikKCiAgICBkZWYgdXBkYXRlKHNlbGYsIGNvbnRleHQsIG9sZF9sYiwgbGIpOgogICAgICAgIHNlbGYuZHJpdmVyLmY1LmxvYWRiYWxhbmNlci51cGRhdGUoY29udGV4dCwgb2xkX2xiLCBsYikKCiAgICBkZWYgZGVsZXRlKHNlbGYsIGNvbnRleHQsIGxiKToKICAgICAgICBzZWxmLmRyaXZlci5mNS5sb2FkYmFsYW5jZXIuZGVsZXRlKGNvbnRleHQsIGxiKQoKICAgIGRlZiByZWZyZXNoKHNlbGYsIGNvbnRleHQsIGxiKToKICAgICAgICBzZWxmLmRyaXZlci5mNS5sb2FkYmFsYW5jZXIucmVmcmVzaChjb250ZXh0LCBsYikKCiAgICBkZWYgc3RhdHMoc2VsZiwgY29udGV4dCwgbGIpOgogICAgICAgIHJldHVybiBzZWxmLmRyaXZlci5mNS5sb2FkYmFsYW5jZXIuc3RhdHMoY29udGV4dCwgbGIpCgoKY2xhc3MgTGlzdGVuZXJNYW5hZ2VyKGRyaXZlcl9iYXNlLkJhc2VMaXN0ZW5lck1hbmFnZXIpOgoKICAgIGRlZiBjcmVhdGUoc2VsZiwgY29udGV4dCwgbGlzdGVuZXIpOgogICAgICAgIHNlbGYuZHJpdmVyLmY1Lmxpc3RlbmVyLmNyZWF0ZShjb250ZXh0LCBsaXN0ZW5lcikKCiAgICBkZWYgdXBkYXRlKHNlbGYsIGNvbnRleHQsIG9sZF9saXN0ZW5lciwgbGlzdGVuZXIpOgogICAgICAgIHNlbGYuZHJpdmVyLmY1Lmxpc3RlbmVyLnVwZGF0ZShjb250ZXh0LCBvbGRfbGlzdGVuZXIsIGxpc3RlbmVyKQoKICAgIGRlZiBkZWxldGUoc2VsZiwgY29udGV4dCwgbGlzdGVuZXIpOgogICAgICAgIHNlbGYuZHJpdmVyLmY1Lmxpc3RlbmVyLmRlbGV0ZShjb250ZXh0LCBsaXN0ZW5lcikKCgpjbGFzcyBQb29sTWFuYWdlcihkcml2ZXJfYmFzZS5CYXNlUG9vbE1hbmFnZXIpOgoKICAgIGRlZiBjcmVhdGUoc2VsZiwgY29udGV4dCwgcG9vbCk6CiAgICAgICAgc2VsZi5kcml2ZXIuZjUucG9vbC5jcmVhdGUoY29udGV4dCwgcG9vbCkKCiAgICBkZWYgdXBkYXRlKHNlbGYsIGNvbnRleHQsIG9sZF9wb29sLCBwb29sKToKICAgICAgICBzZWxmLmRyaXZlci5mNS5wb29sLnVwZGF0ZShjb250ZXh0LCBvbGRfcG9vbCwgcG9vbCkKCiAgICBkZWYgZGVsZXRlKHNlbGYsIGNvbnRleHQsIHBvb2wpOgogICAgICAgIHNlbGYuZHJpdmVyLmY1LnBvb2wuZGVsZXRlKGNvbnRleHQsIHBvb2wpCgoKY2xhc3MgTWVtYmVyTWFuYWdlcihkcml2ZXJfYmFzZS5CYXNlTWVtYmVyTWFuYWdlcik6CgogICAgZGVmIGNyZWF0ZShzZWxmLCBjb250ZXh0LCBtZW1iZXIpOgogICAgICAgIHNlbGYuZHJpdmVyLmY1Lm1lbWJlci5jcmVhdGUoY29udGV4dCwgbWVtYmVyKQoKICAgIGRlZiB1cGRhdGUoc2VsZiwgY29udGV4dCwgb2xkX21lbWJlciwgbWVtYmVyKToKICAgICAgICBzZWxmLmRyaXZlci5mNS5tZW1iZXIudXBkYXRlKGNvbnRleHQsIG9sZF9tZW1iZXIsIG1lbWJlcikKCiAgICBkZWYgZGVsZXRlKHNlbGYsIGNvbnRleHQsIG1lbWJlcik6CiAgICAgICAgc2VsZi5kcml2ZXIuZjUubWVtYmVyLmRlbGV0ZShjb250ZXh0LCBtZW1iZXIpCgoKY2xhc3MgSGVhbHRoTW9uaXRvck1hbmFnZXIoZHJpdmVyX2Jhc2UuQmFzZUhlYWx0aE1vbml0b3JNYW5hZ2VyKToKCiAgICBkZWYgY3JlYXRlKHNlbGYsIGNvbnRleHQsIGhlYWx0aF9tb25pdG9yKToKICAgICAgICBzZWxmLmRyaXZlci5mNS5oZWFsdGhtb25pdG9yLmNyZWF0ZShjb250ZXh0LCBoZWFsdGhfbW9uaXRvcikKCiAgICBkZWYgdXBkYXRlKHNlbGYsIGNvbnRleHQsIG9sZF9oZWFsdGhfbW9uaXRvciwgaGVhbHRoX21vbml0b3IpOgogICAgICAgIHNlbGYuZHJpdmVyLmY1LmhlYWx0aG1vbml0b3IudXBkYXRlKGNvbnRleHQsIG9sZF9oZWFsdGhfbW9uaXRvciwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBoZWFsdGhfbW9uaXRvcikKCiAgICBkZWYgZGVsZXRlKHNlbGYsIGNvbnRleHQsIGhlYWx0aF9tb25pdG9yKToKICAgICAgICBzZWxmLmRyaXZlci5mNS5oZWFsdGhtb25pdG9yLmRlbGV0ZShjb250ZXh0LCBoZWFsdGhfbW9uaXRvcik='
     default_f5_openstack_agent_ini: |
       [DEFAULT]
       debug = True
@@ -592,7 +587,11 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
         </section>
     
     <section id="F53600_Playbooks2">
-      <title>Create an Interface Driver</title> 
+      <title>Create the F5 OpenStack Agent Configuration</title> 
+      
+      <p>It is important to view the original sample configuration from F5 Networks because it includes comments that explain what each configuration option does. The sample below does not contain comments and is only what the Helion IHV Test team used. Therefore, the sample below may not work on every cloud deployment.</p>
+      <note type="attention">Read the original sample configuration for an explaination of each configuration option. <xref href="https://github.com/F5Networks/f5-openstack-agent/blob/c4727c5cdc398b510aa01801b7a65a8db6631e14/etc/neutron/services/f5/f5-openstack-agent.ini" scope="external" format="html">F5Networks/f5-openstack-agent</xref></note>
+      
       <p><b>To create an interface driver:</b></p>
         <ol>
           <li>Create a new file with the following name and directory location:
@@ -602,26 +601,26 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
           <note type="caution">You must provide the correct credentials used in your deployment in
             the lines beginning with
           <codeph>icontrol_:</codeph></note><codeblock>[DEFAULT]
-            debug = True
-            periodic_interval = 10
-            f5_ha_type = standalone
-            f5_sync_mode = replication
-            f5_external_physical_mappings = default:PortChannel1:True
-            advertised_tunnel_types = vxlan
-            f5_vtep_folder = 'Common'
-            f5_vtep_selfip_name = 'VTEP'
-            l2_population = True
-            f5_global_routed_mode = False
-            use_namespaces = True
-            max_namespaces_per_tenant = 1
-            f5_route_domain_strictness = False
-            f5_snat_mode = True
-            f5_snat_addresses_per_subnet = 1
-            f5_common_external_networks = True
-            f5_bigip_lbaas_device_driver = f5_openstack_agent.lbaasv2.drivers.bigip.icontrol_driver.iControlDriver
-            icontrol_hostname = 10.246.70.6
-            icontrol_username = admin
-            icontrol_password = admin</codeblock></li>
+debug = True
+periodic_interval = 10
+f5_ha_type = standalone
+f5_sync_mode = replication
+f5_external_physical_mappings = default:PortChannel1:True
+advertised_tunnel_types = vxlan
+f5_vtep_folder = 'Common'
+f5_vtep_selfip_name = 'VTEP'
+l2_population = True
+f5_global_routed_mode = False
+use_namespaces = True
+max_namespaces_per_tenant = 1
+f5_route_domain_strictness = False
+f5_snat_mode = True
+f5_snat_addresses_per_subnet = 1
+f5_common_external_networks = True
+f5_bigip_lbaas_device_driver = f5_openstack_agent.lbaasv2.drivers.bigip.icontrol_driver.iControlDriver
+icontrol_hostname = 10.246.70.6
+icontrol_username = admin
+icontrol_password = admin</codeblock></li>
         </ol>
       </section>
       
@@ -641,16 +640,24 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
             </thead>
             <tbody>
               <row>
-                <entry>-e proxy="&lt;proxy_address:port&gt;" Optional.</entry>
-                <entry>If your environment requires a proxy to reach the Internet, specify the proxy information in &lt;proxy_address:port&gt;</entry> 
+                <entry>-e proxy="&lt;proxy_address:port&gt;" </entry>
+                <entry>Optional. If your environment requires a proxy to reach the Internet, specify
+                the proxy information in &lt;proxy_address:port&gt;</entry> 
               </row>
               <row>
-           <entry> -e version="&lt;version&gt;" Optional.</entry>
-                <entry>By default, this playbook installs the master branch of the F5 LBaaSv2 driver and the F5 OpenStack agent from Git. Set &lt;version&gt; to the alternate version you want to install. Other versions (releases/tags) can be found here for the F5 LBaaSv2 driver and here for the F5 OpenStack agent. For example, set &lt;version&gt; to v8.0.2 to install version 8.0.2 of both the F5 LBaaSv2 driver and the F5 OpenStack agent.</entry>
+           <entry> -e version="&lt;version&gt;" </entry>
+                <entry>Optional. By default, this playbook installs the master branch of the F5
+                LBaaSv2 driver and the F5 OpenStack agent from Git. Set &lt;version&gt; to the
+                alternate version you want to install. Other versions (releases/tags) can be found
+                here for the F5 LBaaSv2 driver and here for the F5 OpenStack agent. For example, set
+                &lt;version&gt; to v8.0.2 to install version 8.0.2 of both the F5 LBaaSv2 driver and
+                the F5 OpenStack agent.</entry>
               </row>
               <row>
-              <entry>-e keep_scratch=&lt;bool&gt; Optional.</entry>
-            <entry>By default, this playbook deletes its temporary files located in /tmp/scratch after running. Set &lt;bool&gt; to True if you want to preserve the temporary files. </entry>
+              <entry>-e keep_scratch=&lt;bool&gt; </entry>
+            <entry>Optional. By default, this playbook deletes its temporary files located in
+                /tmp/scratch after running. Set &lt;bool&gt; to True if you want to preserve the
+                temporary files. </entry>
             </row>
                 <row>
                   <entry>-e f5_openstack_agent_ini="&lt;path&gt;"</entry> 
@@ -727,7 +734,7 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
           changes.</note></li>
         <li>To verify that the load balancer provided by Neutron is no longer running, find all of
           the lines with the following binary: <codeblock>neutron-lbaasv2-agent</codeblock></li>
-        <li>Verify that for each instance of the binary the <b>admin_state_up</b> is set to <b>xxx</b>.</li>
+        <li>Verify that for the binary <codeph>neutron-lbaasv2-agent</codeph>, the <b>alive</b> value is <b>xxx</b>.</li>
         <li>To permanently remove the Neutron agent provided by the binary
             <codeph>neutron-lbaasv2-agent</codeph> file, run:
           <codeblock>neutron agent-list | awk -F'|' '{if($7~"neutron-lbaasv2-agent"){print $2}}' | xargs -n1 -P3 neutron agent-delete</codeblock></li>
