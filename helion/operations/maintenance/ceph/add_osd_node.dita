@@ -4,20 +4,21 @@
 <topic id="add_osdnode">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Adding an Object Storage Daemon (OSD)
     Node</title>
-  <abstract><shortdesc outputclass="hdphidden">Adding additional OSD nodes allows you to increase
+  <abstract><shortdesc outputclass="hdphidden">Adding additional OSD nodes allows you to increase storage
       capacity.</shortdesc>
-    <p>You may have a need to add an object storage daemon (OSD) node for additional Ceph capacity
-      or another purpose and these steps will help you achieve this.</p>
-    <p>The steps involved are:</p></abstract>
+    <p>You may find that you have the need to increase your Ceph storage capacity, or would simply
+      like to increase the number of Ceph OSD nodes in a cluster. In either case, adding a Ceph
+      object storage node (OSD node) is a simple and straightforward process.</p>
+    <p>The steps involved in adding an OSD node to an existing cluster are as follows:</p></abstract>
   <body>
     <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
 
     <section id="prereqs"><title>Prerequisites</title>
-      <p>You should have one or more baremetal servers that meet the minimum hardware requirements
-        for an object storage daemon (OSD) node which are documented in the <xref
+      <p>To begin, make sure you have one or more baremetal servers that meet the minimum hardware
+        requirements for an object storage daemon (OSD) node, as documented in the <xref
           href="../../../planning/hw_support_matrix.dita">Hardware Support Matrix</xref>.</p>
-      <p>Ensure that disks designated to be used for the OSD data and journal storage must meet the
+      <p>Ensure that disks designated to be used for the OSD data and journal storage meet the
         conditions below. If they do not, Ceph configuration will fail:</p>
       <ul id="ul_xsp_mfx_dv">
         <li>Any existing partitions must be deleted</li>
@@ -27,21 +28,21 @@
       <sectiondiv conref="../../../installation/configure_ceph.dita#config_ceph/osd-journal"/>
     </section>
     <section id="steps"><title>Adding an Object Storage Daemon (OSD) Node</title>
-      <p>These steps will show you how to add the new OSD node to your <codeph>servers.yml</codeph>
-        file and then run the playbooks that update your cloud configuration. You will run these
-        playbooks from the lifecycle manager.</p>
+      <p>The following steps will show you how to add a new OSD node to your
+          <codeph>servers.yml</codeph> file and then run the playbooks that update your cloud
+        configuration. You will run these playbooks from the lifecycle manager.</p>
       <ol>
         <li>Log in to your lifecycle manager.</li>
         <li>Checkout the <codeph>site</codeph> branch of your local git so you can begin to make the
           necessary edits:
           <codeblock>cd ~/helion/my_cloud/definition/data
 git checkout site</codeblock></li>
-        <li>In the same directory, edit your <codeph>servers.yml</codeph> file to include the
-          details about your new OSD node(s). Copy and paste the section for an existing server
-          having the <codeph>OSD-ROLE</codeph> role and edit the values to match the new server
+        <li>In the same directory, edit your <codeph>servers.yml</codeph> file to add the details
+          about your new OSD node(s). You can simply copy and paste the section for an existing
+          server with the <codeph>OSD-ROLE</codeph> role and edit the values to match the new server
           being added.<p>For example, if you already had a cluster of three OSD nodes and needed to
-            add a fourth one you would add your details to the bottom of the file in this
-            format:</p>
+            add a fourth one, you would add the  details for your new OSD node to the bottom of the
+            file in this format:</p>
           <codeblock># Ceph OSD Nodes
 - id: osd4
   ip-addr: 192.168.10.9
@@ -55,7 +56,7 @@ git checkout site</codeblock></li>
           <p>You can find detailed descriptions of these fields <xref keyref="configobj_servers"
               >here</xref>.</p>
           <note type="important">You will need to verify that the <codeph>ip-addr</codeph> value you
-            choose for this node does not conflict with any other IP address in your cloud
+            choose for this new node does not conflict with any other IP address in your cloud
             environment. You can confirm this by checking the
               <codeph>~/helion/my_cloud/info/address_info.yml</codeph> file on your lifecycle
             manager.</note>
@@ -63,12 +64,13 @@ git checkout site</codeblock></li>
         <li>In your <codeph>control_plane.yml</codeph> file, in the section that details the OSD
           server-role, you will need to check the values for <codeph>member-count</codeph>,
             <codeph>min-count</codeph>, and <codeph>max-count</codeph>, if you specified them, to
-          ensure that they match up with your new total node count. So for example, if you had
+          ensure that they match up with your new total node count. For example, if you had
           previously specified <codeph>member-count: 3</codeph> and are adding a fourth OSD node,
           you will need to change that value to <codeph>member-count: 4</codeph>. Note that these
-          values may not be specified in your  <codeph>control_plane.yml</codeph> file. If not,
-          proceed to Step 5.<p>See <xref keyref="configobj_controlplane">Input Model - Control
-              Plane</xref> for more details.</p></li>
+          values are optional and may or may not be specified in your
+            <codeph>control_plane.yml</codeph> file. If the values are not specified, proceed to
+          Step 5.<p>See <xref keyref="configobj_controlplane">Input Model - Control Plane</xref> for
+            more details.</p></li>
         <li>Commit the changes to git:
           <codeblock>git add -A
 git commit -a -m "Add node &lt;name>"</codeblock></li>
@@ -83,17 +85,18 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
         <li>Then you can image the node: <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></codeblock>
-          <note>If you don't know the <codeph>&#60;node name></codeph> already, you can get it by
-            using <codeph>sudo cobbler system list</codeph></note>
+          <note>If you don't know the <codeph>&#60;node name></codeph> of your new OSD node, you can
+            get it by using <codeph>sudo cobbler system list</codeph></note>
           <p>Before proceeding, you may want to take a look at
               <b>~/helion/my_cloud/info/server_info.yml</b> to see if the assignment of the node you
             have added is what you expect. It may not be, as nodes will not be numbered
-            consecutively if any have previously been removed. This is to prevent loss of data; the
-            config processor retains data about removed nodes and keeps their ID numbers from being
-            reallocated. See the Persisted Server Allocations section in <xref
-              keyref="persisteddata/persistedserverallocations"><keyword keyref="kw-hos-phrase"/>
-              Input Model</xref> for information on how this works.</p></li>
-        <li>Run the following series of playbooks complete the deployment of your additional OSD
+            consecutively if any have previously been removed. This behavior is by design, and is
+            intended to prevent loss of data; the configuration processor retains data about removed
+            nodes and keeps their ID numbers from being reallocated. See the Persisted Server
+            Allocations section in <xref keyref="persisteddata/persistedserverallocations"><keyword
+                keyref="kw-hos-phrase"/> Input Model</xref> for information on how this
+          works.</p></li>
+        <li>Run the following series of playbooks to complete the deployment of your additional OSD
           node(s) to your Ceph cluster: <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml --tags "generate_hosts_file"
 ansible-playbook -i hosts/verb_hosts site.yml --limit &lt;hostname&gt;</codeblock>
@@ -112,8 +115,8 @@ ansible-playbook -i hosts/verb_hosts site.yml --limit &lt;hostname&gt;</codebloc
         Ceph cluster, the hostname of the newly added OSD should appear in the output.</p>
     </section>
     <section id="monitoring"><title>Adding a New OSD Node to Monitoring</title>
-      <p>If you want to add a new OSD node to the monitoring service checks, there is an additional
-        playbook that must be run to ensure this happens:</p>
+      <p>If you want to add your new OSD node to the monitoring service checks, run the following
+        additional playbook:</p>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-deploy.yml --tags active_ping_checks</codeblock>
     </section>
