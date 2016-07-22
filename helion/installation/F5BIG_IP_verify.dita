@@ -12,11 +12,11 @@ testing critical functionality.</p>
         <li>For limitations of the F5 Networks driver, review the F5 OpenStack LBaaSv2 driver <xref
             href="http://f5-openstack-lbaasv2-driver.readthedocs.io/en/liberty/release_notes.html"
             scope="external" format="html">Release Notes</xref>.</li>
-        <li>The members of a pool should be removed (neutron lbaas- member-delete) before deleting
-          the pool (neutron lbaas-pool- delete), or the members may linger in the F5 appliance
+        <li>The members of a pool should be removed (neutron lbaas-member-delete) before deleting
+          the pool (neutron lbaas-pool-delete), or the members may linger in the F5 appliance
           despite being deleted in Neutron.</li>
-        <li>The pools of a listener should be removed (neutron lbaas- pool-delete) before deleting
-          the listener (neutron lbaas- listener-delete), or the pools may linger in the F5 appliance
+        <li>The pools of a listener should be removed (neutron lbaas-pool-delete) before deleting
+          the listener (neutron lbaas-listener-delete), or the pools may linger in the F5 appliance
           despite being deleted in Neutron.</li>
         <li>If a pool is being monitored, in the BIG-IP control panel, the listener, the pool, and
           the pool members will display a monitoring status, but the nodes will continue to be
@@ -38,8 +38,8 @@ testing critical functionality.</p>
         <tbody>
           <row>
             <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify1">Verify or Upload a Cirros Glance Image</xref> <p>Verify or upload the following Cirros image in Glance:
-              <codeblock>cirros-0.3.4-x86_64-disk</codeblock></p></entry>
+            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify1">Verify or Upload a CirrOS Glance Image</xref> <p>Verify or upload the following CirrOS image in Glance:
+              <codeblock>CirrOS-0.3.4-x86_64-disk</codeblock></p></entry>
           </row>
           <row>
             <entry/>
@@ -61,7 +61,23 @@ testing critical functionality.</p>
             <entry/>
             <entry><xref type="section" href="#F5_BIGIP_30_verify/verify5">Set up Security
                 Groups</xref>
-              <p>Set up security groups that would allow you to access instances.</p></entry>
+              <p>Set up security groups that allow you to access instances. The following list
+                contains the seven commands (in order) that create a security group with all TCP,
+                UDP, and ICMP ports opened:</p><ol>
+                <li>neutron security-group-create allow_all</li>
+                <li>neutron security-group-rule-create allow_all --direction ingress --protocol
+                  icmp</li>
+                <li>neutron security-group-rule-create allow_all --direction egress --protocol
+                  icmp</li>
+                <li>neutron security-group-rule-create allow_all --direction ingress --protocol
+                  tcp</li>
+                <li>neutron security-group-rule-create allow_all --direction egress --protocol
+                  tcp</li>
+                <li>neutron security-group-rule-create allow_all --direction ingress --protocol
+                  udp</li>
+                <li>neutron security-group-rule-create allow_all --direction egress --protocol
+                  udp</li>
+                </ol>These commands open all the ports so that you don't have to troubleshoot security groups if there is a connectivity problem.  These steps are for testing purposes only.</entry>
           </row>
           <row>
             <entry/>
@@ -80,7 +96,7 @@ testing critical functionality.</p>
           <row>
             <entry/>
             <entry><xref type="section" href="#F5_BIGIP_30_verify/verify9">Create a Listener for the
-                Load Balancer.</xref></entry>
+                Load Balancer</xref></entry>
           </row>
           <row>
             <entry/>
@@ -127,11 +143,12 @@ testing critical functionality.</p>
     </table>
     
     <section id="verify1">
-      <title>Verify or Upload a Cirros Glance Image</title>
+      <title>Verify or Upload a CirrOS Glance Image</title>
+      <p>You need a CirrOS image loaded in Glance so that you can create two Nova instances for testing the load balancing.</p>
       <ol>
-        <li>Verify that you have the following Cirros image in Glance 
-          <codeblock>cirros-0.3.4-x86_64-disk</codeblock></li>
-        <li>If you do not have it, to upload a Cirros image, run:
+        <li>Verify that you have the following CirrOS image in Glance 
+          <codeblock>CirrOS-0.3.4-x86_64-disk</codeblock></li>
+        <li>If you do not have it, to upload a CirrOS image, run:
           <codeblock>cd
 #Export a proxy if necessary (e.g. `export http_proxy="http://proxy.atlanta.hp.com:8080"`)
 wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
@@ -141,10 +158,10 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
     </lines>
     <section id="verify2">
       <title>Verify or Create an External Network and Subnet</title>
-      <p>If you do not already have an external network, in this documentation it is called <b>ext-net</b>ext-net"), then you must create one and its associated subnet.</p>
+      <p>If you do not already have an external network, in this documentation it is called <b>ext-net</b>, then you must create one and its associated subnet.</p>
       <p>Use the following sample to understand how to create the external network:</p>
         <ol>
-        <li>To create a new networ, run:
+        <li>To create a new network, run:
           <codeblock>~$ neutron net-create ext-net --router:external True --provider:segmentation_id 812 --provider:network_type vxlan</codeblock>
           Sample
           output:<codeblock>+---------------------------+--------------------------------------+
@@ -616,7 +633,7 @@ Created a new security_group_rule:
     
     <section id="verify12">
       <title>Log in to Each Instance</title>
-      <p>Log in to each instance using its floating IP address. On Cirros, the following settings are used:</p>
+      <p>Log in to each instance using its floating IP address. On CirrOS, the following settings are used:</p>
       <dl>
         <dlentry>
           <dt>username</dt>
@@ -662,8 +679,6 @@ cirros@10.246.71.7's password: </codeblock>
           <codeblock>$ curl &lt;IP_address&gt;</codeblock> Sample output:
           <codeblock>$ curl 10.1.0.7
 Welcome to 10.1.0.7</codeblock></li>
-<li>To repeat this step on another instance, run:
-  <codeblock>^C</codeblock></li>
             <li>Repeat these steps for each connection you want to test.</li>
       </ol>
     </section>
@@ -726,11 +741,16 @@ Welcome to 10.1.0.8
     <section id="verify17">
       <title>Confirm the F5 BIG-IP Properties</title>
       <p>A final test of integration is to use the F5 Networks graphical user interface to confirm that the F5 BIG-IP partition is populated with the correct listener, pool, and members.</p>
+      <p>To open the F5 dashboard:</p>
       <ol>
-        <li>To open the F5 dashboard, run:
-        <codeblock>&lt;command&gt;</codeblock>
-        Sample output:
-        <image href="../../media/F5BIGIP_verify.png"></image></li>
+        <li>Open a browser.</li>
+        <li>Navigate to the following URL: <codeblock>https://&lt;iControl_IP&gt;/</codeblock>
+          where: <dl>
+            <dlentry>
+              <dt>&lt;iControl_IP&gt;</dt>
+              <dd>IP address or hostname of the BIG-IP appliance</dd>
+            </dlentry>
+          </dl> Sample output: <image href="../../media/F5BIGIP_verify.png"/></li>
       </ol>
     </section>
     
