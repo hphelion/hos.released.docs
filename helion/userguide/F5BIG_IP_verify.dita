@@ -43,28 +43,30 @@ testing critical functionality.</p>
           </row>
           <row>
             <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify2">Verify or create an external network and subnet</xref><p>If not already existing, create an external network and its associated 
-              subnet.</p></entry>
+            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify2">Verify or Create an
+                External Network and Subnet</xref><p>If not already existing, create an external
+                network and its associated subnet.</p></entry>
           </row>
           <row>
             <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify3">Create a private network and subnet for the instances</xref></entry>
+            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify3">Create a Private Network
+                and Subnet for the Instances</xref></entry>
           </row>
           <row>
             <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify4">Create a router</xref>
-              <p>Create a router to connect the private network to the 
-                external network.</p></entry>
+            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify4">Create a Router</xref>
+              <p>Create a router to connect the private network to the external network.</p></entry>
           </row>
           <row>
             <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify5">Set up security groups</xref>
-              <p>Set up security groups that would allow you to access 
-                instances.</p></entry>
+            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify5">Set up Security
+                Groups</xref>
+              <p>Set up security groups that would allow you to access instances.</p></entry>
           </row>
           <row>
             <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify6">Create two virtual machine instances</xref></entry>
+            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify6">Create 2 Virtual Machine
+                Instances</xref></entry>
           </row>
           <row>
             <entry/>
@@ -72,11 +74,13 @@ testing critical functionality.</p>
           </row>
           <row>
             <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify8">Create a load balancer</xref></entry>
+            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify8">Create a Load
+                Balancer</xref></entry>
           </row>
           <row>
             <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify9">Create a listener for the load balancer.</xref></entry>
+            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify9">Create a Listener for the
+                Load Balancer.</xref></entry>
           </row>
           <row>
             <entry/>
@@ -136,7 +140,7 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
     <lines>
     </lines>
     <section id="verify2">
-      <title>Verify or create an external network and subnet</title>
+      <title>Verify or Create an External Network and Subnet</title>
       <p>If you do not already have an external network, in this documentation it is called <b>ext-net</b>ext-net"), then you must create one and its associated subnet.</p>
       <p>Use the following sample to understand how to create the external network:</p>
         <ol>
@@ -185,74 +189,70 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
     <lines>
     </lines>
     <section id="verify3">
-      <title>Create a private network and subnet for the instances</title>
+      <title>Create a Private Network and Subnet for the Instances</title>
       <ol>
         <li>To create a private network for the instances, run:
-          <codeblock>~$ neutron net-create f5private</codeblock>
-          Sample output:<codeblock>
-          +---------------------------+--------------------------------------+
-          | Field                     | Value                                |
-          +---------------------------+--------------------------------------+
-          | admin_state_up            | True                                 |
-          | id                        | c80a0b0f-7f72-4409-9b98-c66bf2aafe04 |
-          | mtu                       | 0                                    |
-          | name                      | f5private                            |
-          | provider:network_type     | vxlan                                |
-          | provider:physical_network |                                      |
-          | provider:segmentation_id  | 1005                                 |
-          | router:external           | False                                |
-          | shared                    | False                                |
-          | status                    | ACTIVE                               |
-          | subnets                   |                                      |
-          | tenant_id                 | aa387f39ed5149149f196e7ab40f7fd3     |
-          +---------------------------+--------------------------------------+
-          </codeblock></li>
+          <codeblock>~$ neutron net-create f5private</codeblock> Sample
+          output:<codeblock>+---------------------------+--------------------------------------+
+| Field                     | Value                                |
++---------------------------+--------------------------------------+
+| admin_state_up            | True                                 |
+| id                        | c80a0b0f-7f72-4409-9b98-c66bf2aafe04 |
+| mtu                       | 0                                    |
+| name                      | f5private                            |
+| provider:network_type     | vxlan                                |
+| provider:physical_network |                                      |
+| provider:segmentation_id  | 1005                                 |
+| router:external           | False                                |
+| shared                    | False                                |
+| status                    | ACTIVE                               |
+| subnets                   |                                      |
+| tenant_id                 | aa387f39ed5149149f196e7ab40f7fd3     |
++---------------------------+--------------------------------------+</codeblock></li>
           <li>To create a subnet under that network, run:
           <codeblock>~$ neutron subnet-create --name f5sub f5private 10.1.0.0/24 --gateway 10.1.0.1</codeblock>
-            Sample output:<codeblock>
-          +-------------------+--------------------------------------------+
-          | Field             | Value                                      |
-          +-------------------+--------------------------------------------+
-          | allocation_pools  | {"start": "10.1.0.2", "end": "10.1.0.254"} |
-          | cidr              | 10.1.0.0/24                                |
-          | dns_nameservers   |                                            |
-          | enable_dhcp       | True                                       |
-          | gateway_ip        | 10.1.0.1                                   |
-          | host_routes       |                                            |
-          | id                | d1d9675c-43e8-44a0-b3f8-db78761e1d1b       |
-          | ip_version        | 4                                          |
-          | ipv6_address_mode |                                            |
-          | ipv6_ra_mode      |                                            |
-          | name              | f5sub                                      |
-          | network_id        | c80a0b0f-7f72-4409-9b98-c66bf2aafe04       |
-          | subnetpool_id     |                                            |
-          | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3           |
-          +-------------------+--------------------------------------------+</codeblock></li>
+          Sample
+          output:<codeblock>+-------------------+--------------------------------------------+
+| Field             | Value                                      |
++-------------------+--------------------------------------------+
+| allocation_pools  | {"start": "10.1.0.2", "end": "10.1.0.254"} |
+| cidr              | 10.1.0.0/24                                |
+| dns_nameservers   |                                            |
+| enable_dhcp       | True                                       |
+| gateway_ip        | 10.1.0.1                                   |
+| host_routes       |                                            |
+| id                | d1d9675c-43e8-44a0-b3f8-db78761e1d1b       |
+| ip_version        | 4                                          |
+| ipv6_address_mode |                                            |
+| ipv6_ra_mode      |                                            |
+| name              | f5sub                                      |
+| network_id        | c80a0b0f-7f72-4409-9b98-c66bf2aafe04       |
+| subnetpool_id     |                                            |
+| tenant_id         | aa387f39ed5149149f196e7ab40f7fd3           |
++-------------------+--------------------------------------------+</codeblock></li>
       </ol>
     </section>
     <lines>
     </lines>
     <section id="verify4">
-      <title>Create a router</title>
+      <title>Create a Router</title>
       <p>To connect the private network to the external network:</p>
         <ol>
-          <li>To create a new router, run:
-<codeblock>~$ neutron router-create f5router</codeblock>
-            Sample output:<codeblock>
-        +-----------------------+--------------------------------------+
-        | Field                 | Value                                |
-        +-----------------------+--------------------------------------+
-        | admin_state_up        | True                                 |
-        | distributed           | True                                 |
-        | external_gateway_info |                                      |
-        | ha                    | False                                |
-        | id                    | 75a9e224-9e80-4f5a-9fc7-d1cb08513047 |
-        | name                  | f5router                             |
-        | routes                |                                      |
-        | status                | ACTIVE                               |
-        | tenant_id             | aa387f39ed5149149f196e7ab40f7fd3     |
-        +-----------------------+--------------------------------------+
-        </codeblock></li>
+          <li>To create a new router, run: <codeblock>~$ neutron router-create f5router</codeblock>
+          Sample
+          output:<codeblock>+-----------------------+--------------------------------------+
+| Field                 | Value                                |
++-----------------------+--------------------------------------+
+| admin_state_up        | True                                 |
+| distributed           | True                                 |
+| external_gateway_info |                                      |
+| ha                    | False                                |
+| id                    | 75a9e224-9e80-4f5a-9fc7-d1cb08513047 |
+| name                  | f5router                             |
+| routes                |                                      |
+| status                | ACTIVE                               |
+| tenant_id             | aa387f39ed5149149f196e7ab40f7fd3     |
++-----------------------+--------------------------------------+</codeblock></li>
 <li>To add an interface to the router, run:
   <codeblock>~$ neutron router-interface-add f5router f5sub</codeblock>
 Sample output:
@@ -266,193 +266,193 @@ Sample output:
     <lines>
     </lines>
     <section id="verify5">
-      <title>Set up security groups</title>
+      <title>Set Up Security Groups</title>
       <ol>
         <li>To create a new security group, run:
           <codeblock>~$ neutron security-group-create allow_all</codeblock>
           Sample output:
         </li>
           <li>To create a new security group rule, run:
-            <codeblock>~$ neutron security-group-rule-create allow_all --direction ingress --protocol icmp</codeblock> 
-          Sample output:<codeblock>
-          +-------------------+--------------------------------------+
-          | Field             | Value                                |
-          +-------------------+--------------------------------------+
-          | direction         | ingress                              |
-          | ethertype         | IPv4                                 |
-          | id                | fc046657-f3cf-4955-bbbe-cc8ae3ffa782 |
-          | port_range_max    |                                      |
-          | port_range_min    |                                      |
-          | protocol          | icmp                                 |
-          | remote_group_id   |                                      |
-          | remote_ip_prefix  |                                      |
-          | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
-          | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-          +-------------------+--------------------------------------+ </codeblock></li>
+          <codeblock>~$ neutron security-group-rule-create allow_all --direction ingress --protocol icmp</codeblock>
+          Sample
+          output:<codeblock>+-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | ingress                              |
+| ethertype         | IPv4                                 |
+| id                | fc046657-f3cf-4955-bbbe-cc8ae3ffa782 |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | icmp                                 |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
+| tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
++-------------------+--------------------------------------+ </codeblock></li>
         <li>To create a new security group rule, run:
           <codeblock>~$ neutron security-group-rule-create allow_all --direction egress --protocol icmp</codeblock>
-          Sample output:<codeblock>
-          +-------------------+--------------------------------------+
-          | Field             | Value                                |
-          +-------------------+--------------------------------------+
-          | direction         | egress                               |
-          | ethertype         | IPv4                                 |
-          | id                | 18201397-83c2-4f34-a25e-2c07cafab50e |
-          | port_range_max    |                                      |
-          | port_range_min    |                                      |
-          | protocol          | icmp                                 |
-          | remote_group_id   |                                      |
-          | remote_ip_prefix  |                                      |
-          | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
-          | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-          +-------------------+--------------------------------------+</codeblock></li>
+          Sample
+          output:<codeblock>+-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | egress                               |
+| ethertype         | IPv4                                 |
+| id                | 18201397-83c2-4f34-a25e-2c07cafab50e |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | icmp                                 |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
+| tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
++-------------------+--------------------------------------+</codeblock></li>
         <li>To create a new security group rule, run:
           <codeblock>~$ neutron security-group-rule-create allow_all --direction ingress --protocol tcp
-          Created a new security_group_rule:
-          +-------------------+--------------------------------------+
-          | Field             | Value                                |
-          +-------------------+--------------------------------------+
-          | direction         | ingress                              |
-          | ethertype         | IPv4                                 |
-          | id                | ca7fcfa1-9635-45ce-a920-9b7e579876cb |
-          | port_range_max    |                                      |
-          | port_range_min    |                                      |
-          | protocol          | tcp                                  |
-          | remote_group_id   |                                      |
-          | remote_ip_prefix  |                                      |
-          | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
-          | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-          +-------------------+--------------------------------------+
-          stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction egress --protocol tcp
-          Created a new security_group_rule:
-          +-------------------+--------------------------------------+
-          | Field             | Value                                |
-          +-------------------+--------------------------------------+
-          | direction         | egress                               |
-          | ethertype         | IPv4                                 |
-          | id                | 04e3b094-4a4f-473b-92a0-3040f44277b9 |
-          | port_range_max    |                                      |
-          | port_range_min    |                                      |
-          | protocol          | tcp                                  |
-          | remote_group_id   |                                      |
-          | remote_ip_prefix  |                                      |
-          | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
-          | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-          +-------------------+--------------------------------------+
-          stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction ingress --protocol udp
-          Created a new security_group_rule:
-          +-------------------+--------------------------------------+
-          | Field             | Value                                |
-          +-------------------+--------------------------------------+
-          | direction         | ingress                              |
-          | ethertype         | IPv4                                 |
-          | id                | 793128f7-8229-40f2-a9bc-0ded64f07c01 |
-          | port_range_max    |                                      |
-          | port_range_min    |                                      |
-          | protocol          | udp                                  |
-          | remote_group_id   |                                      |
-          | remote_ip_prefix  |                                      |
-          | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
-          | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-          +-------------------+--------------------------------------+
-          stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction egress --protocol udp
-          Created a new security_group_rule:
-          +-------------------+--------------------------------------+
-          | Field             | Value                                |
-          +-------------------+--------------------------------------+
-          | direction         | egress                               |
-          | ethertype         | IPv4                                 |
-          | id                | f4bc3c65-b14c-4ab2-8ddf-4d0686ee4180 |
-          | port_range_max    |                                      |
-          | port_range_min    |                                      |
-          | protocol          | udp                                  |
-          | remote_group_id   |                                      |
-          | remote_ip_prefix  |                                      |
-          | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
-          | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-          +-------------------+--------------------------------------+</codeblock></li>
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | ingress                              |
+| ethertype         | IPv4                                 |
+| id                | ca7fcfa1-9635-45ce-a920-9b7e579876cb |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | tcp                                  |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
+| tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
++-------------------+--------------------------------------+
+
+~$ neutron security-group-rule-create allow_all --direction egress --protocol tcp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | egress                               |
+| ethertype         | IPv4                                 |
+| id                | 04e3b094-4a4f-473b-92a0-3040f44277b9 |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | tcp                                  |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
+| tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
++-------------------+--------------------------------------+
+
+~$ neutron security-group-rule-create allow_all --direction ingress --protocol udp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | ingress                              |
+| ethertype         | IPv4                                 |
+| id                | 793128f7-8229-40f2-a9bc-0ded64f07c01 |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | udp                                  |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
+| tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
++-------------------+--------------------------------------+
+
+:~$ neutron security-group-rule-create allow_all --direction egress --protocol udp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | egress                               |
+| ethertype         | IPv4                                 |
+| id                | f4bc3c65-b14c-4ab2-8ddf-4d0686ee4180 |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | udp                                  |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
+| tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
++-------------------+--------------------------------------+</codeblock></li>
       </ol>
     </section>
     <lines>
     </lines>
     <section id="verify6">
-      <title>Create Two Virtual Machine Instances</title>
+      <title>Create 2 Virtual Machine Instances</title>
       <ol>
       <li> To create the first VM, run:
-        <codeblock>~$ nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm1</codeblock>
-        Sample output:
-        <codeblock>
-        +--------------------------------------+-----------------------------------------------------------------+
-        | Property                             | Value                                                           |
-        +--------------------------------------+-----------------------------------------------------------------+
-        | OS-DCF:diskConfig                    | MANUAL                                                          |
-        | OS-EXT-AZ:availability_zone          |                                                                 |
-        | OS-EXT-SRV-ATTR:host                 | -                                                               |
-        | OS-EXT-SRV-ATTR:hypervisor_hostname  | -                                                               |
-        | OS-EXT-SRV-ATTR:instance_name        | instance-00000009                                               |
-        | OS-EXT-STS:power_state               | 0                                                               |
-        | OS-EXT-STS:task_state                | scheduling                                                      |
-        | OS-EXT-STS:vm_state                  | building                                                        |
-        | OS-SRV-USG:launched_at               | -                                                               |
-        | OS-SRV-USG:terminated_at             | -                                                               |
-        | accessIPv4                           |                                                                 |
-        | accessIPv6                           |                                                                 |
-        | adminPass                            | ZUnnCFivASV3                                                    |
-        | config_drive                         |                                                                 |
-        | created                              | 2016-06-29T19:31:55Z                                            |
-        | flavor                               | m1.tiny (1)                                                     |
-        | hostId                               |                                                                 |
-        | id                                   | a2d196f3-cf11-4dd8-b755-4908f5f0f7d3                            |
-        | image                                | cirros-0.3.4-x86_64-disk (aa29d1d9-4786-4577-bcaa-1cfaba5d97c4) |
-        | key_name                             | -                                                               |
-        | metadata                             | {}                                                              |
-        | name                                 | f5vm1                                                           |
-        | os-extended-volumes:volumes_attached | []                                                              |
-        | progress                             | 0                                                               |
-        | security_groups                      | allow_all                                                       |
-        | status                               | BUILD                                                           |
-        | tenant_id                            | aa387f39ed5149149f196e7ab40f7fd3                                |
-        | updated                              | 2016-06-29T19:31:55Z                                            |
-        | user_id                              | bdf0c78bc1b44f009b651a040f1d2773                                |
-        +--------------------------------------+-----------------------------------------------------------------+</codeblock></li>
+          <codeblock>~$ nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm1</codeblock>
+          Sample output:
+          <codeblock>+--------------------------------------+-----------------------------------------------------------------+
+| Property                             | Value                                                           |
++--------------------------------------+-----------------------------------------------------------------+
+| OS-DCF:diskConfig                    | MANUAL                                                          |
+| OS-EXT-AZ:availability_zone          |                                                                 |
+| OS-EXT-SRV-ATTR:host                 | -                                                               |
+| OS-EXT-SRV-ATTR:hypervisor_hostname  | -                                                               |
+| OS-EXT-SRV-ATTR:instance_name        | instance-00000009                                               |
+| OS-EXT-STS:power_state               | 0                                                               |
+| OS-EXT-STS:task_state                | scheduling                                                      |
+| OS-EXT-STS:vm_state                  | building                                                        |
+| OS-SRV-USG:launched_at               | -                                                               |
+| OS-SRV-USG:terminated_at             | -                                                               |
+| accessIPv4                           |                                                                 |
+| accessIPv6                           |                                                                 |
+| adminPass                            | ZUnnCFivASV3                                                    |
+| config_drive                         |                                                                 |
+| created                              | 2016-06-29T19:31:55Z                                            |
+| flavor                               | m1.tiny (1)                                                     |
+| hostId                               |                                                                 |
+| id                                   | a2d196f3-cf11-4dd8-b755-4908f5f0f7d3                            |
+| image                                | cirros-0.3.4-x86_64-disk (aa29d1d9-4786-4577-bcaa-1cfaba5d97c4) |
+| key_name                             | -                                                               |
+| metadata                             | {}                                                              |
+| name                                 | f5vm1                                                           |
+| os-extended-volumes:volumes_attached | []                                                              |
+| progress                             | 0                                                               |
+| security_groups                      | allow_all                                                       |
+| status                               | BUILD                                                           |
+| tenant_id                            | aa387f39ed5149149f196e7ab40f7fd3                                |
+| updated                              | 2016-06-29T19:31:55Z                                            |
+| user_id                              | bdf0c78bc1b44f009b651a040f1d2773                                |
++--------------------------------------+-----------------------------------------------------------------+</codeblock></li>
         <li> To create the first VM, run:
           <codeblock>~$ nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm2</codeblock>
           Sample output:
-          <codeblock>
-        +--------------------------------------+-----------------------------------------------------------------+
-        | Property                             | Value                                                           |
-        +--------------------------------------+-----------------------------------------------------------------+
-        | OS-DCF:diskConfig                    | MANUAL                                                          |
-        | OS-EXT-AZ:availability_zone          |                                                                 |
-        | OS-EXT-SRV-ATTR:host                 | -                                                               |
-        | OS-EXT-SRV-ATTR:hypervisor_hostname  | -                                                               |
-        | OS-EXT-SRV-ATTR:instance_name        | instance-0000000c                                               |
-        | OS-EXT-STS:power_state               | 0                                                               |
-        | OS-EXT-STS:task_state                | scheduling                                                      |
-        | OS-EXT-STS:vm_state                  | building                                                        |
-        | OS-SRV-USG:launched_at               | -                                                               |
-        | OS-SRV-USG:terminated_at             | -                                                               |
-        | accessIPv4                           |                                                                 |
-        | accessIPv6                           |                                                                 |
-        | adminPass                            | qsZ8STziYWzD                                                    |
-        | config_drive                         |                                                                 |
-        | created                              | 2016-06-29T19:32:02Z                                            |
-        | flavor                               | m1.tiny (1)                                                     |
-        | hostId                               |                                                                 |
-        | id                                   | 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02                            |
-        | image                                | cirros-0.3.4-x86_64-disk (aa29d1d9-4786-4577-bcaa-1cfaba5d97c4) |
-        | key_name                             | -                                                               |
-        | metadata                             | {}                                                              |
-        | name                                 | f5vm2                                                           |
-        | os-extended-volumes:volumes_attached | []                                                              |
-        | progress                             | 0                                                               |
-        | security_groups                      | allow_all                                                       |
-        | status                               | BUILD                                                           |
-        | tenant_id                            | aa387f39ed5149149f196e7ab40f7fd3                                |
-        | updated                              | 2016-06-29T19:32:02Z                                            |
-        | user_id                              | bdf0c78bc1b44f009b651a040f1d2773                                |
-        +--------------------------------------+-----------------------------------------------------------------+
-      </codeblock></li>
+          <codeblock>+--------------------------------------+-----------------------------------------------------------------+
+| Property                             | Value                                                           |
++--------------------------------------+-----------------------------------------------------------------+
+| OS-DCF:diskConfig                    | MANUAL                                                          |
+| OS-EXT-AZ:availability_zone          |                                                                 |
+| OS-EXT-SRV-ATTR:host                 | -                                                               |
+| OS-EXT-SRV-ATTR:hypervisor_hostname  | -                                                               |
+| OS-EXT-SRV-ATTR:instance_name        | instance-0000000c                                               |
+| OS-EXT-STS:power_state               | 0                                                               |
+| OS-EXT-STS:task_state                | scheduling                                                      |
+| OS-EXT-STS:vm_state                  | building                                                        |
+| OS-SRV-USG:launched_at               | -                                                               |
+| OS-SRV-USG:terminated_at             | -                                                               |
+| accessIPv4                           |                                                                 |
+| accessIPv6                           |                                                                 |
+| adminPass                            | qsZ8STziYWzD                                                    |
+| config_drive                         |                                                                 |
+| created                              | 2016-06-29T19:32:02Z                                            |
+| flavor                               | m1.tiny (1)                                                     |
+| hostId                               |                                                                 |
+| id                                   | 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02                            |
+| image                                | cirros-0.3.4-x86_64-disk (aa29d1d9-4786-4577-bcaa-1cfaba5d97c4) |
+| key_name                             | -                                                               |
+| metadata                             | {}                                                              |
+| name                                 | f5vm2                                                           |
+| os-extended-volumes:volumes_attached | []                                                              |
+| progress                             | 0                                                               |
+| security_groups                      | allow_all                                                       |
+| status                               | BUILD                                                           |
+| tenant_id                            | aa387f39ed5149149f196e7ab40f7fd3                                |
+| updated                              | 2016-06-29T19:32:02Z                                            |
+| user_id                              | bdf0c78bc1b44f009b651a040f1d2773                                |
++--------------------------------------+-----------------------------------------------------------------+</codeblock></li>
       </ol>
     </section>
     <lines>
@@ -460,24 +460,20 @@ Sample output:
     <section id="verify7">
       <title>Connect a Floating IP Addresses to Each Instance</title>
       <ol>
-        <li> To create a floating IP, run:
-          <codeblock>~$ nova floating-ip-create</codeblock>
-          Sample output:
-          <codeblock>
-        +--------------------------------------+-------------+-----------+----------+---------+
-        | Id                                   | IP          | Server Id | Fixed IP | Pool    |
-        +--------------------------------------+-------------+-----------+----------+---------+
-        | b7a40218-d304-4113-a701-475338bb6d99 | 10.246.71.7 | -         | -        | ext-net |
-        +--------------------------------------+-------------+-----------+----------+---------+</codeblock></li>
-<li>To create another floating IP, run:
-  <codeblock>~$ nova floating-ip-create</codeblock>
-  Sample output:
-  <codeblock>
-        +--------------------------------------+-------------+-----------+----------+---------+
-        | Id                                   | IP          | Server Id | Fixed IP | Pool    |
-        +--------------------------------------+-------------+-----------+----------+---------+
-        | fdcb621e-a90e-4fa5-b05a-fdf2fd6a058c | 10.246.71.8 | -         | -        | ext-net |
-        +--------------------------------------+-------------+-----------+----------+---------+</codeblock></li>
+        <li> To create a floating IP, run: <codeblock>~$ nova floating-ip-create</codeblock> Sample
+          output:
+          <codeblock>+--------------------------------------+-------------+-----------+----------+---------+
+| Id                                   | IP          | Server Id | Fixed IP | Pool    |
++--------------------------------------+-------------+-----------+----------+---------+
+| b7a40218-d304-4113-a701-475338bb6d99 | 10.246.71.7 | -         | -        | ext-net |
++--------------------------------------+-------------+-----------+----------+---------+</codeblock></li>
+<li>To create another floating IP, run: <codeblock>~$ nova floating-ip-create</codeblock> Sample
+          output:
+          <codeblock>+--------------------------------------+-------------+-----------+----------+---------+
+| Id                                   | IP          | Server Id | Fixed IP | Pool    |
++--------------------------------------+-------------+-----------+----------+---------+
+| fdcb621e-a90e-4fa5-b05a-fdf2fd6a058c | 10.246.71.8 | -         | -        | ext-net |
++--------------------------------------+-------------+-----------+----------+---------+</codeblock></li>
         <li>To associate the new floating IP addresses with an instance, run:
 <codeblock>~$ nova floating-ip-associate a2d196f3-cf11-4dd8-b755-4908f5f0f7d3 10.246.71.7
 ~$ nova floating-ip-associate 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02 10.246.71.8</codeblock></li>
@@ -491,43 +487,43 @@ Sample output:
       <ol>
         <li>To create a new load balancer, run:
           <codeblock>~$ neutron lbaas-loadbalancer-create --name f5lb --vip-address 10.1.0.5 --provider f5networks f5sub</codeblock>
-          Sample output:<codeblock>
-      +---------------------+--------------------------------------+
-      | Field               | Value                                |
-      +---------------------+--------------------------------------+
-      | admin_state_up      | True                                 |
-      | description         |                                      |
-      | id                  | 920378e1-78c6-495a-93a1-4b97fd8560be |
-      | listeners           |                                      |
-      | name                | f5lb                                 |
-      | operating_status    | OFFLINE                              |
-      | provider            | f5networks                           |
-      | provisioning_status | PENDING_CREATE                       |
-      | tenant_id           | aa387f39ed5149149f196e7ab40f7fd3     |
-      | vip_address         | 10.1.0.5                             |
-      | vip_port_id         | 69aa3350-b804-40a7-8fd8-a407de3ee8a5 |
-      | vip_subnet_id       | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
-      +---------------------+--------------------------------------+</codeblock></li>
+          Sample
+          output:<codeblock>+---------------------+--------------------------------------+
+| Field               | Value                                |
++---------------------+--------------------------------------+
+| admin_state_up      | True                                 |
+| description         |                                      |
+| id                  | 920378e1-78c6-495a-93a1-4b97fd8560be |
+| listeners           |                                      |
+| name                | f5lb                                 |
+| operating_status    | OFFLINE                              |
+| provider            | f5networks                           |
+| provisioning_status | PENDING_CREATE                       |
+| tenant_id           | aa387f39ed5149149f196e7ab40f7fd3     |
+| vip_address         | 10.1.0.5                             |
+| vip_port_id         | 69aa3350-b804-40a7-8fd8-a407de3ee8a5 |
+| vip_subnet_id       | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
++---------------------+--------------------------------------+</codeblock></li>
         <li>To show the properties of the newly created load balancer, run:
       <codeblock>~$ neutron lbaas-loadbalancer-show &lt;name of load balancer&gt;</codeblock>
         Sample output:
         <codeblock>~$ neutron lbaas-loadbalancer-show 920378e1-78c6-495a-93a1-4b97fd8560be
-      +---------------------+--------------------------------------+
-      | Field               | Value                                |
-      +---------------------+--------------------------------------+
-      | admin_state_up      | True                                 |
-      | description         |                                      |
-      | id                  | 920378e1-78c6-495a-93a1-4b97fd8560be |
-      | listeners           |                                      |
-      | name                | f5lb                                 |
-      | operating_status    | ONLINE                               |
-      | provider            | f5networks                           |
-      | provisioning_status | ACTIVE                               |
-      | tenant_id           | aa387f39ed5149149f196e7ab40f7fd3     |
-      | vip_address         | 10.1.0.5                             |
-      | vip_port_id         | 69aa3350-b804-40a7-8fd8-a407de3ee8a5 |
-      | vip_subnet_id       | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
-      +---------------------+--------------------------------------+</codeblock></li>
++---------------------+--------------------------------------+
+| Field               | Value                                |
++---------------------+--------------------------------------+
+| admin_state_up      | True                                 |
+| description         |                                      |
+| id                  | 920378e1-78c6-495a-93a1-4b97fd8560be |
+| listeners           |                                      |
+| name                | f5lb                                 |
+| operating_status    | ONLINE                               |
+| provider            | f5networks                           |
+| provisioning_status | ACTIVE                               |
+| tenant_id           | aa387f39ed5149149f196e7ab40f7fd3     |
+| vip_address         | 10.1.0.5                             |
+| vip_port_id         | 69aa3350-b804-40a7-8fd8-a407de3ee8a5 |
+| vip_subnet_id       | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
++---------------------+--------------------------------------+</codeblock></li>
       </ol>
     </section>
     
@@ -536,24 +532,23 @@ Sample output:
       <ol>
         <li>To create a new listener, run:
           <codeblock>~$ neutron lbaas-listener-create --loadbalancer f5lb --protocol HTTP --protocol-port 80 --name f5listener</codeblock>
-          Sample output:<codeblock>
-          +---------------------------+------------------------------------------------+
-          | Field                     | Value                                          |
-          +---------------------------+------------------------------------------------+
-          | admin_state_up            | True                                           |
-          | connection_limit          | -1                                             |
-          | default_pool_id           |                                                |
-          | default_tls_container_ref |                                                |
-          | description               |                                                |
-          | id                        | 3969e5b2-4b0a-44ca-9810-731afaf0e19e           |
-          | loadbalancers             | {"id": "920378e1-78c6-495a-93a1-4b97fd8560be"} |
-          | name                      | f5listener                                     |
-          | protocol                  | HTTP                                           |
-          | protocol_port             | 80                                             |
-          | sni_container_refs        |                                                |
-          | tenant_id                 | aa387f39ed5149149f196e7ab40f7fd3               |
-          +---------------------------+------------------------------------------------+
-          </codeblock>
+          Sample
+          output:<codeblock>+---------------------------+------------------------------------------------+
+| Field                     | Value                                          |
++---------------------------+------------------------------------------------+
+| admin_state_up            | True                                           |
+| connection_limit          | -1                                             |
+| default_pool_id           |                                                |
+| default_tls_container_ref |                                                |
+| description               |                                                |
+| id                        | 3969e5b2-4b0a-44ca-9810-731afaf0e19e           |
+| loadbalancers             | {"id": "920378e1-78c6-495a-93a1-4b97fd8560be"} |
+| name                      | f5listener                                     |
+| protocol                  | HTTP                                           |
+| protocol_port             | 80                                             |
+| sni_container_refs        |                                                |
+| tenant_id                 | aa387f39ed5149149f196e7ab40f7fd3               |
++---------------------------+------------------------------------------------+</codeblock>
         </li>
       </ol>
     </section>
@@ -563,22 +558,22 @@ Sample output:
       <ol>
         <li>To create a new pool, run:
           <codeblock>~$ neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener --protocol HTTP --name f5pool</codeblock>
-          Sample output:<codeblock>
-          +---------------------+------------------------------------------------+
-          | Field               | Value                                          |
-          +---------------------+------------------------------------------------+
-          | admin_state_up      | True                                           |
-          | description         |                                                |
-          | healthmonitor_id    |                                                |
-          | id                  | bfae1a16-2e06-47c3-9cea-fcc56b8e8bae           |
-          | lb_algorithm        | ROUND_ROBIN                                    |
-          | listeners           | {"id": "3969e5b2-4b0a-44ca-9810-731afaf0e19e"} |
-          | members             |                                                |
-          | name                | f5pool                                         |
-          | protocol            | HTTP                                           |
-          | session_persistence |                                                |
-          | tenant_id           | aa387f39ed5149149f196e7ab40f7fd3               |
-          +---------------------+------------------------------------------------+</codeblock>
+          Sample
+          output:<codeblock>+---------------------+------------------------------------------------+
+| Field               | Value                                          |
++---------------------+------------------------------------------------+
+| admin_state_up      | True                                           |
+| description         |                                                |
+| healthmonitor_id    |                                                |
+| id                  | bfae1a16-2e06-47c3-9cea-fcc56b8e8bae           |
+| lb_algorithm        | ROUND_ROBIN                                    |
+| listeners           | {"id": "3969e5b2-4b0a-44ca-9810-731afaf0e19e"} |
+| members             |                                                |
+| name                | f5pool                                         |
+| protocol            | HTTP                                           |
+| session_persistence |                                                |
+| tenant_id           | aa387f39ed5149149f196e7ab40f7fd3               |
++---------------------+------------------------------------------------+</codeblock>
         </li>
       </ol>
     </section>
@@ -589,33 +584,33 @@ Sample output:
       <p>The two new pool members you create will plug into the instances' fixed IP addresses.</p>
         <ol>
         <li>To create a new member, run:
-        <codeblock>~$ neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock>
-        Sample output:<codeblock>
-        +----------------+--------------------------------------+
-        | Field          | Value                                |
-        +----------------+--------------------------------------+
-        | address        | 10.1.0.7                             |
-        | admin_state_up | True                                 |
-        | id             | b0f8370d-1ee5-46f6-be38-9efb2c5807ec |
-        | protocol_port  | 80                                   |
-        | subnet_id      | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
-        | tenant_id      | aa387f39ed5149149f196e7ab40f7fd3     |
-        | weight         | 1                                    |
-        +----------------+--------------------------------------+</codeblock></li>
+          <codeblock>~$ neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock>
+          Sample
+          output:<codeblock>+----------------+--------------------------------------+
+| Field          | Value                                |
++----------------+--------------------------------------+
+| address        | 10.1.0.7                             |
+| admin_state_up | True                                 |
+| id             | b0f8370d-1ee5-46f6-be38-9efb2c5807ec |
+| protocol_port  | 80                                   |
+| subnet_id      | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
+| tenant_id      | aa387f39ed5149149f196e7ab40f7fd3     |
+| weight         | 1                                    |
++----------------+--------------------------------------+</codeblock></li>
        <li>To create a second new member, run:
-         <codeblock>~$ neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock>
-        Sample output:<codeblock>
-        +----------------+--------------------------------------+
-        | Field          | Value                                |
-        +----------------+--------------------------------------+
-        | address        | 10.1.0.8                             |
-        | admin_state_up | True                                 |
-        | id             | 457a9a2d-75bc-4f08-b9f8-26e0270e0f51 |
-        | protocol_port  | 80                                   |
-        | subnet_id      | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
-        | tenant_id      | aa387f39ed5149149f196e7ab40f7fd3     |
-        | weight         | 1                                    |
-        +----------------+--------------------------------------+</codeblock></li>
+          <codeblock>~$ neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock>
+          Sample
+          output:<codeblock>+----------------+--------------------------------------+
+| Field          | Value                                |
++----------------+--------------------------------------+
+| address        | 10.1.0.8                             |
+| admin_state_up | True                                 |
+| id             | 457a9a2d-75bc-4f08-b9f8-26e0270e0f51 |
+| protocol_port  | 80                                   |
+| subnet_id      | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
+| tenant_id      | aa387f39ed5149149f196e7ab40f7fd3     |
+| weight         | 1                                    |
++----------------+--------------------------------------+</codeblock></li>
       </ol>
     </section>
     
@@ -634,11 +629,11 @@ Sample output:
       </dl>
       <ol>
         <li>To log in to an instance, run:
-          <codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock>
-            Sample output:
-            <codeblock>user@myHelion [~]$ ssh cirros@10.246.71.7
-        Warning: Permanently added '10.246.71.7' (RSA) to the list of known hosts.
-        cirros@10.246.71.7's password: </codeblock>
+          <codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock> Sample
+          output:
+          <codeblock>user@myHelion [~]$ ssh cirros@10.246.71.7
+Warning: Permanently added '10.246.71.7' (RSA) to the list of known hosts.
+cirros@10.246.71.7's password: </codeblock>
         </li>
         <li>Repeat these steps for the second instance.</li>
       </ol>
@@ -664,10 +659,9 @@ Sample output:
         Warning: Permanently added '10.246.71.7' (RSA) to the list of known hosts.
         cirros@10.246.71.7's password: </codeblock></li>
         <li>To test the connection to an instance, run:
-        <codeblock>$ curl &lt;IP_address&gt;</codeblock>
-      Sample output:
-        <codeblock>$ curl 10.1.0.7
-        Welcome to 10.1.0.7</codeblock></li>
+          <codeblock>$ curl &lt;IP_address&gt;</codeblock> Sample output:
+          <codeblock>$ curl 10.1.0.7
+Welcome to 10.1.0.7</codeblock></li>
 <li>To repeat this step on another instance, run:
   <codeblock>^C</codeblock></li>
             <li>Repeat these steps for each connection you want to test.</li>
@@ -678,30 +672,28 @@ Sample output:
       <title>Test the Load Balancer</title>
       <ol>
         <li>To test the load balancer, run:
-          <codeblock>$ ping -c4 &lt;floating_IP_address&gt;</codeblock>
-          Sample output:
-          <codeblock>
-          $ ping -c4 10.1.0.5
-          PING 10.1.0.5 (10.1.0.5): 56 data bytes
-          64 bytes from 10.1.0.5: seq=0 ttl=255 time=1.363 ms
-          64 bytes from 10.1.0.5: seq=1 ttl=255 time=0.332 ms
-          64 bytes from 10.1.0.5: seq=2 ttl=255 time=0.430 ms
-          64 bytes from 10.1.0.5: seq=3 ttl=255 time=0.397 ms
-          --- 10.1.0.5 ping statistics ---
-          4 packets transmitted, 4 packets received, 0% packet loss
-          round-trip min/avg/max = 0.332/0.630/1.363 ms
-          $ curl 10.1.0.5
-          Welcome to 10.1.0.7
-          ^C
-          $ curl 10.1.0.5
-          Welcome to 10.1.0.7
-          ^C
-          $ curl 10.1.0.5
-          Welcome to 10.1.0.8
-          ^C
-          $ curl 10.1.0.5
-          Welcome to 10.1.0.8
-          ^C</codeblock></li>
+          <codeblock>$ ping -c4 &lt;floating_IP_address&gt;</codeblock> Sample output:
+          <codeblock>$ ping -c4 10.1.0.5
+PING 10.1.0.5 (10.1.0.5): 56 data bytes
+64 bytes from 10.1.0.5: seq=0 ttl=255 time=1.363 ms
+64 bytes from 10.1.0.5: seq=1 ttl=255 time=0.332 ms
+64 bytes from 10.1.0.5: seq=2 ttl=255 time=0.430 ms
+64 bytes from 10.1.0.5: seq=3 ttl=255 time=0.397 ms
+--- 10.1.0.5 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.332/0.630/1.363 ms
+$ curl 10.1.0.5
+Welcome to 10.1.0.7
+^C
+$ curl 10.1.0.5
+Welcome to 10.1.0.7
+^C
+$ curl 10.1.0.5
+Welcome to 10.1.0.8
+^C
+$ curl 10.1.0.5
+Welcome to 10.1.0.8
+^C</codeblock></li>
       </ol>
     </section>
     
@@ -710,24 +702,24 @@ Sample output:
       <p>Another option to test F5 integration is to set up a health monitor to monitor the pool.</p>
         <ol>
         <li>To create a new healthmonitor, run:
-        <codeblock>~$ neutron lbaas-healthmonitor-create --max-retries 3 --timeout 10 --type PING --pool bfae1a16-2e06-47c3-9cea-fcc56b8e8bae --delay 30</codeblock>
-        Sample output:<codeblock>
-        +----------------+------------------------------------------------+
-        | Field          | Value                                          |
-        +----------------+------------------------------------------------+
-        | admin_state_up | True                                           |
-        | delay          | 30                                             |
-        | expected_codes | 200                                            |
-        | http_method    | GET                                            |
-        | id             | bf5bbdba-b5cf-478e-bd52-f86a72d74c74           |
-        | max_retries    | 3                                              |
-        | pools          | {"id": "bfae1a16-2e06-47c3-9cea-fcc56b8e8bae"} |
-        | tenant_id      | aa387f39ed5149149f196e7ab40f7fd3               |
-        | timeout        | 10                                             |
-        | type           | PING                                           |
-        | url_path       | /                                              |
-        +----------------+------------------------------------------------+
-        </codeblock></li>
+          <codeblock>~$ neutron lbaas-healthmonitor-create --max-retries 3 --timeout 10 --type PING --pool bfae1a16-2e06-47c3-9cea-fcc56b8e8bae --delay 30</codeblock>
+          Sample
+          output:<codeblock>
++----------------+------------------------------------------------+
+| Field          | Value                                          |
++----------------+------------------------------------------------+
+| admin_state_up | True                                           |
+| delay          | 30                                             |
+| expected_codes | 200                                            |
+| http_method    | GET                                            |
+| id             | bf5bbdba-b5cf-478e-bd52-f86a72d74c74           |
+| max_retries    | 3                                              |
+| pools          | {"id": "bfae1a16-2e06-47c3-9cea-fcc56b8e8bae"} |
+| tenant_id      | aa387f39ed5149149f196e7ab40f7fd3               |
+| timeout        | 10                                             |
+| type           | PING                                           |
+| url_path       | /                                              |
++----------------+------------------------------------------------+</codeblock></li>
       </ol>
     </section>
     
