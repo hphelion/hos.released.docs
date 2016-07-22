@@ -7,21 +7,81 @@
       instances between Compute nodes, allowing for less downtime during
     maintenance.</shortdesc></abstract>
   <body>
-    <!--not tested-->
-    <!--suggested edit: <p>You can use the Helion OpenStack Compute service (Nova) to move compute instances, or compute virtual machines,
-        between compute nodes with no downtime. This feature is called live migration.</p>-->
-    <!--question: How do you want to work in the concept of virtual machine to relate this to the ops questions? In the ops questions (rows 31, 32) are they talking about a virtual environment, or are they talking about compute virtual machines? And does this topic work for either?-->
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="about">
-      <p>HPE Helion OpenStack Nova offers a feature that allows you to move Compute instances
-        between Compute nodes. This feature is called live migration.</p>
-      <p>You can perform a live migration on instances that are booted from block storage volumes,
-        have block storage volumes attached, or instances that utilize their local ephemeral
-        storage. Your Compute instance must remain powered on and in an <codeph>Active</codeph>
-        status during the migration process. There should be zero downtime, thus your Compute
-        instance should remain accessible during the process.</p>
+      <p>HPE Helion OpenStack Nova offers a set of commands that allow you to move Compute instances
+        between Compute hosts. These Compute hosts can be in any state. This feature is called
+        evacuation or live migration, depending on the state of the Compute host.</p>
+      <p>You can perform these actions on instances that are booted from block storage volumes, have
+        block storage volumes attached, or instances that utilize their local ephemeral storage
+        only.</p>
     </section>
-    <section id="limitations"><title>Limitations of the Live Migration Feature</title>
+
+    <section>
+      <title>Migration Options</title>
+      <p>If your Compute host is powered on and the data disks in working order you can utilize the
+        live migration feature to migrate Your Compute instance must remain powered on and in an
+          <codeph>Active</codeph> status during the migration process. There should be zero
+        downtime, thus your Compute instance should remain accessible during the process.</p>
+      <p><b>If your Compute host has failed</b></p>
+      <p>A Compute host failure could be because of a hardware failure, such as the data disk
+        needing to be replaced, or any other type of failure which requires that you replace the
+        baremetal host.</p>
+      <p>In these cases you will want to use one of the Nova evacuate commands, which will we
+        describe below.</p>
+    </section>
+    <table frame="all" rowsep="1" colsep="1" id="table_fnj_tq1_sw">
+      <tgroup cols="2">
+        <colspec colname="c1" colnum="1"/>
+        <colspec colname="c2" colnum="2"/>
+        <thead>
+          <row>
+            <entry>Command</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><codeph>nova evacuate &lt;instance> &lt;hostname></codeph></entry>
+            <entry>This command is used to evacuate a single server from a failed host. You specify
+              the Compute instance UUID and the target host you want to evacuate it to. If no host
+              is specified then the Nova scheduler will choose one for you.<p>See <codeph>nova help
+                  evacuate</codeph> for more information and syntax. Further details can also be
+                seen in the OpenStack documentation here: <xref
+                  href="http://docs.openstack.org/admin-guide/cli_nova_evacuate.html" format="html"
+                  scope="external">Evacuate Instances</xref>.</p></entry>
+          </row>
+          <row>
+            <entry><codeph>nova host-evacuate &lt;hostname> --target_host
+                &lt;target_hostname></codeph></entry>
+            <entry>This command is used to evacuate all instances from a failed host. You specify
+              the hostname of the Compute host you want to evacuate. Optionally you can specify a
+              target host. If no target host is specified then the Nova scheduler will choose a
+              target host for each instance.<p>See <codeph>nova help host-evacuate</codeph> for more
+                information and syntax.</p></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p><b>If your Compute host has not failed</b></p>
+    <p>If your Compute host has not failed, meaning it can power on and the data disk is intact,
+      then you can utilize the live migration feature which will allow you to migrate the instances
+      from one host to another with minimal downtime.</p>
+    <p>There are two migration features, <codeph>nova migrate</codeph> and <codeph>nova
+        live-migration</codeph>. Migration and live migration are two different functions. Migration
+      is used to copy a stopped instances data from one Compute host to another. It does this using
+      passwordless SSH access and has security concerns associated with it. Live migration can be
+      performed on a running (Active/Paused) instance and uses the qemu hypervisor to manage the
+      copy of the running processes and associated resources to the destination Compute host using
+      the hypervisors own protocol and thus is a more secure method and allows for less
+      downtime.</p>
+    <p>For this reason, the <codeph>nova migrate</codeph> function has been disabled by default but
+      you have the ability to enable this feature if you would like. Details on how to do this can
+      be found in <xref href="../compute/enabling_resize.dita"/>.</p>
+    <p>We describe the limitations of and how to use the live migration feature in the next
+      sections.</p>
+
+    <section id="limitations"><title>Limitations of these Features</title>
       <p>There are limitations that may impact your use of this feature:</p>
       <ul>
         <li>Your Compute instances must be in either an <codeph>Active</codeph> or
@@ -50,18 +110,8 @@
           release notes. See <xref href="../../releasenotes30.dita"/> for more details.</li>
       </ul>
     </section>
-    <section id="notes"><title>Notes about the Difference between Nova Migrate and Nova Live
-        Migration</title>
-      <p>Migration and live migration are two different functions. Migration is used to copy a
-        stopped instances data from one Compute host to another. It does this using passwordless SSH
-        access and has security concerns associated with it. Live migration can be performed on a
-        running (Active/Paused) instance and uses the qemu hypervisor to manage the copy of the
-        running processes and associated resources to the destination Compute host using the
-        hypervisors own protocol and thus is a more secure method and allows for less downtime.</p>
-      <p>For this reason, the <codeph>nova migrate</codeph> function has been disabled by default
-        but you have the ability to enable this feature if you would like. Details on how to do this
-        can be found in <xref href="../compute/enabling_resize.dita"/>.</p>
-    </section>
+
+
     <section id="liveMigrate"><title>Performing a Live Migration</title>
       <p>Cloud administrators can perform a live migration on an instance using either the Horizon
         dashboard, API, or CLI. The instance must be in an <codeph>Active</codeph> or
@@ -79,8 +129,8 @@
             Migration using the NovaClient CLI</xref></li>
       </ul>
     </section>
-    <section id="single_horizon"><title outputclass="headerH">Single Instance Live Migration using
-        Horizon</title>
+    <section id="single_horizon">
+      <title outputclass="headerH">Single Instance Live Migration using Horizon</title>
       <sectiondiv outputclass="insideSection">
         <p>The Horizon dashboard offers a GUI method for performing live migrations. Instances in a
             <codeph>Paused</codeph> state will not provide you the live migration option in Horizon
@@ -205,5 +255,7 @@ Optional arguments:
         </ol>
       </sectiondiv>
     </section>
+
+
   </body>
 </topic>
