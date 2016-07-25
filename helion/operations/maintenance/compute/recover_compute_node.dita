@@ -49,10 +49,10 @@ ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;node name></
           <li>Log in to the lifecycle manager.</li>
           <li>Confirm the status of the compute service on the node with this
             playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-status.yml --limit &lt;hostname></codeblock></li>
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;hostname></codeblock></li>
           <li>You can start the compute service on the host with this
             playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;hostname></codeblock></li>
         </ol></p>
     </section>
 
@@ -147,13 +147,14 @@ Request to start server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.<
         <li>Obtain the status of the instances on the compute
           host:<codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
         <li>Before continuing, you should either evacuate all of the instances off your compute host
-          or shut them down. If the instances are booted from volumes then you can use the
-            <codeph>nova evacuate</codeph> or <codeph>nova host-evacuate</codeph> commands to do
-          this. See <xref href="../live_migration.dita"/> for more details on how to do this.<p>If
-            your instances are not booted from volumes, you will need to stop the instances using
-            the nova stop command. Since the nova-compute service is not running on the node you
-            will not see the instance status change, but the <codeph>Task State</codeph> for the
-            instance should change to
+          or shut them down. If the instances storage is allocated only from cinder volumes,
+          including the instance boot disks, then you can use the <codeph>nova evacuate</codeph> or
+            <codeph>nova host-evacuate</codeph> commands to do this. See <xref
+            href="../live_migration.dita"/> for more details on how to do this.<p>If your instances
+            storage is allocated from ephemeral storage of the compute host, you will need to stop
+            the instances using the nova stop command. Since the nova-compute service is not running
+            on the node you will not see the instance status change, but the <codeph>Task
+              State</codeph> for the instance should change to
             <codeph>powering-off</codeph>.<codeblock>nova stop &lt;instance_uuid></codeblock></p><p>Verify
             the status of each of the instances using these commands, verifying the <codeph>Task
               State</codeph> states
@@ -186,11 +187,12 @@ nova start &lt;instance_uuid></codeblock></li>
       </ol>
       <p><b>If your data disk(s) failed but the operating system disk is okay OR if all drives
           failed</b></p>
-      <p>In this scenario your instances that were on the node are lost. You should follow steps 1-5
-        and 8-9 on the previous scenario.</p>
+      <p>In this scenario your instances that were on the node are lost. You should follow steps 1-9
+        and 11 on the previous scenario.</p>
       <p>Once that is complete, you can use the <codeph>nova rebuild</codeph> command, which will
-        respawn your instances which will also ensure they get the same IP
-        address:<codeblock>nova list --host &lt;hostname> --all-tenants
+        respawn your instances from scratch and  ensure they get the same IP address, but you would
+        lose the instance
+        data:<codeblock>nova list --host &lt;hostname> --all-tenants
 nova rebuild &lt;instance_uuid></codeblock></p>
     </section>
   </body>
