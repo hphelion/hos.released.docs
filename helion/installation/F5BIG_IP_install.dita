@@ -238,7 +238,7 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
  
   - name: F5 Integration | Neutron Controllers | Install LBaaSv2 driver
     sudo: yes
-    shell: 'source /opt/stack/service/neutron/venv/bin/activate ; pip --proxy ''{{ proxy }}'' install ''{{ item }}'''
+    shell: 'source /opt/stack/service/neutron/venv/bin/activate ; pip --proxy ''{{ proxy | default(None) }}'' install ''{{ item }}'''
     with_items: "{{ wheelhouse_contents.stdout_lines }}"
     when: "'f5_openstack_lbaasv2_driver' in item"
     register: install_f5_lbaasv2_driver
@@ -248,7 +248,7 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
  
   - name: F5 Integration | Neutron Controllers | Install F5 OpenStack agent
     sudo: yes
-    shell: 'source /opt/stack/service/neutron/venv/bin/activate ; pip --proxy ''{{ proxy }}'' install ''{{ item }}'''
+    shell: 'source /opt/stack/service/neutron/venv/bin/activate ; pip --proxy ''{{ proxy | default(None) }}'' install ''{{ item }}'''
     with_items: "{{ wheelhouse_contents.stdout_lines }}"
     when: >
       'f5_icontrol_rest' in item or
