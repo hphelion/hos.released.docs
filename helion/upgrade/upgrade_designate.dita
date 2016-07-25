@@ -9,6 +9,9 @@
       <title>DNS Service Upgrade from DNSaaS 2.x</title>
       <p><keyword keyref="kw-hos"/>DNS Service can be upgraded to 3.0 by following the steps
         outlined in this document.</p>
+      <note type="important">PowerDNS and BIND DNS backend servers are not supported in the 
+        <keyword keyref="kw-hos-phrase-30"/> release. Please consider other backend server options 
+        including InfloBlox.</note>
 
 	  
     </section>
@@ -52,10 +55,8 @@
       <p>Get DNS Service DB
         <codeblock>ssh dnsaas-cp-c1-m1-svc "sudo mysqldump --add-drop-database --add-drop-table --databases designate" > designate-backup.sql</codeblock>
       </p>
-      <p>Get PowerDNS
-        <codeblock>ssh dnsaas-cp-c1-m1-svc "sudo mysqldump --add-drop-database --add-drop-table --databases designate_pdns" > pdns-backup.sql</codeblock>
-      </p>
-    
+      
+
       <p><b>Copy the dump to the lifecycle manager node</b></p>
       <note>This assumes you are connected to the <keyword keyref="kw-hos"/> lifecycle manager and have 
         SSH access to the DNSaaS 2.x lifecycle manager VM. If this is not the case, you may need to use a 
@@ -79,8 +80,7 @@
 - designate-pool-manager
 - designate-zone-manager
 - designate-mdns
-- designate-client
-- powerdns</codeblock>
+- designate-client</codeblock>
       </p>
       <p>Run the config processor and ready deployment play books as normal and then run
         site.yml
