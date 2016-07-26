@@ -16,8 +16,7 @@
       <p><ul>
           <li>Your HPE Helion OpenStack cloud must be fully deployed using the a KVM cloud model
             with VSA added. The Entry-Scale KVM with VSA cloud model is an example of such a model.
-            For more details on the installation refer to <xref href="installing_kvm.dita"
-            />.</li>
+            For more details on the installation refer to <xref href="installing_kvm.dita"/>.</li>
           <li>It's important that all of your systems have the correct date/time because the HPE
             StoreVirtual VSA license has a start date. If the start date is later than the system
             time then the installation will fail.</li>
@@ -369,7 +368,17 @@ hplefthand_debug: false</codeblock>
                       <entry>Password entered during cluster creation in the CMC utility. If you
                         have chosen to encrypt this password, enter the value in this format: <codeblock>hplefthand_password: {{ '&#60;encrypted vsa-cluster-password>' | hos_user_password_decrypt }}</codeblock>
                         <p>See <xref href="../security/encrypted_storage.dita">Encryption of
-                            Passwords and Sensitive Data</xref> for more details.</p></entry>
+                            Passwords and Sensitive Data</xref> for more details.<note
+                            type="warning">The <codeph>hos_user_password_decrypt</codeph> filter is
+                            applied to strings in <codeph>cinder.conf.j2</codeph>, even if the line
+                            is commented out. So if you run a playbook on a
+                              <codeph>cinder.conf.j2</codeph> file that has a commented out
+                            encrypted password, and if the key in
+                              <codeph>HOS_USER_PASSWORD_ENCRYPT_KEY</codeph> is not the one used to
+                            encrypt the password, then the decryption will fail and the ansible play
+                            will fail. Therefore you should not comment out any lines containing the
+                              <codeph>hos_user_password_decrypt</codeph> filter, delete them
+                            instead.</note></p></entry>
                     </row>
                     <row>
                       <entry>hplefthand_clustername</entry>
@@ -468,8 +477,8 @@ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
       <ul>
         <li><xref href="../operations/blockstorage/creating_voltype.dita">Create a Volume Type for
             your Volumes</xref></li>
-        <li><xref href="verify_block_storage.dita#verify_block_storage/volume_verify">Verify
-            Your Block Storage Configuration</xref></li>
+        <li><xref href="verify_block_storage.dita#verify_block_storage/volume_verify">Verify Your
+            Block Storage Configuration</xref></li>
       </ul>
     </section>
   </body>
