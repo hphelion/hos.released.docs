@@ -14,8 +14,8 @@
     <p conkeyref="HOS-conrefs/applies-to"/>
     <section id="prereqs"><title>Prerequisites</title>
       <p>You should have one or more baremetal servers that meet the minimum hardware requirements
-        for a compute node which are documented in the <xref href="../../../planning/hw_support_matrix.dita">Hardware
-          Support Matrix</xref>.</p>
+        for a compute node which are documented in the <xref
+          href="../../../planning/hw_support_matrix.dita">Hardware Support Matrix</xref>.</p>
     </section>
 
     <section id="steps"><title>Adding a Compute Node</title>
@@ -61,12 +61,9 @@ git checkout site</codeblock></li>
         <li>Commit the changes to git:
           <codeblock>git add -A
 git commit -a -m "Add node &lt;name>"</codeblock></li>
-        <li>Run the configuration processor:
+        <li>Run the configuration processor and resolve any errors that are indicated:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
-        <li>Update your deployment directory:
-          <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>Add the new node into Cobbler:
           <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
@@ -81,6 +78,9 @@ ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&#60;node name></
             their ID numbers from being reallocated. See the Persisted Server Allocations section in
               <xref keyref="persisteddata/persistedserverallocations">Input Model</xref> for
             information on how this works.</p></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
         <li>[OPTIONAL] - Run the <codeph>wipe_disks.yml</codeph> playbook to ensure all of your
           partitions on your nodes are completely wiped prior to continuing with the installation:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible/
