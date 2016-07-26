@@ -150,10 +150,10 @@ ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock>
           section.</li>
       </ol>
     </section>
-    
-    
+
+
     <section id="bnx2x" conkeyref="knownissues30/bnx2x"/>
-    
+
     <section id="rebooting_general"><title>Rebooting Your Nodes</title>
       <p>To complete the upgrade and for Linux for HPE Helion updates to take effect, you must
         reboot all your nodes. The instructions for rebooting controller, compute, and storage nodes
@@ -195,8 +195,9 @@ ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml</codeblock>
         <p>Execute the following command on each controller node to determine which node is hosting
           the cinder-volume singleton. It should be running on only one node: </p>
         <codeblock>ps auxww | grep cinder-volume | grep -v grep</codeblock>
-        <p>Run the <codeph>cinder-migrate-volume.yml</codeph> playbook - details about the Cinder volume and backup migration instructions can be found in
-            <xref href="../operations/blockstorage/singleton_service_cinder.dita#topic_l1p_vpy_jt"
+        <p>Run the <codeph>cinder-migrate-volume.yml</codeph> playbook - details about the Cinder
+          volume and backup migration instructions can be found in <xref
+            href="../operations/blockstorage/singleton_service_cinder.dita#topic_l1p_vpy_jt"
             >Managing Cinder Volume and Backup Services</xref>.</p>
         <p><b>For the <codeph>nova-consoleauth</codeph> singleton service:</b></p>
         <p>The <codeph>nova-consoleauth</codeph> component runs by default on the first controller
@@ -257,10 +258,6 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
 
           <li>Disable provisioning of the node to take the node offline to prevent further instances
             being scheduled to the node during the reboot. </li>
-          <!--<li>Gracefully shut down Helion Development Platform services and instances. See the <xref
-              href="http://docs.hpcloud.com/#devplatform/2.0/upgrade_HOS_21.html" format="html"
-              scope="external">HPE Helion Development Platform upgrade process</xref> for
-            details.</li>-->
           <li>Identify instances that exist on the compute node, and then either: <ul>
               <li>Live migrate the instances off the node before actioning the reboot. OR </li>
               <li>Stop the instances</li>
@@ -268,11 +265,7 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
           </li>
           <li>Reboot the node </li>
           <li>Restart the Nova services </li>
-          <li>Restart any instances stopped
-            above<!--, except for Helion Development Platform instances.
-            To gracefully restart Helion Development Platform instances, see the <xref
-              href="http://docs.hpcloud.com/#devplatform/2.0/upgrade_HOS_21.html" format="html"
-              scope="external">HPE Helion Development Platform upgrade process</xref>-->.</li>
+          <li>Restart any instances stopped above</li>
         </ul>
         <ol>
           <li>Disable provisioning:
@@ -282,20 +275,20 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
           <li> Live migrate existing instances. Identify the instances on the compute node. Note:
             The following command must be run with nova admin
             credentials.<codeblock>nova list --host &lt;hostname&gt; --all-tenants</codeblock></li>
-          <li> Migrate or Stop the instances on the compute node. <p> Migrate the instances off the
-              node by running one of the following commands for each of the instances:</p>
-            <!--<p>Until
-              HOS 3.0 that will be based on the Mitaka release, the only live-migration cases that
-              will work are the following:</p> -->
-            <p>If your instance is booted from a volume and has any number of Cinder volume
-              attached, use the nova live-migration
+          <li>Migrate or Stop the instances on the compute node. <p>If your instance is booted from
+              a volume and has any number of Cinder volume attached, use the <codeph>nova
+                live-migration</codeph>
             command:</p><codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
             If your instance has local (ephemeral) disk(s) only, you can use the --block-migrate
-            option:<codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
-            Note: The [&lt;target compute host&gt;] option is optional. If you do not specify a
-            target host then the nova scheduler will choose a node for you.<p>OR</p><p>Stop the
-              instances on the node by running the following command for each of the
-            instances:</p><codeblock>nova stop &lt;instance-uuid&gt;</codeblock></li>
+            option:<codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>Note:
+            The [&lt;target compute host&gt;] option is optional. If you do not specify a target
+            host then the nova scheduler will choose a node for you.<p>If your instances have a mix
+              of ephemeral and block storage then live migration will not work and you can use the
+                <codeph>nova stop</codeph> command:</p><p>Stop the instances on the node by running
+              the following command for each of the
+              instances:</p><codeblock>nova stop &lt;instance-uuid&gt;</codeblock><p>For more
+              details about live migration, see <xref
+                href="../operations/maintenance/live_migration.dita"/>.</p></li>
           <li>Stop all services on the Compute node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;compute node></codeblock>
