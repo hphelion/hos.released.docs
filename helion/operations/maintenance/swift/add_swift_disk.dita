@@ -31,14 +31,14 @@
         <li>Verify the general health of the Swift system and that it is safe to rebalance your
           rings. See <xref href="../../objectstorage/safe_rebalance_deploy_ring.dita"/> for details
           on how to do this.</li>
-        <li>Perform the disk replacement. <ol>
+        <li>Perform the disk maintenance. <ol>
             <li>Shut down the first Swift server you wish to add disks to.</li>
             <li>Add the additional disks to the physical server. The disk drives that are added
               should be clean. They should either contain no partitions or a single partition the
               size of the entire disk. It should not contain a file system or any volume groups.
               Failure to comply will cause errors and the disk will not be added. <p>For more
-                details, see <xref
-                  href="../../../planning/objectstorage/swift_device_groups.dita"/>.</p></li>
+                details, see <xref href="../../../planning/objectstorage/swift_device_groups.dita"
+                />.</p></li>
             <li>Power the server on.</li>
             <li>While the server was shutdown, data that normally would have been placed on the
               server is placed elsewhere. When the server is rebooted, the Swift replication process
@@ -48,19 +48,17 @@
               do this.</li>
             <li>Repeat steps a-d for each of the Swift servers you are adding the disks to, one at a
               time.</li>
-          </ol>
-          <note>If the additional disks can be added to the Swift servers online (for example, via
-            hot plugging) then there is no need to do the last two steps.</note>
-        </li>
-        <li>Update your cloud configuration with the details of your additional disks. <ol>
+          </ol> <note>If the additional disks can be added to the Swift servers online (for example, via
+          hot plugging) then there is no need to do the last two steps.</note> </li>
+        <li>On the lifecycle manager, update your cloud configuration with the details of your
+          additional disks. <ol>
             <li>Edit the disk configuration file that correlates to the type of server you are
-              adding your new disks to. <p>Path to the typical disk configuration files:</p>
-              <codeblock>~/helion/my_cloud/definition/data/disks_swobj.yml
+              adding your new disks to. <p>Path to the typical disk configuration
+                files:</p><codeblock>~/helion/my_cloud/definition/data/disks_swobj.yml
 ~/helion/my_cloud/definition/data/disks_swpac.yml
-~/helion/my_cloud/definition/data/disks_controller_*.yml</codeblock>
-              <p>Example showing the addition of a single new disk, indicated by the
-                  <codeph>/dev/sdd</codeph>, in bold:</p>
-              <codeblock>device-groups:
+~/helion/my_cloud/definition/data/disks_controller_*.yml</codeblock><p>Example
+                showing the addition of a single new disk, indicated by the
+                  <codeph>/dev/sdd</codeph>, in bold:</p><codeblock>device-groups:
   - name: SwiftObject
     devices:
       - name: "/dev/sdb"
@@ -88,9 +86,10 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
           </ol>
         </li>
         <li>Configure the operating system on the added drives by using this playbook. Ensure you
-          specify the Swift object nodes using the <codeph>--limit</codeph> switch: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;hostnames></codeblock>
-          <p>You can use a wildcard when specifying the hostnames with the <codeph>--limit</codeph>
+          specify the Swift object nodes using the <codeph>--limit</codeph> switch:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;hostnames></codeblock><p>You
+            can use a wildcard when specifying the hostnames with the <codeph>--limit</codeph>
             switch. If you added disks to all of the Swift servers in your environment and they all
             have the same prefix (for example, <codeph>helion-cp1-swobj...</codeph>) then you can
             use a wildcard like <codeph>helion-cp1-swobj*</codeph>. If you only added disks to a set
