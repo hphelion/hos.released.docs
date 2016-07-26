@@ -32,33 +32,35 @@
 
 
     <section id="down"><title>What to do if your compute host is down</title>
-      <p><b>Compute host has power but is not powered on</b></p>
-      <p>If your compute host has power but is not powered on, use these steps to restore the
-        host:</p>
+      <p><b>Compute host(s) has power but is not powered on</b></p>
+      <p>If your compute host(s) has power but is not powered on, use these steps to restore the
+        host(s):</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
-        <li>Obtain the name for your compute host in Cobbler:
+        <li>Obtain the name for your compute host(s) in Cobbler:
           <codeblock>sudo cobbler system list</codeblock></li>
-        <li>Power the node back up with this playbook, specifying the node name from Cobbler:
-          <codeblock>cd ~/helion/hos/ansible
+        <li>Power the host(s) back up with this playbook, specifying the host name from Cobbler. You
+          can specify multiple hosts in comma-deliminated fashion if need
+          be.<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;node name></codeblock></li>
       </ol>
-      <p><b>Compute host is powered on but services are not running on it</b></p>
-      <p>If your compute host is powered on but you are either unsure if services are running and
+      <p><b>Compute host(s) is powered on but services are not running on it</b></p>
+      <p>If your compute host(s) is powered on but you are either unsure if services are running and
         you want to ensure they are, you can use these steps:<ol id="ol_mss_rsp_xv">
           <li>Log in to the lifecycle manager.</li>
-          <li>Confirm the status of the compute service on the node with this
+          <li>Confirm the status of the compute service on the host(s) with this
             playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;hostname></codeblock></li>
-          <li>You can start the compute service on the host with this
+          <li>You can start the compute service on the host(s) with this
             playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;hostname></codeblock></li>
         </ol></p>
     </section>
 
     <section id="planned"><title>Performing planned maintenance on a compute host</title>
-      <p>If you have a planned maintenance to perform on a compute node you will have to take it
-        offline, repair it, and restart it. To do so, follow the steps outlined below.</p>
+      <p>If you have a planned maintenance to perform on a compute host you will have to take it
+        offline, repair it, and restart it. To do so, follow the steps outlined below. These steps
+        can be used against one or more compute hosts.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Source the administrator credentials: <codeblock>source ~/service.osrc</codeblock></li>
@@ -132,22 +134,24 @@ Request to start server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.<
       <p><b>If your operating system disk failed but the data disk(s) are okay</b></p>
       <p>If you have had issues with the physical volume that hosts your operating system you need
         to ensure that your physical volume is restored and then you can use these steps below to
-        restore the operating system:</p>
+        restore the operating system.  These same steps can be used to recover one or more compute
+        hosts.</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
                 <li>Source the administrator credentials: <codeblock>source ~/service.osrc</codeblock></li>
-        <li>Obtain the hostname for your compute host, which you will use in subsequent commands
-          where <codeph>&lt;hostname></codeph> is
+        <li>Obtain the hostname(s) for your compute host(s), which you will use in subsequent
+          commands where <codeph>&lt;hostname></codeph> is
           requested:<codeblock>nova host-list | grep compute</codeblock></li>
-        <li>Obtain the status of the <codeph>nova-compute</codeph> service on that host:
+        <li>Obtain the status of the <codeph>nova-compute</codeph> service on the host(s):
           <codeblock>nova service-list --host &lt;hostname></codeblock></li>
-        <li>You will likely want to disable provisioning on that node to ensure that nova-scheduler
-          doesn't attempt to place any additional instances on the host while you are repairing it:
+        <li>You will likely want to disable provisioning on the hosts(s) to ensure that the
+          nova-scheduler doesn't attempt to place any additional instances on the host(s) while you
+          are repairing it:
           <codeblock>nova service-disable --reason "node is being rebuilt" &lt;hostname> nova-compute</codeblock></li>
         <li>Obtain the status of the instances on the compute
-          host:<codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
-        <li>Before continuing, you should either evacuate all of the instances off your compute host
-          or shut them down. If the instances storage is allocated only from cinder volumes,
+          host(s):<codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
+        <li>Before continuing, you should either evacuate all of the instances off your compute
+          host(s) or shut them down. If the instances storage is allocated only from cinder volumes,
           including the instance boot disks, then you can use the <codeph>nova evacuate</codeph> or
             <codeph>nova host-evacuate</codeph> commands to do this. See <xref
             href="../live_migration.dita"/> for more details on how to do this.<p>If your instances
@@ -160,27 +164,27 @@ Request to start server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.<
               State</codeph> states
             <codeph>powering-off</codeph>:<codeblock>nova list --host &lt;hostname> --all-tenants
 nova show &lt;instance_uuid></codeblock></p></li>
-        <li>At this point you should be ready with a good hard disk in the node that you can use for
-          the operating system. Follow these steps:<ol id="ol_tzh_4rp_xv">
-            <li>Obtain the name for your compute host in Cobbler, which you will use in subsequent
-              commands where <codeph>&lt;node_name></codeph> is requested:
+        <li>At this point you should be ready with a good hard disk in the node(s) that you can use
+          for the operating system. Follow these steps:<ol id="ol_tzh_4rp_xv">
+            <li>Obtain the name for your compute host(s) in Cobbler, which you will use in
+              subsequent commands where <codeph>&lt;node_name></codeph> is requested:
               <codeblock>sudo cobbler system list</codeblock></li>
-            <li>Reimage the compute node with this playbook:
+            <li>Reimage the compute node(s) with this playbook:
               <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&lt;node name></codeblock></li>
+ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&lt;node name 1>,&lt;node name 2></codeblock></li>
           </ol></li>
 
         <li>Once reimage is complete, use the playbook below which will configure the operating
           system and start services
           up:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml --limit &lt;hostname></codeblock></li>
-        <li>You should then ensure any instances on the recovered host are in an
+        <li>You should then ensure any instances on the recovered host(s) are in an
             <codeph>ACTIVE</codeph> state. If they are not then use the <codeph>nova start</codeph>
           command to bring them to the <codeph>ACTIVE</codeph>
           state:<codeblock>nova list --host &lt;hostname> --all-tenants
 nova start &lt;instance_uuid></codeblock></li>
-        <li>Re-enable
-          provisioning:<codeblock>nova service-enable &lt;hostname> nova-compute</codeblock></li>
+        <li>Re-enable provisioning on each host that you have
+          repaired:<codeblock>nova service-enable &lt;hostname> nova-compute</codeblock></li>
         <li>Start any instances that you had stopped
           previously:<codeblock>nova list --host &lt;hostname> --all-tenants
 nova start &lt;instance_uuid></codeblock></li>
