@@ -87,7 +87,8 @@ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
 ansible-playbook -i hosts/verb_hosts wipe_disks.yml --limit &#60;hostname></codeblock>
           <note>You can obtain the <codeph>&#60;hostname></codeph> from the
               <codeph>~/scratch/ansible/next/hos/ansible/hosts/verb_hosts</codeph> file.</note></li>
-        <li>Complete the compute node deployment with this playbook:
+        <li>Complete the compute host deployment with these two playbooks. For the last one, ensure
+          you specify the compute hosts you are added with the <codeph>--limit</codeph> switch:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible/
 ansible-playbook -i hosts/verb_hosts site.yml --tag "generate_hosts_file"
 ansible-playbook -i hosts/verb_hosts site.yml --limit &lt;hostname></codeblock></li>
@@ -107,6 +108,9 @@ ansible-playbook -i hosts/verb_hosts monasca-deploy.yml --tags active_ping_check
         you skip this step, the nodes will be placed into a general <codeph>nova</codeph>
         availability zone.</p>
       <ol>
+        <li>Log in to the lifeycle manager.</li>
+        <li>Source the admin credentials to run the
+          commands:<codeblock>source ~/service.osrc</codeblock></li>
         <li>Get a list of availability zones to get their status: <codeblock>nova availability-zone-list</codeblock>
           <codeblock>+-----------------------------+----------------------------------------+
 | Name                        | Status                                 |
