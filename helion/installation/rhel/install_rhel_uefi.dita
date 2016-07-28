@@ -48,15 +48,12 @@
                 <codeph>rpm2cpio</codeph> which is not available on HPE Linux.
             </p>
             
-<codeblock>
-sudo mount rhel7.iso /mnt
+<codeblock>sudo mount rhel7.iso /mnt
 cp /mnt/Packages/grub2-efi-2.02-0.29.el7.x86_64.rpm /tmp
 cd /tmp
-rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv
-</codeblock>
+rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv</codeblock>
             <p>The output from this command should look similar to the following:</p>
-<codeblock>
-./boot/efi/EFI/redhat
+<codeblock>./boot/efi/EFI/redhat
 ./boot/efi/EFI/redhat/fonts
 ./boot/efi/EFI/redhat/fonts/unicode.pf2
 ./boot/efi/EFI/redhat/gcdx64.efi
@@ -64,8 +61,7 @@ rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv
 ./boot/grub2/grubenv
 ./etc/grub2-efi.cfg
 ./usr/share/doc/grub2-efi-2.02
-./usr/share/doc/grub2-efi-2.02/COPYING
-</codeblock>
+./usr/share/doc/grub2-efi-2.02/COPYING</codeblock>
             
             <p>The required RHEL secondary loader file is <codeph>/tmp/boot/efi/EFI/redhat/grubx64.efi</codeph>.
             
@@ -80,11 +76,10 @@ rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv
             
             <ul>
                 <li>Copy the RedHat secondary loader file <codeph>grubx64.efi</codeph> to /var/lib/cobbler/loaders/</li>
-                <li>Edit <codeph>~/helion/hos/ansible/roles/cobbler/templates/cobbler.dhcp.template.j2</codeph> and 
-                    navigate to the section containing <codeph>00:07</codeph> 
-                
-<codeblock>
-  if option pxe-system-type = 00:02 {
+                <li>Edit
+                        <codeph>~/helion/hos/ansible/roles/cobbler/templates/cobbler.dhcp.template.j2</codeph>
+                    and navigate to the section containing <codeph>00:07</codeph>
+                    <codeblock>  if option pxe-system-type = 00:02 {
           filename "ia64/elilo.efi";
   } else if option pxe-system-type = 00:06 {
           filename "grub/grub-x86.efi";
@@ -92,18 +87,14 @@ rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv
           filename "grub/grub-x86_64.efi";
   }</b> else {
           filename "pxelinux.0";
-  }
-</codeblock>                
-                
+  }</codeblock>
                 </li>
                 <li>Change <codeph>grub-x86_64.efi</codeph> to <codeph>grubx64.efi</codeph> to select the RHEL 
                 secondary bootloader, instead of the HPE Linux one.</li>
                 
                 <li>Save your changes and then re-run the cobbler-deploy playbook.
-<codeblock>
-cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost cobbler-deploy.yml
-</codeblock>                
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock>
                 </li>
                 
                 
@@ -143,8 +134,7 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml
             
             </p>
             
-<codeblock>
-    # Controllers
+<codeblock>    # Controllers
     - id: controller1
       ip-addr: <b>10.13.111.12</b>
       role: CONTROLLER-ROLE
@@ -161,18 +151,15 @@ ansible-playbook -i hosts/localhost cobbler-deploy.yml
       ilo-ip: 10.12.13.14
       ilo-password: *********
       ilo-user: Administrator
-      distro-id: rhel72-x86_64
-</codeblock>         
+      distro-id: rhel72-x86_64</codeblock>         
             
             <p>Then you should create a Grub2 file named <codeph>grub.cfg-01-<b>ec-b1-d7-77-d0-b0</b></codeph>  with the following content:</p>            
             
-<codeblock>
-set timeout=5
+<codeblock>set timeout=5
 menuentry 'RHEL 7.2 Cobbler install' {
   linuxefi images/rhel72-x86_64/vmlinuz interface=<b>ec:b1:d7:77:d0:b0</b> inst.ks=http://<b>10.13.111.12</b>:79/cblr/svc/op/ks/system/<b>compute1</b> inst.repo=http://<b>10.13.111.12</b>:79/cblr/ks_mirror/rhel72 inst.ks.sendmac inst.text ip=dhcp ksdevice=bootif lang=
   initrdefi images/rhel72-x86_64/initrd.img
-}
-</codeblock>            
+}</codeblock>            
 
 <note type="important">For each node, you will need to create such a file, with a name based 
 on the MAC address, and with the contents above updated with the node MAC address, lifecycle manager IP (in two places) 
@@ -187,10 +174,8 @@ and node name.
             <p>To install RHEL on the configured UEFI nodes, run the <codeph>bm-reimage</codeph> playbook, 
                 specifying the nodes in the <codeph>-e nodelist</codeph> option.
             </p>
-<codeblock>
-cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost bm-reimage.yml [-e nodelist=node1,node2,node3]
-</codeblock>            
+<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-reimage.yml [-e nodelist=node1,node2,node3]</codeblock>            
             
         </section>
         
@@ -207,10 +192,8 @@ ansible-playbook -i hosts/localhost bm-reimage.yml [-e nodelist=node1,node2,node
                 </li>
                 <li>Change <codeph>grubx64.efi</codeph> back to <codeph>grub-x86_64.efi</codeph> to select the HPE Linux loader, instead of the RHEL one.</li>
                 <li>Save your changes and then re-run the cobbler-deploy playbook.
-<codeblock>
-cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost cobbler-deploy.yml
-</codeblock>                
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock>
                 </li>
             </ul>               
               

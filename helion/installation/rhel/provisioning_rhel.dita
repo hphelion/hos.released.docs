@@ -24,11 +24,9 @@
             <title>Assign a static IP</title>
             
             <ol>
-                <li>
-                    Use the <codeph>ip addr</codeph> command to find out what network devices are on your system:
-                                        
-                    <codeblock>
-1: lo: &lt;LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN
+                <li> Use the <codeph>ip addr</codeph> command to find out what network devices are
+                    on your system:
+                    <codeblock>1: lo: &lt;LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
        valid_lft forever preferred_lft forever
@@ -41,25 +39,19 @@
     inet6 fe80::f292:1cff:fe05:8970/64 scope link
        valid_lft forever preferred_lft forever
 3: eno2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
-    link/ether f0:92:1c:05:89:74 brd ff:ff:ff:ff:ff:ff
-</codeblock>                       
-                    
+    link/ether f0:92:1c:05:89:74 brd ff:ff:ff:ff:ff:ff</codeblock>
                 </li>
                 
-                <li>Identify the one that matches the MAC address of your server and edit the 
-                    corresponding config file in <codeph>/etc/sysconfig/network-scripts</codeph>.                   
-<codeblock>
-vi /etc/sysconfig/network-scripts/<b>ifcfg-eno1</b> 
-</codeblock>                                                         
+                <li>Identify the one that matches the MAC address of your server and edit the
+                    corresponding config file in <codeph>/etc/sysconfig/network-scripts</codeph>.
+                    <codeblock>vi /etc/sysconfig/network-scripts/<b>ifcfg-eno1</b> </codeblock>
                 </li>
                 
-                <li>Edit the <codeph>IPADDR</codeph> and <codeph>NETMASK</codeph> values to match your 
-                    environment. Note that the <codeph>IPADDR</codeph> is used in the corresponding stanza
-                    in <codeph>servers.yml</codeph>. You may also need to set <codeph>BOOTPROTO</codeph>
-                    to <codeph>none</codeph>.
-                    
-<codeblock>
-TYPE=Ethernet
+                <li>Edit the <codeph>IPADDR</codeph> and <codeph>NETMASK</codeph> values to match
+                    your environment. Note that the <codeph>IPADDR</codeph> is used in the
+                    corresponding stanza in <codeph>servers.yml</codeph>. You may also need to set
+                        <codeph>BOOTPROTO</codeph> to <codeph>none</codeph>.
+                    <codeblock>TYPE=Ethernet
 <b>BOOTPROTO=none</b>
 DEFROUTE=yes
 PEERDNS=yes
@@ -76,10 +68,7 @@ UUID=36060f7a-12da-469b-a1da-ee730a3b1d7c
 DEVICE=eno1
 ONBOOT=yes
 <b>NETMASK=255.255.255.192</b>
-<b>IPADDR=10.13.111.14</b>
-
-</codeblock>                    
-                    
+<b>IPADDR=10.13.111.14</b></codeblock>
                 </li>
                 
                 <li>[OPTIONAL] Reboot your RHEL node and ensure that it can be accessed from the lifecycle manager.</li>
@@ -92,10 +81,8 @@ ONBOOT=yes
         <section>
             <title>Add <codeph>stack</codeph> user and home directory</title>
             
-<codeblock>
-useradd -m stack
-passwd stack
-</codeblock>            
+<codeblock>useradd -m stack
+passwd stack</codeblock>            
             
         </section>
         
@@ -108,27 +95,22 @@ passwd stack
             
             <ol>
                 <li>Add the <codeph>stack</codeph> user to the <codeph>wheel</codeph> group.
-<codeblock>
-usermod -aG wheel stack
-</codeblock>                
+                    <codeblock>usermod -aG wheel stack</codeblock>
                 </li>
                 <li>Run the <codeph>visudo</codeph> command</li>
-                <li>Uncomment the line specifying <codeph>NOPASSWD: ALL</codeph> for the <codeph>wheel</codeph> group.
-                
-<codeblock>
-## Allows people in group wheel to run all commands
+                <li>Uncomment the line specifying <codeph>NOPASSWD: ALL</codeph> for the
+                        <codeph>wheel</codeph> group.
+                    <codeblock>## Allows people in group wheel to run all commands
 %wheel  ALL=(ALL)       ALL
 
 ## Same thing without a password
-<b> %wheel ALL=(ALL)       NOPASSWD: ALL</b>
-</codeblock>
+<b> %wheel ALL=(ALL)       NOPASSWD: ALL</b></codeblock>
                 </li>
                 
-                <li>To facilitate using ssh from the deployer and running a command via sudo, comment out
-                    the lines for <codeph>requiretty</codeph> and <codeph>!visiblepw</codeph>
-
-<codeblock>
-#
+                <li>To facilitate using ssh from the deployer and running a command via sudo,
+                    comment out the lines for <codeph>requiretty</codeph> and
+                        <codeph>!visiblepw</codeph>
+                    <codeblock>#
 # Disable "ssh hostname sudo &lt;cmd>", because it will show the password in clear.
 #         You have to run "ssh -t hostname sudo &lt;cmd>".
 #
@@ -138,10 +120,7 @@ usermod -aG wheel stack
 # Refuse to run if unable to disable echo on the tty. This setting should also be
 # changed in order to be able to use sudo without a tty. See requiretty above.
 #
-<b>#</b>Defaults   !visiblepw
-
-</codeblock>
-                    
+<b>#</b>Defaults   !visiblepw</codeblock>
                 </li>
                 
             </ol>
@@ -159,20 +138,16 @@ usermod -aG wheel stack
             
             <ol>
                 <li>Mount the RHEL iso and expand it
-                
-<codeblock>
-mkdir /tmp/localrhel
+                    <codeblock>mkdir /tmp/localrhel
 mount -o loop rhel7.iso /mnt
 cd /mnt
 tar cvf - . | (cd /tmp/localrhel ; tar xvf -)
 cd /
-umount /mnt
-</codeblock>                
+umount /mnt</codeblock>
                 </li>
                 
                 <li>Create a repo file <codeph>/etc/yum.repos.d/localrhel.repo</codeph>
-<codeblock>
-[localrhel]
+                    <codeblock>[localrhel]
 name=localrhel
 baseurl=file:///tmp/localrhel
 enabled=1
@@ -188,10 +163,7 @@ gpgcheck=0
 name=localrhel-2
 baseurl=file:///tmp/localrhel/addons/HighAvailability
 enabled=1
-gpgcheck=0
-
-</codeblock>                    
-                    
+gpgcheck=0</codeblock>
                 </li>
                 
                 <li>Run <codeph> yum clean all</codeph>.</li>
@@ -236,11 +208,9 @@ gpgcheck=0
                 
             </p>
             
-            <p>Now test passwordless ssh from the deployer and check your ability to remotely execute sudo commands:
-                
-<codeblock>
-ssh  stack@&lt;&lt;ip of rhel node>> "sudo tail -5 /var/log/messages"
-</codeblock>            
+            <p>Now test passwordless ssh from the deployer and check your ability to remotely
+                execute sudo commands:
+                <codeblock>ssh  stack@&lt;&lt;ip of rhel node>> "sudo tail -5 /var/log/messages"</codeblock>
             </p>
 
         </section>
