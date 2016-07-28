@@ -234,9 +234,9 @@ ff02::2         ip6-allrouters
 127.0.0.1       hlinux</codeblock></li>
           <li>On the lifecycle manager: <p>Become root:</p><codeblock>sudo su</codeblock> Source the
             credentials: <codeblock>source /home/stack/backup.osrc</codeblock> List the jobs
-            <codeblock>freezer-scheduler -c &lt;hostname> job-list</codeblock>Get the id of the job
-            corresponding to "HLM Default: Deployer restore from Swift." Stop that job so the
-            freezer-scheduler doesn't begin making backups when started.
+            <codeblock>freezer-scheduler -c &lt;deployer-hostname> job-list</codeblock>Get the id of
+            the job corresponding to "HLM Default: Deployer restore from Swift." Stop that job so
+            the freezer-scheduler doesn't begin making backups when started.
             <codeblock>freezer-scheduler -c &lt;hostname> job-stop -j &lt;job-id&gt;</codeblock>If
             it is present, also stop the lifecycle manager's SSH backup. <p>Next, stop the dayzero
               UI installer:</p><codeblock>systemctl stop dayzero</codeblock>Start the
@@ -246,8 +246,10 @@ ff02::2         ip6-allrouters
             will take some time; you can follow the progress in
             /var/log/freezer-agent/freezer-scheduler.log. <p>Start the dayzero UI
             installer:</p><codeblock>systemctl start dayzero</codeblock>When the lifecycle manager
-            is restored, re-run the deployment to ensure the lifecycle manager is in the correct
-            state:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+            is restored, switch from the root user to the stack user and re-run the deployment to
+            ensure the lifecycle manager is in the correct
+            state:<codeblock>exit
+cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml --limit localhost</codeblock></li>
         </ol>
         <b>Restore from an SSH backup</b>
