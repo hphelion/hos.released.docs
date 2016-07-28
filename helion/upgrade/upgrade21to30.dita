@@ -11,11 +11,13 @@
       <title>Performing the Upgrade from HPE Helion OpenStack <keyword keyref="kw-hos-phrase-21"/>
         to <keyword keyref="kw-hos-phrase-30"/></title>
       <note type="warning">The process for upgrading HPE Helion OpenStack to version <keyword
-          keyref="kw-hos-phrase-30"/> requires a reboot <!-- TODO Is there an upgrade path for HDP ? -->
+          keyref="kw-hos-phrase-30"/> requires a reboot. It also requires that you <b>do not make
+          any configuration changes</b>. Config changes must only be made after the upgrade process
+        is complete. <!-- TODO Is there an upgrade path for HDP ? -->
         <!-- which may prevent core <b>HPE Helion Development Platform</b> services from
         restarting. If your environment relies on HPE Helion Development Platform, please follow
         instructions for the <xref href="/#devplatform/2.0/upgrade_HOS_21.html" format="html"
-          scope="external">HPE Helion Development Platform upgrade process</xref>-->.</note>
+          scope="external">HPE Helion Development Platform upgrade process</xref>--></note>
       <p>When upgrading from <keyword keyref="kw-hos-phrase-21"/> to <keyword
           keyref="kw-hos-phrase-30"/> you will use the same configuration files in your
           <codeph>~/helion/my_cloud/definition</codeph> directory as you used when originally
@@ -117,7 +119,7 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
 
         <li>Run the included initialization script to update the deployer:
           <codeblock>~/hos-3.0.0/hos-init.bash</codeblock></li>
-
+<!--
         <li>If you have made any changes to your configuration files, ensure that you commit them to
           your local git and if any merge conflicts are reported, you must resolve them before
           proceeding (See the article on how to <xref keyref="upgrade_git_merge">Resolve any Merge
@@ -125,10 +127,11 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
           <codeblock>cd ~/helion
 git add –A
 git commit –m "My changes"</codeblock>
-        </li>
+        </li>-->
 
-        <li>If you want to install the Rados Gateway service, then follow the instructions <xref
-            keyref="add_rados_gateway">here</xref>.</li>
+        <li>If you want to install the Rados Gateway service, you must do so AFTER the upgrade
+          completes. At that point you can follow the instructions <xref keyref="add_rados_gateway"
+            >here</xref>.</li>
 
         <li id="config">Run the configuration processor:
           <codeblock>cd ~/helion/hos/ansible
