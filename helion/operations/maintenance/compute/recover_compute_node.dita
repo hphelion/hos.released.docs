@@ -1,206 +1,215 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--Edit status: Ready to be edited-->
+<!--Edit status: Edited-->
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="recover_computenode">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Recovering a Compute Node</title>
-  <abstract><shortdesc outputclass="hdphidden">If one or more of your compute nodes has experienced
-      an issue, such as power loss or hardware failure, and you need to perform disaster recovery
-      then we provide different scenarios and how to resolve them to get your cloud
-      repaired.</shortdesc></abstract>
+  <abstract>
+    <shortdesc outputclass="hdphidden">If one or more of your compute nodes has experienced an
+      issue<?oxy_delete author="mwelch" timestamp="20160801T101954-0700" content=","?> such as power
+      loss or hardware failure, then you need to perform disaster recovery. Here we provide
+      different scenarios and how to resolve them to get your cloud repaired.</shortdesc>
+  </abstract>
   <body>
     <!-- Tested by Joel on 7/21-22 -->
     <p conkeyref="HOS-conrefs/applies-to"/>
-    <section id="about"><p>Typical scenarios in which you will need to recover a compute host include:</p>
+    <section id="about">
+      <p>Typical scenarios in which you will need to recover a compute node include the
+        following:</p>
       <ul>
-        <li>The node has failed; i.e., either because it has shut down or has hardware failure.</li>
-        <li>The node is working but the <codeph>nova-compute</codeph> process is not responding, so
-          instances are working but you can't manage them, for example to delete, reboot,
-          attach/detach volumes.</li>
+        <li>The node has failed, either because it has shut
+          down<?oxy_insert_start author="mwelch" timestamp="20160801T102450-0700"?>,<?oxy_insert_end?>
+          has a hardware failure, or for another reason.</li>
+        <li>The node is working but the <codeph>nova-compute</codeph> process is not responding,
+          thus instances are working but you cannot manage
+          them<?oxy_delete author="mwelch" timestamp="20160801T102528-0700" content=","?> (for
+          example<?oxy_insert_start author="mwelch" timestamp="20160801T102532-0700"?>,<?oxy_insert_end?>
+          to delete, reboot, and attach/detach volumes).</li>
         <li>The node is fully operational but monitoring indicates a potential issue (such as disk
-          errors) that require down time to fix.</li>
+          errors) that require
+          down<?oxy_delete author="mwelch" timestamp="20160801T102600-0700" content=" "?>time to
+          fix.</li>
       </ul>
-      <p>These scenarios are covered in the sections below:</p>
+      <p>We cover these scenarios in the following sections:</p>
       <ul>
-        <li><xref href="#recover_computenode/down">What to do if your compute host is
+        <li><xref href="#recover_computenode/down">What to do if your compute node is
           down</xref></li>
         <li><xref href="#recover_computenode/planned">Performing planned maintenance on a compute
-            host</xref></li>
+            node</xref></li>
         <li><xref href="#recover_computenode/unplanned">Unplanned maintenance scenarios involving
-            disk failures on your compute hosts</xref></li>
+            disk failures on your compute nodes</xref></li>
       </ul>
     </section>
-
-
-    <section id="down"><title>What to do if your compute host is down</title>
-      <p><b>Compute host(s) has power but is not powered on</b></p>
-      <p>If your compute host(s) has power but is not powered on, use these steps to restore the
-        host(s):</p>
+    <section id="down">
+      <title>What to do if your compute node is down</title>
+      <p><b>Compute node has power but is not powered on</b></p>
+      <p>If your compute node has power but is not powered on, use these steps to restore the
+        node:</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
-        <li>Obtain the name for your compute host(s) in Cobbler:
+        <li>Obtain the name for your compute node in Cobbler:
           <codeblock>sudo cobbler system list</codeblock></li>
-        <li>Power the host(s) back up with this playbook, specifying the host name from Cobbler. You
-          can specify multiple hosts in comma-deliminated fashion if need
-          be.<codeblock>cd ~/helion/hos/ansible
+        <li>Power the node back up with this playbook, specifying the node name from Cobbler:
+          <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;node name></codeblock></li>
       </ol>
-      <p><b>Compute host(s) is powered on but services are not running on it</b></p>
-      <p>If your compute host(s) is powered on but you are either unsure if services are running and
-        you want to ensure they are, you can use these steps:<ol id="ol_mss_rsp_xv">
+      <p><b>Compute node is powered on but services are not running on it</b></p>
+      <p>If your compute node is powered on but you are unsure if services are running, you can use
+        these steps to ensure that they are running:<ol id="ol_mss_rsp_xv">
           <li>Log in to the lifecycle manager.</li>
-          <li>Confirm the status of the compute service on the host(s) with this playbook. You can
-            specify multiple hosts in comma-deliminated fashion if need
-            be.<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;hostname></codeblock></li>
-          <li>You can start the compute service on the host(s) with this playbook. You can specify
-            multiple hosts in comma-deliminated fashion if need
-            be.<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;hostname></codeblock></li>
+          <li>Confirm the status of the compute service on the node with this
+            playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-status.yml --limit &lt;hostname></codeblock></li>
+          <li>You can start the compute service on the node with this
+            playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts nova-start.yml --limit &lt;hostname></codeblock></li>
         </ol></p>
     </section>
-
-    <section id="planned"><title>Performing planned maintenance on a compute host</title>
-      <p>If you have a planned maintenance to perform on a compute host you will have to take it
-        offline, repair it, and restart it. To do so, follow the steps outlined below. These steps
-        can be used against one or more compute hosts.</p>
+    <section id="planned">
+      <title>Performing planned maintenance on a compute node</title>
+      <p>If you have planned maintenance to perform on a compute
+        node<?oxy_insert_start author="mwelch" timestamp="20160801T133926-0700"?>,<?oxy_insert_end?>
+        you have to take it offline, repair it, and restart it. To do so, follow these
+        steps<?oxy_insert_start author="mwelch" timestamp="20160801T134001-0700"?>:<?oxy_insert_end?></p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Source the administrator credentials: <codeblock>source ~/service.osrc</codeblock></li>
-        <li>Obtain the hostname for your compute host, which you will use in subsequent commands
-          where <codeph>&lt;hostname></codeph> is
-            requested:<codeblock>nova host-list | grep compute</codeblock><p>Here is an example,
-            showing two compute
-          hosts:</p><codeblock>$ nova host-list | grep compute
+        <li>Obtain the hostname for your compute node, which you will use in subsequent commands
+          when <codeph>&lt;hostname></codeph> is
+            requested:<codeblock>nova host-list | grep compute</codeblock><p>The following example
+            shows two compute
+          nodes:</p><codeblock>$ nova host-list | grep compute
 | helion-cp1-comp0001-mgmt | compute     | AZ1      |
 | helion-cp1-comp0002-mgmt | compute     | AZ2      |</codeblock></li>
-        <li>Disable provisioning on the compute host, which will prevent additional instances from
+        <li>Disable provisioning on the compute node, which will prevent additional instances from
           being spawned on it:
             <codeblock>nova service-disable --reason "Maintenance mode" &lt;hostname> nova-compute</codeblock><note>Make
-            sure you re-enable provisioning once the maintenance is complete if you want to continue
-            to be able to spawn instances on the node.  You can do this with the <codeph>nova
-              service-enable &lt;hostname> nova-compute</codeph> command.</note></li>
-        <li>At this point you have two choices: <p><b>Live migration</b>: This allows you to migrate
-            the instances off of the compute host with minimal downtime so you can perform the
-            maintenance without risk of losing any data.</p><p><b>Stop / Start the instances</b>:
-            You issue <codeph>nova stop</codeph> commands to each of the instances, which will halt
-            them. This option allows you to do the maintenance and then, as long as there were no
-            disk failures to the data disks on the compute host, start the instances back up. This
-            method does involve downtime for the length of the maintenance.</p><p>If you choose the
-            live migration route, See <xref href="../live_migration.dita"/> for more details. Skip
-            to step #6 once live migration has completed.</p><p>If you choose the stop / start
+            sure you
+            re<?oxy_delete author="mwelch" timestamp="20160801T134302-0700" content="-"?>enable
+            provisioning after the maintenance is complete if you want to continue to be able to
+            spawn instances on the node. You can do this with the <codeph>nova service-enable
+              &lt;hostname> nova-compute</codeph> command.</note></li>
+        <li>At this point you have two choices: <ol>
+            <li><b>Live migration</b>: This option enables you to migrate the instances off the
+              compute node with minimal downtime so you can perform the maintenance without risk of
+              losing data.</li>
+            <li><b>Stop/start the instances</b>: Issuing <codeph>nova stop</codeph> commands to each
+              of the instances will halt them. This option lets you do maintenance and then start
+              the instances back up, as long as no disk failures occur on the compute node data
+              disks. This method involves downtime for the length of the maintenance.</li>
+          </ol><p>If you choose the live migration route, See <xref href="../live_migration.dita"/>
+            for more details. Skip to step #6 after you finish live migration.</p><p>If you choose
+            the
+            stop<?oxy_delete author="mwelch" timestamp="20160801T135025-0700" content=" "?>/<?oxy_delete author="mwelch" timestamp="20160801T135026-0700" content=" "?>start
             method, continue on.</p><ol>
             <li>List all of the instances on the node so you can issue stop commands to them:
               <codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
             <li>Issue the <codeph>nova stop</codeph> command against each of the instances:
               <codeblock>nova stop &lt;instance uuid></codeblock></li>
-            <li>Confirm that the instances are stopped. If it was successful you should see the
-              instances in a <codeph>SHUTOFF</codeph> state like you see below:
+            <li>Confirm that the instances are stopped. If stoppage was successful you should see
+              the instances in a <codeph>SHUTOFF</codeph> state, as shown here:
               <codeblock>$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+
 | ID                                   | Name      | Tenant ID                        | Status  | Task State | Power State | Networks              |
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+
-| ef31c453-f046-4355-9bd3-11e774b1772f | instance1 | 4365472e025c407c8d751fc578b7e368 | SHUTOFF | -          | Shutdown    | demo_network=10.0.0.5 |
+| ef31c453-f046-4355-9bd3-11e774b1772f | instance1 | 4365472e025c407c8d751fc578b7e368 | <b>SHUTOFF</b> | -          | Shutdown    | demo_network=10.0.0.5 |
 +--------------------------------------+-----------+----------------------------------+---------+------------+-------------+-----------------------+</codeblock></li>
-            <li>Do your required maintenance. If the required maintenance did not take down the
-              disks completely then you should be able to list the instances again after the repair
-              and confirm they are still in their <codeph>SHUTOFF</codeph> state:
+            <li>Do your required maintenance. If this maintenance does not take down the disks
+              completely then you should be able to list the instances again after the repair and
+              confirm that they are still in their <codeph>SHUTOFF</codeph> state:
               <codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
             <li>Start the instances back up using this command:
                 <codeblock>nova start &lt;instance uuid></codeblock><p>Example:</p><codeblock>$ nova start ef31c453-f046-4355-9bd3-11e774b1772f
 Request to start server ef31c453-f046-4355-9bd3-11e774b1772f has been accepted.</codeblock></li>
-            <li>Confirm that the instances started back up. If it was successful you should see the
-              instances in a <codeph>ACTIVE</codeph> state like you see below:
+            <li>Confirm that the instances started back up. If restarting is successful you should
+              see the instances in an <codeph>ACTIVE</codeph> state, as shown here:
               <codeblock>$ nova list --host helion-cp1-comp0002-mgmt --all-tenants
 +--------------------------------------+-----------+----------------------------------+--------+------------+-------------+-----------------------+
 | ID                                   | Name      | Tenant ID                        | Status | Task State | Power State | Networks              |
 +--------------------------------------+-----------+----------------------------------+--------+------------+-------------+-----------------------+
-| ef31c453-f046-4355-9bd3-11e774b1772f | instance1 | 4365472e025c407c8d751fc578b7e368 | ACTIVE | -          | Running     | demo_network=10.0.0.5 |
+| ef31c453-f046-4355-9bd3-11e774b1772f | instance1 | 4365472e025c407c8d751fc578b7e368 | <b>ACTIVE</b> | -          | Running     | demo_network=10.0.0.5 |
 +--------------------------------------+-----------+----------------------------------+--------+------------+-------------+-----------------------+</codeblock></li>
             <li>If the <codeph>nova start</codeph> fails, you can try doing a hard reboot:
-                <codeblock>nova reboot --hard &lt;instance uuid></codeblock><p>If that doesn't
+                <codeblock>nova reboot --hard &lt;instance uuid></codeblock><p>If this does not
                 resolve the issue you may want to contact support.</p></li>
           </ol></li>
-        <li>Re-enable provisioning when the node is fixed
+        <li>Re<?oxy_delete author="mwelch" timestamp="20160801T135307-0700" content="-"?>enable
+          provisioning when the node is fixed<?oxy_insert_start author="mwelch" timestamp="20160801T135311-0700"?>:<?oxy_insert_end?>
           <codeblock>nova service-enable &lt;hostname> nova-compute</codeblock></li>
       </ol>
     </section>
-
-    <section id="unplanned"><title>Unplanned maintenance scenarios involving disk failures on your
-        compute hosts</title>
-      <p>Your compute hosts should have a minimum of two disks, one that is used for the operating
+    <section id="unplanned">
+      <title>Unplanned maintenance scenarios involving disk failures on your compute nodes</title>
+      <p>Your compute nodes should have a minimum of two disks, one that is used for the operating
         system and one that is used as the data disk. These are defined during the installation of
         your cloud, in the <codeph>~/helion/my_cloud/definition/data/disks_compute.yml</codeph> file
         on the lifecycle manager. The data disk(s) are where the <codeph>nova-compute</codeph>
-        service lives. So there will be different recovery scenarios that will depend on whether one
-        or the other, or both, of these disks experienced failures.</p>
+        service lives. Recovery scenarios will depend on whether one or the other, or both, of these
+        disks experienced failures.</p>
       <p><b>If your operating system disk failed but the data disk(s) are okay</b></p>
-      <p>If you have had issues with the physical volume that hosts your operating system you need
-        to ensure that your physical volume is restored and then you can use these steps below to
-        restore the operating system.  These same steps can be used to recover one or more compute
-        hosts.</p>
+      <p>If you have had issues with the physical volume that nodes your operating system you need
+        to ensure that your physical volume is restored and then you can use the following steps to
+        restore the operating system:</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
-                <li>Source the administrator credentials: <codeblock>source ~/service.osrc</codeblock></li>
-        <li>Obtain the hostname(s) for your compute host(s), which you will use in subsequent
-          commands where <codeph>&lt;hostname></codeph> is
+        <li>Source the administrator credentials: <codeblock>source ~/service.osrc</codeblock></li>
+        <li>Obtain the hostname for your compute node, which you will use in subsequent commands
+          when <codeph>&lt;hostname></codeph> is
           requested:<codeblock>nova host-list | grep compute</codeblock></li>
-        <li>Obtain the status of the <codeph>nova-compute</codeph> service on the host(s):
+        <li>Obtain the status of the <codeph>nova-compute</codeph> service on that node:
           <codeblock>nova service-list --host &lt;hostname></codeblock></li>
-        <li>You will likely want to disable provisioning on the hosts(s) to ensure that the
-          nova-scheduler doesn't attempt to place any additional instances on the host(s) while you
-          are repairing it:
+        <li>You will likely want to disable provisioning on that node to ensure that
+            <codeph>nova-scheduler</codeph> does not attempt to place any additional instances on
+          the node while you are repairing it:
           <codeblock>nova service-disable --reason "node is being rebuilt" &lt;hostname> nova-compute</codeblock></li>
         <li>Obtain the status of the instances on the compute
-          host(s):<codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
-        <li>Before continuing, you should either evacuate all of the instances off your compute
-          host(s) or shut them down. If the instances storage is allocated only from cinder volumes,
-          including the instance boot disks, then you can use the <codeph>nova evacuate</codeph> or
-            <codeph>nova host-evacuate</codeph> commands to do this. See <xref
-            href="../live_migration.dita"/> for more details on how to do this.<p>If your instances
-            storage is allocated from ephemeral storage of the compute host, you will need to stop
-            the instances using the nova stop command. Since the nova-compute service is not running
-            on the node you will not see the instance status change, but the <codeph>Task
-              State</codeph> for the instance should change to
+          node:<codeblock>nova list --host &lt;hostname> --all-tenants</codeblock></li>
+        <li>Before continuing, you should either evacuate all of the instances off your compute node
+          or shut them down. If the instances are booted from
+          volumes<?oxy_insert_start author="mwelch" timestamp="20160801T185708-0700"?>,<?oxy_insert_end?>
+          then you can use the <codeph>nova evacuate</codeph> or <codeph>nova host-evacuate</codeph>
+          commands to do this. See <xref href="../live_migration.dita"/> for more details on how to
+          do this.<p>If your instances are not booted from volumes, you will need to stop the
+            instances using the <codeph>nova stop</codeph> command. Because the
+              <codeph>nova-compute</codeph> service is not running on the node you will not see the
+            instance status change, but the <codeph>Task State</codeph> for the instance should
+            change to
             <codeph>powering-off</codeph>.<codeblock>nova stop &lt;instance_uuid></codeblock></p><p>Verify
             the status of each of the instances using these commands, verifying the <codeph>Task
               State</codeph> states
             <codeph>powering-off</codeph>:<codeblock>nova list --host &lt;hostname> --all-tenants
 nova show &lt;instance_uuid></codeblock></p></li>
-        <li>At this point you should be ready with a good hard disk in the node(s) that you can use
-          for the operating system. Follow these steps:<ol id="ol_tzh_4rp_xv">
-            <li>Obtain the name for your compute host(s) in Cobbler, which you will use in
-              subsequent commands where <codeph>&lt;node_name></codeph> is requested:
+        <li>At this point you should be ready with a functioning hard disk in the node that you can
+          use for the operating system. Follow these steps:<ol id="ol_tzh_4rp_xv">
+            <li>Obtain the name for your compute node in Cobbler, which you will use in subsequent
+              commands when <codeph>&lt;node_name></codeph> is requested:
               <codeblock>sudo cobbler system list</codeblock></li>
-            <li>Reimage the compute node(s) with this playbook. You can specify multiple hosts in
-              comma-deliminated fashion if need
-              be.<codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&lt;node name 1>,&lt;node name 2></codeblock></li>
+            <li>Reimage the compute node with this playbook:
+              <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=&lt;node name></codeblock></li>
           </ol></li>
-
-        <li>Once reimage is complete, use the playbook below which will configure the operating
-          system and start services up. You can specify multiple hosts in comma-deliminated fashion
-          if need
-          be.<codeblock>cd ~/scratch/ansible/next/hos/ansible
+        <li>Once reimaging is complete, use the following playbook to configure the operating system
+          and start up
+          services:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts site.yml --limit &lt;hostname></codeblock></li>
-        <li>You should then ensure any instances on the recovered host(s) are in an
+        <li>You should then ensure any instances on the recovered node are in an
             <codeph>ACTIVE</codeph> state. If they are not then use the <codeph>nova start</codeph>
           command to bring them to the <codeph>ACTIVE</codeph>
           state:<codeblock>nova list --host &lt;hostname> --all-tenants
 nova start &lt;instance_uuid></codeblock></li>
-        <li>Re-enable provisioning on each host that you have
-          repaired:<codeblock>nova service-enable &lt;hostname> nova-compute</codeblock></li>
+        <li>Re<?oxy_delete author="mwelch" timestamp="20160801T190130-0700" content="-"?>enable
+          provisioning:<codeblock>nova service-enable &lt;hostname> nova-compute</codeblock></li>
         <li>Start any instances that you had stopped
           previously:<codeblock>nova list --host &lt;hostname> --all-tenants
 nova start &lt;instance_uuid></codeblock></li>
       </ol>
       <p><b>If your data disk(s) failed but the operating system disk is okay OR if all drives
           failed</b></p>
-      <p>In this scenario your instances that were on the node are lost. You should follow steps 1-9
-        and 11 on the previous scenario.</p>
-      <p>Once that is complete, you can use the <codeph>nova rebuild</codeph> command, which will
-        respawn your instances from scratch and  ensure they get the same IP address, but you would
-        lose the instance
-        data:<codeblock>nova list --host &lt;hostname> --all-tenants
+      <p>In this scenario your instances on the node are lost. First, follow steps 1 to 5 and 8 to 9
+        in the previous scenario.</p>
+      <p>After that is complete, use the <codeph>nova rebuild</codeph> command to respawn your
+        instances<?oxy_insert_start author="mwelch" timestamp="20160801T190326-0700"?>,<?oxy_insert_end?>
+        which will also ensure that they receive the same IP
+        address:<codeblock>nova list --host &lt;hostname> --all-tenants
 nova rebuild &lt;instance_uuid></codeblock></p>
     </section>
   </body>
