@@ -4,7 +4,7 @@
 <topic id="upgradeto30">
   <!--<title>Upgrade to <keyword keyref="kw-hos-phrase-21"/> to <keyword keyref="kw-hos-phrase-30"
     /></title>-->
-  <title>Upgrade to HPE Helion OpenStack 3.x</title>
+  <title>Upgrade to <keyword keyref="kw-hos-phrase-30X"/></title>
   <body>
     <!--not tested-->
     <!--<p conkeyref="HOS-conrefs/applies-to"/>-->
@@ -12,7 +12,7 @@
       <title>Performing the Upgrade from HPE Helion OpenStack <keyword keyref="kw-hos-phrase-21"/>
         to <keyword keyref="kw-hos-phrase-30"/></title>
       <note type="warning">The process for upgrading HPE Helion OpenStack to version <keyword
-          keyref="kw-hos-phrase-30"/> requires a reboot. It also requires that you <b>do not make
+          keyref="kw-hos-phrase-30X"/> requires a reboot. It also requires that you <b>do not make
           any configuration changes</b> during the upgrade process. Configuration  changes must only be made after the upgrade process
         is complete. <!-- TODO Is there an upgrade path for HDP ? -->
         <!-- which may prevent core <b>HPE Helion Development Platform</b> services from
@@ -114,15 +114,44 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml</codeblock>
             scope="external" format="html">here</xref>.</li>
 
         <li>To begin the upgrade process, log in to the lifecycle manager as the user you created
-          during the <keyword keyref="kw-hos-phrase-21"/> deployment, and mount the install media at
-            <codeph>/media/cdrom</codeph>; for example:
-          <codeblock>sudo mount HelionOpenStack-3.0.iso /media/cdrom</codeblock></li>
+          during the previous deployment, and mount the install media at
+            <codeph>/media/cdrom</codeph>.
+          It may be necessary to use <codeph>wget</codeph> or
+          another file transfer method to transfer the install media to the lifecycle manager before
+          completing this step. Here is the command to mount the media:
+          
+          <p>Example for <keyword keyref="kw-hos-phrase-30"/>:</p>
+          <codeblock>sudo mount HelionOpenStack-3.0.iso /media/cdrom</codeblock>
+          
+          <p>Example for <keyword keyref="kw-hos-phrase-301"/>:</p>
+          <codeblock>sudo mount Helion_OpenStack_3.0.1_HelionOpenStack-3.0.1.iso /media/cdrom</codeblock>        </li>
+        
+        
 
-        <li>Unpack the following tarball: <!-- TODO V3 FILENAME -->
-          <codeblock>tar faxv /media/cdrom/hos/hos-3.0.0-20160503T085137Z.tar</codeblock></li>
+        <li>Unpack the tarball that is in the <codeph>/media/cdrom/hos/</codeph> directory.
+          
+          <p>Example for <keyword keyref="kw-hos-phrase-30"/>:
+          </p>
+          <codeblock>cd ~
+tar xvf /media/cdrom/hos/hos-3.0.0-20160503T085137Z.tar</codeblock>
+          
+          <p>Example for <keyword keyref="kw-hos-phrase-301"/>:
+          </p>
+          <codeblock>cd ~
+tar xvf /media/cdrom/hos/hos-3.0.1-20160722T144646Z.tar</codeblock>     
+          
+        </li>
+        
 
-        <li>Run the included initialization script to update the deployer:
-          <codeblock>~/hos-3.0.0/hos-init.bash</codeblock></li>
+        <li>Run the included initialization script to update the deployer.
+          
+          <p>Example for <keyword keyref="kw-hos-phrase-30"/>:</p>
+          <codeblock>~/hos-3.0.0/hos-init.bash</codeblock>
+          
+          <p>Example for <keyword keyref="kw-hos-phrase-301"/>:</p>
+          <codeblock>~/hos-3.0.1/hos-init.bash</codeblock>
+        </li>
+        
 <!--
         <li>If you have made any changes to your configuration files, ensure that you commit them to
           your local git and if any merge conflicts are reported, you must resolve them before
