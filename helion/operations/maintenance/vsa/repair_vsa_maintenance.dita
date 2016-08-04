@@ -39,11 +39,15 @@
         that contains volumes configured for data protection levels other than Network RAID-0.
         Repairing a storage system has the advantage of triggering only one resynchronization of the
         data on the storage system, rather than a complete restripe of the data on the cluster.
-        Resynchronizing the data is a shorter operation than a restripe.</p>
+        Resynchronizing the data is a shorter operation than a restripe. If you're unfamiliar with
+        accessing the CMC, please refer to the article <xref
+          href="http://docs.hpcloud.com/#3.x/helion/installation/configure_vsa.html" format="html"
+          scope="external">HPE Helion OpenStack 3.0: Configuring For VSA Block Storage
+          Backend</xref>, specifically, the Using the CMC Utility section.</p>
       <p>
         <ol id="ol_qxx_3gy_qw">
-          <li>[OPTIONAL] If manager is running on the VSA node you are going to repair then you have
-            to first stop manager. To stop manager do the following:<ol id="ol_qkq_qgy_qw">
+          <li>[OPTIONAL] If Manager is running on the VSA node you are going to repair then you
+            first have to stop Manager. To stop Manager do the following:<ol id="ol_qkq_qgy_qw">
               <li>Right click on VSA node and select Stop Manager. It will pop-up warning "Are you
                 sure you want to stop the manager running on ..". </li>
               <li>Click OK to stop manager. <p>Once the manger is stopped, start a manager on a
@@ -62,48 +66,59 @@
     </section>
     <section>
       <title>Repair NIC of Host Machine Running VSA</title>
-      <p>Due to network issue, you will lose connectivity to VSA. Thus showing Storage system (VSA)
-        offline in CMC. This is more of physical NIC failure of Host machine. Repair the NIC of Host
-        machine and reboot.</p>
+      <p>If you experience the failure of a physical NIC on a VSA node, the node will lose
+        connectivity to VSA. This will result in the CMC showing the related Storage System (VSA) as
+        offline. Repair the Host machine's NIC and reboot. Once the host has rebooted, check the CMC
+        to verify that the Storage System is back online.</p>
     </section>
     <section>
       <title>Repair VSA Appliance Networking Issues</title>
-      <p>Due to network issue, you will lose connectivity to VSA. Thus showing Storage system (VSA)
-        offline in CMC. Login to VSA node and try to fix networking issue using virsh
-        commands.<codeblock>sudo virsh --help</codeblock></p>
+      <p>If you experience a network issue on a VSA appliance, that node will lose connectivity to
+        VSA and the related Storage system (VSA) will show as offline in the CMC. Login to the VSA
+        node and try to fix the networking issue using standard tools and <codeph>virsh</codeph>
+        commands such as:<codeblock>sudo virsh --help</codeblock></p>
     </section>
     <section>
-      <title>Excluding the VSA Node while Maintenance</title>
-      <p>Even after the VSA node is under maintenance, it should continue to remain in the<codeph>
-          data/servers.yml</codeph> file. You should also create a file (for example offline-vsa) on
-        the lifecycle manager with a list of VSA nodes that are currently offline, so that these
-        nodes get excluded from any further reconfiguration or upgrade. Perform the following steps
-        to remove the VSA node for maintenance:<ol id="ol_tsn_4tf_rw">
+      <title>Excluding the VSA Node while in Maintenance</title>
+      <p>While a VSA node is under maintenance, it should continue to have an entry in the<codeph>
+          data/servers.yml</codeph> file. In order to exclude a node from any further
+        reconfiguration or upgrades while under maintenance, you should also create a file (for
+        example offline-vsa) on the lifecycle manager with a list of VSA nodes that are currently
+        offline. Perform the following steps to exclude a VSA node from ansible-managed deployments,
+        reconfigurations, or upgrades while performing VSA maintenance on that node:<ol
+          id="ol_tsn_4tf_rw">
           <li>Login to the lifecycle manager.</li>
-          <li> Verify the node that needs to be kept under maintenance from <codeph>
-              ~/scratch/ansible/next/hos/ansible/host_vars</codeph>
-            directory.<codeblock>ls ~/scratch/ansible/next/hos/ansible/host_vars</codeblock></li>
-          <li> Create a file (for example: offline-vsa) and enter the node information that needs to
-            be placed under maintenance. For example, you want to place
-              <codeph>helion-cp1-vsa0004-mgmt</codeph> under maintenance, you must use the host name
-            along with ! (for example:
-            <codeph>!helion-cp1-vsa0004-mgmt</codeph>).<codeblock>cat offline-vsa
+          <li> Find and verify the name of the node that needs to be placed in maintenance mode. The
+            node names can be found in the <codeph>
+              ~/scratch/ansible/next/hos/ansible/host_vars</codeph> directory. Use the following
+            command to list
+            them:<codeblock>ls ~/scratch/ansible/next/hos/ansible/host_vars</codeblock></li>
+          <li> Create a file (for example: offline-vsa) and enter the information for the node that
+            needs to be placed under maintenance. For example, if you want to place the node
+              <codeph>helion-cp1-vsa0004-mgmt</codeph> under maintenance, enter the host name
+            prefixed with the ! character (for example: <codeph>!helion-cp1-vsa0004-mgmt</codeph>).
+            The ! character will act as a signal to exclude the node from ansible operations. Below
+            you'll find the output from reading an example <codeph>offline-vsa</codeph>
+            file:<codeblock>cat offline-vsa
 !helion-cp1-vsa0004-mgmt</codeblock></li>
           <li>When performing Helion lifecycle management deployments/reconfigurations/upgrades or
-            any other operation, specify the name of this file (prepend @ to the file ) in a --limit
-            option to prevent the access of the VSA nodes that are offline till maintenance activity
-            is
-              done.<codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit &lt;@file location></codeblock><p>In
-              the following example offline-vsa file has VSA node name and the file is created under
-                <codeph>/home/stack/</codeph>.</p><codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit @/home/stack/offline-vsa</codeblock></li>
+            any other ansible operation, specify the name of this file (prepend @ to the file ) in a
+            --limit option to exclude from any ansible tasks the VSA nodes that are under
+            maintenance. Once your VSA node maintenance is finished, you no longer need to reference
+            this file in the --limit option.<p/>For
+              instance:<codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit &lt;@file location></codeblock><p>In
+              the following example, the <codeph>offline-vsa</codeph> file has been created in the
+                <codeph>/home/stack/</codeph> directory and the file contains the name of the VSA
+              node that is under maintenance.
+            </p><codeblock>ansible-playbook -i hosts/verb_hosts vsa-status.yml --limit @/home/stack/offline-vsa</codeblock></li>
         </ol></p>
     </section>
     <section>
       <title>Host Operating System Corrupted</title>
-      <p>If operating system of Host machine where VSA appliance is running gets corrupted then you
-        have to reimage VSA node and  re-deploy VSA appliance on this node. VSA node IP and VSA
-        appliance IP remain same. Please consult HPSD team for this. OS recovery is performed with
-        HPSD support intervention.</p>
+      <p>If the operating system of Host machine where a VSA appliance is running gets corrupted
+        then you'll need to reimage the VSA node and re-deploy the VSA appliance on this node. The
+        VSA node IP and VSA appliance IP will remain the same. Please consult the HPSD team for
+        this. OS recovery is performed with HPSD support intervention.</p>
     </section>
   </body>
 </topic>
