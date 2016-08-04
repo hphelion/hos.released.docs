@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_nfp_xtf_rt">
+    <title>Operation Pertaining to VMDK Image</title>
+    <body>
+        <p>This page describes the procedure to convert Ubuntu and QCOW2 image to VMDK image.</p>
+        <p><!--You must convert an image to a bootable file inorder to launch an instance.-->
+            <!--In this scenario you must convert an image (Ubuntu 14.04.4 LTS ) to <codeph>vmdk</codeph> file format.--></p>
+        <section>
+            <title>Convert Ubuntu to <codeph>vmdk</codeph> image</title>
+        </section>
+        <p>Before you start the conversion, you must download the Ubuntu 14.04.4 LTS images from
+                <xref href="https://cloud-images.ubuntu.com/trusty/current/" format="html"
+                scope="external">https://cloud-images.ubuntu.com/trusty/current/</xref> and before
+            performing the steps in this page.</p>
+        <section>
+            <title>Procedure </title>
+            <p>Perform the following steps to convert an image to a <codeph>vmdk</codeph> file
+                format: <ol id="ol_p1p_ftf_dw">
+                    <li>Login to your environment.</li>
+                    <li>On the controller 1, execute <codeph>wget</codeph> to save the Ubuntu
+                        14.04.4 in an OVA file format.
+                        <codeblock>wget https://cloud-images.ubuntu.com/trusty/current/&lt;name of the image></codeblock><p>Example:</p><codeblock>wget https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64.ova</codeblock><p><image
+                            href="../../media/esx/glance1.png" id="image_vqz_15f_dw"/></p><p>The
+                                OVA file is a TAR file. It contains a virtual disk image file
+                                (*.VMDK).</p></li>
+                    <li>Untar the OVA file as shown
+                        below:<codeblock>tar -tvf &lt;OVA file></codeblock><p>Example:</p><codeblock>tar -tvf trusty-server-cloudimg-amd64.ova</codeblock><p><image
+                            href="../../media/esx/glance2.png" id="image_f15_r5f_dw"
+                        /></p><p>Lists of files appear.</p></li>
+                    <li>Extract the <codeph>vmdk</codeph>
+                            file:<codeblock>tar -xvf &lt;OVA file></codeblock><p>Example:</p><codeblock>tar -xvf &lt;trusty-server-cloudimg-amd64.ova></codeblock><p><image
+                                href="../../media/esx/glance3.png" id="image_rdf_y5f_dw"/></p></li>
+                    <li>Check the image properties and ensure that VMDK file is in a
+                            <b>streamOptimized</b> format. The binary file should contain
+                            <codeph>createType=streamOptimized</codeph>
+                            line:<codeblock># head -20 &lt;vmdk image></codeblock><p>Example:</p><codeblock># head -20 trusty-server-cloudimg-amd64.disk1.vmdk</codeblock><p><image
+                                href="../../media/esx/glance4.png" id="image_yv2_mwf_dw"/></p></li>
+                    <li>Create the Glance
+                            image<codeblock># glance image-create --name &lt;OS image for vSphere> 
+                            --disk-format &lt;disk format of the image> \
+                            --container- format &lt;container format of the image>\
+                            --file ./os-image.vmdk \
+                            --progress \
+                            --visibility &lt;accessibility of image> \
+                            --property vmware_disktype=&lt;streamOptimized> \
+                            ---property vmware_ostype=&lt;ubuntu64Guest> \
+                            --property hypervisor_type=&lt;name of the hypervisor> \</codeblock><p>Example:<codeblock># glance image-create --name ubuntu 
+                                --disk-format vmdk \
+                                --container- format bare\
+                                --file trusty-server-clouding-amd64-disk1.vmdk \
+                                --progress \
+                                --visibility public \
+                                --property vmware_disktype=sparse \
+                                ---property vmware_ostype=&lt;ubuntu64Guest> \
+                                --property hypervisor_type=vmware \</codeblock></p><note>In
+                            the mixed environment (KVM and ESX) you must use an appropriate image
+                            with an appropriate tag. The OpenStack Compute service uses the
+                                <b>hypervisor_type</b> tag to match the images to the correct
+                            hypervisor type. For VMware images, set the <b>hypervisor_type</b> to
+                                <b>vmware</b>. Other hypervisor types are xen, qemu, lxc, uml, and
+                            hyperv. Note that qemu is used for both QEMU and KVM hypervisor
+                            types.</note></li>
+                </ol></p>
+        </section>
+        <section>
+            <title>Convert QCOW2 to vmdk image</title>
+        </section>
+        <p>Before you start the conversion, you must download the QCOW2 images from <xref
+            href="http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img"
+            format="html" scope="external"
+            >http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img</xref> and then
+            perform the steps mentioned below.</p>
+        <section>
+            <title>Procedure </title>
+            <p>Perform the following steps to convert an image to a <codeph>vmdk</codeph> file
+                format: <ol id="ol_v4z_tlg_dw">
+                    <li>Login to your environment. </li>
+                    <li>On the controller 1, execute <codeph>wget</codeph> to save the QCOW2 image.
+                            <codeblock>wget http://download.cirros-cloud.net/0.3.3/&lt;name of the image></codeblock><p>Example:</p><codeblock>wget http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img</codeblock>The
+                        file is QCOW image as show below:<p><image
+                                href="../../media/esx/glance5.png" id="image_sj3_cfh_dw"/></p></li>
+                    <li>Convert the above image to the VMDK file
+                            format:<codeblock># qemu-img -0 vmdk &lt;name of the image></codeblock><p>Example:<codeblock># qemu-img -0 vmdk cirros-0.3.3-x86_64-disk.img cirros.vmdk</codeblock></p><p><image
+                                href="../../media/esx/glance6.png" id="image_x1n_pgh_dw"/></p></li>
+                    <li>Check the image properties and the VMDK file format:
+                            <!--In the following example the VMDK file format is <b>monolithicSparse</b>. In this case the binary file contains createType=monolithicSparse line.--><codeblock># head -20 &lt;vmdk image name></codeblock><p>Example:</p><codeblock># head -20 cirros.vmdk</codeblock><p><image
+                                href="../../media/esx/glance7.png" id="image_wcq_zhh_dw"
+                            /></p><note>The <b>qemu-img</b> utility creates a disk with the
+                                <b>ide</b> adapter type. And the VMDK file format is
+                            MonolithicSparse (sparse type). </note></li>
+                    <li>Create the Glance image. <p>You can use the default adapter type
+                                <codeph>ide</codeph> or you can convert the QCOW image to
+                                <codeph>lsilogicsas</codeph> as the adapter type.</p><p>To convert
+                            the <codeph>qcow</codeph> image to the <codeph>ide</codeph> adatper
+                            type:
+                            <!--I combined step 5 and 6, as it seems that the user does one or the other. Is this right?--></p><codeblock># glance image-create --name &lt;OS image for vSphere> 
+                            --disk-format &lt;disk format of the image> \
+                            --container- format &lt;container format of the image>\
+                            --file ./os-image.vmdk \
+                            --progress \
+                            --visibility &lt;accessibility of image> \
+                            --property vmware_disktype=&lt;type of virtual disk> \
+                            --property hypervisor_type=&lt;name of the hypervisor> \</codeblock>
+                            Example:<codeblock># glance image-create --name cirros.vmdk 
+                            --disk-format vmdk \
+                            --container- format bare\
+                            --file cirros.vmdk \
+                            --progress
+                            --visibility public \
+                            --property vmware_disktype=sparse \
+                            --property hypervisor_type=vmware \  </codeblock><p>To
+                            convert the <codeph>qcow</codeph> image to the
+                                <codeph>lsilogicsas</codeph> adatper
+                            type:</p><codeblock># qemu-img -0 convert -0 vmdk adapter_type=&lt;name of the adapter type> &lt;name of the image along with adapter type></codeblock><p>Example:<codeblock># qemu-img convert -0 vmdk adapter_type=lsilogicsas cirros-0.3.3-x86_64-disk.img cirros.lsilogicsas.vmdk</codeblock></p></li>
+                    <li>Check the image
+                            properties:<codeblock># head -20 &lt;vmdk image name></codeblock><p>Example:</p><codeblock># head -20 cirros.lsilogicsas.vmdk</codeblock><p><image
+                                href="../../media/esx/glance8.png" id="image_hjx_5qh_dw"
+                            /></p><note>The qemu-img utility creates a disk with the <b>ide</b>
+                            adapter type. The VMDK file format is MonolithicSparse (sparse type).
+                        </note></li>
+                    <li>Create the Glance
+                        image:<codeblock># glance image-create --name &lt;image name> 
+                            --disk-format &lt;disk format of the image> \
+                            --container- format &lt;container format of the image>\
+                            --visibility &lt;accessibility of image> \
+                            --property vmware_disktype=&lt;vmware disk property> \
+                            --property hypervisor_type=&lt;name of the hypervisor> \
+                            --file &lt;vmdk file name></codeblock>
+                        Example:<codeblock># glance image-create --name cirros.lsilogicsas 
+                            --disk-format vmdk \
+                            --container- format bare\
+                            --visibility public \
+                            --property vmware_disktype=sparse \
+                            --property vmware_adapter_type=lsilogicsas \
+                            --file cirros.lsilogicsas.vmdk</codeblock>The
+                        following screen appears, if  you have converted the QCOW2 file to a
+                        different adapter type and the operating system does not have the required
+                        driver: <p><image href="../../media/esx/glance10.png" id="image_yrw_ftm_dw"
+                            /></p></li>
+                </ol></p>
+        </section>
+        <p> </p>
+    </body>
+</topic>
+
