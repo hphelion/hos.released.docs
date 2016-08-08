@@ -98,7 +98,15 @@
         instances from the database. Here you must provide the host machine i.e. the MySQL server IP
         address, credentials and list of instances to be removed.</p><p>If the instances list is not
         provided, then all the instances with pending_delete or error will be deleted from the
-        database. This script performs the same operation as described in the manual steps above. </p>
+        database. This script performs the same operation as described in the manual steps above.
+      </p> You will be prompted for the following four inputs:<ol>
+        <li>hostname </li>
+        <li>mysql_username </li>
+        <li>mysql_password. (These first three are required for the connection to the database.) </li>
+        <li>loadbalanacer_id (space separated in case of multiple entries). Leave this blank only if
+          you want all the load balancers present in ‘PENDING_DELETE’ or ‘ERROR’ state to be deleted
+          and do not want to identify them by their IDs.</li>
+      </ol>
       <codeblock outputclass="nomaxheight"> #Get the input from user for credentials and id of the loadbalancer to be deleted
 read -p "Enter Hostname (blank if not present):" host      
 read -p "Enter mysql_username (blank if not present):" username
@@ -137,14 +145,7 @@ do
     echo "Cleanup process completed"
 done </codeblock>
       <p>To start the script, run the following and follow the
-        prompts:<codeblock>./delete_lbaas.sh </codeblock></p>This script requires four inputs <ol>
-        <li>hostname </li>
-        <li>mysql_username </li>
-        <li>mysql_password. (These first three are required for the connection to the database.) </li>
-        <li>loadbalanacer_id (space separated in case of multiple entries). Leave this blank only if
-          you want all the load balancers present in ‘PENDING_DELETE’ or ‘ERROR’ state to be deleted
-          and do not want to identify them by their IDs.</li>
-      </ol>
+        prompts:<codeblock>./delete_lbaas.sh </codeblock></p>
     </section>
     <section><title> Deleting active load balancers</title> Active load balancers can be deleted
       using the Neutron CLI: <codeblock>$ neutron lbaas-loadbalancer-delete --help
