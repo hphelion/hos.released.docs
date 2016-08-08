@@ -13,7 +13,7 @@
       the ERROR or Pending_delete state, follow these directions when you want to delete
       them.</section>
     <section>To clean up your bad instances, you can either run the following MySQL commands
-      manually, or run the attached script shown later.</section>
+      manually, or run the  script shown later.</section>
     <section><title>Manually deleting load balancers</title>In order to clean up stuck or error
       instances, follow the steps below to remove the amphora instance and the port associated to
       the particular load balancer. Under these circumstances, the port will be locked so following
@@ -94,13 +94,49 @@
     <section>
       <title>Alternate option: run a Shell script to delete the instances</title>
     </section>
-    <section><p>The <xref href="delete_lbaas.zip" format="html" type="external"> attached Shell
-          script</xref>, also illustrated below, can be used to clean up (delete) pending_delete or
-        Error instances from the database. Here you must provide the host machine i.e. the MySQL
-        server IP address, credentials and list of instances to be removed.</p><p>If the instances
-        list is not provided, then all the instances with pending_delete or error will be deleted
-        from the database. This script performs the same operation as described in the manual steps
-        above. </p><p>To start the script, run the following and follow the
+    <section><p>The following Shell script can be used to clean up (delete) pending_delete or Error
+        instances from the database. Here you must provide the host machine i.e. the MySQL server IP
+        address, credentials and list of instances to be removed.</p><p>If the instances list is not
+        provided, then all the instances with pending_delete or error will be deleted from the
+        database. This script performs the same operation as described in the manual steps above. </p>
+      <codeblock outputclass="nomaxheight"> #Get the input from user for credentials and id of the loadbalancer to be deleted
+read -p "Enter Hostname (blank if not present):" host      
+read -p "Enter mysql_username (blank if not present):" username
+read -p "Enter mysql_password (blank if not present):" password
+read -p "Enter loadbalanacer_id (space separated in case of multiple entries)(blank if not present):" id
+
+#Create command to connect to mysql
+command="mysql"
+
+if [ "$host" != "" ]; then
+    command="$command -h $host"
+fi
+
+if [ "$username" != "" ]; then
+    command="$command -u$username"
+fi
+
+if [ "$password" != "" ]; then
+    command="$command -p$password"
+fi
+
+if [ "$id" != "" ]; then
+    lb_ids="id $id"
+else
+    lb_ids=`$command -e "use neutron; select id from lbaas_loadbalancers where provisioning_status in ('PENDING_DELETE', 'ERROR');"`
+fi
+
+#Execute the delete query for mysql tables
+lb_ids_array=(`echo $lb_ids | sed 's/ /\n/g'`)
+size=${#lb_ids_array[@]}
+for((i=1;i&lt;$size;i++))
+do
+    echo ${lb_ids_array[$i]}
+    `$command -e "use ovs_neutron; delete from lbaas_loadbalancer_statistics where loadbalancer_id='${lb_ids_array[$i]}'; delete from lbaas_loadbalancers where id='${lb_ids_array[$i]}';"`
+    `$command -e "use octavia; delete from amphora where load_balancer_id='${lb_ids_array[$i]}'; delete from vip where load_balancer_id='${lb_ids_array[$i]}'; delete from load_balancer where id='${lb_ids_array[$i]}';"`
+    echo "Cleanup process completed"
+done </codeblock>
+      <p>To start the script, run the following and follow the
         prompts:<codeblock>./delete_lbaas.sh </codeblock></p>This script requires four inputs <ol>
         <li>hostname </li>
         <li>mysql_username </li>
@@ -109,44 +145,6 @@
           you want all the load balancers present in ‘PENDING_DELETE’ or ‘ERROR’ state to be deleted
           and do not want to identify them by their IDs.</li>
       </ol>
-      <codeblock outputclass="nomaxheight">    #Get the input from user for credentials and id of the loadbalancer to be deleted
-    read -p "Enter Hostname (blank if not present):" host      
-    read -p "Enter mysql_username (blank if not present):" username
-    read -p "Enter mysql_password (blank if not present):" password
-    read -p "Enter loadbalanacer_id (space separated in case of multiple entries)(blank if not present):" id
-    
-    #Create command to connect to mysql
-    command="mysql"
-    
-    if [ "$host" != "" ]; then
-    command="$command -h $host"
-    fi
-    
-    if [ "$username" != "" ]; then
-    command="$command -u$username"
-    fi
-    
-    if [ "$password" != "" ]; then
-    command="$command -p$password"
-    fi
-    
-    if [ "$id" != "" ]; then
-    lb_ids="id $id"
-    else
-    lb_ids=`$command -e "use neutron; select id from lbaas_loadbalancers where provisioning_status in ('PENDING_DELETE', 'ERROR');"`
-    fi
-    
-    #Execute the delete query for mysql tables
-    lb_ids_array=(`echo $lb_ids | sed 's/ /\n/g'`)
-    size=${#lb_ids_array[@]}
-    for((i=1;i&lt;$size;i++))
-    do
-        echo ${lb_ids_array[$i]}
-        `$command -e "use ovs_neutron; delete from lbaas_loadbalancer_statistics where loadbalancer_id='${lb_ids_array[$i]}'; delete from lbaas_loadbalancers where id='${lb_ids_array[$i]}';"`
-        `$command -e "use octavia; delete from amphora where load_balancer_id='${lb_ids_array[$i]}'; delete from vip where load_balancer_id='${lb_ids_array[$i]}'; delete from load_balancer where id='${lb_ids_array[$i]}';"`
-        echo "Cleanup process completed"
-    done
-  </codeblock>
     </section>
     <section><title> Deleting active load balancers</title> Active load balancers can be deleted
       using the Neutron CLI: <codeblock>$ neutron lbaas-loadbalancer-delete --help
