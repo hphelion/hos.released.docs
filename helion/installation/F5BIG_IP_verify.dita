@@ -2,28 +2,230 @@
 <!--Edit status: not edited-->
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="F5_BIGIP_30_verify">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Verify F5 BIG-IP Integration</title>
+  <title>Verify F5 BIG-IP Integration</title>
   <body><!--not tested-->
-    <p conkeyref="HOS-conrefs/applies-to"/>
     <p>To verify that your F5 BIG-IP device runs as a load balancer for Neutron LBaaSv2 in your deployment you will set up a round-robin load balancer on that private network. This is accomplished by creating two instances on their own private network and 
 testing critical functionality.</p>
     
-    <note type="important">Be aware of the following known issues: <ul>
-        <li>For limitations of the F5 Networks driver, review the F5 OpenStack LBaaSv2 driver <xref
-            href="http://f5-openstack-lbaasv2-driver.readthedocs.io/en/liberty/release_notes.html"
-            scope="external" format="html">Release Notes</xref>.</li>
-        <li>The members of a pool should be removed (neutron lbaas-member-delete) before deleting
-          the pool (neutron lbaas-pool-delete), or the members may linger in the F5 appliance
-          despite being deleted in Neutron.</li>
-        <li>The pools of a listener should be removed (neutron lbaas-pool-delete) before deleting
-          the listener (neutron lbaas-listener-delete), or the pools may linger in the F5 appliance
-          despite being deleted in Neutron.</li>
-        <li>If a pool is being monitored, in the BIG-IP control panel, the listener, the pool, and
-          the pool members will display a monitoring status, but the nodes will continue to be
-          unmonitored. This is because a node is not a service to monitor in LBaaSv2. A pool member
-          is a node with a port/service.</li>
-      </ul></note>
+    <ul>
+      <li><xref type="section" href="#F5_BIGIP_30_verify/F5_SuppFunc">Supoorted Function Testing</xref></li>
+      <li><xref type="section" href="#F5_BIGIP_30_verify/F5_vrfychklst">Verification Checklist</xref></li>
+    </ul>
     
+    <note type="important">Be aware of the following known issues: <ul>
+      <li>For limitations of the F5 Networks driver, review the F5 OpenStack LBaaSv2 driver <xref
+        href="http://f5-openstack-lbaasv2-driver.readthedocs.io/en/liberty/release_notes.html"
+        scope="external" format="html">Release Notes</xref>.</li>
+      <li>The members of a pool should be removed (neutron lbaas-member-delete) before deleting
+        the pool (neutron lbaas-pool-delete), or the members may linger in the F5 appliance
+        despite being deleted in Neutron.</li>
+      <li>The pools of a listener should be removed (neutron lbaas-pool-delete) before deleting
+        the listener (neutron lbaas-listener-delete), or the pools may linger in the F5 appliance
+        despite being deleted in Neutron.</li>
+      <li>If a pool is being monitored, in the BIG-IP control panel, the listener, the pool, and
+        the pool members will display a monitoring status, but the nodes will continue to be
+        unmonitored. This is because a node is not a service to monitor in LBaaSv2. A pool member
+        is a node with a port/service.</li>
+    </ul></note>
+    
+    <section id="F5_SuppFunc">
+      <title>Supported Function Testing</title>
+    <p>The following is a list of the specific functions tested. Every API command listed here was run manually in Neutron LBaaS v2 and completed successfully. Some values were changed in BIG-IP where necessary.</p>
+   <p><b>Loadbalancer Functions</b>
+     <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_LBR">
+       <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="1*"/>
+            <colspec colname="c2" colnum="2" colwidth="1.44*"/>
+            <thead>
+              <row>
+                <entry>Function</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>lbaas-agent-hosting-loadbalancer</entry>
+                <entry>Get lbaas v2 agent hosting a loadbalancer.</entry>
+              </row>
+              <row>
+                <entry>lbaas-loadbalancer-create</entry>
+                <entry>LBaaS v2 Create a loadbalancer.</entry>
+              </row>
+              <row>
+                <entry>lbaas-loadbalancer-delete</entry>
+                <entry>LBaaS v2 Delete a given loadbalancer.</entry>
+              </row>
+              <row>
+                <entry>lbaas-loadbalancer-list</entry>
+                <entry>LBaaS v2 List loadbalancers that belong to a given tenant.</entry>
+              </row>
+              <row>
+                <entry>lbaas-loadbalancer-list-on-agent</entry>
+                <entry>List the loadbalancers on a loadbalancer v2 agent.</entry>
+              </row>
+              <row>
+                <entry>lbaas-loadbalancer-show</entry>
+                <entry>LBaaS v2 Show information of a given loadbalancer.</entry>
+              </row>
+              <row>
+                <entry>lbaas-loadbalancer-update</entry>
+                <entry>LBaaS v2 Update a given loadbalancer.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+     </table>
+   </p>
+    <p><b>Healthmonitor Functions</b>
+      <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_HLTH">
+        <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="1*"/>
+            <colspec colname="c2" colnum="2" colwidth="2.64*"/>
+            <thead>
+              <row>
+                <entry>Function</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>lbaas-healthmonitor-create</entry>
+                <entry>LBaaS v2 Create a healthmonitor.</entry>
+              </row>
+              <row>
+                <entry>lbaas-healthmonitor-delete</entry>
+                <entry>LBaaS v2 Delete a given healthmonitor.</entry>
+              </row>
+              <row>
+                <entry>lbaas-healthmonitor-list</entry>
+                <entry>LBaaS v2 List healthmonitors that belong to a given tenant.</entry>
+              </row>
+              <row>
+                <entry>lbaas-healthmonitor-show</entry>
+                <entry>LBaaS v2 Show information of a given healthmonitor.</entry>
+              </row>
+              <row>
+                <entry>lbaas-healthmonitor-update</entry>
+                <entry>LBaaS v2 Update a given healthmonitor.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+      </table>
+
+    </p>
+    <p><b>Listener Functions</b>
+      <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_LSTN">
+        <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="1*"/>
+            <colspec colname="c2" colnum="2" colwidth="2.85*"/>
+            <thead>
+              <row>
+                <entry>Function</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>lbaas-listener-create</entry>
+                <entry>LBaaS v2 Create a listener.</entry>
+              </row>
+              <row>
+                <entry>lbaas-listener-delete</entry>
+                <entry>LBaaS v2 Delete a given listener.</entry>
+              </row>
+              <row>
+                <entry>lbaas-listener-list</entry>
+                <entry>LBaaS v2 List listeners that belong to a given tenant.</entry>
+              </row>
+              <row>
+                <entry>lbaas-listener-show</entry>
+                <entry>LBaaS v2 Show information of a given listener.</entry>
+              </row>
+              <row>
+                <entry>lbaas-listener-update</entry>
+                <entry>LBaaS v2 Update a given listener.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+      </table>
+    </p>
+    
+    <p><b>Member Functions</b>
+      <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_MEMB">
+        <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="1*"/>
+            <colspec colname="c2" colnum="2" colwidth="2.85*"/>
+            <thead>
+              <row>
+                <entry>Function</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>lbaas-member-create</entry>
+                <entry>LBaaS v2 Create a member.</entry>
+              </row>
+              <row>
+                <entry>lbaas-member-delete</entry>
+                <entry>LBaaS v2 Delete a given member.</entry>
+              </row>
+              <row>
+                <entry>lbaas-member-list</entry>
+                <entry>LBaaS v2 List members that belong to a given tenant.</entry>
+              </row>
+              <row>
+                <entry>lbaas-member-show</entry>
+                <entry>LBaaS v2 Show information of a given member.</entry>
+              </row>
+              <row>
+                <entry>lbaas-member-update</entry>
+                <entry>LBaaS v2 Update a given member.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+      </table>
+    </p>
+    
+    <p><b>Pool Functions</b>
+      <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_POOL">
+        <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="1*"/>
+            <colspec colname="c2" colnum="2" colwidth="3.35*"/>
+            <thead>
+              <row>
+                <entry>Function</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>lbaas-pool-create</entry>
+                <entry>LBaaS v2 Create a pool.</entry>
+              </row>
+              <row>
+                <entry>lbaas-pool-delete</entry>
+                <entry>LBaaS v2 Delete a given pool.</entry>
+              </row>
+              <row>
+                <entry>lbaas-pool-list</entry>
+                <entry>List pools that belong to a given tenant.</entry>
+              </row>
+              <row>
+                <entry>lbaas-pool-show</entry>
+                <entry>Show information of a given pool.</entry>
+              </row>
+              <row>
+                <entry>lbaas-pool-update</entry>
+                <entry>LBaaS v2 Update a given pool.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+      </table>
+    </p>
+    </section>
+
+<section id="F5_vrfychklst">    
+  <title>Verification Checklist</title>
     <p>To very integration, complete all items in the following checklist, in order:</p>
     <table frame="all" rowsep="1" colsep="1" id="table_ckx_F5HOS30_vfy">
       <tgroup cols="2">
@@ -141,7 +343,7 @@ testing critical functionality.</p>
         </tbody>
       </tgroup>
     </table>
-    
+</section>
     <section id="verify1">
       <title>Verify or Upload a CirrOS Glance Image</title>
       <p>You need a CirrOS image loaded in Glance so that you can create two Nova instances for testing the load balancing.</p>
