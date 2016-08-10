@@ -11,7 +11,7 @@
 
       <p>Before integrating the NSX-V software into a deployment, the Helion team met all of the following requirements:</p>
       
-      <table frame="all" rowsep="1" colsep="1" id="table_ckx_F53600_ht">
+      <table frame="all" rowsep="1" colsep="1" id="table_ckx_NSXv_ht">
         <tgroup cols="2">
           <colspec colname="c1" colnum="1" colwidth="25pt"/>
           <colspec colname="c2" colnum="2" colwidth="1*"/>
@@ -78,14 +78,81 @@
     
     <section id="NSXv_Preinstall_HW">
       <title>Install or Verify the Supported Hardware</title>
-      
-      <p>The Helion test team verified two different scenarios for deploying VMware and Helion OpenStack. Both options are supported. There are no limitations for either option, so you can choose which deployment will work better in your cloud environment.</p>
-      
-      <note type="important">A vCenter server/appliance is required to manage the vSphere environment regardless of which deployment method you choose. It is recommended that you install a vCenter appliance on one of the control-plane clustered hosts.</note>
-      
+      <p>The Helion test team verified two different scenarios for deploying VMware and Helion
+        OpenStack. Both options are supported. There are no limitations for either option, so you
+        can choose which deployment will work better in your cloud environment.</p><note
+        type="important">A vCenter server/appliance is required to manage the vSphere environment
+        regardless of which deployment method you choose. It is recommended that you install a
+        vCenter appliance on one of the control-plane clustered hosts.</note>
       <b>Option 1 - Virtual Helion OpenStack Deployment</b>
-    
       <table frame="all" rowsep="1" colsep="1" id="table_NSXv_shw_1">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="1.32*"/>
+          <colspec colnum="3" colname="c3" colwidth="1.97*"/>
+          <thead>
+            <row>
+              <entry>Cluster</entry>
+              <entry>Requirement</entry>
+              <entry>Specifications</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>control-plane</entry>
+              <entry>Minimum: 3 ESXi hosts</entry>
+              <entry>Must include the following VMs: <ul>
+                  <li>One Helion OpenStack Lifecycle Manager (HLM)</li>
+                  <li>Three Helion OpenStack controllers</li>
+                  <li>One NSX Edge Gateway/DLR/Metadata-proxy appliance</li>
+                  <li>One compute VM per ESXi compute cluster</li>
+              </ul>(Details listed in the following rows.)</entry>
+            </row>
+            <row>
+              <entry>control-plane</entry>
+              <entry>1 Helion OpenStack Lifecycle Manager</entry>
+              <entry>Minimums: <ul>
+                  <li>4 vCPU</li>
+                  <li>8GB memory</li>
+                  <li>100GB hard disk</li>
+                </ul></entry>
+            </row>
+            <row>
+              <entry>control-plane</entry>
+              <entry>3 Helion OpenStack controllers</entry>
+              <entry>Minimums: <ul>
+                  <li>8 vCPU</li>
+                  <li>32GB memory</li>
+                  <li>3x300GB hard disks</li>
+                </ul></entry>
+            </row>
+            <row>
+              <entry>control-plane</entry>
+              <entry>1 compute VM per ESXi compute cluster</entry>
+              <entry>Minimums: <ul>
+                  <li>2 vCPU</li>
+                  <li>4GB memory</li>
+                  <li>80GB hard disks</li>
+                </ul></entry>
+            </row>
+            <row>
+              <entry>control-plane</entry>
+              <entry>1 NSX Edge Gateway/DLR/Metadata-proxy appliance</entry>
+              <entry>More NSX Edge appliances can be added if necessary. VM hardware is
+                auto-configured through the NSX-V Neutron plug-in.</entry>
+            </row>
+            <row>
+              <entry>compute cluster</entry>
+              <entry>Minimum: 2 ESXi hosts</entry>
+              <entry>There can be multiple compute clusters if necessary.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      
+      
+      <b>Option 2 - Baremetal Helion OpenStack Deployment</b>
+      <table frame="all" rowsep="1" colsep="1" id="table_NSXv_shw_2">
         <tgroup cols="2">
           <colspec colname="c1" colnum="1" colwidth="1*"/>
           <colspec colname="c2" colnum="2" colwidth="1.32*"/>
@@ -101,59 +168,187 @@
             <row>
               <entry>control-plane cluster</entry>
               <entry>Minimum: 3 ESXi hosts</entry>
-              <entry>Must include the following VMs: <ul>
-                  <li>One Helion OpenStack Lifecycle Manager (HLM)</li>
-                  <li>Three Helion OpenStack controllers</li>
-                  <li>One NSX Edge Gateway/DLR/Metadata-proxy appliance</li>
-                  <li>One compute VM per ESXi compute cluster</li>
-                </ul></entry>
+              <entry>VMware recommends that each NSX controller-VMs is on a separate host.</entry>
             </row>
             <row>
               <entry>control-plane cluster</entry>
-              <entry>One Helion OpenStack Lifecycle Manager</entry>
+              <entry>NSX Edge Gateway/DLR/Metadata-proxy appliances</entry>
+              <entry>One compute VM for each ESXi compute cluster.
+              Each compute VM must have, at minimum:
+              <ul>
+                <li>2 vCPU</li> 
+                <li>4GB memory</li>
+                <li>80GB hard disk</li>
+              </ul>
+              </entry>
+            </row>
+            <row>
+              <entry>control-plane</entry>
+              <entry>1 Helion OpenStack Lifecycle Manager</entry>
               <entry>Minimums: <ul>
-                  <li>4 vCPU</li>
-                  <li>8GB memory</li>
-                  <li>100GB hard disk</li>
-                </ul></entry>
+                <li>4 vCPU</li>
+                <li>8GB memory</li>
+                <li>100GB hard disk</li>
+              </ul></entry>
             </row>
             <row>
-              <entry>control-plane cluster</entry>
-              <entry>Three Helion OpenStack controllers</entry>
+              <entry>control-plane</entry>
+              <entry>3 Helion OpenStack controllers</entry>
               <entry>Minimums: <ul>
-                  <li>8 vCPU</li>
-                  <li>32GB memory</li>
-                  <li>3x300GB hard disks</li>
-                </ul></entry>
-            </row>
-            <row>
-              <entry>control-plane cluster</entry>
-              <entry>Minimum: One NSX Edge Gateway/DLR/Metadata-proxy appliance</entry>
-              <entry>None. VM hardware is auto-configured through the NSX-V Neutron plugin</entry>
-            </row>
-            <row>
-              <entry>control-plane cluster</entry>
-              <entry>One compute VM per ESXi compute cluster</entry>
-              <entry>Minimums: <ul>
-                  <li>2 vCPU</li>
-                  <li>4GB memory</li>
-                  <li>80GB hard disks</li>
-                </ul></entry>
+                <li>8 vCPU</li>
+                <li>32GB memory</li>
+                <li>3x300GB hard disks</li>
+              </ul></entry>
             </row>
             <row>
               <entry>compute cluster</entry>
               <entry>Minimum: 2 ESXi hosts</entry>
-              <entry>None. There can be multiple compute clusters if necessary.</entry>
+              <entry>There can be multiple compute clusters if necessary.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      
+    </section>
+    
+    <section id="NSXv_Preinstall_NW">
+      <title>Create the Supported Network Configurations</title>
+      <p>The Helion test team used the following steps to create a netowrk that supported integrated of NSX-v with Helion Openstack.</p>
+      <ol>
+        <li>Configure ESXi hosts.</li>
+        <li>Create required network groups.</li>
+      </ol>
+      <note type="caution">It is possible to have all of the following networks on the same subnet:
+        <ul>
+          <li>ESXi</li> 
+          <li>vCenter</li> 
+          <li>NSX</li> 
+          <li>NSX VTEP Pool</li> 
+          <li>MGMT </li>
+        </ul>This will only work if there are no overlapping IP addresses, and this configuration is generally not recommended.</note>
+    </section>
+    
+    <section id="NSXv_Preinstall_NW1">
+      <title>Configure ESXi Hosts</title>
+     <p>To configure ESXi hosts correctly, make sure you complete the following checklist:</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_ckx_NSX_EsXi_config">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="25pt"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>&#9744;</entry>
+              <entry>Configuration</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry/>
+              <entry>The following must all resolve reverse DNS lookup:
+              <ul>
+                <li>ESXi hosts</li>
+                <li>vCenter</li>
+                <li>NSX Manager appliance</li>
+              </ul></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>ESXi hosts must have the NTP service configured and enabled.</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>On all switch ports that the ESXi hosts are connected to, jumbo frames must be enabled. (Set MTU to 9000)</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>Each ESXi host must have at least 2 physical network cards.</entry>
             </row>
           </tbody>
         </tgroup>
       </table>
     </section>
     
-    <section id="NSXv_Preinstall_NW">
-      <title>Create the Supported Network Configurations</title>
-      
-    </section>
-    
+    <section id="NSXv_Preinstall_NW2"></section>
+    <p>The Helion hardware test team created the following Networks before installing NSX-V:</p>
+    <table frame="all" rowsep="1" colsep="1" id="table_ckx_NSX_NetG_config">
+      <tgroup cols="2">
+        <colspec colname="c1" colnum="1" colwidth="2.43*"/>
+        <colspec colname="c2" colnum="2" colwidth="1*"/>
+        <colspec colname="c3" colnum="3" colwidth="1.44*"/>
+        <colspec colname="c4" colnum="4" colwidth="3.54*"/>
+        <thead>
+          <row>
+            <entry>Network Group</entry>
+            <entry>VLAN Type</entry>
+            <entry>Helion Interface</entry>
+            <entry>vSphere PG Security Setting</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>IPMI <note type="attention">Only create this group if you are deploying on
+                Baremetal.</note></entry>
+            <entry>Untagged</entry>
+            <entry>None</entry>
+            <entry>None</entry>
+          </row>
+          <row>
+            <entry>ESXi Host / vCenter</entry>
+            <entry>Tagged</entry>
+            <entry>None</entry>
+            <entry>Defaults</entry>
+          </row>
+          <row>
+            <entry>NSX Management <note type="attention">Must be able to reach ESXi hosts and
+                vCenter.</note></entry>
+            <entry>Tagged</entry>
+            <entry>None</entry>
+            <entry>Defaults</entry>
+          </row>
+          <row>
+            <entry>NSX VTEP Pool</entry>
+            <entry>Tagged</entry>
+            <entry>None</entry>
+            <entry>Defaults</entry>
+          </row>
+          <row>
+            <entry>MGMT / Deployer Network</entry>
+            <entry>Tagged or Untagged</entry>
+            <entry>eth0</entry>
+            <entry><ul>
+              <li><b>Promiscuous Mode</b>: Accept</li> 
+              <li><b>MAC Address Changes</b>: Reject</li> 
+              <li><b>Forged Transmits</b>:Reject</li></ul></entry>
+          </row>
+          <row>
+            <entry>External API (Public)</entry>
+            <entry>Tagged</entry>
+            <entry>eth1</entry>
+            <entry><ul>
+              <li><b>Promiscuous Mode</b>: Accept</li> 
+              <li><b>MAC Address Changes</b>: Reject</li> 
+              <li><b>Forged Transmits</b>:Accept</li></ul></entry>
+          </row>
+          <row>
+            <entry>Internal API</entry>
+            <entry>Tagged</entry>
+            <entry>eth2</entry>
+            <entry><ul>
+              <li><b>Promiscuous Mode</b>: Accept</li> 
+              <li><b>MAC Address Changes</b>: Reject</li> 
+              <li><b>Forged Transmits</b>:Accept</li></ul></entry>
+          </row>
+          <row>
+            <entry>External VM (floating IP)</entry>
+            <entry>Tagged</entry>
+            <entry>None</entry>
+            <entry><ul>
+              <li><b>Promiscuous Mode</b>: Accept</li> 
+              <li><b>MAC Address Changes</b>: Reject</li> 
+              <li><b>Forged Transmits</b>:Accept</li></ul></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
   </body>
 </topic>
