@@ -45,6 +45,7 @@
       <li><xref href="#HP3.0HA/object_storage_swift">Object Storage with Swift</xref></li>
       <li><xref href="#HP3.0HA/highly_available_app_workloads">Highly Available Cloud Applications
           and Workloads</xref></li>
+      <li><xref href="#HP3.0HA/ActiveBackup">ACTIVE/BACKUP Configuration</xref></li>
       <li><xref href="#HP3.0HA/what_not_ha">What is not Highly Available?</xref>
         <ul>
           <li><xref href="#HP3.0HA/deployer">Deployer</xref></li>
@@ -509,6 +510,22 @@
         <li>Instead of rolling your own highly available stateful services, use readily available
             <keyword keyref="kw-hos"/> platform services such as Designate, the DNS service.  </li>
       </ol>
+    </section>
+    
+    <section id="ActiveBackup">
+      <title>ACTIVE/BACKUP configuration</title>
+      <p>Some third party plugins may require the neutron-server to run in an active/backup haproxy
+        configuration. This can be accomplished by modifying the
+          <codeph>~/helion/services/neutron/server.yml</codeph> to set vip-backup-mode to true.
+        <codeblock>endpoints:
+- port: '9696'
+  has-vip: true
+  roles:
+  - public
+  - internal
+  - admin
+  vip-backup-mode: true</codeblock>
+      </p>
     </section>
 
     <section id="what_not_ha">
