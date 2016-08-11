@@ -14,9 +14,11 @@
       <title>Images Created in Horizon UI Get Stuck in a Queued State</title>
       <p>When creating a new image in the Horizon UI you will see the option for <codeph>Image
           Location</codeph> which allows you to enter a HTTP source to use when creating a new image
-        for your cloud. However, this option does not work by default because it is disabled in
-        Glance. This results in any new images created via this method getting stuck in a
-          <codeph>Queued</codeph> state.</p>
+        for your cloud. However, this option is disabled by default for security reasons. This
+        results in any new images created via this method getting stuck in a <codeph>Queued</codeph>
+        state.</p>
+      <p>We cannot guarantee the security of any third party sites you use as image sources. This
+        feature goes over HTTP (non-SSL) traffic.</p>
       <p><b>Resolution:</b> You will need your cloud administrator to enable the HTTP store option
         in Glance for your cloud.</p><p>Here are the steps to enable this option:</p>
       <ol>
@@ -28,9 +30,7 @@
             this:<codeblock>[glance_store]
 stores = {{ glance_stores }}</codeblock><p>Change this
             to:</p><codeblock>[glance_store]
-stores = {{ glance_stores }}<b>,http</b></codeblock><note>Other
-            available options for the <codeph>stores</codeph> are <codeph>file</codeph> and
-              <codeph>swift</codeph>.</note></li>
+stores = {{ glance_stores }}<b>,http</b></codeblock></li>
         <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local
             git repo</xref>, as follows:
           <codeblock>cd ~/helion/hos/ansible
