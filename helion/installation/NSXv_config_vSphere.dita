@@ -4,44 +4,85 @@
 <topic id="NSXv_config_vSphere">
   <title>Configure vSphere</title>
   <body><!--not tested-->
-   
-  <p>Following steps:</p>
+       
+    <p>This installation is an example of a newly deployed environment with high availability enabled for the NSX-V edge pool services. In this example resource pools are used to organize resources and VMs on the control plane. However, VMware normally recommends you use folders in the <b>VMs and Templates</b> inventory if all you need to do is organize VMs.</p>
+    
+    <p>For best practices concerning NSX design, see the <xref href="https://communities.vmware.com/servlet/JiveServlet/downloadBody/27683-102-8-41631/NSX" scope="external" format="html">Reference Design: VMware® NSX for vSphere (NSX)Network Virtualization Design Guide</xref> (Clicking this link automatically downloads a PDF file instead of opening a Web page.)</p>
+ 
+    <p>To configure the underlying vSphere environment, the Helion team used the following steps:</p>
     <ol>
-      <li>Install NSX Manager</li>
+      <li><xref type="section" href="#NSXv_config_vSphere/NSXv_vs_manager">Install NSX Manager</xref></li>
       <li>Add NSX Controllers</li>
       <li>Assign Segment ID Pool</li>
       <li>Create a Transport Zone</li>
     </ol>
       
+      <lines>
+      </lines>
+      
       <section id="NSXv_vs_manager">
         <title>Install NSX Manager</title>
         
-        <p>This is an example of a newly deployed environment with high availability enabled for the NSX-V edge pool services. In this example resource pools are used to organize resources and VMs on the control plane. However, VMware normally recommends you use folders in the <b>VMs and Templates</b> inventory if all you need to do is organize VMs.</p>
+       <p>The NSX Manager provides the graphical user interface and the REST APIs for creating, configuring, and monitoring NSX components, such as controllers, logical switches, and edge services gateways. The NSX Manager virtual machine is packaged as an Open Virtualization Appliance (OVA) file, which allows you to use the vSphere web client to import the NSX Manager into the datastore and virtual machine inventory.</p>
         
-        <p>For best practices concerning NSX design, see the <xref href="https://communities.vmware.com/servlet/JiveServlet/downloadBody/27683-102-8-41631/NSX" scope="external" format="html">Reference Design: VMware® NSX for vSphere (NSX)Network Virtualization Design Guide</xref> (Clicking this link automatically downloads a PDF file instead of opening a Web page.)</p>
+        <p>NSX installtion involves the deployment of several virtual appliances, and some configuration to allow communication across all of the physical and virtual devices. For more detailed information, refer to <xref href="https://pubs.vmware.com/NSX-62/index.jsp#com.vmware.nsx.install.doc/GUID-D8578F6E-A40C-493A-9B43-877C2B75ED52.html" scope="external" format="html">VMware's NSX Installation Guide.</xref></p>
         
-        <note type="caution">It is recommended that each cluster has storage that is shared between the ESXi hosts. Each compute cluster is required to have shared storage, otherwise attempts to create instances through nova-compute will fail!</note>
-        
-        <note type="important">Before installing the NSX manager, verify that the <b>MTU</b> setting on each Distributed Virtual Switch (DVS) is set to <codeph>1600</codeph>. This is usually done automatically when preparing the environment for NSX.</note>
+        <note type="important">To make the appliance installation easier, download the OVA file to the machine where vSphere client is installed.</note>
         
         <p>To install the NSX Manager:</p>
         <ol>
-          <li>In a browser, navigate to the NSX download URL provided by VMware after purchase of software.</li>
-            <li>From the VMware web site, download the following file:
-              <codeblock>NSX Manager OVF</codeblock>
-              <note type="important">To make the appliance installation easier, download the file to the machine where vSphere client is installed.</note>
-            </li>  
-            <li>From the computer were vSphere client is installed, launch the vSphere client.</li>
-          <li>Deploy the NSX appliance to the control cluster. Your settings should look similar to the following example:
-            <p><image href="../../media/NSXv_DeployOVF.png"/></p>
-          </li>
-          <li>Ensure the IP address for the NSX manager will resolve reverse DNS, and then click
-            <b>Finish</b>.</li>
+          <li>To locate the NSX Manager OVA file, either copy the download URL or download the OVA file onto your computer.</li>
+            <li>In a browser, open vCenter.</li>
+          <li>Select <b>VMs and Templates</b>, right-click your datacenter, and select <b>Deploy OVF Template</b>.</li>
+          <li>Paste the download URL or click <b>Browse</b> to select the file on your computer.</li>
+          <li>Select the checkbox <b>Accept extra configuration options</b>.
+            <note type="note">This allows you to set IPv4 and IPv6 addresses, default gateway, DNS, NTP, and SSH properties during the installation, rather than configuring these settings manually after the installation.</note></li>
+            <li>Accept the VMware license agreements.</li>
+            <li>Select the location for the deployed NSX Manager
+            <note>The name you type will appear in the vCenter inventory.
+              The folder you select will be used to apply permissions to the NSX Manager.</note></li>
+            <li>Select a host or cluster on which to deploy the NSX Manager appliance.</li>
+              <li>Change the virtual disk format to <b>Thick Provision</b>, and select the destination datastore for the virtual machine configuration files and the virtual disks.</li>
+            <li>Select the port group for the NSX Manager.</li>
+          <li>Set the NSX Manager extra configuration options, ensuring the IP address for the NSX manager will resolve reverse DNS.
+            <p>For example, this screen shows the final review screen after all the options are configured:</p>
+            <p><image href="../../media/NSXv_DeployOVF.png"/></p></li>
+          <li>Click <b>Finish</b>.</li>
+            </ol>
+            
+            <p>After the NSX Manager is installed, use the following steps to finish configuring your software appliance before deploying NSX Controllers.</p>
+            
+<ol>            
+  <li>Open a web browser window and type in the hostname or IP address assigned to the NSX Manager.</li>
+    <li>Accept the security certificate and then log in using the user name <b>admin</b> and the password set during installation.</li>
+    <li>Once logged in, click on <b>Manager vCenter Registration</b>.</li>
+      <li>Configure the NSX manager for the single sign.</li>
+    <li>Configure the NSX Manager to connect to the vCenter server.
+        <note type="important">When configuring SSO, use the following settings:
+          <dl>
+            <dlentry>
+              <dt>Lookup Service Port</dt>
+              <dd>443</dd>
+            </dlentry>
+            <dlentry>
+              <dt>vCenter version</dt>
+              <dd>6.0</dd>
+            </dlentry>
+            <dlentry>
+              <dt>7444</dt>
+              <dd>5.5</dd>
+            </dlentry>
+          </dl></note></li>
         </ol>
       </section>
     
         <section id="NSXv_vs_controller">
           <title>Add NSX Controllers</title>
+          <p>Before you begin this procedure, make sure you are logged out of the vSphere web client. If you are already logged in, then log out.</p>
+          
+          <ol>
+            <li>Log into the vSphere web client.  Click the Networking and Security tab, then click on Installation, and then the Management tab. Click the green plus icon under the NSX Controller nodes section. In the Add Controller dialog box, enter the required information and then click the OK button.  NSX requires a minimum of three controllers.  If not already done, create an IP pool with at least three IPs (note that the following example is using three IPs from the NSX Management VLAN - not required but is typical).</li>
+          </ol>
       </section>
       
     <section id="NSXv_vs_segment">

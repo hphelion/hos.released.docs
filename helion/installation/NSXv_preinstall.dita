@@ -7,9 +7,10 @@
     
     
     <section id="NSXv_Preinstall_checklist">
-      <title>NSX-V Pre-Integration Checklist</title>
 
-      <p>Before integrating the NSX-V software into a deployment, the Helion team met all of the following requirements:</p>
+      <p>Before integrating the NSX-V software into a deployment, the Helion independant hardware
+        verification team created the following checklist of system requirements and ports that must
+        be open before installation. </p>
       
       <table frame="all" rowsep="1" colsep="1" id="table_ckx_NSXv_ht">
         <tgroup cols="2">
@@ -24,15 +25,15 @@
           <tbody>
             <row>
               <entry/>
-              <entry>Install or Verify the Supported Software Versions</entry>
+              <entry><xref type="section" href="#NSXv_Preinstall/NSXv_Preinstall_SW">Install or Verify the Supported Software Versions</xref></entry>
             </row>
             <row>
               <entry/>
-              <entry>Install or Verify the Supported Hardware</entry>
+              <entry><xref type="section" href="#NSXv_Preinstall/NSXv_Preinstall_HW">Install or Verify the Supported Hardware</xref></entry>
             </row>
             <row>
               <entry/>
-              <entry>Create the Supported Network Configurations</entry>
+              <entry><xref type="section" href="#NSXv_Preinstall/NSXv_Preinstall_NW">Create the Supported Network Configurations</xref></entry>
             </row>
           </tbody>
         </tgroup>
@@ -42,6 +43,7 @@
     
 <section id="NSXv_Preinstall_SW">
   <title>Install or Verify the Supported Software Versions</title>
+  <p>Before you install or upgrade NSX, verify your software versions. These are the recommended versions of products for integration.</p>
   <table frame="all" rowsep="1" colsep="1" id="table_NSXv_ssw">
     <tgroup cols="2">
       <colspec colname="c1" colnum="1" colwidth="1*"/>
@@ -66,12 +68,14 @@
           <entry>5.5 or later</entry>
         </row>
         <row>
-          <entry>VMware vSphere Appliance</entry>
+          <entry>VMware vSphere Appliance (vSphere web client)</entry>
           <entry>5.5 or later</entry>
         </row>
       </tbody>
     </tgroup>
   </table>
+  <p>For the latest interoperability information, see VMware's <xref href="http://partnerweb.vmware.com/comp_guide/sim/interop_matrix.php" scope="external" format="html">Product Interoperability Matrixes.</xref>
+  </p>
 </section>   
   <lines>
   </lines>  
@@ -83,7 +87,10 @@
         can choose which deployment will work better in your cloud environment.</p><note
         type="important">A vCenter server/appliance is required to manage the vSphere environment
         regardless of which deployment method you choose. It is recommended that you install a
-        vCenter appliance on one of the control-plane clustered hosts.</note>
+        vCenter appliance on one of the control-plane clustered hosts.</note><note type="caution">It
+        is recommended that each cluster has storage that is shared between the ESXi hosts. Each
+        compute cluster is required to have shared storage, otherwise attempts to create instances
+        through nova-compute will fail!</note>
       <b>Option 1 - Virtual Helion OpenStack Deployment</b>
       <table frame="all" rowsep="1" colsep="1" id="table_NSXv_shw_1">
         <tgroup cols="3">
@@ -106,7 +113,7 @@
                   <li>Three Helion OpenStack controllers</li>
                   <li>One NSX Edge Gateway/DLR/Metadata-proxy appliance</li>
                   <li>One compute VM per ESXi compute cluster</li>
-              </ul>(Details listed in the following rows.)</entry>
+                </ul>(Details listed in the following rows.)</entry>
             </row>
             <row>
               <entry>control-plane</entry>
@@ -149,8 +156,6 @@
           </tbody>
         </tgroup>
       </table>
-      
-      
       <b>Option 2 - Baremetal Helion OpenStack Deployment</b>
       <table frame="all" rowsep="1" colsep="1" id="table_NSXv_shw_2">
         <tgroup cols="3">
@@ -173,32 +178,31 @@
             <row>
               <entry>control-plane cluster</entry>
               <entry>NSX Edge Gateway/DLR/Metadata-proxy appliances</entry>
-              <entry>One compute VM for each ESXi compute cluster.
-              Each compute VM must have, at minimum:
-              <ul>
-                <li>2 vCPU</li> 
-                <li>4GB memory</li>
-                <li>80GB hard disk</li>
-              </ul>
+              <entry>One compute VM for each ESXi compute cluster. Each compute VM must have, at
+                minimum: <ul>
+                  <li>2 vCPU</li>
+                  <li>4GB memory</li>
+                  <li>80GB hard disk</li>
+                </ul>
               </entry>
             </row>
             <row>
               <entry>control-plane</entry>
               <entry>1 Helion OpenStack Lifecycle Manager</entry>
               <entry>Minimums: <ul>
-                <li>4 vCPU</li>
-                <li>8GB memory</li>
-                <li>100GB hard disk</li>
-              </ul></entry>
+                  <li>4 vCPU</li>
+                  <li>8GB memory</li>
+                  <li>100GB hard disk</li>
+                </ul></entry>
             </row>
             <row>
               <entry>control-plane</entry>
               <entry>3 Helion OpenStack controllers</entry>
               <entry>Minimums: <ul>
-                <li>8 vCPU</li>
-                <li>32GB memory</li>
-                <li>3x300GB hard disks</li>
-              </ul></entry>
+                  <li>8 vCPU</li>
+                  <li>32GB memory</li>
+                  <li>3x300GB hard disks</li>
+                </ul></entry>
             </row>
             <row>
               <entry>compute cluster</entry>
@@ -208,15 +212,15 @@
           </tbody>
         </tgroup>
       </table>
-      
     </section>
     
     <section id="NSXv_Preinstall_NW">
       <title>Create the Supported Network Configurations</title>
-      <p>The Helion test team used the following steps to create a netowrk that supported integrated of NSX-v with Helion Openstack.</p>
+      <p>The Helion team used the following steps to create a network that supported
+        integration:</p>
       <ol>
-        <li>Configure ESXi hosts.</li>
-        <li>Create required network groups.</li>
+        <li><xref type="section" href="#NSXv_Preinstall/NSXv_Preinstall_NW1">Configure ESXi hosts.</xref></li>
+        <li><xref type="section" href="#NSXv_Preinstall/NSXv_Preinstall_NW2">Create required network groups.</xref></li>
       </ol>
       <note type="caution">It is possible to have all of the following networks on the same subnet:
         <ul>
@@ -266,10 +270,12 @@
           </tbody>
         </tgroup>
       </table>
+      <note type="caution">It is recommended that each cluster has storage that is shared between the ESXi hosts. Each compute cluster is required to have shared storage, otherwise attempts to create instances through nova-compute will fail!</note>
     </section>
     
-    <section id="NSXv_Preinstall_NW2"></section>
-    <p>The Helion hardware test team created the following Networks before installing NSX-V:</p>
+    <section id="NSXv_Preinstall_NW2">
+      <title>Create or Verify Network Groups</title>
+    <p>The Helion IHV team created the following Networks before installing NSX-V:</p>
     <table frame="all" rowsep="1" colsep="1" id="table_ckx_NSX_NetG_config">
       <tgroup cols="4">
         <colspec colname="c1" colnum="1" colwidth="2.43*"/>
@@ -350,5 +356,15 @@
         </tbody>
       </tgroup>
     </table>
+      <note type="important">
+        <p>In an NSX domain, NSX vSwitch is the software that operates in server hypervisors to form a software abstraction layer between servers and the physical network. NSX vSwitch is based on vSphere distributed switches (VDSs), which provide uplinks for host connectivity to the top-of-rack (ToR) physical switches. As a best practice, VMware recommends that you plan and prepare your vSphere distributed switches before installing NSX for vSphere.</p>
+        
+        <p>Before installing the NSX manager, verify the <b>Maximum Transmission Unit (MTU)</b>
+          setting. Each VDS must have the MTU set to <codeph>1600</codeph>.</p>
+      
+        <p>For more inforamation on planning VDS topology, see VMware's <xref href="https://pubs.vmware.com/NSX-62/index.jsp#com.vmware.nsx.install.doc/GUID-9B22794A-AC90-418D-BAA7-199D9559CF29.html" scope="external" format="html">NSX and vSphere Distributed Switches</xref>.</p>
+      
+      </note>
+    </section>
   </body>
 </topic>
