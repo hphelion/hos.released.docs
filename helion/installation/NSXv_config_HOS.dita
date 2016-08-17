@@ -2,8 +2,700 @@
 <!--Edit status: not edited-->
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="NSXv_config_HOS">
-  <title>Deploy Helion on VirtualMachines</title>
+  <title>Deploy Helion on Virtual Machines</title>
   <body><!--not tested-->
-    <p>Content coming soon.</p>
+    <p>Once the vSphere environment is prepared, you must configure the Helion OpenStack Virtual
+      Machines (VMs) and then you can deploy the cloud. This configuration and deployment process
+      includes the following steps:</p>
+    <ol>
+      <li><xref type="section" href="#NSXv_Pconfig_HOS/NSX_HOS_pre">Prepare Environment for HLM</xref></li>
+      <li><xref type="section" href="#NSXv_Pconfig_HOS/NSX_HOS_HLM">Deploy Helion Lifecycle Manager (HLM)</xref></li>
+      <li><xref type="section" href="#NSXv_Pconfig_HOS/NSX_HOS_Neutron">Configure the Neutron Environment with NSX-V</xref></li>
+      <li><xref type="section" href="#NSXv_Pconfig_HOS/NSX_HOS_ComDep">Commit the Cloud Input Model</xref></li>
+      <li><xref type="section" href="#NSXv_Pconfig_HOS/NSX_commit_neutron">Configure Neutron Options</xref></li>
+      <li><xref type="section" href="#NSXv_Pconfig_HOS/NSX_HOSCloud">Deploy the Cloud</xref></li>
+    </ol>
+    
+    <note type="important">If NSX-V does not install using the Ansible playbooks, it is still
+      possible to <xref type="section" href="#NSXv_Pconfig_HOS/NSX_HOS_Opt_Man">manually install the
+        NSX-V neutron plugin on each controller</xref>.</note>
+    
+    <section id="NSX_HOS_pre">
+      <title>Prepare Environment for HLM</title>
+    <p>Before deploying the Helion Lifecycle Manager (HLM), you must create the VMs and network interfaces that HLM requires.</p>
+     <p>To prepare your environment for HLM:</p>
+      <ol>
+        <li>Create the VMs on which you will deploy Helion OpenStack.</li>  
+        <li>Configure each VM with three network interfaces.</li>
+        <li>For each VM, in the <b>Options</b> section, under <b>advanced configuration parameters</b>, use the following setting:
+          <dl>
+            <dlentry>
+              <dt>disk.EnableUUID</dt>
+              <dd>true</dd>
+            </dlentry>
+          </dl>
+          <note>This option is important for hLinux or any operating system to detect the hard disk during installation. Otherwise the operating system can not continue with the installation and installation will fail.
+          </note></li>
+      </ol>
+    </section>
+  
+  
+  <section id="NSX_HOS_HLM">
+    <title>Deploy Helion Lifecycle Manager</title>
+<p>To deploy HLM:</p>
+<ol>
+  <li>Attach the ISO file for Helion OpenStack 3.0 to the VM that will be used for the HLM node. </li>
+  <li>If not already done, place the ISO on a datastore that the HLM VM can access.</li> 
+  <li> Once attached, boot the VM and select Install from the CD boot menu.</li>
+  <li>During installation, use the following settings: <table frame="all" rowsep="1" colsep="1"
+            id="table_NSXv_install_cf">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="25pt"/>
+              <colspec colname="c2" colnum="2" colwidth="1*"/>
+              <thead>
+                <row>
+                  <entry>Item</entry>
+                  <entry>Setting</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>Language</entry>
+                  <entry>English/US</entry>
+                </row>
+                <row>
+                  <entry>Location</entry>
+                  <entry>English/US</entry>
+                </row>
+                <row>
+                  <entry>Keyboard Layout</entry>
+                  <entry>English/US</entry>
+                </row>
+                <row>
+                  <entry>network card</entry>
+                  <entry>eth0</entry>
+                </row>
+                <row>
+                  <entry>eth0 IP address</entry>
+                  <entry>IP address from the MGMT/Deployer network. <note type="important">If the
+                      MGMT/Deployer network does not do DHCP offers, then choose <b>configure
+                        manually</b>.</note></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table></li>
+  <li>Set the <b>username</b> and <b>password</b> for the OS, and then let the installation complete.</li>  
+  <li>When prompted, select <b>Continue</b> to finish the installation and allow the VM to reboot.</li>  
+  <li>Once rebooted, log into the OS with the <b>username</b> and <b>password</b> created during installation.</li>
+<li>Verify that DNS is properly configured in the following file:
+  <codeblock>/etc/resolv.conf </codeblock>
+  Make any modifications as necessary.</li>
+ <li>Open and then source the following file:
+   <codeblock>~/.bashrc</codeblock></li>
+<li>To the open file, add the following line:
+  <codeblock>stack@hlm:~$ vi ~/.bashrc</codeblock></li>
+      <li>To verify the following environment variable is properly set, run: <codeblock>export LC_ALL=C</codeblock>
+          <b>Sample output:</b>
+          <codeblock>stack@hlm:~$ source ~/.bashrc
+stack@hlm:~$ env | grep LC
+LC_ALL=C</codeblock></li>
+  <li>From the vSphere client, remount the HLM's CD-ROM device with the ISO for Helion OpenStack 3.0.</li>  
+  <li>Once attached, in the OS, mount the device to <b>/media/cdrom</b> and then install VMware
+          Tools.</li>
+</ol>
+  </section>
+  
+  
+  <section id="NSX_HOS_Neutron">
+    <title>Configure the Neutron Environment with NSX-V</title>
+      
+ <p> In this section you will be given instructions on how to enable Helion OpenStack Ansible
+        playbooks to install the VMware NSX plug-in for the OpenStack Liberty release of Neutron.
+        The actual work of building the tar file should be done on a computer with the following
+        properties:</p>
+        <ul>
+          <li>Debian-based distribution</li>
+          <li>External network access</li>
+           <li>GIT installed</li>
+          <li>python installed</li> 
+        </ul>
+
+<note type="important">It is possible to skip this section and manually install the
+        vmware-nsx liberty plugin on each HOS controller after the initial deployment is complete.</note> 
+   <p>To configure the Neutron environment:</p>
+   <ol>
+<li>To copy the HOS 3.0 tarball to a working directory, run:
+            <codeblock>stack@hlm:~$ cd
+stack@hlm:~$ mkdir work stack@hlm:~$ cp /media/cdrom/hos/hos-3.0.0-20160503T085137Z.tar ~/work</codeblock><note>The
+            name of the Helion OpenStack tarball may differ depending on which build is being
+            used.</note></li> 
+        <li>To download a copy of the necessary files, navigate to the working directory and
+          download the following from github:
+          <codeblock>vmware-nsx liberty plugin code
+Python tooz library</codeblock> For example:
+          <codeblock>stack@hlm:~$ cd ~/work 
+stack@hlm:~/work$ git clone http://github.com/openstack/vmware-nsx 
+... 
+stack@hlm:~/work$ cd vmware-nsx
+stack@hlm:~/work/vmware-nsx$ git checkout stable/liberty 
+... 
+stack@hlm:~$ cd ~/work
+stack@hlm:~/work$ git clone http://github.com/openstack/tooz </codeblock></li>
+        <li>To extract the Neutron virtual environment to a temporary directory, run:
+          <codeblock>stack@hlm:~/work$ cd ~/work 
+stack@hlm:~/work$ mkdir tmp 
+stack@hlm:~/work$ cd tmp
+stack@hlm:~/work/tmp$ tar xvf ../hos-3.0.0-20160503T085137Z.tar hos-3.0.0/venv.tar hos-3.0.0/venv.tar 
+stack@hlm:~/work/tmp$ cd hos-3.0.0/ 
+stack@hlm:~/work/tmp/hos-3.0.0$ tar xvf venv.tar ./neutron-20160503T082438Z.tgz ./neutron-20160503T082438Z.tgz
+stack@hlm:~/work/tmp/hos-3.0.0$ tar xzvf neutron-20160503T082438Z.tgz</codeblock></li>
+        <li>To install the vmware-nsx and tooz Python libraries to the hos-3.0.0 location, run:
+          <codeblock>stack@hlm:~/work/tmp/hos-3.0.0$ cd ~/work 
+stack@hlm:~/work$ cd vmware-nsx 
+stack@hlm:~/work/vmware-nsx$ python setup.py install --prefix=~/work/tmp/hos-3.0.0 
+... 
+stack@hlm:~/work$ cd ~/work 
+stack@hlm:~/work$ cd tooz
+stack@hlm:~/work/tooz$ python setup.py install --prefix=~/work/tmp/hos-3.0.0</codeblock></li>
+        <li>To rebuild the neutron virtual environment tarball, run:
+          <codeblock>stack@hlm:~/work$ cd ~/work/tmp/hos-3.0.0
+stack@hlm:~/work/tmp/hos-3.0.0$ rm venv.tar 
+stack@hlm:~/work/tmp/hos-3.0.0$ rm neutron-20160503T082438Z.tgz 
+stack@hlm:~/work/tmp/hos-3.0.0$ tar cvzf neutron-20160503T082438Z.tgz ./*</codeblock></li> 
+        <li>To rebuild the master venv.tar tarball, run:
+          <codeblock>stack@hlm:~/work/tmp/hos-3.0.0$ cd ~/work/tmp/hos-3.0.0/ 
+stack@hlm:~/work/tmp/hos-3.0.0$ mv neutron-20160503T082438Z.tgz ~/work 
+stack@hlm:~/work/tmp/hos-3.0.0$ cd ~/work/tmp/
+stack@hlm:~/work/tmp$ rm -rf hos-3.0.0/ stack@hlm:~/work/tmp$ tar xvf ../hos-3.0.0-20160503T085137Z.tar hos-3.0.0/venv.tar hos-3.0.0/venv.tar
+stack@hlm:~/work/tmp$ cd hos-3.0.0/ stack@hlm:~/work/tmp/hos-3.0.0$ tar xvf venv.tar 
+...
+stack@hlm:~/work/tmp/hos-3.0.0$ cp ../../neutron-20160503T082438Z.tgz .
+stack@hlm:~/work/tmp/hos-3.0.0$ rm venv.tar 
+stack@hlm:~/work/tmp/hos-3.0.0$ tar cvf venv.tar./* 
+... 
+stack@hlm:~/work/tmp/hos-3.0.0$ mv venv.tar ~/work 
+stack@hlm:~/work/tmp/hos-3.0.0$ cd .. 
+stack@hlm:~/work/tmp$ rm -rf hos-3.0.0/</codeblock></li> 
+        <li>To rebuild the Helion OpenStack 3.0 tarball with the new venv.tar and move it to the OS
+          account's home directory, run:
+          <codeblock>stack@hlm:~/work/tmp$ cd ~/work/tmp
+stack@hlm:~/work/tmp$ tar xvf ../hos-3.0.0-20160503T085137Z.tar 
+... 
+stack@hlm:~/work/tmp$ cd
+hos-3.0.0/ stack@hlm:~/work/tmp/hos-3.0.0$ cp ../../venv.tar .
+stack@hlm:~/work/tmp/hos-3.0.0$ cd .. 
+stack@hlm:~/work/tmp$ tar cvf hos-3.0.0-20160503T085137Z.tar . 
+... 
+stack@hlm:~/work/tmp$ mv hos-3.0.0-20160503T085137Z.tar~/ </codeblock></li>
+   </ol>
+    <p>Next you must configure the input model for the cloud deployment.</p>
+
+<p>To configure the Cloud Input Model:</p> 
+    <ol>
+      <li>Extract the tar just created from the OpenStack account's home directory. If a modified tar was not created, then extract
+        it from the <codeph>/media/cdrom/hos</codeph> directory.</li>
+      <li>To run the hos-init.bash script:
+          <codeblock>stack@hlm:~$ cd ~/ stack@hlm:~$ tar xvf hos-3.0.0-20160503T085137Z.tar 
+... 
+stack@hlm:~$ ~/hos-3.0.0/hos-init.bash</codeblock></li> 
+      
+    </ol>
+      
+      <note type="attention">Deployment Guidelines <p><b>If deploying Helion OpenStack onto VMs:</b>
+      </p><ul>
+      <li>If needed, use the following cloud model files for reference:
+        <codeblock>HOS-NSXv-DEMO.tar</codeblock>
+        This example cloud model deploys one HLM, three HOS controllers, and one HOS nova compute proxy. 
+        Extract to the following directory and adjust values accordingly:
+        <codeblock>~/helion/my_cloud/definition</codeblock></li>
+        <li>There are also the following example configuration files in the
+              <codeph>~/helion/examples</codeph> directory:
+            <codeblock>stack@hlm:~$ cd ~/helion/my_cloud/definition/
+stack@hlm:~/helion/my_cloud/definition$ tar xvf ~/HOS-NSXv-DEMO.tar 
+cloudConfig.yml 
+data/
+data/control_plane.yml 
+data/disks_controller_vm.yml 
+data/disks_esxi_compute_vm.yml
+data/disks_hlinux_vm.yml 
+data/firewall_rules.yml 
+data/networks.yml 
+data/network_groups.yml
+data/net_interfaces.yml 
+data/nic_mappings.yml 
+data/pass_through.yml 
+data/servers.yml
+data/server_groups.yml 
+data/server_roles.yml 
+data/swift/ 
+data/swift/rings.yml </codeblock></li>
+          <li>in the networks.yml model file, verify that tagged-vlan is set to false for each
+            network , even if the network is a tagged vlan. The ESXi DVS will handle vlan
+            tagging.</li>
+          <li>Since the vmware-nsx liberty neutron plugin will be used, ensure that
+            neutron-ml2-plugin, neutron-vpn-agent, neutron-dhcp-agent, neutron-metadata-agent, and
+            neutron-openvswitch-agent, are commented out in the control_plane.yml model file under
+            the controller configuration.</li>
+          <li>the iLO network for each server will still need to be specified with fake IPs, as well
+            as fake iLO username and passwords, in the servers.yml model file. </li>
+          <li>the MAC address for each HOS node can be found within the vSphere client on each
+            virtual machine. Simply go into the settings of each VM and grab the MAC address of the
+            interface that is attached to the deployer network (which is eth0 in example files). The
+            MAC address will be used to PXE boot into the OS installer by Cobbler.</li>
+      </ul>
+      </note>
+  </section>
+  
+  <section id="NSX_HOS_ComDep">
+    <title>Commit the Cloud Input Model</title>
+    <ol>
+      <li>To commit the cloud input model to the local git repository, run:
+          <codeblock>stack@hlm:~/helion/my_cloud/definition/data$ cd ~/helion/hos/ansible
+stack@hlm:~/helion/hos/ansible$ git add -A
+stack@hlm:~/helion/hos/ansible$ git commit -m "Initial Cloud Input Model"</codeblock></li>
+      <li>To run the configuration processor:
+          <codeblock>stack@hlm:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>
+          If the playbook fails, review the error and fix any mistakes in the input model files,
+          then run it again.</li>
+      <li>To deploy Cobbler, from the same directory, run: (you will be prompted for the password to
+          use for each configured node)
+          <codeblock>stack@hlm:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
+      <li>To verify the Helion OpenStack nodes that will have an OS installed by Cobbler, run:
+            <codeblock>stack@hlm:~/helion/hos/ansible$ sudo cobbler system find --netboot-enabled=1
+controller1
+controller2
+controller3
+esxi-compute-1</codeblock><note
+            type="attention">At minimum there should be three controllers and one Nova
+            compute.</note></li>
+      <li>From within the vSphere environment, power on each HOS VM and watch for them to PXE boot into the OS installer.</li> 
+      <li>If successful, each Helion OpenStack VM will have its OS automatically installed and will then automatically power off.</li>
+      <li>Once powered off, power on each VM and let it boot into the OS.</li>
+      <li>Use ssh to connect to each VM from the Helion OpenStack Lifecycle Manager and install VMware Tools using:
+        <codeblock>sudo apt install -y open-vm-tools</codeblock></li>
+      <li>Verify that the bus mapping specified in the cloud model input file
+            <b>nic_mappings.yml</b> matches the NIC bus mapping on each Helion OpenStack node. For
+          example:
+          <codeblock>nic-mappings:
+- name: ESXI_VMXNET3_3PORT
+physical-ports:
+- logical-name: eth0
+type: simple-port
+bus-address: "0000:0b:00.0"
+- logical-name: eth1
+type: simple-port
+bus-address: "0000:13:00.0"
+- logical-name: eth2
+type: simple-port
+bus-address: "0000:1b:00.0"</codeblock></li>
+      <li>Update the <b>nic_mappings.yml</b> file with the appropriate values and re-run the configuration processor if needed. </li>
+    <li>Verify that each Helion OpenStack node has an IP address configured for the interface on the
+          deployer network. For example:
+          <codeblock>stack@hlm:~$ sudo dmesg | grep eth
+      [    1.198525] vmxnet3 0000:0b:00.0 eth0: NIC Link is Up 10000 Mbps
+      [    1.213644] vmxnet3 0000:13:00.0 eth1: NIC Link is Up 10000 Mbps
+      [    1.234654] vmxnet3 0000:1b:00.0 eth2: NIC Link is Up 10000 Mbps
+      stack@hlm:~$ ip addr
+      1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+        inet 127.0.0.1/8 scope host lo
+        valid_lft forever preferred_lft forever
+        inet6 ::1/128 scope host
+        valid_lft forever preferred_lft forever
+        2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP group default qlen 1000
+          link/ether 00:50:56:b8:25:a6 brd ff:ff:ff:ff:ff:ff
+          inet 10.246.62.9/24 brd 10.246.62.255 scope global eth0
+          valid_lft forever preferred_lft forever
+          inet6 fe80::250:56ff:feb8:25a6/64 scope link
+          valid_lft forever preferred_lft forever
+          3: eth1: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN group default qlen 1000
+            link/ether 00:50:56:b8:3e:f9 brd ff:ff:ff:ff:ff:ff
+            4: eth2: &lt;BROADCAST,MULTICAST&gt; mtu 1500 qdisc noop state DOWN group default qlen 1000
+              link/ether 00:50:56:b8:34:2e brd ff:ff:ff:ff:ff:ff
+              stack@hlm:~$ vi ~/helion/my_cloud/definition/data/nic_mappings.yml</codeblock></li>
+              <li>Comment out any Nova compute proxy nodes and resource in the following files:
+          <codeblock>servers.yml 
+control_plane.yml</codeblock> For example:
+          <codeblock>stack@hlm:~/helion/hos/ansible$ vi ~/helion/my_cloud/definition/data/servers.yml
+              
+# Nova esxi-compute proxy node
+#- id: esxi-compute-1
+#  server-group: RACK1
+#  nic-mapping: ESXI_VMXNET3_3PORT
+#  ip-addr: 10.246.62.9
+#  role: ESXI-COMPUTE-ROLE
+#  mac-addr: "00:50:56:b8:25:a6"
+#  ilo-ip: 1.1.1.5
+#  ilo-user: dummy-user
+#  ilo-password: dummy-password
+              
+stack@hlm:~/helion/hos/ansible$ vi ~/helion/my_cloud/definition/data/control_plane.yml
+              
+#resources:
+#  - name: esxi-compute
+#    resource-prefix: esxi-novacompute-
+#    server-role: ESXI-COMPUTE-ROLE
+#    member-count: 1
+#    allocation-policy: any
+#    service-components:
+#      - nova-esx-compute-proxy
+#      - nova-compute
+#      - ntp-client
+#      - eon-client</codeblock></li>
+      <li>To re-run the configuration processor:
+          <codeblock>stack@hlm:~/helion/my_cloud/definition/data$ cd ~/helion/hos/ansible/
+stack@hlm:~/helion/hos/ansible$ git add -A
+stack@hlm:~/helion/hos/ansible$ git commit -m "Remove nova compute proxy from servers.yml and control_plane.yml"
+stack@hlm:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+    </ol>
+    <note type="attention">The nova compute proxy nodes will be provisioned in a later step.</note>
+  </section>
+    
+    
+    <section id="NSX_commit_neutron">
+      <title>Configure Neutron Options</title>
+    <ol>
+      <li>Navigate to the following directory:
+      <codeblock>~/helion/hos/ansible</codeblock></li>
+      <li>To create sub-directories and files under the <codeph>~/scratch</codeph>, run the
+            <b>ready-deployment.yml</b> playbook.
+          <codeblock>stack@hlm:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>    
+      <li>VMware recommends that Neutron be in an active/standby mode when using the NSX-V plugin. To make this change, edit the following file:
+        <codeblock>~/helion/hos/services/neutron/server.yml</codeblock></li>
+      <li>Add the following line to the <b>endpoints</b> section:
+          <codeblock>vip-backup-mode: true</codeblock> For example, the endpoints section should
+          look like this:
+          <codeblock>endpoints:
+-   port: '9696'
+has-vip: true
+roles:
+- public
+- internal
+- admin
+vip-backup-mode: true</codeblock></li>   
+      <li>You must also configure the <b>neutron.conf.j2</b> file for NSX-V. To do this, first find
+          the following values in the <b>~/scratch/ansible/next/hos/ansible/group_vars</b>
+          directory:
+          <codeblock>metadata proxy shared secret 
+metadata service VIP
+metadata service port number    </codeblock>
+          For example:
+          <codeblock>stack@hlm:~/helion/hos/ansible$ cd ~/scratch/ansible/next/hos/ansible/group_vars
+stack@hlm:~/scratch/ansible/next/hos/ansible/group_vars$ grep metadata_proxy_shared_secret *
+ExampleHosNSXv-control-plane-1:        metadata_proxy_shared_secret: gTknqiqtV5I5ZMvD
+stack@hlm:~/scratch/ansible/next/hos/ansible/group_vars$ vi ExampleHosNSXv-control-plane-1
+              
+NOV_MTD:
+initiate_tls: false
+networks:
+- cert_file: helion-internal-cert
+ip_address: 10.246.63.10
+ports:
+- '8775'
+server_ports:
+- '8775'
+terminate_tls: false
+vip: HOS-NSXv-demo-hpe-nsxv-demo-vip-NOV-MTD-internal
+vip_backup_mode: false
+servers:
+- HOS-NSXv-demo-hpe-nsxv-demo-cnt1-internal
+- HOS-NSXv-demo-hpe-nsxv-demo-cnt2-internal
+- HOS-NSXv-demo-hpe-nsxv-demo-cnt3-internal
+vars: {}</codeblock></li>     
+              <li> Now edit the following file:
+                <codeblock>~/helion/my_cloud/config/neutron/neutron.conf.j2</codeblock></li>
+      <li>In the neutron.conf.j2 file, change the core plug-in to use the NSX-V plugin, remove any
+          defined service_plugins. For example:
+          <codeblock>stack@hlm:~/helion/hos/ansible$ vi ~/helion/my_cloud/config/neutron/neutron.conf.j2
+              
+core_plugin = vmware_nsx.plugin.NsxVPlugin
+service_plugins = </codeblock></li>
+              
+      <li>To the same file, add the NSX-V configuration options to the section labeled <b># Add
+            additional options here</b>. <note type="attention">Many of the additional options are
+            defined in the vCenter-managed object browser. To view these, use the IP address of
+            vCenter and append <b>/mob</b> to the end of the address.</note> For example:
+          <codeblock># Add additional options here
+              [nsxv]
+              manager_uri=https://10.247.174.5  #url of NSX Manager
+              user=admin  #username of NSX Manager
+              password=&lt;sanatized&gt;  #password for NSX Manager
+              insecure=true  #If true, the NSXv server certificate is not verified.  If false, then the default CA truststore is used for verification.  This option is ignored if "ca_file" is set.
+              datacenter_moid=datacenter-2  #main vSphere datacenter ID
+              cluster_moid=domain-c281  #domain id of compute clusters (comma separated if more than one)
+              resource_pool_id=resgroup-244  #the resource pool id of the edge pool.  If edge resource pool not created, use the hidden "root" resource pool
+              datastore_id=datastore-29  #datastore which edge pool resources will be provisioned to
+              vdn_scope_id=vdnscope-1  #vdn scope id of the transport zone.  To find this, in vSphere client go to the transport zone under NSX and it will be listed in address bar of web browser
+              dvs_id=dvs-286  #the DVS of the control_plane cluster which contains all of the defined VLANs
+              exclusive_router_appliance_size=compact
+              edge_ha=False  #if set to true, will duplicate any edge pool resources
+              spoofguard_enabled=True #(Optional) Indicates if Nsxv spoofguard component is used to implement port-security feature.
+              backup_edge_pool=service:large:1:3,service:compact:1:3,vdr:large:1:3 #This controls the # of edges that are pre-provisioned by Neutron. The numbers are minimum (1) and maximum (3)
+              external_network=dvportgroup-328  #the external vlan-backed provider (External VM portgroup)
+              nova_metadata_port=8775  #metadata port group found in above step of guide
+              nova_metadata_ips=10.246.63.10  #metadata IP found in above step of guide
+              mgt_net_proxy_netmask=255.255.255.0  
+              mgt_net_proxy_ips=10.246.63.251,10.246.63.252  #two IPs on the same subnet as the nova_metadata_ips (be sure not to overlap with IPs defined in HOS model files)
+              mgt_net_moid=dvportgroup-291  #port group for Internal API network which nova_metadata_ips sits on
+              metadata_shared_secret=gTknqiqtV5I5ZMvD  #metadata shared secret found in above step of guide
+              {{ metadata_initializer }}  #Disables metadata network initializer for HOS deployment, then enables on first controller after deployment
+              
+# Do not add anything after this line</codeblock></li>
+              <li>From the ~/helion/hos/ansible directory, commit the changes to git. For example:
+          <codeblock>stack@hlm:~/helion/hos/ansible$ git add -A
+stack@hlm:~/helion/hos/ansible$ git commit -m "updated neutron.conf.j2"</codeblock></li>
+                <li>To re-run the configuration processor playbook, run: 
+                  <codeblock>stack@hlm:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                  <li>To re-run the ready-deployment playbook, run:
+          <codeblock>stack@hlm:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+      <li>To add support for NSX-V integration, edit the following file:
+            <codeblock>~/scratch/ansible/next/hos/ansible/roles/neutron-common/defaults/main.yml</codeblock><note
+            type="important"> Currently this step must be done only after editing the
+            ready-deployment.yml, as in the previous step.It must be done before editing the
+            site.yml, as in the next step. This requirement is due to a bug in Helion OpenStack 3.0
+            where the ready-deployment.yml file overwrites everything in the ~/scratch directory.
+            There are plans to fix this bug in a future patch release.</note></li>
+              <li>To edit the following file, run:
+          <codeblock>stack@hlm:~$ vi ~/scratch/ansible/next/hos/ansible/roles/neutron-common/defaults/main.yml</codeblock></li>
+      <li>In the <b>Nova:</b> section find 4 lines for <codeph>metadata_*:</codeph>.</li>
+      <li>Replace all 4 lines with the following lines:
+          <codeblock>metadata_ip: "{% if NEU_MDA is defined %}{% if NEU_MDA.consumes_NOV_MTD is defined %}{{ NEU_MDA.consumes_NOV_MTD.vips.private[0].ip_address }}{% else %}{{ NEU_SVR.consumes_NOV_API.vips.private[0].host }}{% endif %}{% endif %}"
+metadata_port: "{% if NEU_MDA is defined %}{% if NEU_MDA.consumes_NOV_MTD is defined %}{{ NEU_MDA.consumes_NOV_MTD.vips.private[0].port }}{% else %}8775{% endif %}{% endif %}"
+metadata_protocol: "{% if NEU_MDA is defined %}{% if NEU_MDA.consumes_NOV_MTD is defined %}{{ NEU_MDA.consumes_NOV_MTD.vips.private[0].protocol }}{% else %}http{% endif %}{% endif %}"
+metadata_proxy_shared_secret: "{% if NEU_MDA is defined %}{{ NEU_MDA.vars.metadata_proxy_shared_secret }}{% endif %}"</codeblock></li>
+              <li>At the very bottom of the file, add the following line:
+          <codeblock>metadata_initializer: "{% for item in NEU_SVR.consumes_FND_MDB.members.mysql_gcomms %}{% if loop.index is even and item.host != host.my_dimensions.hostname %}{{ 'metadata_initializer = false' }}{% endif %}{% endfor %}"</codeblock></li></ol>
+  </section>
+    
+    <section id="NSX_HOSCloud">
+      <title>Deploy the Cloud</title>
+      <ol>
+        <li>Run the following playbook:
+            <codeblock>~/scratch/ansible/next/hos/ansible/site.yml</codeblock><note type="important"
+            >This playbook can take up to 2+ hours to run.</note> For example:
+            <codeblock>stack@hlm:~$ cd ~/scratch/ansible/next/hos/ansible
+stack@hlm:~/scratch/ansible/next/hos/ansible$ ansible-playbook -i hosts/verb_hosts site.yml</codeblock><note
+            type="caution">An initial cloud deployment is likely to fail when the Neutron playbooks
+            are running. There is a rare condition where the Ansible playbooks do not allow the
+            neutron-server processes enough time to completely start before proceeding. If this
+            error is encountered, simply check to ensure the Neutron services are fully started on
+            all controllers and re-run the site.yml playbook a second time. This bug is fixed in
+            Helion OpenStack version 3.0.1. <p>For
+            example:</p><codeblock>failed: [HOS-NSXv-demo-cnt1-internal] => {"changed": true, "cmd": ["neutron", "--os-username", "neutron", "--os-project-name", "services", "--os-user-domain-name", "Default", "--os-project-domain-name", "Default", "--os-auth-url", "https://HOS-NSXv-demo-vip-KEY-API-internal:5000", "--os-endpoint-type", "internalURL", "net-list", "-f", "csv", "-c", "name", "--tenant-id", "2f37c8e795104f96a066dcca6c04315c"], "delta": "0:00:00.891904", "end": "2016-07-20 02:10:48.844100", "rc": 1, "start": "2016-07-20 02:10:47.952196", "warnings": []}
+stderr: Unable to establish connection to https://10.246.63.10:9696/v2.0/networks.json?tenant_id=2f37c8e795104f96a066dcca6c04315c</codeblock></note></li>
+        <li>After the site.yml playbook successfully finishes, verify there are <b>Edge</b> and <b>Metadata</b> proxy VMs running in the vSphere control_plane cluster.  If there are not, then check the neutron.conf and neutron-server.log files for any errors or mistakes on each controller node. Once corrected, manually restart the neutron-server service.</li>
+        <li>To configure the nova compute proxy nodes, first log into the HLM node.</li>
+        <li>To change the Nova compute driver to the default vCenter driver, run:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ vi ~/helion/my_cloud/config/nova/esx-hypervisor.conf.j2
+compute_driver = vmwareapi.VMwareVCDriver</codeblock>
+          The file should look like this after editing.
+          <codeblock>[DEFAULT]
+# Compute
+#Old Value: compute_driver = vmwareapi.hp_driver.HPVMwareVCDriver
+compute_driver = vmwareapi.VMwareVCDriver
+[vmware]
+host_ip = {{ vmware_host_ip }}
+host_port = {{ vmware_host_port }}
+host_username = {{ vmware_host_username }}
+host_password = {{ vmware_host_password }}
+cluster_name = {{ vmware_host_cluster }}
+insecure = True
+vmwareapi_nic_attach_retry_count = 60
+## Do NOT put anything after this line ##</codeblock></li>
+        <li>Source the <b>~/service.osrc</b> file and add the vCenter server through Hewlett Packard
+          Enterprise's EON service. The following is a description for the relevant parameters:
+          <codeblock>Resource Manager Name - the resource name
+Resource Manager IP address - the IP address of the vCenter server
+Resource Manager Username - the admin privilege username for the vCenter
+Resource Manager Password - the password for the above username
+Resource Manager Port - the vCenter server port. By default it is 443.
+Resource Manager Type - specify "vcenter"
+stack@HOS-NSXv-demo-hlm1-internal:~$ source ~/service.osrc
+stack@HOS-NSXv-demo-hlm1-internal:~$ eon resource-manager-add --name nb-vcenter --username administrator@vsphere.local --password &lt;SANITIZED&gt; --type vcenter --ip-address 10.246.64.10  </codeblock></li>
+        <li>Edit the following file:
+          <codeblock>~/helion/my_cloud/definition/data/servers.yml</codeblock></li>
+        <li>In the servers.yml file, remove the comment character "#" from the compute nodes. For
+          example:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ vi ~/helion/my_cloud/definition/data/servers.yml    
+
+#Nova esxi-compute proxy node
+- id: esxi-compute-1
+server-group: RACK1
+nic-mapping: ESXI_VMXNET3_3PORT
+ip-addr: 10.246.62.9
+role: ESXI-COMPUTE-ROLE
+mac-addr: "00:50:56:b8:25:a6"
+ilo-ip: 1.1.1.5
+ilo-user: dummy-user
+ilo-password: dummy-password</codeblock></li>
+        <li>Edit the following file:
+          <codeblock>~/helion/my_cloud/definition/data/control_plane.yml</codeblock></li>
+        <li>In the <b>control_plane.yml</b> file, remove the comment character "#" from the compute
+          resource definition. For example:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ vi ~/helion/my_cloud/definition/data/control_plane.yml
+          
+resources:
+- name: esxi-compute
+resource-prefix: esxi-novacompute-
+server-role: ESXI-COMPUTE-ROLE
+member-count: 1
+allocation-policy: any
+service-components:
+- nova-esx-compute-proxy
+- nova-compute
+- ntp-client
+- eon-client</codeblock></li>
+          <li>To find the vCenter ID from the EON resource-manager, run:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ eon resource-manager-list
++--------------------------------------+------------+--------------+---------+
+| ID                                   | Name       | IP Address   | Type    |
++--------------------------------------+------------+--------------+---------+
+| e9e08d70-28d8-4b3f-a042-143ce0424393 | nb-vcenter | 10.246.64.10 | vcenter |
++--------------------------------------+------------+--------------+---------+</codeblock></li>
+           <li>Use the ID to update the following file:
+          <codeblock>~/helion/my_cloud/definition/data/pass_through.yml</codeblock> For example:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ vi ~/helion/my_cloud/definition/data/pass_through.yml
+---
+product:
+version: 2
+pass-through:
+global:
+esx_cloud: true
+servers:
+-
+id: esxi-compute-1
+data:
+vmware:
+cert_check: false
+vcenter_cluster: Compute
+vcenter_id: e9e08d70-28d8-4b3f-a042-143ce0424393
+vcenter_ip: 10.246.64.10
+vcenter_port: 443
+vcenter_username: administrator@vsphere.local</codeblock></li>
+          <li>To commit the new changes and prepare for deployment, run:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ cd ~/helion/hos/ansible/
+stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ git add -A
+stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ git commit -m "added esxi-compute configs"
+stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost config-processor-run.yml
+...
+stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Use the hostname of the nova-compute nodes to deploy the nova-compute configurations.
+          For example:
+            <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ cd ~/scratch/ansible/next/hos/ansible/
+stack@HOS-NSXv-demo-hlm1-internal:~/scratch/ansible/next/hos/ansible$ ansible-playbook -i hosts/verb_hosts osconfig-run.yml --list-hosts
+...
+HOS-NSXv-demo-esxi-novacompute-0001-internal
+          
+stack@HOS-NSXv-demo-hlm1-internal:~/scratch/ansible/next/hos/ansible$ ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit HOS-NSXv-demo-esxi-novacompute-0001-internal
+...
+stack@HOS-NSXv-demo-hlm1-internal:~/scratch/ansible/next/hos/ansible$ ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit HOS-NSXv-demo-esxi-novacompute-0001-internal</codeblock><note
+            type="caution">If the playbook fails when running the task "Run Monasca Agent detection
+            plugin," rerun the playbook and the task should succeed the second time.</note></li>
+          <li>To validate that the compute node has been added to the cloud successfully, run:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ nova service-list
+...
+| 27 | nova-compute     | HOS-NSXv-demo-esxi-novacompute-0001-internal | nova     | enabled | up    | 2016-07-20T16:03:22.000000 | -          </codeblock></li>
+          <li>As a final step, to configure the Cinder VMDK block storage, edit the following file:
+          <codeblock>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeblock> For example, the
+          configuration file will look similar to the following:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ vi ~/helion/my_cloud/config/cinder/cinder.conf.j2
+          
+enabled_backends=vmdk-nb
+...
+# Start of section for vmdk
+#
+# If you have configured vmdk storage for cinder you
+# must uncomment this section, and replace all strings in angle
+# brackets with the correct values for the cluster you have
+# configured.  You must also add the section name to the list of
+# values in the 'enabled_backends' variable above.
+#
+# If you have more than one vmdk backend you must provide this
+# whole section for each vmdk backend and provide a unique section name for
+# each. For example, replace &lt;unique-section-name&gt; with
+# VMDK_1 for one backend and VMDK_2 for the other.
+#
+[vmdk-nb]
+vmware_host_ip = 10.246.64.10
+vmware_host_password = &lt;sanitized&gt;
+vmware_host_username = administrator@vsphere.local
+vmware_insecure = True
+volume_driver = cinder.volume.drivers.vmware.vmdk.VMwareVcVmdkDriver
+volume_backend_name=vmdk-nb</codeblock></li>
+              <li>To commit the changes to Git, run:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ cd ~/helion/hos/ansible/
+stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ git add -A
+stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ git commit -m 'Adding cluster vmdk configuration'</codeblock>
+        </li>
+                <li>To run the Cinder reconfigure playbook, run:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost config-processor-run.yml
+stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ cd ~/scratch/ansible/next/hos/ansible/
+stack@HOS-NSXv-demo-hlm1-internal:~/scratch/ansible/next/hos/ansible$ ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml  </codeblock></li>
+        <li>To prepare the environment for deployment, run:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~/helion/hos/ansible$ ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+              <li>To validate that the VMDK block storage is added to the cloud successfully, run:
+          <codeblock>stack@HOS-NSXv-demo-hlm1-internal:~/scratch/ansible/next/hos/ansible$ cinder service-list</codeblock>
+          For example:
+          <codeblock>+------------------+---------------------------+------+---------+-------+----------------------------+-----------------+
+|      Binary      |            Host           | Zone |  Status | State |         Updated_at         | Disabled Reason |
++------------------+---------------------------+------+---------+-------+----------------------------+-----------------+
+|  cinder-backup   |     ha-volume-manager     | nova | enabled |   up  | 2016-07-20T18:34:17.000000 |        -        |
+| cinder-scheduler |     ha-volume-manager     | nova | enabled |   up  | 2016-07-20T18:34:15.000000 |        -        |
+|  cinder-volume   |     ha-volume-manager     | nova | enabled |  down |             -              |        -        |
+|  cinder-volume   | ha-volume-manager@vmdk-nb | nova | enabled |   up  | 2016-07-20T18:34:12.000000 |        -        |
++------------------+---------------------------+------+---------+-------+----------------------------+-----------------+        </codeblock></li>
+      </ol>
+    </section>
+  
+  <section id="NSX_HOS_Opt_Man">
+    <title>Manually Installing NSX-V on Each HOS Controller Node (Optional)</title>
+      
+      <p>If NSX-V was not installed using the Ansible playbooks, it is still possible to manually install the NSX-V neutron plugin on each controller.</p>
+    
+    <note type="important">If behind a proxy server, before running setup.py, do the following:
+      <ol>
+        <li>To install the required packages, run:
+          <codeblock>pip install -r requirements.txt --proxy=&lt;proxy server address&gt; .</codeblock></li>
+        </ol>In some cases it may also be necessary to define, within the terminal environment, the <b>pbr</b> version that the server has installed. This will allow the setup.py Python script to run. (For example, export PBR_VERSION='1.8.0')</note>
+    
+      <ol>
+    <li>To log into each Helion controller and stop the neutron-server service, run.
+          <codeblock>stack@HOS-NSXv-demo-cnt2-internal:~$ sudo service neutron-server stop</codeblock></li>
+      <li>Once neutron-server is stopped on all Helion controllers, log into the <b>master</b> Helion controller holding the service VIP.
+      <codeblock>stack@HOS-NSXv-demo-cnt2-internal:~$ sudo su -</codeblock>
+      </li>
+        <li>Once logged in, become root and source the neutron venv environment.
+          <codeblock>root@HOS-NSXv-demo-cnt2-internal:~# source /opt/stack/venv/neutron-20160503T082438Z/bin/activate
+(neutron-20160503T082438Z)root@HOS-NSXv-demo-cnt2-internal:~#
+      </codeblock></li>
+        <li>
+      Install git, 
+      (neutron-20160503T082438Z)root@HOS-NSXv-demo-cnt2-internal:~# apt install -y git
+        </li>
+        <li>
+          then do a git checkout for the vmware-nsx plugin.
+          (neutron-20160503T082438Z)root@HOS-NSXv-demo-cnt2-internal:~# git clone http://github.com/openstack/vmware-nsx
+          Cloning into 'vmware-nsx'...</li>
+          <li>Once cloned, do a checkout of the liberty branch, and then run the setup.py Python
+          script. This should install the vmware-nsx bits into
+          /opt/stack/service/neutron-&lt;xxxxxxxxxxxxxxxx&gt;/venv/lib/python2.7/site-packages/.
+          <codeblock>(neutron-20160503T082438Z)root@HOS-NSXv-demo-cnt2-internal:~# cd vmware-nsx
+(neutron-20160503T082438Z)root@HOS-NSXv-demo-cnt2-internal:~/vmware-nsx# git checkout stable/liberty
+(neutron-20160503T082438Z)root@HOS-NSXv-demo-cnt2-internal:~/vmware-nsx# python setup.py install
+        </codeblock></li>
+        <li>Once installed, refer to the guide on configuring the neutron.conf file. <note
+            type="important">The location of neutron.conf is in the
+              <codeph>/opt/stack/service/neutron-&lt;xxxxxxxxxxxxxxxx /etc/</codeph>
+            directory.</note></li>
+        <li>On the <b>master</b> controller, do not set the <b>metadata_initializer</b> option. It is recommended that you leave it out completely.</li>
+        <li>Once neutron.conf is updated, start the neutron-server service.</li>
+        <li>Review the /var/log/neutron/neutron-server.log file for any errors.</li>
+        <li>If done successfully, the vSphere environment will create edge services and metadata proxy VMs.</li>
+        <li>Repeat these steps on the remaining controllers with the following setting in the <b>in the neutron.conf</b> file:
+              <codeblock>metadata_initializer=False set </codeblock>
+              Setting metadata_initializer to False prevents the other controllers from creating new metadata proxy services.</li>
+      </ol>
+  </section>
+  
   </body>
 </topic>
