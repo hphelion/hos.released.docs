@@ -334,8 +334,9 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
           steps outlined in <xref href="../operations/create_extnet.dita"/> to do so.</li>
         <li>Create a private network for the instances.
           <codeblock>neutron net-create f5private</codeblock></li>
-        <li>Create a subnet under that network.
-          <codeblock>neutron subnet-create --name f5sub f5private 10.1.0.0/24</codeblock></li>
+        <li>Create a subnet under that network. We chose the subnet CIDR of
+            <codeph>10.1.0.0/24</codeph> in our example but you can choose your preferred
+          CIDR.<codeblock>neutron subnet-create --name f5sub f5private 10.1.0.0/24</codeblock></li>
         <li>Create a router to connect the private network to the external network.
           <codeblock>neutron router-create f5router</codeblock></li>
         <li>Add an interface to the router.
@@ -364,19 +365,22 @@ neutron security-group-rule-create allow_all --direction egress --protocol udp</
 nova floating-ip-associate &lt;instance_id> &lt;floating_IP></codeblock></li>
         <li>Create a load balancer. <p>The following command sets up the load balancer on the
             private IP address 10.1.0.5. Remember to replace this value with the private IP address
-            created on your
-          network.</p><codeblock>neutron lbaas-loadbalancer-create --name f5lb --vip-address 10.1.0.5 --provider f5networks f5sub</codeblock></li>
+            created on your network if you chose a different subnet
+          CIDR.</p><codeblock>neutron lbaas-loadbalancer-create --name f5lb --vip-address 10.1.0.5 --provider f5networks f5sub</codeblock></li>
         <li>To show the properties of the newly created load balancer, run:
           <codeblock>neutron lbaas-loadbalancer-show &lt;name of load balancer&gt;</codeblock></li>
         <li>Create a listener for the load balancer.
           <codeblock>neutron lbaas-listener-create --loadbalancer f5lb --protocol HTTP --protocol-port 80 --name f5listener</codeblock></li>
         <li>Create a Round-Robin HTTP Pool.
-          <codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener --protocol HTTP --name f5pool</codeblock></li>
+            <codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener --protocol HTTP --name f5pool</codeblock><note>Take
+            note of the UUID of the pool that is created as you will use it in step #24.</note></li>
         <li>Create pool members. The two new pool members you create will plug into the instances'
-          fixed IP addresses. <p>To create a new member,
-            run:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock><p>To
-            create a second new member,
-          run:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock></li>
+          fixed IP addresses. <p>To create a new member, use this command, ensuring that you use an
+            IP address from the subnet CIDR you
+            chose:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock><p>To
+            create a second new member, use this command, ensuring that you use an IP address from
+            the subnet CIDR you
+          chose:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock></li>
         <li>Log in to each instance using its floating IP address. On CirrOS, the following settings
           are used: <dl>
             <dlentry>
@@ -399,8 +403,8 @@ nova floating-ip-associate &lt;instance_id> &lt;floating_IP></codeblock></li>
               <codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock>
               Sample output:
               <codeblock>user@myHelion [~]$ ssh cirros@10.246.71.7
-        Warning: Permanently added '10.246.71.7' (RSA) to the list of known hosts.
-        cirros@10.246.71.7's password: </codeblock></li>
+Warning: Permanently added '10.246.71.7' (RSA) to the list of known hosts.
+cirros@10.246.71.7's password: </codeblock></li>
             <li>To test the connection to an instance, run:
               <codeblock>$ curl &lt;IP_address&gt;</codeblock> Sample output:
               <codeblock>$ curl 10.1.0.7
@@ -418,22 +422,27 @@ PING 10.1.0.5 (10.1.0.5): 56 data bytes
 --- 10.1.0.5 ping statistics ---
 4 packets transmitted, 4 packets received, 0% packet loss
 round-trip min/avg/max = 0.332/0.630/1.363 ms
+
 $ curl 10.1.0.5
 Welcome to 10.1.0.7
 ^C
+
 $ curl 10.1.0.5
 Welcome to 10.1.0.7
 ^C
+
 $ curl 10.1.0.5
 Welcome to 10.1.0.8
 ^C
+
 $ curl 10.1.0.5
 Welcome to 10.1.0.8
 ^C</codeblock></li>
         <li>Set Up a Health Monitor (Optional). <p>Another option to test F5 integration is to set
             up a health monitor to monitor the pool.</p><ol>
-            <li>To create a new healthmonitor, run:
-              <codeblock>neutron lbaas-healthmonitor-create --max-retries 3 --timeout 10 --type PING --pool bfae1a16-2e06-47c3-9cea-fcc56b8e8bae --delay 30</codeblock>
+            <li>To create a new healthmonitor, use this command using the pool UUID that was given
+              in the output of step #17
+              earlier:<codeblock>neutron lbaas-healthmonitor-create --max-retries 3 --timeout 10 --type PING --pool &lt;pool_UUID> --delay 30</codeblock>
               Sample
               output:<codeblock>+----------------+------------------------------------------------+
 | Field          | Value                                          |
@@ -576,8 +585,9 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
           steps outlined in <xref href="../operations/create_extnet.dita"/> to do so.</li>
         <li>Create a private network for the instances.
           <codeblock>neutron net-create f5private</codeblock></li>
-        <li>Create a subnet under that network.
-          <codeblock>neutron subnet-create --name f5sub f5private 10.1.0.0/24</codeblock></li>
+        <li>Create a subnet under that network. We chose the subnet CIDR of
+            <codeph>10.1.0.0/24</codeph> in our example but you can choose your preferred
+          CIDR.<codeblock>neutron subnet-create --name f5sub f5private 10.1.0.0/24</codeblock></li>
         <li>Create a router to connect the private network to the external network.
           <codeblock>neutron router-create f5router</codeblock></li>
         <li>Add an interface to the router.
@@ -593,15 +603,13 @@ neutron security-group-rule-create allow_all --direction ingress --protocol tcp
 neutron security-group-rule-create allow_all --direction egress --protocol tcp
 neutron security-group-rule-create allow_all --direction ingress --protocol udp
 neutron security-group-rule-create allow_all --direction egress --protocol udp</codeblock></li>
-        <li>Create two compute instances. <p>To create the first virtual machine, run:</p> nova boot
-          --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk
-          '/f5private/ {print $2}')" --security-groups allow_all f5vm1 To create the second virtual
-          machine, run: nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic
-          net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all
-          f5vm2</li>
-        <li>Create floating IP addresses for each instance for network connectivity. <p>To create a
-            floating IP, run:</p> nova floating-ip-create To create a second floating IP, run: nova
-          floating-ip-create</li>
+        <li>Create two compute instances. <p>To create the first virtual machine,
+          run:</p><codeblock>nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm1</codeblock>
+          To create the second virtual machine, run:
+          <codeblock>nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm2</codeblock></li>
+        <li>Create floating IP addresses for each instance for network connectivity.
+            <codeblock>nova floating-ip-create</codeblock><p>To create a second floating IP,
+            run:</p><codeblock>nova floating-ip-create</codeblock></li>
         <li>Using the floating IP addresses and the instance IDs from the output of the previous two
           steps, associate the new floating IP addresses with these command:
           <codeblock>nova floating-ip-associate &lt;instance_id> &lt;floating_IP>
@@ -635,10 +643,12 @@ Created a new listener:
         <li>Create a round robin HTTP
           pool:<codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener_tls --protocol HTTP --name f5pool_tlsflex</codeblock></li>
         <li>Create pool members. The two new pool members you create will plug into the instances'
-          fixed IP addresses. <p>To create a new member,
-            run:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock><p>To
-            create a second new member,
-          run:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock></li>
+          fixed IP addresses. <p>To create a new member, use this command, ensuring that you use an
+            IP address from the subnet CIDR you
+            chose:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock><p>To
+            create a second new member, use this command, ensuring that you use an IP address from
+            the subnet CIDR you
+          chose:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock></li>
         <li>Log in to each instance using its floating IP address. On CirrOS, the following settings
           are used: <dl>
             <dlentry>
