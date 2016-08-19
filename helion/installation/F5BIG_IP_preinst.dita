@@ -2,21 +2,19 @@
 <!--Edit status: not edited-->
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="F5_BIGIP_30Preinstall">
-  <title>Pre-Integration Checklist</title>
+  <title><ph conkeyref="HOS-conrefs/product-title"/>F5 BIG-IP Pre-Integration Checklist</title>
+  <abstract><shortdesc outputclass="hdphidden">A list of F5 pre-integration requirements is provided
+      in a checklist format that can be printed and used offline.</shortdesc></abstract>
   <body>
     <!--not tested-->
     <section id="F530_Preinstall">
-      <title>F5 Pre-Integration Checklist</title>
-      <p>Before integrating the F5-BIG-IP driver into a HPE Helion OpenStack 3.0 deployment, the
-        following requirements were met:</p>
-      <note type="important">HPE Helion OpenStack 3.0 must be deployed before the F5 installation is
-        performed. This is due to the F5 driver not being built directly into HPE Helion OpenStack
-        by default, and because the F5 installation depends on the existence of Helion OpenStack
-        Neutron environment.</note>
+      <title>F5 pre-integration checklist</title>
+      <p>Before integrating the F5-BIG-IP driver into a <keyword keyref="kw-hos-phrase"/>
+        deployment, the requirements discussed on this page must be met.</p>
       <table frame="all" rowsep="1" colsep="1" id="table_ckx_F53600_ht">
         <tgroup cols="2">
           <colspec colname="c1" colnum="1" colwidth="25pt"/>
-          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <colspec colname="c2" colnum="2"/>
           <thead>
             <row>
               <entry>&#9744;</entry>
@@ -24,6 +22,11 @@
             </row>
           </thead>
           <tbody>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30Preinstall/F530_Preinstall_Deploy"
+                  >Deploy <keyword keyref="kw-hos-phrase"/>.</xref></entry>
+            </row>
             <row>
               <entry/>
               <entry><xref type="section" href="#F5_BIGIP_30Preinstall/F530_Preinstall_HW">Use the
@@ -38,13 +41,27 @@
         </tgroup>
       </table>
     </section>
+    <section id="F530_Preinstall_Deploy">
+      <title>Deploy <keyword keyref="kw-hos-phrase"/></title>
+      <p><keyword keyref="kw-hos-phrase"/> must be deployed before the F5 installation is performed.
+        This is due to the F5 driver not being built directly into <keyword keyref="kw-hos"/> by
+        default, and because the F5 installation depends on the existence of a Neutron
+        environment.</p>
+      <p>For steps for deploying, see <xref href="../installation/cloudinstallation_overview.dita"
+        />.</p>
+      <p>If you are using the Barbican service and wish to add HTTP/TLS load balancing support, your
+          <codeph>network_groups.yml</codeph> file must be configured with valid certificates in the
+          <codeph>cert-file</codeph> attribute, or if you are testing you can use the special
+          <codeph>helion-internet-cert</codeph> value. For more details on how to integrate TLS with
+        your cloud environment, see <xref href="../security/tls_config.dita"/>.</p>
+    </section>
     <section id="F530_Preinstall_HW">
-      <title>Use the Supported Hardware Configuration</title>
-      <p>HPE Helion OpenStack supports the F5 hardware configurations listed in the <xref
-          href="http://helionready.hpcloud.com/search?title=f5" scope="external" format="html">HPE
+      <title>Use the supported hardware configuration</title>
+      <p><keyword keyref="kw-hos"/> supports the F5 hardware configurations listed in the <xref
+          href="http://docs.hpcloud.com/#hrc/helionReady.html" scope="external" format="html">HPE
           Helion Ready Solution Catalog</xref>.</p>
       <p>For testing purposes, the following hardware configuration was used to integrate an F5
-        BIG-IP device with Helion OpenStack 3.0:</p>
+        BIG-IP device with <keyword keyref="kw-hos-phrase"/>:</p>
       <table frame="all" rowsep="1" colsep="1" id="table_F53600_shw">
         <tgroup cols="2">
           <colspec colname="c1" colnum="1" colwidth="1*"/>
@@ -74,19 +91,19 @@
       </table>
     </section>
     <section id="F530_Preinstall_NW">
-      <title>Create the Supported Network Configuration</title>
+      <title>Create the supported network configuration</title>
       <p>The tested network configuration uses tagged VLANs for different networks in the cloud.</p>
-      <note type="important">Helion OpenStack 3.0 must be deployed before the F5 installation is
-        performed. This is due to the F5 driver not being built directly into Helion OpenStack by
-        default, and because the F5 installation depends on the existence of Helion OpenStack
-        Neutron environment.</note>
-      <p>The Helion team integrated F5 Networks BIG-IP into an HPE Helion OpenStack deployment using
-        the following steps:</p>
+      <p>You need to ensure that both the lifecycle manager and the control plane nodes in your
+        cloud have access to the internet before proceeding to the F5 integration steps because the
+        Ansible playbooks used will reach out over the internet to download official F5 software
+        releases and their dependencies.</p>
+      <p>The HPE Helion team integrated F5 Networks BIG-IP into an <keyword keyref="kw-hos"/>
+        deployment using the following steps:</p>
       <ol>
-        <li><xref href="../installation/cloudinstallation_overview.dita">Deploy Helion OpenStack
-            3.0.</xref></li>
+        <li><xref href="../installation/cloudinstallation_overview.dita">Deploy <keyword
+              keyref="kw-hos-phrase"/>.</xref></li>
         <li><xref type="section" href="#F5_BIGIP_30Preinstall/F530_man_net">Verify a working
-            Management network.</xref></li>
+            management network.</xref></li>
         <li><xref type="section" href="#F5_BIGIP_30Preinstall/F530_verify_VTEP">Verify a Virtual
             Tunnel Endpoint (VTEP) network.</xref></li>
         <li><xref type="section" href="#F5_BIGIP_30Preinstall/F530_verify_F5_pre">Verify your F5
@@ -94,23 +111,23 @@
       </ol>
     </section>
     <section id="F530_man_net">
-      <title>Verify a Working Management Network</title>
-      <p>The recommended configuration is to have both the Helion OpenStack controller nodes and the
-        F5 appliance on the Management network. The Management network is created during the Helion
-        OpenStack installation process. The Management network is the backbone for the majority of
-        HPE Helion OpenStack management communications. Control messages are exchanged between the
-        Controllers, Compute hosts, and Cinder backends through this network. The Management network
-        is implemented as VLANs on the physical network.</p>
-      <p>To see an example of a Management Network in a deployment diagram, see, <xref
+      <title>Verify a working management network</title>
+      <p>The recommended configuration is to have both the <keyword keyref="kw-hos"/> controller
+        nodes and the F5 appliance on the management network. The management network is created
+        during the <keyword keyref="kw-hos"/> installation process. The management network is the
+        backbone for the majority of <keyword keyref="kw-hos"/> management communications. Control
+        messages are exchanged between the controllers, compute hosts, and Cinder backends through
+        this network. The management network is implemented as VLANs on the physical network.</p>
+      <p>To see an example of a management network in a deployment diagram, see, <xref
           href="../architecture/examples/entryscale_esx_kvm_vsa.dita">Entry-scale KVM with VSA
           Model</xref>.</p>
-      <p>The Management network configuration is used so that Neutron can reach the F5 iControl API.
+      <p>The management network configuration is used so that Neutron can reach the F5 iControl API.
           <note type="important">It does not matter if you put the F5 iControl API on a different
-          VLAN from the Helion OpenStack Management network. You can use any network as long as it
-          meets the following requirement: <ul>
+          VLAN from the <keyword keyref="kw-hos"/> management network. You can use any network as
+          long as it meets the following requirement: <ul>
             <li>Controller nodes can access the F5 iControl API</li>
           </ul></note></p>
-      <p>To verify a working Management network:</p>
+      <p>To verify a working management network:</p>
       <ol>
         <li>From a controller node, at a command line, run a <codeph>curl</codeph> command similar
           to this: <codeblock>curl -kiL https://&lt;iControl_IP&gt;</codeblock></li>
@@ -127,8 +144,8 @@
     <section id="F530_verify_VTEP">
       <title>Verify a Virtual Tunnel Endpoint (VTEP) Network</title>
       <p>This endpoint is one IP address on the network group that provides private networks to
-        virtual machines. In the sample Helion OpenStack definition, the network group is called
-        "GUEST".</p>
+        virtual machines. In the sample <keyword keyref="kw-hos"/> definition, the network group is
+        called "GUEST".</p>
       <note type="attention">The administrator needs to ensure that a VTEP address is configured on
         the BIG-IP appliance. The configuration of the address will depend on your specific network,
         but ensure you meet the following minimum requirement: <ul>
@@ -152,7 +169,8 @@
           <tbody>
             <row>
               <entry/>
-              <entry><b>Add the F5 appliance to your Helion OpenStack deployment.</b></entry>
+              <entry><b>Add the F5 appliance to your <keyword keyref="kw-hos"/>
+                deployment.</b></entry>
               <entry>For more information, refer to the <xref href="https://f5.com/support"
                   scope="external" format="html">F5 Networks Support</xref> site</entry>
             </row>
