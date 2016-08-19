@@ -644,7 +644,8 @@ Created a new listener:
 | tenant_id                 | d59003927b7441c588e29f6f590f225d                                            |
 +---------------------------+-----------------------------------------------------------------------------+</codeblock></li>
         <li>Create a round robin HTTP
-          pool:<codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener_tls --protocol HTTP --name f5pool_tlsflex</codeblock></li>
+          pool:<codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener_tls --protocol HTTP --name f5pool_tlsflex</codeblock>
+          <note>Take note of the UUID of the pool that is created as you will use it in step #27.</note></li>
         <li>Create pool members. The two new pool members you create will plug into the instances'
           fixed IP addresses. <p>To create a new member, use this command, ensuring that you use an
             IP address from the subnet CIDR you
@@ -715,8 +716,9 @@ Welcome to 10.1.0.8
           command:<codeblock>openssl s_client -connect 10.1.0.11:443</codeblock></li>
         <li>Set Up a Health Monitor (Optional). <p>Another option to test F5 integration is to set
             up a health monitor to monitor the pool.</p><ol>
-            <li>To create a new healthmonitor, run:
-              <codeblock>neutron lbaas-healthmonitor-create --max-retries 3--timeout 10--type HTTP --pool c9e4712a-57a6-4bda-b7b2-1d24647c9cd0 --delay 30</codeblock>
+            <li>To create a new healthmonitor, use this command using the pool UUID that was given
+              in the output of step #19
+              earlier:<codeblock>neutron lbaas-healthmonitor-create --max-retries 3--timeout 10--type HTTP --pool &lt;pool_UUID> --delay 30</codeblock>
               Sample
               output:<codeblock>Created a new healthmonitor:
 +----------------+------------------------------------------------+
