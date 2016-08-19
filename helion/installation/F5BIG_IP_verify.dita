@@ -6,15 +6,20 @@
   <body>
     <!--not tested-->
     <section id="about">
-      <p>To verify that your F5 BIG-IP device runs as a load balancer for Neutron LBaaSv2 in your
-        deployment you will set up a round-robin load balancer on that private network. This is
-        accomplished by creating two instances on their own private network and testing critical
-        functionality.</p>
+      <p>To verify that your F5 BIG-IP device runs as a load balancer for Neutron LBaaS v2 in your
+        deployment we have included a few walkthroughs where you can set up a load balancer using
+        either HTTP or HTTPS traffic. In these walkthroughs you will set up a round-robin load
+        balancer on a private network. This is accomplished by creating two instances on their own
+        private network and testing critical functionality.</p>
+      <p>Each walkthrough is self-contained so some steps are duplicated and don't have to be
+        executed twice if you are going to try out both walkthroughs.</p>
       <ul>
         <li><xref type="section" href="#F5_BIGIP_30_verify/F5_SuppFunc">Supported Function
             Testing</xref></li>
-        <li><xref type="section" href="#F5_BIGIP_30_verify/F5_vrfychklst">Verification
-            Checklist</xref></li>
+        <li><xref type="section" href="#F5_BIGIP_30_verify/privateHTTP">Walkthrough of creation of a
+            private HTTP load balancer using port 80</xref></li>
+        <li><xref type="section" href="#F5_BIGIP_30_verify/privateHTTPS">Walkthrough of creation of
+            a private HTTPS load balancer using port 443 with instances using port 80</xref></li>
       </ul>
       <note type="important">Be aware of the following known issues: <ul>
           <li>For limitations of the F5 Networks driver, review the F5 OpenStack LBaaSv2 driver
@@ -229,9 +234,14 @@
         </tgroup>
       </table>
     </section>
-    <section id="F5_vrfychklst">
-      <title>Verification Checklist</title>
-      <p>To very integration, complete all items in the following checklist, in order:</p>
+    <section id="privateHTTP">
+      <title>Walkthrough of creation of a private HTTP load balancer using port 80</title>
+      <p>Here are the instructions to test if Neutron LBaaSv2 with F5 works on your installation.
+        These instructions create two instances on their own private network and sets up a port 80
+        HTTP round robin load balancer on that private network. The load balancer will only be
+        accessible from the private network.</p>
+      <p><b>Verification Checklist</b></p>
+      <p>To verify integration, complete all items in the following checklist, in order:</p>
       <table frame="all" rowsep="1" colsep="1" id="table_ckx_F5HOS30_vfy">
         <tgroup cols="2">
           <colspec colname="c1" colnum="1" colwidth="25pt"/>
@@ -245,8 +255,8 @@
           <tbody>
             <row>
               <entry/>
-              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify1">Verify or Upload a
-                  CirrOS Glance Image</xref>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify1">Verify or upload a
+                  CirrOS image to Glance</xref>
                 <p>Verify or upload the following CirrOS image in Glance:
                   <codeblock>CirrOS-0.3.4-x86_64-disk</codeblock></p></entry>
             </row>
@@ -273,17 +283,17 @@
                   Groups</xref>
                 <p>Set up security groups that allow you to access instances. The following list
                   contains the seven commands (in order) that create a security group with all TCP,
-                  UDP, and ICMP ports opened:</p>
-                <codeblock>neutron security-group-create allow_all
+                  UDP, and ICMP ports
+                  opened:</p><codeblock>neutron security-group-create allow_all
 neutron security-group-rule-create allow_all --direction ingress --protocol icmp
 neutron security-group-rule-create allow_all --direction egress --protocol icmp
 neutron security-group-rule-create allow_all --direction ingress --protocol tcp
 neutron security-group-rule-create allow_all --direction egress --protocol tcp
 neutron security-group-rule-create allow_all --direction ingress --protocol udp
-neutron security-group-rule-create allow_all --direction egress --protocol udp</codeblock>
-                <p>These commands open all the ports so that you don't have to troubleshoot security
-                  groups if there is a connectivity problem. These steps are for testing purposes
-                  only.</p></entry>
+neutron security-group-rule-create allow_all --direction egress --protocol udp</codeblock><p>These
+                  commands open all the ports so that you don't have to troubleshoot security groups
+                  if there is a connectivity problem. These steps are for testing purposes
+                only.</p></entry>
             </row>
             <row>
               <entry/>
@@ -356,9 +366,7 @@ neutron security-group-rule-create allow_all --direction egress --protocol udp</
           </tbody>
         </tgroup>
       </table>
-    </section>
-    <section id="verify1">
-      <title>Verify or Upload a CirrOS Glance Image</title>
+      <p><b>Verify or upload a CirrOS image to Glance</b></p>
       <p>You need a CirrOS image loaded in Glance so that you can create two Nova instances for
         testing the load balancing.</p>
       <ol>
@@ -369,9 +377,7 @@ neutron security-group-rule-create allow_all --direction egress --protocol udp</
 wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
 glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img</codeblock></li>
       </ol>
-    </section>
-    <section id="verify2">
-      <title>Verify or Create an External Network and Subnet</title>
+      <p><b>Verify or Create an External Network and Subnet</b></p>
       <p>If you do not already have an external network, in this documentation it is called
           <b>ext-net</b>, then you must create one and its associated subnet.</p>
       <p>Use the following sample to understand how to create the external network:</p>
@@ -417,9 +423,7 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3                 |
 +-------------------+--------------------------------------------------+</codeblock></li>
       </ol>
-    </section>
-    <section id="verify3">
-      <title>Create a Private Network and Subnet for the Instances</title>
+      <p><b>Create a Private Network and Subnet for the Instances</b></p>
       <ol>
         <li>To create a private network for the instances, run:
           <codeblock>neutron net-create f5private</codeblock> Sample
@@ -461,9 +465,7 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3           |
 +-------------------+--------------------------------------------+</codeblock></li>
       </ol>
-    </section>
-    <section id="verify4">
-      <title>Create a Router</title>
+      <p><b>Create a Router</b></p>
       <p>To connect the private network to the external network:</p>
       <ol>
         <li>To create a new router, run: <codeblock>neutron router-create f5router</codeblock>
@@ -489,9 +491,7 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
           <codeblock>Set gateway for router f5router</codeblock>
         </li>
       </ol>
-    </section>
-    <section id="verify5">
-      <title>Set Up Security Groups</title>
+      <p><b>Set Up Security Groups</b></p>
       <ol>
         <li>To create a new security group, run:
           <codeblock>neutron security-group-create allow_all</codeblock> Sample output: </li>
@@ -529,8 +529,7 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
 | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
 +-------------------+--------------------------------------+</codeblock></li>
-        <li>To create a new security group rule, run:
-          <codeblock>neutron security-group-rule-create allow_all --direction ingress --protocol tcp
+        <li>To create a new security group rule, run these commands: <codeblock>neutron security-group-rule-create allow_all --direction ingress --protocol tcp
 Created a new security_group_rule:
 +-------------------+--------------------------------------+
 | Field             | Value                                |
@@ -545,9 +544,8 @@ Created a new security_group_rule:
 | remote_ip_prefix  |                                      |
 | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
 | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-+-------------------+--------------------------------------+
-
-neutron security-group-rule-create allow_all --direction egress --protocol tcp
++-------------------+--------------------------------------+</codeblock>
+          <codeblock>neutron security-group-rule-create allow_all --direction egress --protocol tcp
 Created a new security_group_rule:
 +-------------------+--------------------------------------+
 | Field             | Value                                |
@@ -562,9 +560,8 @@ Created a new security_group_rule:
 | remote_ip_prefix  |                                      |
 | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
 | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-+-------------------+--------------------------------------+
-
-neutron security-group-rule-create allow_all --direction ingress --protocol udp
++-------------------+--------------------------------------+</codeblock>
+          <codeblock>neutron security-group-rule-create allow_all --direction ingress --protocol udp
 Created a new security_group_rule:
 +-------------------+--------------------------------------+
 | Field             | Value                                |
@@ -579,9 +576,8 @@ Created a new security_group_rule:
 | remote_ip_prefix  |                                      |
 | security_group_id | fe455a69-9731-481c-b328-bb118aec4204 |
 | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
-+-------------------+--------------------------------------+
-
-:neutron security-group-rule-create allow_all --direction egress --protocol udp
++-------------------+--------------------------------------+</codeblock>
+          <codeblock>neutron security-group-rule-create allow_all --direction egress --protocol udp
 Created a new security_group_rule:
 +-------------------+--------------------------------------+
 | Field             | Value                                |
@@ -598,9 +594,7 @@ Created a new security_group_rule:
 | tenant_id         | aa387f39ed5149149f196e7ab40f7fd3     |
 +-------------------+--------------------------------------+</codeblock></li>
       </ol>
-    </section>
-    <section id="verify6">
-      <title>Create 2 Virtual Machine Instances</title>
+      <p><b>Create 2 Virtual Machine Instances</b></p>
       <ol>
         <li> To create the first VM, run:
           <codeblock>nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm1</codeblock>
@@ -675,9 +669,7 @@ Created a new security_group_rule:
 | user_id                              | bdf0c78bc1b44f009b651a040f1d2773                                |
 +--------------------------------------+-----------------------------------------------------------------+</codeblock></li>
       </ol>
-    </section>
-    <section id="verify7">
-      <title>Connect a Floating IP Addresses to Each Instance</title>
+      <p><b>Connect a Floating IP Addresses to Each Instance</b></p>
       <ol>
         <li> To create a floating IP, run: <codeblock>nova floating-ip-create</codeblock> Sample
           output:
@@ -697,9 +689,7 @@ Created a new security_group_rule:
           <codeblock>nova floating-ip-associate a2d196f3-cf11-4dd8-b755-4908f5f0f7d3 10.246.71.7
 nova floating-ip-associate 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02 10.246.71.8</codeblock></li>
       </ol>
-    </section>
-    <section id="verify8">
-      <title>Create a Load Balancer</title>
+      <p><b>Create a Load Balancer</b></p>
       <p>The following command sets up the load balancer on the private IP address 10.1.0.5.
         Remember to replace this value with the private IP address created on your network.</p>
       <ol>
@@ -743,9 +733,7 @@ nova floating-ip-associate 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02 10.246.71.8</cod
 | vip_subnet_id       | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
 +---------------------+--------------------------------------+</codeblock></li>
       </ol>
-    </section>
-    <section id="verify9">
-      <title>Create a Listener for the Load Balancer</title>
+      <p><b>Create a Listener for the Load Balancer</b></p>
       <ol>
         <li>To create a new listener, run:
           <codeblock>neutron lbaas-listener-create --loadbalancer f5lb --protocol HTTP --protocol-port 80 --name f5listener</codeblock>
@@ -768,9 +756,7 @@ nova floating-ip-associate 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02 10.246.71.8</cod
 +---------------------------+------------------------------------------------+</codeblock>
         </li>
       </ol>
-    </section>
-    <section id="verify10">
-      <title>Create a Round-Robin HTTP Pool</title>
+      <p><b>Create a Round-Robin HTTP Pool</b></p>
       <ol>
         <li>To create a new pool, run:
           <codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener --protocol HTTP --name f5pool</codeblock>
@@ -792,9 +778,7 @@ nova floating-ip-associate 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02 10.246.71.8</cod
 +---------------------+------------------------------------------------+</codeblock>
         </li>
       </ol>
-    </section>
-    <section id="verify11">
-      <title>Create Pool Members</title>
+      <p><b>Create Pool Members</b></p>
       <p>The two new pool members you create will plug into the instances' fixed IP addresses.</p>
       <ol>
         <li>To create a new member, run:
@@ -826,9 +810,7 @@ nova floating-ip-associate 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02 10.246.71.8</cod
 | weight         | 1                                    |
 +----------------+--------------------------------------+</codeblock></li>
       </ol>
-    </section>
-    <section id="verify12">
-      <title>Log in to Each Instance</title>
+      <p><b>Log in to Each Instance</b></p>
       <p>Log in to each instance using its floating IP address. On CirrOS, the following settings
         are used:</p>
       <dl>
@@ -851,17 +833,13 @@ cirros@10.246.71.7's password: </codeblock>
         </li>
         <li>Repeat these steps for the second instance.</li>
       </ol>
-    </section>
-    <section id="verify13">
-      <title>Run a Web Server on Each Instance</title>
+      <p><b>Run a Web Server on Each Instance</b></p>
       <ol>
         <li>To run a web server on an instance, run:
           <codeblock>while : ; do echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $(/sbin/ifconfig eth0|grep 'inet addr'|awk -F: '{print $2}'| awk '{print $1}')" | sudo nc -l -p 80 ; done</codeblock></li>
         <li>Repeat these steps on each instance.</li>
       </ol>
-    </section>
-    <section id="verify14">
-      <title>Test Connections Individually</title>
+      <p><b>Test Connections Individually</b></p>
       <p>On another session, connect to any instance on the same private network, and test reaching
         that instance individually.</p>
       <ol>
@@ -877,9 +855,7 @@ cirros@10.246.71.7's password: </codeblock>
 Welcome to 10.1.0.7</codeblock></li>
         <li>Repeat these steps for each connection you want to test.</li>
       </ol>
-    </section>
-    <section id="verify15">
-      <title>Test the Load Balancer</title>
+      <p><b>Test the Load Balancer</b></p>
       <ol>
         <li>To test the load balancer, run:
           <codeblock>$ ping -c4 &lt;floating_IP_address&gt;</codeblock> Sample output:
@@ -905,9 +881,7 @@ $ curl 10.1.0.5
 Welcome to 10.1.0.8
 ^C</codeblock></li>
       </ol>
-    </section>
-    <section id="verify16">
-      <title>Set Up a Health Monitor (Optional)</title>
+      <p><b>Set Up a Health Monitor (Optional)</b></p>
       <p>Another option to test F5 integration is to set up a health monitor to monitor the
         pool.</p>
       <ol>
@@ -931,9 +905,7 @@ Welcome to 10.1.0.8
 | url_path       | /                                              |
 +----------------+------------------------------------------------+</codeblock></li>
       </ol>
-    </section>
-    <section id="verify17">
-      <title>Confirm the F5 BIG-IP Properties</title>
+      <p><b>Confirm the F5 BIG-IP Properties</b></p>
       <p>A final test of integration is to use the F5 Networks graphical user interface to confirm
         that the F5 BIG-IP partition is populated with the correct listener, pool, and members.</p>
       <p>To open the F5 dashboard:</p>
@@ -947,6 +919,146 @@ Welcome to 10.1.0.8
             </dlentry>
           </dl> Sample output: <image href="../../media/F5BIGIP_verify.png"/></li>
       </ol>
+    </section>
+
+    <section id="privateHTTPS">
+      <title>Walkthrough of creation of a private HTTPS load balancer using port 443 with instances
+        using port 80</title>
+      <p>Here are the instructions to test if Neutron LBaaSv2 with F5 and Barbican TLS containers
+        works on your installation. These instructions create two instances on their own private
+        network and sets up a port 443 TERMINATED_HTTPS round robin load balancer on that private
+        network. The load balancer virtual IP address (VIP) exchanges HTTPS traffic with connecting
+        clients, but the traffic between the load balancer listener and the instances is HTTP. The
+        load balancer will only be accessible from the private network.</p>
+      <p><b>Verification Checklist</b></p>
+      <p>To verify integration, complete all items in the following checklist, in order:</p>
+      <table frame="all" rowsep="1" colsep="1" id="table2">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="25pt"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>&#9744;</entry>
+              <entry>Item</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify1">Verify or upload a
+                  CirrOS image to Glance</xref>
+                <p>Verify or upload the following CirrOS image in Glance:
+                  <codeblock>CirrOS-0.3.4-x86_64-disk</codeblock></p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify2">Verify or Create an
+                  External Network and Subnet</xref><p>If not already existing, create an external
+                  network and its associated subnet.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify3">Create a Private
+                  Network and Subnet for the Instances</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify4">Create a Router</xref>
+                <p>Create a router to connect the private network to the external
+                network.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify5">Set up Security
+                  Groups</xref>
+                <p>Set up security groups that allow you to access instances. The following list
+                  contains the seven commands (in order) that create a security group with all TCP,
+                  UDP, and ICMP ports
+                  opened:</p><codeblock>neutron security-group-create allow_all
+                    neutron security-group-rule-create allow_all --direction ingress --protocol icmp
+                    neutron security-group-rule-create allow_all --direction egress --protocol icmp
+                    neutron security-group-rule-create allow_all --direction ingress --protocol tcp
+                    neutron security-group-rule-create allow_all --direction egress --protocol tcp
+                    neutron security-group-rule-create allow_all --direction ingress --protocol udp
+                    neutron security-group-rule-create allow_all --direction egress --protocol udp</codeblock><p>These
+                  commands open all the ports so that you don't have to troubleshoot security groups
+                  if there is a connectivity problem. These steps are for testing purposes
+                only.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify6">Create 2 Virtual
+                  Machine Instances</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify7">Connect a Floating IP
+                  Addresses to Each Instance</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify8">Create a Load
+                  Balancer</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify9">Create a Listener for
+                  the Load Balancer</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify10">Create a Round-Robin
+                  HTTP Pool</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify11">Create Pool
+                  Members</xref>
+                <p>Create a pool member for each instance. Make sure that the pool member plugs into
+                  the fixed IP address of the instance.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify12">Log in to Each
+                  Instance</xref>
+                <p>Log in to each instance using their floating IP address and run a web
+                server.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify13">Run a Web Server on
+                  Each Instance</xref>
+                <p>On another session, connecting to any instance on the same private network, test
+                  reaching each instance individually.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify14">Test Connections
+                  Individually</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify15">Test the load
+                  balancer.</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify16">Set Up a Health
+                  Monitor (Optional)</xref>
+                <p>Optionally, set up a health monitor for the pool.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify17">Confirm the F5 BIG-IP
+                  Properties</xref> Visually confirm that the F5 BIG-IP partition is populated with
+                the correct listener, pool, and members.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <p><b>Generate your site certificate chain and key</b></p>
+      
+      
     </section>
   </body>
 </topic>
