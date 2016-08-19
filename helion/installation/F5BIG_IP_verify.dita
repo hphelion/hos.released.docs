@@ -3,36 +3,40 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="F5_BIGIP_30_verify">
   <title>Verify F5 BIG-IP Integration</title>
-  <body><!--not tested-->
-    <p>To verify that your F5 BIG-IP device runs as a load balancer for Neutron LBaaSv2 in your deployment you will set up a round-robin load balancer on that private network. This is accomplished by creating two instances on their own private network and 
-testing critical functionality.</p>
-    
-    <ul>
-      <li><xref type="section" href="#F5_BIGIP_30_verify/F5_SuppFunc">Supported Function
-          Testing</xref></li>
-      <li><xref type="section" href="#F5_BIGIP_30_verify/F5_vrfychklst">Verification Checklist</xref></li>
-    </ul>
-    
-    <note type="important">Be aware of the following known issues: <ul>
-      <li>For limitations of the F5 Networks driver, review the F5 OpenStack LBaaSv2 driver <xref
-        href="http://f5-openstack-lbaasv2-driver.readthedocs.io/en/liberty/release_notes.html"
-        scope="external" format="html">Release Notes</xref>.</li>
-      <li>The members of a pool should be removed (neutron lbaas-member-delete) before deleting
-        the pool (neutron lbaas-pool-delete), or the members may linger in the F5 appliance
-        despite being deleted in Neutron.</li>
-      <li>The pools of a listener should be removed (neutron lbaas-pool-delete) before deleting
-        the listener (neutron lbaas-listener-delete), or the pools may linger in the F5 appliance
-        despite being deleted in Neutron.</li>
-      <li>If a pool is being monitored, in the BIG-IP control panel, the listener, the pool, and
-        the pool members will display a monitoring status, but the nodes will continue to be
-        unmonitored. This is because a node is not a service to monitor in LBaaSv2. A pool member
-        is a node with a port/service.</li>
-    </ul></note>
-    
+  <body>
+    <!--not tested-->
+    <section id="about">
+      <p>To verify that your F5 BIG-IP device runs as a load balancer for Neutron LBaaSv2 in your
+        deployment you will set up a round-robin load balancer on that private network. This is
+        accomplished by creating two instances on their own private network and testing critical
+        functionality.</p>
+      <ul>
+        <li><xref type="section" href="#F5_BIGIP_30_verify/F5_SuppFunc">Supported Function
+            Testing</xref></li>
+        <li><xref type="section" href="#F5_BIGIP_30_verify/F5_vrfychklst">Verification
+            Checklist</xref></li>
+      </ul>
+      <note type="important">Be aware of the following known issues: <ul>
+          <li>For limitations of the F5 Networks driver, review the F5 OpenStack LBaaSv2 driver
+              <xref
+              href="http://f5-openstack-lbaasv2-driver.readthedocs.io/en/liberty/release_notes.html"
+              scope="external" format="html">Release Notes</xref>.</li>
+          <li>The members of a pool should be removed (neutron lbaas-member-delete) before deleting
+            the pool (neutron lbaas-pool-delete), or the members may linger in the F5 appliance
+            despite being deleted in Neutron.</li>
+          <li>The pools of a listener should be removed (neutron lbaas-pool-delete) before deleting
+            the listener (neutron lbaas-listener-delete), or the pools may linger in the F5
+            appliance despite being deleted in Neutron.</li>
+          <li>If a pool is being monitored, in the BIG-IP control panel, the listener, the pool, and
+            the pool members will display a monitoring status, but the nodes will continue to be
+            unmonitored. This is because a node is not a service to monitor in LBaaSv2. A pool
+            member is a node with a port/service.</li>
+        </ul></note>
+    </section>
     <section id="F5_SuppFunc">
       <title>Supported Function Testing</title>
-    <p>The following is a list of the specific functions tested. Every API command listed here was run manually in Neutron LBaaS v2 and completed successfully.</p>
-      
+      <p>The following is a list of the specific functions tested. Every API command listed here was
+        run manually in Neutron LBaaS v2 and completed successfully.</p>
       <note type="attention">If you use the API to create, update, or delete any of the following,
         the changes apply to BIG-IP as well as to Neutron: <ul>
           <li>load balancer</li>
@@ -41,10 +45,9 @@ testing critical functionality.</p>
           <li>pool member</li>
           <li>health monitor</li>
         </ul></note>
-      
-   <p><b>Loadbalancer Functions</b>
-     <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_LBR">
-       <tgroup cols="2">
+      <p><b>Loadbalancer Functions</b>
+        <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_LBR">
+          <tgroup cols="2">
             <colspec colname="c1" colnum="1" colwidth="1*"/>
             <colspec colname="c2" colnum="2" colwidth="1.44*"/>
             <thead>
@@ -84,296 +87,303 @@ testing critical functionality.</p>
               </row>
             </tbody>
           </tgroup>
-     </table>
-   </p>
-    <p><b>Healthmonitor Functions</b>
+        </table>
+      </p>
+      <p><b>Healthmonitor Functions</b></p>
       <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_HLTH">
         <tgroup cols="2">
-            <colspec colname="c1" colnum="1" colwidth="1*"/>
-            <colspec colname="c2" colnum="2" colwidth="2.64*"/>
-            <thead>
-              <row>
-                <entry>Function</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>lbaas-healthmonitor-create</entry>
-                <entry>LBaaS v2 Create a healthmonitor.</entry>
-              </row>
-              <row>
-                <entry>lbaas-healthmonitor-delete</entry>
-                <entry>LBaaS v2 Delete a given healthmonitor.</entry>
-              </row>
-              <row>
-                <entry>lbaas-healthmonitor-list</entry>
-                <entry>LBaaS v2 List healthmonitors that belong to a given tenant.</entry>
-              </row>
-              <row>
-                <entry>lbaas-healthmonitor-show</entry>
-                <entry>LBaaS v2 Show information of a given healthmonitor.</entry>
-              </row>
-              <row>
-                <entry>lbaas-healthmonitor-update</entry>
-                <entry>LBaaS v2 Update a given healthmonitor.</entry>
-              </row>
-            </tbody>
-          </tgroup>
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="2.64*"/>
+          <thead>
+            <row>
+              <entry>Function</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>lbaas-healthmonitor-create</entry>
+              <entry>LBaaS v2 Create a healthmonitor.</entry>
+            </row>
+            <row>
+              <entry>lbaas-healthmonitor-delete</entry>
+              <entry>LBaaS v2 Delete a given healthmonitor.</entry>
+            </row>
+            <row>
+              <entry>lbaas-healthmonitor-list</entry>
+              <entry>LBaaS v2 List healthmonitors that belong to a given tenant.</entry>
+            </row>
+            <row>
+              <entry>lbaas-healthmonitor-show</entry>
+              <entry>LBaaS v2 Show information of a given healthmonitor.</entry>
+            </row>
+            <row>
+              <entry>lbaas-healthmonitor-update</entry>
+              <entry>LBaaS v2 Update a given healthmonitor.</entry>
+            </row>
+          </tbody>
+        </tgroup>
       </table>
-
-    </p>
-    <p><b>Listener Functions</b>
+      <p><b>Listener Functions</b></p>
       <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_LSTN">
         <tgroup cols="2">
-            <colspec colname="c1" colnum="1" colwidth="1*"/>
-            <colspec colname="c2" colnum="2" colwidth="2.85*"/>
-            <thead>
-              <row>
-                <entry>Function</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>lbaas-listener-create</entry>
-                <entry>LBaaS v2 Create a listener.</entry>
-              </row>
-              <row>
-                <entry>lbaas-listener-delete</entry>
-                <entry>LBaaS v2 Delete a given listener.</entry>
-              </row>
-              <row>
-                <entry>lbaas-listener-list</entry>
-                <entry>LBaaS v2 List listeners that belong to a given tenant.</entry>
-              </row>
-              <row>
-                <entry>lbaas-listener-show</entry>
-                <entry>LBaaS v2 Show information of a given listener.</entry>
-              </row>
-              <row>
-                <entry>lbaas-listener-update</entry>
-                <entry>LBaaS v2 Update a given listener.</entry>
-              </row>
-            </tbody>
-          </tgroup>
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="2.85*"/>
+          <thead>
+            <row>
+              <entry>Function</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>lbaas-listener-create</entry>
+              <entry>LBaaS v2 Create a listener.</entry>
+            </row>
+            <row>
+              <entry>lbaas-listener-delete</entry>
+              <entry>LBaaS v2 Delete a given listener.</entry>
+            </row>
+            <row>
+              <entry>lbaas-listener-list</entry>
+              <entry>LBaaS v2 List listeners that belong to a given tenant.</entry>
+            </row>
+            <row>
+              <entry>lbaas-listener-show</entry>
+              <entry>LBaaS v2 Show information of a given listener.</entry>
+            </row>
+            <row>
+              <entry>lbaas-listener-update</entry>
+              <entry>LBaaS v2 Update a given listener.</entry>
+            </row>
+          </tbody>
+        </tgroup>
       </table>
-    </p>
-    
-    <p><b>Member Functions</b>
+      <p><b>Member Functions</b></p>
       <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_MEMB">
         <tgroup cols="2">
-            <colspec colname="c1" colnum="1" colwidth="1*"/>
-            <colspec colname="c2" colnum="2" colwidth="2.85*"/>
-            <thead>
-              <row>
-                <entry>Function</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>lbaas-member-create</entry>
-                <entry>LBaaS v2 Create a member.</entry>
-              </row>
-              <row>
-                <entry>lbaas-member-delete</entry>
-                <entry>LBaaS v2 Delete a given member.</entry>
-              </row>
-              <row>
-                <entry>lbaas-member-list</entry>
-                <entry>LBaaS v2 List members that belong to a given tenant.</entry>
-              </row>
-              <row>
-                <entry>lbaas-member-show</entry>
-                <entry>LBaaS v2 Show information of a given member.</entry>
-              </row>
-              <row>
-                <entry>lbaas-member-update</entry>
-                <entry>LBaaS v2 Update a given member.</entry>
-              </row>
-            </tbody>
-          </tgroup>
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="2.85*"/>
+          <thead>
+            <row>
+              <entry>Function</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>lbaas-member-create</entry>
+              <entry>LBaaS v2 Create a member.</entry>
+            </row>
+            <row>
+              <entry>lbaas-member-delete</entry>
+              <entry>LBaaS v2 Delete a given member.</entry>
+            </row>
+            <row>
+              <entry>lbaas-member-list</entry>
+              <entry>LBaaS v2 List members that belong to a given tenant.</entry>
+            </row>
+            <row>
+              <entry>lbaas-member-show</entry>
+              <entry>LBaaS v2 Show information of a given member.</entry>
+            </row>
+            <row>
+              <entry>lbaas-member-update</entry>
+              <entry>LBaaS v2 Update a given member.</entry>
+            </row>
+          </tbody>
+        </tgroup>
       </table>
-    </p>
-    
-    <p><b>Pool Functions</b>
+      <p><b>Pool Functions</b></p>
       <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_POOL">
         <tgroup cols="2">
-            <colspec colname="c1" colnum="1" colwidth="1*"/>
-            <colspec colname="c2" colnum="2" colwidth="3.35*"/>
-            <thead>
-              <row>
-                <entry>Function</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>lbaas-pool-create</entry>
-                <entry>LBaaS v2 Create a pool.</entry>
-              </row>
-              <row>
-                <entry>lbaas-pool-delete</entry>
-                <entry>LBaaS v2 Delete a given pool.</entry>
-              </row>
-              <row>
-                <entry>lbaas-pool-list</entry>
-                <entry>List pools that belong to a given tenant.</entry>
-              </row>
-              <row>
-                <entry>lbaas-pool-show</entry>
-                <entry>Show information of a given pool.</entry>
-              </row>
-              <row>
-                <entry>lbaas-pool-update</entry>
-                <entry>LBaaS v2 Update a given pool.</entry>
-              </row>
-            </tbody>
-          </tgroup>
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="3.35*"/>
+          <thead>
+            <row>
+              <entry>Function</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>lbaas-pool-create</entry>
+              <entry>LBaaS v2 Create a pool.</entry>
+            </row>
+            <row>
+              <entry>lbaas-pool-delete</entry>
+              <entry>LBaaS v2 Delete a given pool.</entry>
+            </row>
+            <row>
+              <entry>lbaas-pool-list</entry>
+              <entry>List pools that belong to a given tenant.</entry>
+            </row>
+            <row>
+              <entry>lbaas-pool-show</entry>
+              <entry>Show information of a given pool.</entry>
+            </row>
+            <row>
+              <entry>lbaas-pool-update</entry>
+              <entry>LBaaS v2 Update a given pool.</entry>
+            </row>
+          </tbody>
+        </tgroup>
       </table>
-    </p>
     </section>
-
-<section id="F5_vrfychklst">    
-  <title>Verification Checklist</title>
-    <p>To very integration, complete all items in the following checklist, in order:</p>
-    <table frame="all" rowsep="1" colsep="1" id="table_ckx_F5HOS30_vfy">
-      <tgroup cols="2">
-        <colspec colname="c1" colnum="1" colwidth="25pt"/>
-        <colspec colname="c2" colnum="2" colwidth="1*"/>
-        <thead>
-          <row>
-            <entry>&#9744;</entry>
-            <entry>Item</entry>
-          </row>
-        </thead>
-        <tbody>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify1">Verify or Upload a CirrOS Glance Image</xref> <p>Verify or upload the following CirrOS image in Glance:
-              <codeblock>CirrOS-0.3.4-x86_64-disk</codeblock></p></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify2">Verify or Create an
-                External Network and Subnet</xref><p>If not already existing, create an external
-                network and its associated subnet.</p></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify3">Create a Private Network
-                and Subnet for the Instances</xref></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify4">Create a Router</xref>
-              <p>Create a router to connect the private network to the external network.</p></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify5">Set up Security
-                Groups</xref>
-              <p>Set up security groups that allow you to access instances. The following list
-                contains the seven commands (in order) that create a security group with all TCP,
-                UDP, and ICMP ports opened:</p><ol>
-                <li>neutron security-group-create allow_all</li>
-                <li>neutron security-group-rule-create allow_all --direction ingress --protocol
-                  icmp</li>
-                <li>neutron security-group-rule-create allow_all --direction egress --protocol
-                  icmp</li>
-                <li>neutron security-group-rule-create allow_all --direction ingress --protocol
-                  tcp</li>
-                <li>neutron security-group-rule-create allow_all --direction egress --protocol
-                  tcp</li>
-                <li>neutron security-group-rule-create allow_all --direction ingress --protocol
-                  udp</li>
-                <li>neutron security-group-rule-create allow_all --direction egress --protocol
-                  udp</li>
-                </ol>These commands open all the ports so that you don't have to troubleshoot security groups if there is a connectivity problem.  These steps are for testing purposes only.</entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify6">Create 2 Virtual Machine
-                Instances</xref></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify7">Connect a Floating IP Addresses to Each Instance</xref></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify8">Create a Load
-                Balancer</xref></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify9">Create a Listener for the
-                Load Balancer</xref></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify10">Create a Round-Robin HTTP Pool</xref></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify11">Create Pool Members</xref>
-              <p>Create a pool member for each instance. Make sure that the pool member plugs into the 
-                fixed IP address of the instance.</p></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify12">Log in to Each Instance</xref>
-              <p>Log in to each instance using their floating IP 
-                address and run a web server.</p></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify13">Run a Web Server on Each Instance</xref>
-              <p>On another session, connecting to any instance on the same private network, test reaching each 
-                instance individually.</p></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify14">Test Connections Individually</xref></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify15">Test the load balancer.</xref></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify16">Set Up a Health Monitor (Optional)</xref>
-              <p>Optionally, set up a health monitor for the pool.</p></entry>
-          </row>
-          <row>
-            <entry/>
-            <entry><xref type="section" href="#F5_BIGIP_30_verify/verify17">Confirm the F5 BIG-IP Properties</xref>
-              Visually confirm that the F5 BIG-IP partition is populated with the correct listener, pool, and members.</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-</section>
+    <section id="F5_vrfychklst">
+      <title>Verification Checklist</title>
+      <p>To very integration, complete all items in the following checklist, in order:</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_ckx_F5HOS30_vfy">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="25pt"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>&#9744;</entry>
+              <entry>Item</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify1">Verify or Upload a
+                  CirrOS Glance Image</xref>
+                <p>Verify or upload the following CirrOS image in Glance:
+                  <codeblock>CirrOS-0.3.4-x86_64-disk</codeblock></p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify2">Verify or Create an
+                  External Network and Subnet</xref><p>If not already existing, create an external
+                  network and its associated subnet.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify3">Create a Private
+                  Network and Subnet for the Instances</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify4">Create a Router</xref>
+                <p>Create a router to connect the private network to the external
+                network.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify5">Set up Security
+                  Groups</xref>
+                <p>Set up security groups that allow you to access instances. The following list
+                  contains the seven commands (in order) that create a security group with all TCP,
+                  UDP, and ICMP ports opened:</p><ol>
+                  <li>neutron security-group-create allow_all</li>
+                  <li>neutron security-group-rule-create allow_all --direction ingress --protocol
+                    icmp</li>
+                  <li>neutron security-group-rule-create allow_all --direction egress --protocol
+                    icmp</li>
+                  <li>neutron security-group-rule-create allow_all --direction ingress --protocol
+                    tcp</li>
+                  <li>neutron security-group-rule-create allow_all --direction egress --protocol
+                    tcp</li>
+                  <li>neutron security-group-rule-create allow_all --direction ingress --protocol
+                    udp</li>
+                  <li>neutron security-group-rule-create allow_all --direction egress --protocol
+                    udp</li>
+                </ol>These commands open all the ports so that you don't have to troubleshoot
+                security groups if there is a connectivity problem. These steps are for testing
+                purposes only.</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify6">Create 2 Virtual
+                  Machine Instances</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify7">Connect a Floating IP
+                  Addresses to Each Instance</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify8">Create a Load
+                  Balancer</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify9">Create a Listener for
+                  the Load Balancer</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify10">Create a Round-Robin
+                  HTTP Pool</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify11">Create Pool
+                  Members</xref>
+                <p>Create a pool member for each instance. Make sure that the pool member plugs into
+                  the fixed IP address of the instance.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify12">Log in to Each
+                  Instance</xref>
+                <p>Log in to each instance using their floating IP address and run a web
+                server.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify13">Run a Web Server on
+                  Each Instance</xref>
+                <p>On another session, connecting to any instance on the same private network, test
+                  reaching each instance individually.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify14">Test Connections
+                  Individually</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify15">Test the load
+                  balancer.</xref></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify16">Set Up a Health
+                  Monitor (Optional)</xref>
+                <p>Optionally, set up a health monitor for the pool.</p></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry><xref type="section" href="#F5_BIGIP_30_verify/verify17">Confirm the F5 BIG-IP
+                  Properties</xref> Visually confirm that the F5 BIG-IP partition is populated with
+                the correct listener, pool, and members.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
     <section id="verify1">
       <title>Verify or Upload a CirrOS Glance Image</title>
-      <p>You need a CirrOS image loaded in Glance so that you can create two Nova instances for testing the load balancing.</p>
+      <p>You need a CirrOS image loaded in Glance so that you can create two Nova instances for
+        testing the load balancing.</p>
       <ol>
-        <li>Verify that you have the following CirrOS image in Glance 
+        <li>Verify that you have the following CirrOS image in Glance
           <codeblock>CirrOS-0.3.4-x86_64-disk</codeblock></li>
         <li>If you do not have it, to upload a CirrOS image, run:
           <codeblock>cd
 #Export a proxy if necessary (e.g. `export http_proxy="http://proxy.atlanta.hp.com:8080"`)
 wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
-glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img</codeblock></li></ol>
+glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img</codeblock></li>
+      </ol>
     </section>
-    <lines>
-    </lines>
     <section id="verify2">
       <title>Verify or Create an External Network and Subnet</title>
-      <p>If you do not already have an external network, in this documentation it is called <b>ext-net</b>, then you must create one and its associated subnet.</p>
+      <p>If you do not already have an external network, in this documentation it is called
+          <b>ext-net</b>, then you must create one and its associated subnet.</p>
       <p>Use the following sample to understand how to create the external network:</p>
-        <ol>
+      <ol>
         <li>To create a new network, run:
           <codeblock>~$ neutron net-create ext-net --router:external True --provider:segmentation_id 812 --provider:network_type vxlan</codeblock>
           Sample
@@ -393,7 +403,7 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 | subnets                   |                                      |
 | tenant_id                 | aa387f39ed5149149f196e7ab40f7fd3     |
 +---------------------------+--------------------------------------+</codeblock></li>
-          <li>To create a new subnet:
+        <li>To create a new subnet:
           <codeblock>~$ neutron subnet-create ext-net 10.246.71.0/24 --name ext-subnet --allocation-pool start=10.246.71.4,end=10.246.71.252 --gateway 10.246.71.1</codeblock>
           Sample
           output:<codeblock>+-------------------+--------------------------------------------------+
@@ -416,8 +426,6 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 +-------------------+--------------------------------------------------+</codeblock></li>
       </ol>
     </section>
-    <lines>
-    </lines>
     <section id="verify3">
       <title>Create a Private Network and Subnet for the Instances</title>
       <ol>
@@ -439,7 +447,7 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 | subnets                   |                                      |
 | tenant_id                 | aa387f39ed5149149f196e7ab40f7fd3     |
 +---------------------------+--------------------------------------+</codeblock></li>
-          <li>To create a subnet under that network, run:
+        <li>To create a subnet under that network, run:
           <codeblock>~$ neutron subnet-create --name f5sub f5private 10.1.0.0/24 --gateway 10.1.0.1</codeblock>
           Sample
           output:<codeblock>+-------------------+--------------------------------------------+
@@ -462,13 +470,11 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 +-------------------+--------------------------------------------+</codeblock></li>
       </ol>
     </section>
-    <lines>
-    </lines>
     <section id="verify4">
       <title>Create a Router</title>
       <p>To connect the private network to the external network:</p>
-        <ol>
-          <li>To create a new router, run: <codeblock>~$ neutron router-create f5router</codeblock>
+      <ol>
+        <li>To create a new router, run: <codeblock>~$ neutron router-create f5router</codeblock>
           Sample
           output:<codeblock>+-----------------------+--------------------------------------+
 | Field                 | Value                                |
@@ -483,26 +489,21 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 | status                | ACTIVE                               |
 | tenant_id             | aa387f39ed5149149f196e7ab40f7fd3     |
 +-----------------------+--------------------------------------+</codeblock></li>
-<li>To add an interface to the router, run:
-  <codeblock>~$ neutron router-interface-add f5router f5sub</codeblock>
-Sample output:
-<codeblock>Added interface 9ff3507a-b466-4de3-a6b0-daa414f7579c to router f5router</codeblock></li>
+        <li>To add an interface to the router, run:
+          <codeblock>~$ neutron router-interface-add f5router f5sub</codeblock> Sample output:
+          <codeblock>Added interface 9ff3507a-b466-4de3-a6b0-daa414f7579c to router f5router</codeblock></li>
         <li>To set a gateway for the router, run:
-        <codeblock>~$ neutron router-gateway-set f5router ext-net</codeblock>
-          Sample output: <codeblock>Set gateway for router f5router</codeblock>
+          <codeblock>~$ neutron router-gateway-set f5router ext-net</codeblock> Sample output:
+          <codeblock>Set gateway for router f5router</codeblock>
         </li>
-        </ol>
+      </ol>
     </section>
-    <lines>
-    </lines>
     <section id="verify5">
       <title>Set Up Security Groups</title>
       <ol>
         <li>To create a new security group, run:
-          <codeblock>~$ neutron security-group-create allow_all</codeblock>
-          Sample output:
-        </li>
-          <li>To create a new security group rule, run:
+          <codeblock>~$ neutron security-group-create allow_all</codeblock> Sample output: </li>
+        <li>To create a new security group rule, run:
           <codeblock>~$ neutron security-group-rule-create allow_all --direction ingress --protocol icmp</codeblock>
           Sample
           output:<codeblock>+-------------------+--------------------------------------+
@@ -606,12 +607,10 @@ Created a new security_group_rule:
 +-------------------+--------------------------------------+</codeblock></li>
       </ol>
     </section>
-    <lines>
-    </lines>
     <section id="verify6">
       <title>Create 2 Virtual Machine Instances</title>
       <ol>
-      <li> To create the first VM, run:
+        <li> To create the first VM, run:
           <codeblock>~$ nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm1</codeblock>
           Sample output:
           <codeblock>+--------------------------------------+-----------------------------------------------------------------+
@@ -685,8 +684,6 @@ Created a new security_group_rule:
 +--------------------------------------+-----------------------------------------------------------------+</codeblock></li>
       </ol>
     </section>
-    <lines>
-    </lines>
     <section id="verify7">
       <title>Connect a Floating IP Addresses to Each Instance</title>
       <ol>
@@ -697,23 +694,22 @@ Created a new security_group_rule:
 +--------------------------------------+-------------+-----------+----------+---------+
 | b7a40218-d304-4113-a701-475338bb6d99 | 10.246.71.7 | -         | -        | ext-net |
 +--------------------------------------+-------------+-----------+----------+---------+</codeblock></li>
-<li>To create another floating IP, run: <codeblock>~$ nova floating-ip-create</codeblock> Sample
-          output:
+        <li>To create another floating IP, run: <codeblock>~$ nova floating-ip-create</codeblock>
+          Sample output:
           <codeblock>+--------------------------------------+-------------+-----------+----------+---------+
 | Id                                   | IP          | Server Id | Fixed IP | Pool    |
 +--------------------------------------+-------------+-----------+----------+---------+
 | fdcb621e-a90e-4fa5-b05a-fdf2fd6a058c | 10.246.71.8 | -         | -        | ext-net |
 +--------------------------------------+-------------+-----------+----------+---------+</codeblock></li>
         <li>To associate the new floating IP addresses with an instance, run:
-<codeblock>~$ nova floating-ip-associate a2d196f3-cf11-4dd8-b755-4908f5f0f7d3 10.246.71.7
+          <codeblock>~$ nova floating-ip-associate a2d196f3-cf11-4dd8-b755-4908f5f0f7d3 10.246.71.7
 ~$ nova floating-ip-associate 5c0f6ac3-a5c5-4474-82f0-d02fb544cf02 10.246.71.8</codeblock></li>
       </ol>
     </section>
-    <lines>
-    </lines>
     <section id="verify8">
       <title>Create a Load Balancer</title>
-      <p>The following command sets up the load balancer on the private IP address 10.1.0.5. Remember to replace this value with the private IP address created on your network.</p>
+      <p>The following command sets up the load balancer on the private IP address 10.1.0.5.
+        Remember to replace this value with the private IP address created on your network.</p>
       <ol>
         <li>To create a new load balancer, run:
           <codeblock>~$ neutron lbaas-loadbalancer-create --name f5lb --vip-address 10.1.0.5 --provider f5networks f5sub</codeblock>
@@ -735,9 +731,9 @@ Created a new security_group_rule:
 | vip_subnet_id       | d1d9675c-43e8-44a0-b3f8-db78761e1d1b |
 +---------------------+--------------------------------------+</codeblock></li>
         <li>To show the properties of the newly created load balancer, run:
-      <codeblock>~$ neutron lbaas-loadbalancer-show &lt;name of load balancer&gt;</codeblock>
-        Sample output:
-        <codeblock>~$ neutron lbaas-loadbalancer-show 920378e1-78c6-495a-93a1-4b97fd8560be
+          <codeblock>~$ neutron lbaas-loadbalancer-show &lt;name of load balancer&gt;</codeblock>
+          Sample output:
+          <codeblock>~$ neutron lbaas-loadbalancer-show 920378e1-78c6-495a-93a1-4b97fd8560be
 +---------------------+--------------------------------------+
 | Field               | Value                                |
 +---------------------+--------------------------------------+
@@ -756,7 +752,6 @@ Created a new security_group_rule:
 +---------------------+--------------------------------------+</codeblock></li>
       </ol>
     </section>
-    
     <section id="verify9">
       <title>Create a Listener for the Load Balancer</title>
       <ol>
@@ -782,7 +777,6 @@ Created a new security_group_rule:
         </li>
       </ol>
     </section>
-    
     <section id="verify10">
       <title>Create a Round-Robin HTTP Pool</title>
       <ol>
@@ -807,12 +801,10 @@ Created a new security_group_rule:
         </li>
       </ol>
     </section>
-    <lines>
-    </lines>
     <section id="verify11">
       <title>Create Pool Members</title>
       <p>The two new pool members you create will plug into the instances' fixed IP addresses.</p>
-        <ol>
+      <ol>
         <li>To create a new member, run:
           <codeblock>~$ neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock>
           Sample
@@ -827,7 +819,7 @@ Created a new security_group_rule:
 | tenant_id      | aa387f39ed5149149f196e7ab40f7fd3     |
 | weight         | 1                                    |
 +----------------+--------------------------------------+</codeblock></li>
-       <li>To create a second new member, run:
+        <li>To create a second new member, run:
           <codeblock>~$ neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock>
           Sample
           output:<codeblock>+----------------+--------------------------------------+
@@ -843,10 +835,10 @@ Created a new security_group_rule:
 +----------------+--------------------------------------+</codeblock></li>
       </ol>
     </section>
-    
     <section id="verify12">
       <title>Log in to Each Instance</title>
-      <p>Log in to each instance using its floating IP address. On CirrOS, the following settings are used:</p>
+      <p>Log in to each instance using its floating IP address. On CirrOS, the following settings
+        are used:</p>
       <dl>
         <dlentry>
           <dt>username</dt>
@@ -868,34 +860,32 @@ cirros@10.246.71.7's password: </codeblock>
         <li>Repeat these steps for the second instance.</li>
       </ol>
     </section>
-    
     <section id="verify13">
       <title>Run a Web Server on Each Instance</title>
       <ol>
         <li>To run a web server on an instance, run:
-        <codeblock>while : ; do echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $(/sbin/ifconfig eth0|grep 'inet addr'|awk -F: '{print $2}'| awk '{print $1}')" | sudo nc -l -p 80 ; done</codeblock></li>
+          <codeblock>while : ; do echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $(/sbin/ifconfig eth0|grep 'inet addr'|awk -F: '{print $2}'| awk '{print $1}')" | sudo nc -l -p 80 ; done</codeblock></li>
         <li>Repeat these steps on each instance.</li>
       </ol>
     </section>
-    
     <section id="verify14">
       <title>Test Connections Individually</title>
-      <p>On another session, connect to any instance on the same private network, and test reaching that instance individually.</p>
-        <ol>
-          <li>To log in to an instance, run:
-            <codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock>
-            Sample output:
-            <codeblock>user@myHelion [~]$ ssh cirros@10.246.71.7
+      <p>On another session, connect to any instance on the same private network, and test reaching
+        that instance individually.</p>
+      <ol>
+        <li>To log in to an instance, run:
+          <codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock> Sample
+          output:
+          <codeblock>user@myHelion [~]$ ssh cirros@10.246.71.7
         Warning: Permanently added '10.246.71.7' (RSA) to the list of known hosts.
         cirros@10.246.71.7's password: </codeblock></li>
         <li>To test the connection to an instance, run:
           <codeblock>$ curl &lt;IP_address&gt;</codeblock> Sample output:
           <codeblock>$ curl 10.1.0.7
 Welcome to 10.1.0.7</codeblock></li>
-            <li>Repeat these steps for each connection you want to test.</li>
+        <li>Repeat these steps for each connection you want to test.</li>
       </ol>
     </section>
-    
     <section id="verify15">
       <title>Test the Load Balancer</title>
       <ol>
@@ -924,11 +914,11 @@ Welcome to 10.1.0.8
 ^C</codeblock></li>
       </ol>
     </section>
-    
     <section id="verify16">
       <title>Set Up a Health Monitor (Optional)</title>
-      <p>Another option to test F5 integration is to set up a health monitor to monitor the pool.</p>
-        <ol>
+      <p>Another option to test F5 integration is to set up a health monitor to monitor the
+        pool.</p>
+      <ol>
         <li>To create a new healthmonitor, run:
           <codeblock>~$ neutron lbaas-healthmonitor-create --max-retries 3 --timeout 10 --type PING --pool bfae1a16-2e06-47c3-9cea-fcc56b8e8bae --delay 30</codeblock>
           Sample
@@ -950,10 +940,10 @@ Welcome to 10.1.0.8
 +----------------+------------------------------------------------+</codeblock></li>
       </ol>
     </section>
-    
     <section id="verify17">
       <title>Confirm the F5 BIG-IP Properties</title>
-      <p>A final test of integration is to use the F5 Networks graphical user interface to confirm that the F5 BIG-IP partition is populated with the correct listener, pool, and members.</p>
+      <p>A final test of integration is to use the F5 Networks graphical user interface to confirm
+        that the F5 BIG-IP partition is populated with the correct listener, pool, and members.</p>
       <p>To open the F5 dashboard:</p>
       <ol>
         <li>Open a browser.</li>
@@ -966,6 +956,5 @@ Welcome to 10.1.0.8
           </dl> Sample output: <image href="../../media/F5BIGIP_verify.png"/></li>
       </ol>
     </section>
-    
   </body>
 </topic>

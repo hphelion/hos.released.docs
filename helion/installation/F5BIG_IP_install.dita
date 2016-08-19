@@ -3,20 +3,21 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="F5_BIGIP_30_install">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Integrate F5 BIG-IP</title>
-  <body><!--not tested-->
+  <body>
+    <!--not tested-->
     <p conkeyref="HOS-conrefs/applies-to"/>
-  
+    <section id="about">
       <p>To integrate F5 BIG-IP with Helion:</p>
       <ol>
         <li><xref type="section" href="#F5_BIGIP_30_install/F530_PrepareEnv">Prepare the
             environment.</xref></li>
-        <li><xref type="section" href="#F5_BIGIP_30_install/F530_playbooks1">Create a deployment playbook
-            and run it.</xref></li>
+        <li><xref type="section" href="#F5_BIGIP_30_install/F530_playbooks1">Create a deployment
+            playbook and run it.</xref></li>
         <li><xref type="section" href="#F5_BIGIP_30_install/F530_reconfig_Neutron">Reconfigure
             Neutron.</xref></li>
       </ol>
-      
-      <section id="F530_PrepareEnv">
+    </section>
+    <section id="F530_PrepareEnv">
       <title>Prepare the Environment</title>
       <p>To prepare the environment for integration:</p><ol>
         <li>To verify that the following file:
@@ -51,7 +52,7 @@ git add -A
 git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
             type="important">If you need to redeploy Helion OpenStack in the future, you must undo
             the changes in these steps first, or the redeployment will not succeed.</note></li>
-      <li>To run the configuration preprocessor:
+        <li>To run the configuration preprocessor:
           <codeblock>ansible-playbook -i ~/helion/hos/ansible/hosts/localhost ~/helion/hos/ansible/config-processor-run.yml   </codeblock></li>
         <li>To run the scratch playbook generator:
           <codeblock>ansible-playbook -i ~/helion/hos/ansible/hosts/localhost ~/helion/hos/ansible/ready-deployment.yml</codeblock></li>
@@ -88,33 +89,30 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
    | fddee5b2-98aa-412d-8705 | Metadata agent       | helion-cp1-c1-m1-mgmt    | :-)   | True           | neutron-metadata-agent    |
       +--------------------------------------+----------------------+--------------------------+-------+----------------+-----------+ </codeblock></li>
       </ol>
-      </section>
-      
-      <section id="F530_playbooks">
-        <title>Create the Deployment Playbook and Run It</title>
-        
-        <p>Now you are ready to integrate F5 BIG-IP into your Helion deployment.</p> 
-        
-        <p>To complete F5 integration with Helion:</p>
-        <ol>
-          <li><xref type="section" href="#F5_BIGIP_30_install/F530_playbooks1">Create the deployment
+    </section>
+
+    <section id="F530_playbooks">
+      <title>Create the Deployment Playbook and Run It</title>
+      <p>Now you are ready to integrate F5 BIG-IP into your Helion deployment.</p>
+      <p>To complete F5 integration with Helion:</p>
+      <ol>
+        <li><xref type="section" href="#F5_BIGIP_30_install/F530_playbooks1">Create the deployment
             playbook.</xref></li>
-          <li><xref type="section" href="#F5_BIGIP_30_install/F530_playbooks2">Create the F5 OpenStack
+        <li><xref type="section" href="#F5_BIGIP_30_install/F530_playbooks2">Create the F5 OpenStack
             agent configuration.</xref></li>
-          <li><xref type="section" href="#F5_BIGIP_30_install/F530_playbooks3">Run the deployment
+        <li><xref type="section" href="#F5_BIGIP_30_install/F530_playbooks3">Run the deployment
             playbook.</xref></li>
-        </ol>
-      </section>
-    
-        <section id="F530_playbooks1">
-          <title>Create the Deployment Playbook</title>
-        <p>The Ansible playbook created in this section automates the deployment of the F5 LBaaSv2 driver and the F5 OpenStack agent to the three Helion OpenStack controller nodes.</p>
-        
-        <p>To create the deployment playbook:</p>
-        <ol>
-          <li>To add a file for the code, create the following file:
-            <codeblock>~/f5-deploy.yml</codeblock></li>
-          <li>Add the following code to the deployment playbook:
+      </ol>
+    </section>
+    <section id="F530_playbooks1">
+      <title>Create the Deployment Playbook</title>
+      <p>The Ansible playbook created in this section automates the deployment of the F5 LBaaSv2
+        driver and the F5 OpenStack agent to the three Helion OpenStack controller nodes.</p>
+      <p>To create the deployment playbook:</p>
+      <ol>
+        <li>To add a file for the code, create the following file:
+          <codeblock>~/f5-deploy.yml</codeblock></li>
+        <li>Add the following code to the deployment playbook:
           <codeblock>---
 - hosts: localhost
   environment:
@@ -314,20 +312,23 @@ git commit -m "Added F5 LBaaSv2 configuration for Neutron"  </codeblock><note
       state=absent
     when: keep_scratch is undefined</codeblock>
         </li>
-        </ol>
-        </section>
-    
+      </ol>
+    </section>
     <section id="F530_playbooks2">
-      <title>Create the F5 OpenStack Agent Configuration</title> 
-      
-      <p>It is important to view the original sample configuration from F5 Networks because it includes comments that explain what each configuration option does. The sample below does not contain comments and is only what the Helion IHV Test team used. Therefore, the sample below may not work on every cloud deployment.</p>
-      <note type="attention">Read the original sample configuration for an explaination of each configuration option. <xref href="https://github.com/F5Networks/f5-openstack-agent/blob/c4727c5cdc398b510aa01801b7a65a8db6631e14/etc/neutron/services/f5/f5-openstack-agent.ini" scope="external" format="html">F5Networks/f5-openstack-agent</xref></note>
-      
+      <title>Create the F5 OpenStack Agent Configuration</title>
+      <p>It is important to view the original sample configuration from F5 Networks because it
+        includes comments that explain what each configuration option does. The sample below does
+        not contain comments and is only what the Helion IHV Test team used. Therefore, the sample
+        below may not work on every cloud deployment.</p>
+      <note type="attention">Read the original sample configuration for an explaination of each
+        configuration option. <xref
+          href="https://github.com/F5Networks/f5-openstack-agent/blob/c4727c5cdc398b510aa01801b7a65a8db6631e14/etc/neutron/services/f5/f5-openstack-agent.ini"
+          scope="external" format="html">F5Networks/f5-openstack-agent</xref></note>
       <p><b>To create an interface driver:</b></p>
-        <ol>
-          <li>Create a new file with the following name and directory location:
-            <codeblock>~/helion/my_cloud/config/neutron/f5-openstack-agent.ini</codeblock></li>
-          <li>In a text editor, write the code necessary to define an F5 OpenStack configuration for
+      <ol>
+        <li>Create a new file with the following name and directory location:
+          <codeblock>~/helion/my_cloud/config/neutron/f5-openstack-agent.ini</codeblock></li>
+        <li>In a text editor, write the code necessary to define an F5 OpenStack configuration for
           your cloud. <b>Sample configuration:</b>
           <note type="caution">You must provide the correct credentials used in your deployment in
             the lines beginning with
@@ -352,77 +353,77 @@ f5_bigip_lbaas_device_driver = f5_openstack_agent.lbaasv2.drivers.bigip.icontrol
 icontrol_hostname = 10.246.70.6
 icontrol_username = admin
 icontrol_password = admin</codeblock></li>
-        </ol>
-      </section>
-      
-      <section id="F530_playbooks3">
-        <title>Run the Deployment Playbook</title>
-        <p>When you run the F5 integration playbook, there are optional switches that you can use to specify information about your environment. Review the table below to see if there are any switches you need to use.</p>
-       
-        <table frame="all" rowsep="1" colsep="1" id="table_ckx_F53600_plbk">
-          <tgroup cols="2">
-            <colspec colname="c1" colnum="1" colwidth="1*"/>
-            <colspec colname="c2" colnum="2" colwidth="1*"/>
-            <thead>
-              <row>
-                <entry>Switch</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>-e proxy="&lt;proxy_address:port&gt;" </entry>
-                <entry>Optional. If your environment requires a proxy to reach the Internet, specify
-                the proxy information in &lt;proxy_address:port&gt;</entry> 
-              </row>
-              <row>
-           <entry> -e version="&lt;version&gt;" </entry>
-                <entry>Optional. By default, this playbook installs the master branch of the F5
+      </ol>
+    </section>
+    <section id="F530_playbooks3">
+      <title>Run the Deployment Playbook</title>
+      <p>When you run the F5 integration playbook, there are optional switches that you can use to
+        specify information about your environment. Review the table below to see if there are any
+        switches you need to use.</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_ckx_F53600_plbk">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>Switch</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>-e proxy="&lt;proxy_address:port&gt;" </entry>
+              <entry>Optional. If your environment requires a proxy to reach the Internet, specify
+                the proxy information in &lt;proxy_address:port&gt;</entry>
+            </row>
+            <row>
+              <entry> -e version="&lt;version&gt;" </entry>
+              <entry>Optional. By default, this playbook installs the master branch of the F5
                 LBaaSv2 driver and the F5 OpenStack agent from Git. Set &lt;version&gt; to the
                 alternate version you want to install. Other versions (releases/tags) can be found
                 here for the F5 LBaaSv2 driver and here for the F5 OpenStack agent. For example, set
                 &lt;version&gt; to v8.0.2 to install version 8.0.2 of both the F5 LBaaSv2 driver and
                 the F5 OpenStack agent.</entry>
-              </row>
-              <row>
+            </row>
+            <row>
               <entry>-e keep_scratch=&lt;bool&gt; </entry>
-            <entry>Optional. By default, this playbook deletes its temporary files located in
+              <entry>Optional. By default, this playbook deletes its temporary files located in
                 /tmp/scratch after running. Set &lt;bool&gt; to True if you want to preserve the
                 temporary files. </entry>
             </row>
-                <row>
-                  <entry>-e f5_openstack_agent_ini="&lt;path&gt;"</entry> 
-                  <entry>Optional. By default, this playbook looks for the file /home/stack/helion/my_cloud/config/neutron/f5-openstack-agent.ini, and if that file is present, it will be used as the configuration file for the F5 OpenStack agent. Set &lt;path&gt; to the path of the configuration file for the F5 OpenStack agent if you have the configuration file at a different location. If no f5-openstack-agent.ini file is provided at all, the one embedded/built-in the playbook will be used. You may modify the default_f5_openstack_agent_ini variable in the playbook if you do not want to provide a f5-openstack-agent.ini file. </entry>
-                </row>
-            </tbody>
-          </tgroup>
-        </table>
-                  
-                 <p><b>For example:</b></p>
-        <codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts ~/f5-deploy.yml -e proxy="http://proxy.atlanta.hp.com:8080" -e keep_scratch=True -e version="v8.0.2"</codeblock>
-        <p>This command uses the following switches:</p>
-        <ul>
-          <li>HTTP and HTTPS proxy http://proxy.atlanta.hp.com:8080</li>
-          <li>caches the temporary files</li>
-          <li>installs version 8.0.2 of the F5 LBaaSv2 driver and F5 OpenStack Agent</li>
-        </ul>
-        
-        
-        <p><b>To run the F5 integration playbook:</b></p>
-                  <ol>
-                    <li>From a controller node, at a command line, add any switches to the following command and run:
-                      <codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts ~/f5-deploy.yml</codeblock></li>
-                  </ol>
-                 
-      </section>
-      <lines>
-        
-      </lines>
-    
+            <row>
+              <entry>-e f5_openstack_agent_ini="&lt;path&gt;"</entry>
+              <entry>Optional. By default, this playbook looks for the file
+                /home/stack/helion/my_cloud/config/neutron/f5-openstack-agent.ini, and if that file
+                is present, it will be used as the configuration file for the F5 OpenStack agent.
+                Set &lt;path&gt; to the path of the configuration file for the F5 OpenStack agent if
+                you have the configuration file at a different location. If no
+                f5-openstack-agent.ini file is provided at all, the one embedded/built-in the
+                playbook will be used. You may modify the default_f5_openstack_agent_ini variable in
+                the playbook if you do not want to provide a f5-openstack-agent.ini file. </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <p><b>For example:</b></p>
+      <codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts ~/f5-deploy.yml -e proxy="http://proxy.atlanta.hp.com:8080" -e keep_scratch=True -e version="v8.0.2"</codeblock>
+      <p>This command uses the following switches:</p>
+      <ul>
+        <li>HTTP and HTTPS proxy http://proxy.atlanta.hp.com:8080</li>
+        <li>caches the temporary files</li>
+        <li>installs version 8.0.2 of the F5 LBaaSv2 driver and F5 OpenStack Agent</li>
+      </ul>
+      <p><b>To run the F5 integration playbook:</b></p>
+      <ol>
+        <li>From a controller node, at a command line, add any switches to the following command and
+          run:
+          <codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts ~/f5-deploy.yml</codeblock></li>
+      </ol>
+    </section>
     <section id="F530_reconfig_Neutron">
       <title>Reconfigure Neutron</title>
-      
-      <p>After integrating F5 BIG-IP into your Helion deployment, you must reconfigure Neutron so that it uses the F5 configuration.</p>
+      <p>After integrating F5 BIG-IP into your Helion deployment, you must reconfigure Neutron so
+        that it uses the F5 configuration.</p>
       <p>To reconfigure Neutron:</p>
       <ol>
         <li>To run the Neutron reconfiguration playbook, use the following command:
@@ -465,12 +466,12 @@ icontrol_password = admin</codeblock></li>
           changes.</note></li>
         <li>To verify that the load balancer provided by Neutron is no longer running, find all of
           the lines with the following binary: <codeblock>neutron-lbaasv2-agent</codeblock></li>
-        <li>Verify that for the binary <codeph>neutron-lbaasv2-agent</codeph>, the <b>alive</b> value is <b>xxx</b>.</li>
+        <li>Verify that for the binary <codeph>neutron-lbaasv2-agent</codeph>, the <b>alive</b>
+          value is <b>xxx</b>.</li>
         <li>To permanently remove the Neutron agent provided by the binary
             <codeph>neutron-lbaasv2-agent</codeph> file, run:
           <codeblock>neutron agent-list | awk -F'|' '{if($7~"neutron-lbaasv2-agent"){print $2}}' | xargs -n1 -P3 neutron agent-delete</codeblock></li>
       </ol>
     </section>
-    
   </body>
 </topic>
