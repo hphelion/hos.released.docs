@@ -234,6 +234,90 @@
         </tgroup>
       </table>
     </section>
+    <section id="notes">
+      <title>Notes</title>
+      <p>The following notes should be kept in mind when going through these steps:</p>
+      <ul>
+        <li>See the <xref
+            href="http://f5-openstack-lbaasv2-driver.readthedocs.io/en/liberty/release_notes.html"
+            scope="external" format="html">release notes of the F5 OpenStack LBaaS v2 driver</xref>
+          for limitations of the driver.</li>
+        <li>Avoid making changes to the LBaaS v2 configuration from the BIG-IP control panel and
+          instead try making changes using the Neutron LBaaS v2 API, as inconsistencies may not be
+          synchronized with Neutron.</li>
+        <li>The members of a pool should be removed (<codeph>neutron lbaas-member-delete</codeph>)
+          before deleting the pool (<codeph>neutron lbaas-pool-delete</codeph>), or the members
+          might linger in the F5 appliance despite being deleted in Neutron.</li>
+        <li>The health monitors of a pool should be removed (<codeph>neutron
+            lbaas-healthmonitor-delete</codeph>) before deleting the pool (<codeph>neutron
+            lbaas-pool-delete</codeph>), or the health monitors may linger in the F5 appliance and
+          fail to delete in Neutron. The error may look like this: <p id="domainldap"
+            outputclass="expandcode"><b>Open | Close</b></p>
+          <p outputclass="hiddencode">
+            <codeblock outputclass="nomaxheight" id="ldapcert">stack@helion-cp1-c0-m1-mgmt:~$ neutron --debug lbaas-healthmonitor-delete 7e76e992-b8ba-401c-bba3-db74d377ed0d
+DEBUG: keystoneclient.session REQ: curl -g -i --cacert "/etc/ssl/certs/ca-certificates.crt" -X GET https://helion-cp1-vip-KEY-API-mgmt:5000/v3 -H "Accept: application/json" -H "User-Agent: neutron"
+DEBUG: keystoneclient.session RESP: [200] Content-Length: 267 Vary: X-Auth-Token Server: Apache/2.4.10 (Debian) Date: Thu, 11 Aug 2016 20:32:21 GMT Content-Type: application/json x-openstack-request-id: req-d3991489-346d-4066-9fd3-8e9cb948c202 
+RESP BODY: {"version": {"status": "stable", "updated": "2015-03-30T00:00:00Z", "media-types": [{"base": "application/json", "type": "application/vnd.openstack.identity-v3+json"}], "id": "v3.4", "links": [{"href": "https://helion-cp1-vip-KEY-API-mgmt:5000/v3/", "rel": "self"}]}}
+DEBUG: neutronclient.neutron.v2_0.lb.v2.healthmonitor.DeleteHealthMonitor run(Namespace(id=u'7e76e992-b8ba-401c-bba3-db74d377ed0d', request_format='json'))
+DEBUG: keystoneclient.auth.identity.v3.base Making authentication request to https://helion-cp1-vip-KEY-API-mgmt:5000/v3/auth/tokens
+DEBUG: stevedore.extension found extension EntryPoint.parse('ovsvapp_mitigated_cluster = networking_vsphere.neutronclient._ovsvapp_mitigated_cluster')
+DEBUG: stevedore.extension found extension EntryPoint.parse('ovsvapp_cluster = networking_vsphere.neutronclient._ovsvapp_cluster')
+DEBUG: stevedore.extension found extension EntryPoint.parse('l2_gateway_connection = networking_l2gw.l2gatewayclient.l2gw_client_ext._l2_gateway_connection')
+DEBUG: stevedore.extension found extension EntryPoint.parse('l2_gateway = networking_l2gw.l2gatewayclient.l2gw_client_ext._l2_gateway')
+DEBUG: keystoneclient.session REQ: curl -g -i --cacert "/etc/ssl/certs/ca-certificates.crt" -X GET https://10.246.68.2:9696/v2.0/lbaas/healthmonitors.json?fields=id&amp;id=7e76e992-b8ba-401c-bba3-db74d377ed0d -H "User-Agent: python-neutronclient" -H "Accept: application/json" -H "X-Auth-Token: {SHA1}d9b7264486cb54b8c752b89a517fbc2e854040ce"
+DEBUG: keystoneclient.session RESP: [200] Date: Thu, 11 Aug 2016 20:32:21 GMT Connection: keep-alive Content-Type: application/json Content-Length: 231 X-Openstack-Request-Id: req-b20fbb44-06d2-4411-bc8b-dfa4a82b3878 
+RESP BODY: {"healthmonitors": [{"admin_state_up": true, "delay": 30, "expected_codes": "200", "max_retries": 3, "http_method": "GET", "timeout": 10, "pools": [], "url_path": "/", "type": "PING", "id": "7e76e992-b8ba-401c-bba3-db74d377ed0d"}]}
+DEBUG: keystoneclient.session REQ: curl -g -i --cacert "/etc/ssl/certs/ca-certificates.crt" -X DELETE https://10.246.68.2:9696/v2.0/lbaas/healthmonitors/7e76e992-b8ba-401c-bba3-db74d377ed0d.json -H "User-Agent: python-neutronclient" -H "Accept: application/json" -H "X-Auth-Token: {SHA1}d9b7264486cb54b8c752b89a517fbc2e854040ce"
+DEBUG: keystoneclient.session RESP: [500] Date: Thu, 11 Aug 2016 20:32:21 GMT Connection: keep-alive Content-Type: application/json Content-Length: 150 X-Openstack-Request-Id: req-e2276da8-0a6d-4045-b7fd-4fec93faa343 
+RESP BODY: {"NeutronError": {"message": "Request Failed: internal server error while processing your request.", "type": "HTTPInternalServerError", "detail": ""}}
+DEBUG: neutronclient.v2_0.client Error message: {"NeutronError": {"message": "Request Failed: internal server error while processing your request.", "type": "HTTPInternalServerError", "detail": ""}}
+ERROR: neutronclient.shell Request Failed: internal server error while processing your request.
+Traceback (most recent call last):
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/shell.py", line 814, in run_subcommand
+    return run_command(cmd, cmd_parser, sub_argv)
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/shell.py", line 110, in run_command
+    return cmd.run(known_args)
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/neutron/v2_0/__init__.py", line 606, in run
+    obj_deleter(_id)
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 102, in with_params
+    ret = self.function(instance, *args, **kwargs)
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 1029, in delete_lbaas_healthmonitor
+    (lbaas_healthmonitor))
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 289, in delete
+    headers=headers, params=params)
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 270, in retry_request
+    headers=headers, params=params)
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 211, in do_request
+    self._handle_fault_response(status_code, replybody)
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 185, in _handle_fault_response
+    exception_handler_v20(status_code, des_error_body)
+  File "/opt/stack/venv/neutronclient-20160503T082438Z/lib/python2.7/site-packages/neutronclient/v2_0/client.py", line 70, in exception_handler_v20
+    status_code=status_code)
+InternalServerError: Request Failed: internal server error while processing your request.</codeblock></p></li>
+        <li>If a pool is being monitored, in the BIG-IP control panel, the listener, the pool, and
+          the pool members would display a monitoring status, but the nodes would continue to be
+          unmonitored because a node is not a service to monitor in LBaaSv2. A pool member is a node
+          with a port/service.</li>
+        <li>Before v8.0.7 of the F5 OpenStack agent and the F5 LBaaSv2 driver, we discovered an
+          issue where if a health monitor already exists for a pool and we try to add members to a
+          different pool, the members will fail to add. The iControl driver encounters an HTTP 400
+          error from the BIG-IP appliance. F5 Networks confirmed the issue, tracked it in GitHub,
+          and resolved it in v8.0.7 of the agent and driver.</li>
+        <li>If you are integrating Barbican with the F5 OpenStack agent (cert_manager =
+          f5_openstack_agent.lbaasv2.drivers.bigip.barbican_cert.BarbicanCertManager in
+          f5-openstack-agent.ini), starting in v8.0.7 of the F5 OpenStack agent and the F5 LBaaSv2
+          driver, the Barbican endpoint must have a valid HTTPS certificate or the F5 OpenStack
+          agent will not start. See the Helion OpenStack 3.0 documentation for TLS configuration
+          details and Barbican configuration details.</li>
+        <li>If you are using v8.0.5 or older of the F5 OpenStack agent and the F5 LBaaSv2 driver and
+          you wish to use HTTPS/TLS load balancing with Barbican-stored certificates, you must
+          install <codeph>keystoneauth</codeph>1 like so:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible -i hosts/verb_hosts NEU-SVR --sudo -m shell --args="executable=/bin/bash source /opt/stack/service/neutron/venv/bin/activate ; pip install -y keystoneauth1"</codeblock><p>Add
+            the <codeph>--proxy "PROXY"</codeph> flag after pip, where <codeph>PROXY</codeph> is
+            your web proxy URL if you need a proxy to connect to the internet.</p></li>
+      </ul>
+    </section>
     <section id="privateHTTP"><title>Walkthrough of creation of a private HTTP load balancer using
         port 80</title><p>Here are the instructions to test if Neutron LBaaSv2 with F5 works on your
         installation. These instructions create two instances on their own private network and sets
@@ -267,23 +351,21 @@ neutron security-group-rule-create allow_all --direction ingress --protocol tcp
 neutron security-group-rule-create allow_all --direction egress --protocol tcp
 neutron security-group-rule-create allow_all --direction ingress --protocol udp
 neutron security-group-rule-create allow_all --direction egress --protocol udp</codeblock></li>
-        <li>Create two compute instances. <p>To create the first virtual machine, run:</p>
-          <codeblock>nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm1</codeblock>
-          <p>To create the second virtual machine, run:</p>
-          <codeblock>nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm2</codeblock></li>
+        <li>Create two compute instances. <p>To create the first virtual machine,
+            run:</p><codeblock>nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm1</codeblock><p>To
+            create the second virtual machine,
+          run:</p><codeblock>nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all f5vm2</codeblock></li>
         <li>Create floating IP addresses for each instance for network connectivity. <p>To create a
-            floating IP, run:</p>
-          <codeblock>nova floating-ip-create</codeblock>
-          <p>To create a second floating IP, run:</p>
-          <codeblock>nova floating-ip-create</codeblock></li>
+            floating IP, run:</p><codeblock>nova floating-ip-create</codeblock><p>To create a second
+            floating IP, run:</p><codeblock>nova floating-ip-create</codeblock></li>
         <li>Using the floating IP addresses and the instance IDs from the output of the previous two
           steps, associate the new floating IP addresses with these command:
           <codeblock>nova floating-ip-associate &lt;instance_id> &lt;floating_IP>
 nova floating-ip-associate &lt;instance_id> &lt;floating_IP></codeblock></li>
         <li>Create a load balancer. <p>The following command sets up the load balancer on the
             private IP address 10.1.0.5. Remember to replace this value with the private IP address
-            created on your network.</p>
-          <codeblock>neutron lbaas-loadbalancer-create --name f5lb --vip-address 10.1.0.5 --provider f5networks f5sub</codeblock></li>
+            created on your
+          network.</p><codeblock>neutron lbaas-loadbalancer-create --name f5lb --vip-address 10.1.0.5 --provider f5networks f5sub</codeblock></li>
         <li>To show the properties of the newly created load balancer, run:
           <codeblock>neutron lbaas-loadbalancer-show &lt;name of load balancer&gt;</codeblock></li>
         <li>Create a listener for the load balancer.
@@ -291,10 +373,10 @@ nova floating-ip-associate &lt;instance_id> &lt;floating_IP></codeblock></li>
         <li>Create a Round-Robin HTTP Pool.
           <codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener --protocol HTTP --name f5pool</codeblock></li>
         <li>Create pool members. The two new pool members you create will plug into the instances'
-          fixed IP addresses. <p>To create a new member, run:</p>
-          <codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock>
-          <p>To create a second new member, run:</p>
-          <codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock></li>
+          fixed IP addresses. <p>To create a new member,
+            run:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock><p>To
+            create a second new member,
+          run:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock></li>
         <li>Log in to each instance using its floating IP address. On CirrOS, the following settings
           are used: <dl>
             <dlentry>
@@ -305,15 +387,14 @@ nova floating-ip-associate &lt;instance_id> &lt;floating_IP></codeblock></li>
               <dt>password</dt>
               <dd>cubswin:)</dd>
             </dlentry>
-          </dl>
-          <p>To log in to an instance, run:</p>
-          <codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock></li>
+          </dl><p>To log in to an instance,
+          run:</p><codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock></li>
         <li>Repeat the last step for the second instance.</li>
-        <li>Run a web server on each instance. To run a web server on an instance, run: <codeblock>while : ; do echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $(/sbin/ifconfig eth0|grep 'inet addr'|awk -F: '{print $2}'| awk '{print $1}')" | sudo nc -l -p 80 ; done</codeblock>
-          <p>Repeat this step on each instance.</p></li>
+        <li>Run a web server on each instance. To run a web server on an instance, run:
+            <codeblock>while : ; do echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $(/sbin/ifconfig eth0|grep 'inet addr'|awk -F: '{print $2}'| awk '{print $1}')" | sudo nc -l -p 80 ; done</codeblock><p>Repeat
+            this step on each instance.</p></li>
         <li>Test each connection individually. <p>On another session, connect to any instance on the
-            same private network, and test reaching that instance individually.</p>
-          <ol>
+            same private network, and test reaching that instance individually.</p><ol>
             <li>To log in to an instance, run:
               <codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock>
               Sample output:
@@ -325,8 +406,7 @@ nova floating-ip-associate &lt;instance_id> &lt;floating_IP></codeblock></li>
               <codeblock>$ curl 10.1.0.7
 Welcome to 10.1.0.7</codeblock></li>
             <li>Repeat these steps for each connection you want to test.</li>
-          </ol>
-        </li>
+          </ol></li>
         <li>Test the Load Balancer. <codeblock>$ ping -c4 &lt;floating_IP_address&gt;</codeblock>
           Sample output:
           <codeblock>$ ping -c4 10.1.0.5
@@ -351,8 +431,7 @@ $ curl 10.1.0.5
 Welcome to 10.1.0.8
 ^C</codeblock></li>
         <li>Set Up a Health Monitor (Optional). <p>Another option to test F5 integration is to set
-            up a health monitor to monitor the pool.</p>
-          <ol>
+            up a health monitor to monitor the pool.</p><ol>
             <li>To create a new healthmonitor, run:
               <codeblock>neutron lbaas-healthmonitor-create --max-retries 3 --timeout 10 --type PING --pool bfae1a16-2e06-47c3-9cea-fcc56b8e8bae --delay 30</codeblock>
               Sample
@@ -371,13 +450,10 @@ Welcome to 10.1.0.8
 | type           | PING                                           |
 | url_path       | /                                              |
 +----------------+------------------------------------------------+</codeblock></li>
-          </ol>
-        </li>
+          </ol></li>
         <li>Confirm the F5 BIG-IP Properties. <p>A final test of integration is to use the F5
             Networks graphical user interface to confirm that the F5 BIG-IP partition is populated
-            with the correct listener, pool, and members.</p>
-          <p>To open the F5 dashboard:</p>
-          <ol>
+            with the correct listener, pool, and members.</p><p>To open the F5 dashboard:</p><ol>
             <li>Open a browser.</li>
             <li>Navigate to the following URL: <codeblock>https://&lt;iControl_IP&gt;/</codeblock>
               where: <dl>
@@ -385,8 +461,7 @@ Welcome to 10.1.0.8
                   <dt>&lt;iControl_IP&gt;</dt>
                   <dd>IP address or hostname of the BIG-IP appliance</dd>
                 </dlentry>
-              </dl>
-              <p>Sample output:</p>
+              </dl><p>Sample output:</p>
               <image href="../../media/F5BIGIP_verify.png"/></li>
           </ol>
         </li>
@@ -491,6 +566,176 @@ barbican container create --name='tls_container' --type='certificate' --secret="
           this:<codeblock># Export a proxy if necessary (e.g. `export http_proxy="http://proxy.atlanta.hp.com:8080"`)
 wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
 glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img</codeblock></li>
+        <li>Verify that you have the following CirrOS image in Glance
+          <codeblock>CirrOS-0.3.4-x86_64-disk</codeblock></li>
+        <li>If you do not have it, to upload a CirrOS image, use these commands to do
+          so:<codeblock>#Export a proxy if necessary (e.g. `export http_proxy="http://proxy.atlanta.hp.com:8080"`)
+wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
+glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img</codeblock></li>
+        <li>If you do not already have an external network created in your environment, use the
+          steps outlined in <xref href="../operations/create_extnet.dita"/> to do so.</li>
+        <li>Create a private network for the instances.
+          <codeblock>neutron net-create f5private</codeblock></li>
+        <li>Create a subnet under that network.
+          <codeblock>neutron subnet-create --name f5sub f5private 10.1.0.0/24</codeblock></li>
+        <li>Create a router to connect the private network to the external network.
+          <codeblock>neutron router-create f5router</codeblock></li>
+        <li>Add an interface to the router.
+          <codeblock>neutron router-interface-add f5router f5sub</codeblock></li>
+        <li>Set a gateway for the router.
+          <codeblock>neutron router-gateway-set f5router ext-net</codeblock></li>
+        <li>Create a security group.
+          <codeblock>neutron security-group-create allow_all</codeblock></li>
+        <li>Create the following security group
+          rules:<codeblock>neutron security-group-rule-create allow_all --direction ingress --protocol icmp
+neutron security-group-rule-create allow_all --direction egress --protocol icmp
+neutron security-group-rule-create allow_all --direction ingress --protocol tcp
+neutron security-group-rule-create allow_all --direction egress --protocol tcp
+neutron security-group-rule-create allow_all --direction ingress --protocol udp
+neutron security-group-rule-create allow_all --direction egress --protocol udp</codeblock></li>
+        <li>Create two compute instances. <p>To create the first virtual machine, run:</p> nova boot
+          --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk
+          '/f5private/ {print $2}')" --security-groups allow_all f5vm1 To create the second virtual
+          machine, run: nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic
+          net-id="$(neutron net-list | awk '/f5private/ {print $2}')" --security-groups allow_all
+          f5vm2</li>
+        <li>Create floating IP addresses for each instance for network connectivity. <p>To create a
+            floating IP, run:</p> nova floating-ip-create To create a second floating IP, run: nova
+          floating-ip-create</li>
+        <li>Using the floating IP addresses and the instance IDs from the output of the previous two
+          steps, associate the new floating IP addresses with these command:
+          <codeblock>nova floating-ip-associate &lt;instance_id> &lt;floating_IP>
+nova floating-ip-associate &lt;instance_id> &lt;floating_IP></codeblock></li>
+        <li>Create a load balancer. <p>The following command sets up the load balancer on the
+            private IP address 10.1.0.5. Remember to replace this value with the private IP address
+            created on your
+          network.</p><codeblock>neutron lbaas-loadbalancer-create --name f5lb --vip-address 10.1.0.5 --provider f5networks f5sub</codeblock></li>
+        <li>Create a TERMINATED_HTTPS listener for the load balancer using the TLS container
+            <codeph>tls_container</codeph>:
+            <codeblock>neutron lbaas-listener-create --loadbalancer f5lb2 --protocol TERMINATED_HTTPS --protocol-port 443 --name f5listener_tls --default-tls-container=$(barbican container list | awk '/ tls_container / {print $2}')</codeblock><p>Sample
+            output:</p><codeblock>Starting new HTTPS connection (1): helion-cp1-vip-KEY-API-mgmt
+Starting new HTTPS connection (1): 10.246.68.2
+Created a new listener:
++---------------------------+-----------------------------------------------------------------------------+
+| Field                     | Value                                                                       |
++---------------------------+-----------------------------------------------------------------------------+
+| admin_state_up            | True                                                                        |
+| connection_limit          | -1                                                                          |
+| default_pool_id           |                                                                             |
+| default_tls_container_ref | https://10.246.68.2:9311/v1/containers/8bb3110f-9599-4377-a546-c02bdaa52978 |
+| description               |                                                                             |
+| id                        | 728b381a-edf8-4461-b920-1277e65f018f                                        |
+| loadbalancers             | {"id": "30b7627b-237d-48f9-bb01-e75f1f04c8c0"}                              |
+| name                      | f5listener_tls                                                              |
+| protocol                  | TERMINATED_HTTPS                                                            |
+| protocol_port             | 443                                                                         |
+| sni_container_refs        |                                                                             |
+| tenant_id                 | d59003927b7441c588e29f6f590f225d                                            |
++---------------------------+-----------------------------------------------------------------------------+</codeblock></li>
+        <li>Create a round robin HTTP
+          pool:<codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener_tls --protocol HTTP --name f5pool_tlsflex</codeblock></li>
+        <li>Create pool members. The two new pool members you create will plug into the instances'
+          fixed IP addresses. <p>To create a new member,
+            run:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.7 --protocol-port 80 f5pool</codeblock><p>To
+            create a second new member,
+          run:</p><codeblock>neutron lbaas-member-create --subnet f5sub --address 10.1.0.8 --protocol-port 80 f5pool</codeblock></li>
+        <li>Log in to each instance using its floating IP address. On CirrOS, the following settings
+          are used: <dl>
+            <dlentry>
+              <dt>username</dt>
+              <dd>cirros</dd>
+            </dlentry>
+            <dlentry>
+              <dt>password</dt>
+              <dd>cubswin:)</dd>
+            </dlentry>
+          </dl><p>To log in to an instance,
+          run:</p><codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock></li>
+        <li>Repeat the last step for the second instance.</li>
+        <li>Run a web server on each instance. To run a web server on an instance, run:
+            <codeblock>while : ; do echo -e "HTTP/1.0 200 OK\r\n\r\nWelcome to $(/sbin/ifconfig eth0|grep 'inet addr'|awk -F: '{print $2}'| awk '{print $1}')" | sudo nc -l -p 80 ; done</codeblock><p>Repeat
+            this step on each instance.</p></li>
+        <li>Test each connection individually. <p>On another session, connect to any instance on the
+            same private network, and test reaching that instance individually.</p><ol>
+            <li>To log in to an instance, run:
+              <codeblock>&lt;username&gt; [~]$ ssh cirros@&lt;floating_IP_address&gt;</codeblock>
+              Sample output:
+              <codeblock>user@myHelion [~]$ ssh cirros@10.246.71.7
+Warning: Permanently added '10.246.71.7' (RSA) to the list of known hosts.
+cirros@10.246.71.7's password: </codeblock></li>
+            <li>To test the connection to an instance, run:
+              <codeblock>$ curl &lt;IP_address&gt;</codeblock> Sample output:
+              <codeblock>$ curl 10.1.0.7
+Welcome to 10.1.0.7</codeblock></li>
+            <li>Repeat these steps for each connection you want to test.</li>
+          </ol></li>
+        <li>Test the Load Balancer. <codeblock>$ ping -c4 &lt;floating_IP_address&gt;</codeblock>
+          Sample output:
+          <codeblock>$ ping -c4 10.1.0.5
+PING 10.1.0.5 (10.1.0.5): 56 data bytes
+64 bytes from 10.1.0.5: seq=0 ttl=255 time=1.363 ms
+64 bytes from 10.1.0.5: seq=1 ttl=255 time=0.332 ms
+64 bytes from 10.1.0.5: seq=2 ttl=255 time=0.430 ms
+64 bytes from 10.1.0.5: seq=3 ttl=255 time=0.397 ms
+--- 10.1.0.5 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.332/0.630/1.363 ms
+
+$ curl 10.1.0.5
+Welcome to 10.1.0.7
+^C
+
+$ curl 10.1.0.5
+Welcome to 10.1.0.7
+^C
+
+$ curl 10.1.0.5
+Welcome to 10.1.0.8
+^C
+
+$ curl 10.1.0.5
+Welcome to 10.1.0.8
+^C</codeblock></li>
+        <li>If you have an instance with the OpenSSL binary package installed (CirrOS does not have
+          the <codeph>openssl</codeph> command), you can check that the certificate being returned
+          is the right one using this
+          command:<codeblock>openssl s_client -connect 10.1.0.11:443</codeblock></li>
+        <li>Set Up a Health Monitor (Optional). <p>Another option to test F5 integration is to set
+            up a health monitor to monitor the pool.</p><ol>
+            <li>To create a new healthmonitor, run:
+              <codeblock>neutron lbaas-healthmonitor-create --max-retries 3--timeout 10--type HTTP --pool c9e4712a-57a6-4bda-b7b2-1d24647c9cd0 --delay 30</codeblock>
+              Sample
+              output:<codeblock>Created a new healthmonitor:
++----------------+------------------------------------------------+
+| Field          | Value                                          |
++----------------+------------------------------------------------+
+| admin_state_up | True                                           |
+| delay          | 30                                             |
+| expected_codes | 200                                            |
+| http_method    | GET                                            |
+| id             | 88d18085-8e83-4413-b8e8-419a8fc8dc39           |
+| max_retries    | 3                                              |
+| pools          | {"id": "c9e4712a-57a6-4bda-b7b2-1d24647c9cd0"} |
+| tenant_id      | d59003927b7441c588e29f6f590f225d               |
+| timeout        | 10                                             |
+| type           | HTTP                                           |
+| url_path       | /                                              |
++----------------+------------------------------------------------+</codeblock></li>
+          </ol></li>
+        <li>Confirm the F5 BIG-IP Properties. <p>A final test of integration is to use the F5
+            Networks graphical user interface to confirm that the F5 BIG-IP partition is populated
+            with the correct listener, pool, and members.</p><p>To open the F5 dashboard:</p><ol>
+            <li>Open a browser.</li>
+            <li>Navigate to the following URL: <codeblock>https://&lt;iControl_IP&gt;/</codeblock>
+              where: <dl>
+                <dlentry>
+                  <dt>&lt;iControl_IP&gt;</dt>
+                  <dd>IP address or hostname of the BIG-IP appliance</dd>
+                </dlentry>
+              </dl><p>Sample output:</p>
+              <image href="../../media/f5-bigip-console-showing-working-lbaas-tls.png"/></li>
+          </ol>
+        </li>
       </ol>
     </section>
   </body>
