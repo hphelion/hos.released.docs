@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="troubleshootingDNS">
+  <title><ph conkeyref="HOS-conrefs/product-title-both"/>Troubleshooting DNS Service</title>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to-all"/>
+    <section id="about">
+      <p>The DNS service, based on the OpenStack Designate project, offers efficient and secure management 
+        your DNS zones for either a public or private DNS server network.  You can use this guide to help with 
+        known issues and troubleshooting of the DNS Service.
+      </p>
+    </section>
+    
+    <section id="DNSClient">
+      <title>Designate Client is not available on the DNSaaS Lifecycle Manager</title>
+        <p>If the DNSaaS client is not available on the lifecycle manager, you will need to run the 
+          designate server-create steps on another node where the python-designateclient has been
+          installed.
+        </p>
+    </section>
+    
+    <section id="CVRHA">
+      <title>CVR + HA</title>
+      <p>In some cases, a lifecycle-manager may need to stop running the DNS Service Neutron router
+        in High Availability (HA) mode, as it has stopped working. 
+      </p>
+      <p><b>Deployment of CVR+Non HA on new environments</b></p>
+        <ol>
+          <li>Before you deploy, from the DNSaaS Lifecycle Manager VM open in a text editor the
+            <codeph>main.yml</codeph> file.
+          <codeblock>~/helion/hos/ansible/roles/openstack-operations/defaults/main.yml</codeblock></li>
+          <li>Find <codeblock>neutron_router_ha: True</codeblock></li>
+          <li> Replace with <codeblock>neutron_router_ha: False</codeblock></li>
+          <li>Commit your update to the local git repository, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git commit -m "My config or other commit message"</codeblock></li>
+          <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>Update your deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>Run the Boot Infrastructure playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/localhost hlm-boot-infra.yml</codeblock></li>
+          <li>Complete the deployment by running this playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock></li>
+        </ol>
+        <p><b>Steps to move from CVR+HA to CVR+Non HA: </b></p>
+         <ol>
+          <li>Detach Floating IPs
+            <codeblock>neutron floatingip-disassociate &lt;floating ip id&gt;</codeblock></li>
+          <li>Clear Network External Gateway
+            <codeblock>neutron router-gateway-clear &lt;router&gt;</codeblock></li>
+          <li>Delete CVR+HA Router
+            <codeblock>neutron router-delete &lt;router&gt;</codeblock></li>
+          <li>Create CVR+NON HA Router
+          <codeblock>neutron router-create -ha False &lt;router&gt;</codeblock></li>
+          <li>Set Network External Gateway
+            <codeblock>neutron router-gateway-set routerHA &lt;ext-net-id&gt;</codeblock></li>
+          <li>Reattach Floating IPs
+            <codeblock>neutron floatingip-associate &lt;instance name or ID&gt; &lt;floating ip address&gt;</codeblock></li>
+        </ol>
+    </section>
+    
+    
+    <section id="DNSPatch">
+      <title>Limit neutron list commands to DNSaaS Project.</title>
+      <p> In some deployments, if there is overlapping IP space, the DNS installer will not select
+        the correct networks, and will cause an error.  You can fix this by following the required steps
+        below.
+        
+        <ol>
+          <li>Copy the included patch contents from the section below entitled 
+            <b>0001-Scope-Neutron-lists-to-DNSAAS-tenant.patch</b></li>
+          <li>Paste contents of the patch into a file of the same name to /home/stack on
+          the DNS lifecycle manager.</li>
+          <li>Change directory
+          <codeblock>cd ~/helion</codeblock></li>
+          <li>Add file to git
+          <codeblock>git am ~/0001-Scope-Neutron-lists-to-DNSAAS-tenant.patch</codeblock></li>
+          <li>Continue deployment as normal.</li>
+        </ol>
+      </p>
+      
+      <p><b>0001-Scope-Neutron-lists-to-DNSAAS-tenant.patch</b>
+        <codeblock>--project-id is not a vaild filter
+---
+hos/ansible/roles/openstack-operations/tasks/create_instance.yml  | 2 +-
+.../roles/openstack-operations/tasks/create_instance_fip.yml      | 6 +++---
+hos/ansible/roles/openstack-operations/tasks/create_port.yml      | 8 ++++----
+hos/ansible/roles/openstack-operations/tasks/pre_install.yml      | 2 +-
+4 files changed, 9 insertions(+), 9 deletions(-)
+          
+diff --git a/hos/ansible/roles/openstack-operations/tasks/create_instance.yml b/hos/ansible/roles/openstack-operations/tasks/create_instance.yml
+index 0c25922..959d9cb 100644
+--- a/hos/ansible/roles/openstack-operations/tasks/create_instance.yml
++++ b/hos/ansible/roles/openstack-operations/tasks/create_instance.yml
+@@ -48,7 +48,7 @@
+          
+- name: openstack-operations | create_instance | Extract port-id
+shell: >
+-    /opt/stack/service/ansible/venv/bin/neutron port-list --project-id "{{ os_project_id }}"
++    /opt/stack/service/ansible/venv/bin/neutron port-list --tenant-id "{{ os_project_id }}"
+| tr -d ' ' | grep -w "{{ item.1.addr }}" | cut -f 2 -d '|'
+environment: *OS_ENV
+with_subelements:
+diff --git a/hos/ansible/roles/openstack-operations/tasks/create_instance_fip.yml b/hos/ansible/roles/openstack-operations/tasks/create_instance_fip.yml
+index 2a8a5c7..35f1fd6 100644
+--- a/hos/ansible/roles/openstack-operations/tasks/create_instance_fip.yml
++++ b/hos/ansible/roles/openstack-operations/tasks/create_instance_fip.yml
+@@ -12,7 +12,7 @@
+          
+- name: openstack-operations | create-instance-fip | Identify pre-existing floating IPs
+shell: >
+-    /opt/stack/service/ansible/venv/bin/neutron floatingip-list --project-id "{{ os_project_id }}"
++    /opt/stack/service/ansible/venv/bin/neutron floatingip-list --tenant-id "{{ os_project_id }}"
+| grep " {{ item.1.addr }} " | cut -d'|' -f4 | tr -d ' '
+environment: &amp;OS_ENV
+OS_AUTH_URL: "{{ os_auth_url }}"
+@@ -47,8 +47,8 @@
+shell: |
+NEUTRON=/opt/stack/service/ansible/venv/bin/neutron
+          
+-    FIP_ID=$($NEUTRON floatingip-list --project-id "{{ os_project_id }}" | grep " {{ item.stdout }} " | cut -d'|' -f2 | tr -d ' ')
+-    PORT_ID=$($NEUTRON port-list --project-id "{{ os_project_id }}" | grep "\"{{ item.item.item.1.addr }}\"" | cut -d'|' -f2 | tr -d ' ')
++    FIP_ID=$($NEUTRON floatingip-list --tenant-id "{{ os_project_id }}" | grep " {{ item.stdout }} " | cut -d'|' -f2 | tr -d ' ')
++    PORT_ID=$($NEUTRON port-list --tenant-id "{{ os_project_id }}" | grep "\"{{ item.item.item.1.addr }}\"" | cut -d'|' -f2 | tr -d ' ')
+          
+# NOTE: floatingip-disassociate always succeeds, even without an association, allowing us to
+#       blindly call disassociate without fear of it erroring out.
+diff --git a/hos/ansible/roles/openstack-operations/tasks/create_port.yml b/hos/ansible/roles/openstack-operations/tasks/create_port.yml
+index e949cd4..16d1d73 100644
+--- a/hos/ansible/roles/openstack-operations/tasks/create_port.yml
++++ b/hos/ansible/roles/openstack-operations/tasks/create_port.yml
+@@ -11,7 +11,7 @@
+---
+- name: openstack-operations | create_port | Get port list
+command: >
+-    /opt/stack/service/ansible/venv/bin/neutron port-list --project-id "{{ os_project_id }}"
++    /opt/stack/service/ansible/venv/bin/neutron port-list --tenant-id "{{ os_project_id }}"
+environment: &amp;OS_ENV
+OS_AUTH_URL: "{{ os_auth_url }}"
+OS_REGION_NAME: "{{ os_region_name }}"
+@@ -52,9 +52,9 @@
+shell: |
+NEUTRON=/opt/stack/service/ansible/venv/bin/neutron
+          
+-    FIP_ID=$($NEUTRON floatingip-list --project-id "{{ os_project_id }}" | grep " {{ item.external_ip }} " | cut -d'|' -f2 | tr -d ' ')
+-    PORT_ID=$($NEUTRON port-list --project-id "{{ os_project_id }}" | grep "\"{{ item.ip_address }}\"" | cut -d'|' -f2 | tr -d ' ')
+-    PORT_FIP_ID=$($NEUTRON floatingip-list --project-id "{{ os_project_id }}" | grep "$PORT_ID" | head -1 | cut -d'|' -f2 | tr -d ' ')
++    FIP_ID=$($NEUTRON floatingip-list --tenant-id "{{ os_project_id }}" | grep " {{ item.external_ip }} " | cut -d'|' -f2 | tr -d ' ')
++    PORT_ID=$($NEUTRON port-list --tenant-id "{{ os_project_id }}" | grep "\"{{ item.ip_address }}\"" | cut -d'|' -f2 | tr -d ' ')
++    PORT_FIP_ID=$($NEUTRON floatingip-list --tenant-id "{{ os_project_id }}" | grep "$PORT_ID" | head -1 | cut -d'|' -f2 | tr -d ' ')
+          
+# NOTE: this removes any pre existing FIPs that are associated to the port.
+if [[ "$PORT_FIP_ID" != "" &amp;&amp; "$PORT_FIP_ID" != "$FIP_ID" ]]; then
+diff --git a/hos/ansible/roles/openstack-operations/tasks/pre_install.yml b/hos/ansible/roles/openstack-operations/tasks/pre_install.yml
+index 27fe181..fed8185 100644
+--- a/hos/ansible/roles/openstack-operations/tasks/pre_install.yml
++++ b/hos/ansible/roles/openstack-operations/tasks/pre_install.yml
+@@ -58,7 +58,7 @@
+          
+- name: openstack-operations | preinstall | Identify pre-existing floating IPs
+command: >
+-    /opt/stack/service/ansible/venv/bin/neutron floatingip-list --project-id "{{ os_project_id }}"
++    /opt/stack/service/ansible/venv/bin/neutron floatingip-list --tenant-id "{{ os_project_id }}"
+environment: *OS_ENV
+register: existing_floating_ips
+          
+-- 
+2.7.4 (Apple Git-66)
+      </codeblock></p>
+    </section>
+  </body>
+</topic>
