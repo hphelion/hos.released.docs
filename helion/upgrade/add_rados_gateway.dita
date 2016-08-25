@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--Edit status: not edited-->
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="add_rados_gateway">
-    <title><ph conkeyref="HOS-conrefs/product-title"/>Adding the Rados Gateway to Existing Cloud</title>
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Adding the Rados Gateway to Existing
+        Cloud</title>
     <body>
         
         <section>
@@ -18,9 +18,9 @@
                     <codeph>entry-scale-kvm-ceph</codeph> model. See <xref
                     href="upgrade_ceph_model.dita#upgrade_ceph_model">here</xref> for more
                 details.</p>
-            <!--<p>This describes how to add a RADOS gateway component to a pre-deployed Helion OpenStack cloud that is not running this service. </p><p><note type="important">The networking aspects of the Entry Scale KVM with Ceph model has changed in <keyword keyref="kw-hos-phrase"/>. Previously, a Ceph deployment used a single network where the default <keyword keyref="kw-hos-phrase"/> deployment uses a three-network based cluster. Make sure that you make appropriate changes in the input model to add only RADOS gateway service to avoid affecting other networks being used by the Ceph service (such as OSD or monitoring). The upgrade to <keyword keyref="kw-hos-phrase"/> might lead to changes in network architectures for the Ceph service component and affect your user workload. For example, instances might lose connectivity to Ceph volumes.</note></p>-->
-            <p>Follow the upgrade instructions to  upgrade a running <xref
-                    href="upgrade21to30.dita#upgradeto30">HOS 2.x cloud to HOS 3.0</xref>.Once the
+            <p><!--<note type="important">The networking aspects of the Entry Scale KVM with Ceph model has changed in <keyword keyref="kw-hos-phrase"/>. Previously, a Ceph deployment used a single network where the default <keyword keyref="kw-hos-phrase"/> deployment uses a three-network based cluster. Make sure that you make appropriate changes in the input model to add only RADOS Gateway service to avoid affecting other networks being used by the Ceph service (such as OSD or monitoring). The upgrade to <keyword keyref="kw-hos-phrase"/> might lead to changes in network architectures for the Ceph service component and affect your user workload. For example, instances might lose connectivity to Ceph volumes.</note>--></p>
+            <p>Follow the Upgrade Instructions to upgrade a running <xref
+                    href="upgrade21to30.dita#upgradeto30">HOS 2.x cloud to HOS 3.0</xref>. Once the
                 cloud is upgraded, perform the following steps to configure the RADOS Gateway
                 service.</p>
             <p> To add a RADOS Gateway: <ol id="ol_dfp_xnl_wv">
@@ -65,7 +65,7 @@
       network-groups:
         - MANAGEMENT
         - OSD-CLIENT</codeblock><note>If
-                            your Ceph deployment does not have a dedicated network for a client
+                            your Ceph deployment does not have a dedicated network for client
                             traffic, you <b>must</b> remove the <b>OSD-CLIENT</b> network from the
                                 <b>network-groups</b> mentioned above for
                         RGW-INTERFACES.</note></li>
@@ -77,15 +77,19 @@
   component-endpoints:
     - ceph-monitor
     - ceph-osd
-    - ceph-radosgw</codeblock><note>If
-                            your Ceph deployment has a dedicated network for a client traffic i.e.
-                            if you are using the single-network model for a Ceph cluster, execute
-                            this step. Else you can skip this step.</note></li>
-                    <li>Edit the <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph>
-                        file. For each RADOS Gateway server to be added to the Ceph cluster, add a
-                        section, similar to the following example. Update all the fields based on
-                        your
-                        environment:<codeblock>- id: rgw1
+    - ceph-radosgw</codeblock><note>This
+                            step only needs to be performed if your Ceph deployment has a dedicated
+                            network for client traffic i.e. if you are using the single-network
+                            model for Ceph cluster then you must skip this step.</note><note>By
+                            default TLS is enabled for the RADOS Gateway public endpoint. If you
+                            want to disable TLS for RADOS Gateway, follow the procedures mentioned
+                                <xref href="http://docs.hpcloud.com/#helion/security/tls.html"
+                                format="html" scope="external">here</xref>.</note><p>The above steps
+                            are required to be performed only once after upgrade. To add RADOS
+                            Gateway node you can proceed with the procedure mentioned <xref
+                                href="../operations/maintenance/ceph/add_ceph_rados_node.dita#add_monitor_node"
+                                >here</xref>. </p></li>
+                    <!--<li>Edit the <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file. For each RADOS Gateway server to be added to the Ceph cluster, add a section, similar to the following example. Update all the fields based on your environment:<codeblock>- id: rgw1
   ip-addr: 192.168.10.12
   role: RGW-ROLE
   server-group: RACK1
@@ -93,16 +97,12 @@
   mac-addr: "8b:f6:9e:ca:3b:62"
   ilo-ip: 192.168.9.12
   ilo-password: password
-  ilo-user: admin</codeblock></li>
-                    <li>Commit your configuration
-                        changes:<codeblock>cd ~/helion/hos/ansible
+  ilo-user: admin</codeblock></li><li>Commit your configuration changes:<codeblock>cd ~/helion/hos/ansible
 git add -A
-git commit -m "&lt;commit message>"</codeblock>You
-                        must perform the preceeding steps only once after upgrade. To add RADOS
-                        Gateway node you can proceed with the procedure mentioned <xref
-                            href="../operations/maintenance/ceph/add_ceph_rados_node.dita#add_monitor_node"
-                            >here</xref>.</li>
-                    <!--<li>Provision the RADOS Gateway Baremetal nodes by following the <b>Provision Your Baremetal Nodes </b>section in <xref href="../installation/installing_kvm.dita#install_kvm/provision">Installation for Helion Entry-scale Cloud with KVM page</xref>.</li><li>Resume the <b>Upgrade Instructions</b> from the step for <xref href="upgrade21to30.dita#upgradeto30/config">executing configuration processor</xref>.</li>-->
+git commit -m "&lt;commit message>"</codeblock></li><li>Provision the RADOS Gateway Baremetal nodes by following the procedure mention in <xref href="../installation/installing_kvm.dita#install_kvm/provision">Provision Your Baremetal Nodes</xref>.</li><li>Run the configuration processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li><li>Create the deployment directory:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li><li>Redeploy Ceph with this playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceph-deploy.yml</codeblock></li>-->
                 </ol></p>
         </section>
         
