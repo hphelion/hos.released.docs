@@ -1,0 +1,818 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="nsx_deploy">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Deploying <keyword keyref="kw-hos"/></title>
+  <abstract><shortdesc outputclass="hdphidden">Step-by-step instructions for deploying <keyword
+        keyref="kw-hos"/> on virtual machines.</shortdesc></abstract>
+  <body>
+    <!--not tested-->
+    <section id="about">
+      <p>Now that the VMware vSphere environment is setup, it is time to deploy your <keyword
+          keyref="kw-hos"/> environment. You can deploy <keyword keyref="kw-hos"/> on either
+        baremetal or virtual machines. However, deploying on virtual machines is supported only
+        through Professional Services at this time as it is a non-core feature. For more details on
+        core vs non-core features, see <xref href="../../liberty_features.dita"/>.</p>
+      <p>This document will go over creating the <keyword keyref="kw-hos"/> virtual machines within
+        the vSphere environment, configuring the cloud model, and integrating the NSX-v liberty
+        neutron plugin into the <keyword keyref="kw-hos"/> deployment.</p>
+      <p>While this guide only covers how to deploy <keyword keyref="kw-hos"/> on virtual machines,
+        if you choose to use the baremetal installation, refer to <xref
+          href="../../installation/installation_overview.dita"/> for deploying <keyword
+          keyref="kw-hos"/> on baremetal. If you are choosing a baremetal install, once the
+        lifecycle manager is deployed and the cloud model files are configured, skip to the <xref
+          type="section" href="#nsx_deploy/nsx_configneutronenv">Configure the Neutron environment
+          with NSX-v</xref> section of this guide to continue with the NSX-v integration and
+          <keyword keyref="kw-hos"/> deployment.</p>
+      <ol>
+        <li><xref type="section" href="#nsx_deploy/nsx_createvm">Create <keyword keyref="kw-hos"/>
+            virtual machines</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_deploylm">Deploy the lifecycle
+          manager</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_configneutronenv">Configure the Neutron
+            environment with NSX-v</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_config_inputmodel">Configure the cloud input
+            model</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_commitinputmodel">Commit the cloud input
+            model</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_deployos">Deploy the operating system with
+            Cobbler</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_configneutron">Configure the Neutron
+            options</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_deploycont">Deploy the <keyword
+              keyref="kw-hos"/> controllers</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_deploycomp">Configure and deploy the <keyword
+              keyref="kw-hos"/> compute proxy nodes</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_configblock">Configure and deploy Cinder
+            block storage</xref></li>
+        <li><xref type="section" href="#nsx_deploy/nsx_manconfig">Manually configure the NSX-v
+            Neutron plugin (Optional)</xref></li>
+      </ol>
+    </section>
+
+    <section id="nsx_createvm">
+      <title>Create <keyword keyref="kw-hos"/> virtual machines</title>
+      <p>Within the vSphere environment, create the <keyword keyref="kw-hos"/> virtual machines. At
+        minimum, there needs to be the following:</p>
+      <ul id="ul_kcq_dwk_bx">
+        <li>One <keyword keyref="kw-hos"/>
+          <b>lifecycle manager</b></li>
+        <li>Three <keyword keyref="kw-hos"/>
+          <b>controllers</b></li>
+        <li>One <keyword keyref="kw-hos"/>
+          <b>Nova compute proxy</b></li>
+      </ul>
+      <p>Refer to the <b><xref href="nsxv_pre.dita#nsxv_pre/NSXv_Preinstall_HW">Hardware
+            Requirements</xref></b> part of this guide for the minimum hardware specs to use. Also
+        be aware of the networking model to use for the <keyword keyref="kw-hos"/> virtual machine
+        network interfaces under the <b><xref href="nsxv_pre.dita#nsxv_pre/NSXv_Preinstall_NW"
+            >Network Requirements</xref></b> section:</p>
+      <ul>
+        <li><b>eth0</b> - Management network</li>
+        <li><b>eth1</b> - External API</li>
+        <li><b>eth2</b> - Internal API</li>
+      </ul>
+      <note>For each <keyword keyref="kw-hos"/> virtual machine - within vSphere, in the virtual
+        machine's <b>Options</b> section, under <b>advanced configuration parameters</b>, ensure
+        that the <codeph>disk.EnableUUID</codeph> option is set to <codeph>true</codeph>. If the
+        option does not exist, then add it. This option is required for the <keyword keyref="kw-hos"
+        /> deployment. If the option is not specified, then the deployment will fail when attempting
+        to configure the disks of each virtual machine.</note>
+      <p>If following the <b><xref href="nsxv_conf_vsphere.dita#NSXv_config_vSphere/ref_model"
+            >vSphere Reference Model</xref></b> in this guide, the <keyword keyref="kw-hos"/>
+        machines will look similar to these images:</p>
+      <p><b><keyword keyref="kw-hos"/> virtual machine cloud overview</b></p>
+      <p><image href="../../../media/hos.docs/ihv/vmware_nsx/deploy1.png"/></p>
+      <p><b><keyword keyref="kw-hos"/> virtual machine network interfaces</b></p>
+      <p><image href="../../../media/hos.docs/ihv/vmware_nsx/deploy2.png"/></p>
+      <p><b><keyword keyref="kw-hos"/> virtual machine advanced configuration</b></p>
+      <p><image href="../../../media/hos.docs/ihv/vmware_nsx/deploy3.png"/></p>
+      <note>The <keyword keyref="kw-hos"/> cloud model used in this guide is only an meant as an
+        example of how to integrate NSX-v with <keyword keyref="kw-hos"/>. This model may not be
+        suitable for all environments. For best <keyword keyref="kw-hos"/> design practices, refer
+        to <xref href="../../planning/planning_index.dita"/>.</note>
+    </section>
+    <section id="nsx_deploylm">
+      <title>Deploy the lifecycle manager</title>
+      <p>The lifecycle manager will contain the installation scripts and configuration files to
+        deploy your cloud. To deploy the lifecycle manager, follow these steps:</p>
+      <ol>
+        <li>If not already done, download the <keyword keyref="kw-hos-phrase"/> ISO from the <xref
+            href="http://www.hpe.com/software/entitlements" format="html" scope="external">Software
+            Entitlement Portal</xref>.</li>
+        <li>You can verify the download was complete via the signature verification process outlined
+            <xref
+            href="https://h20392.www2.hpe.com/portal/swdepot/displayProductInfo.do?productNumber=HPLinuxCodeSigning"
+            scope="external" format="html">here</xref>.</li>
+        <li>Place the <keyword keyref="kw-hos-phrase"/> ISO on a vSphere datastore that the
+          lifecycle manager virtual machine can access.</li>
+        <li>Attach the ISO file to the lifecycle manager virtual machine via the virtual CD/DVD
+          drive of the virtual machine.</li>
+        <li>Once attached, boot the virtual machine and select <b>Install</b> from the CD boot
+          menu.</li>
+        <li>If following the <b><xref href="nsxv_pre.dita#nsxv_pre/NSXv_Preinstall_NW">Network
+              Model</xref></b> in this guide, use <codeph>eth0</codeph> for setting up the network
+          and assign an IP address from the Management VLAN. For the language, location, and
+          keyboard layout options, choose the appropriate settings for your location. </li>
+        <li>Set the <b>username</b> and <b>password</b> for the OS, and then let the installation
+          complete.</li>
+        <li>When prompted, select <b>Continue</b> to finish the installation and allow the lifecycle
+          manager to reboot.</li>
+      </ol>
+      <p>Once the lifecycle manager has rebooted, log in to the operating system with the username
+        and password created during installation. Then follow these steps:</p>
+      <ol>
+        <li>Ensure your lifecycle manager has a valid DNS nameserver specified in
+            <codeph>/etc/resolv.conf</codeph>.</li>
+        <li>Set the environment variable LC_ALL: <codeblock>export LC_ALL=C</codeblock><note>This
+            can be added to <codeph>~stack/.bashrc</codeph> or
+            <codeph>/etc/bash.bashrc</codeph>.</note></li>
+        <li>From the vSphere client, remount the <keyword keyref="kw-hos-phrase"/> ISO to the
+          lifecycle manager's CD-ROM device.</li>
+        <li>Once the ISO is attached, mount the device to <b>/media/cdrom</b>:
+          <codeblock>sudo mount /dev/sr0 /media/cdrom</codeblock></li>
+        <li>Then install VMware Tools: <codeblock>sudo apt install open-vm-tools</codeblock></li>
+      </ol>
+    </section>
+    <section id="nsx_configneutronenv">
+      <title>Configure the Neutron environment with NSX-v</title>
+      <p>In order to deploy the NSX-v neutron plugin via the <keyword keyref="kw-hos"/> Ansible
+        playbooks, it is first necessary to setup a custom neutron environment with the NSX-v
+        Liberty neutron plugin using the tar file included in the <keyword keyref="kw-hos"/>
+        ISO.</p>
+      <p>You can perform these steps on the lifecycle manager itself or on a computer of your
+        choice, as long as the following conditions are met:</p>
+      <ul>
+        <li>Debian-based distribution</li>
+        <li>Internet access</li>
+        <li>Git must be installed</li>
+        <li>Python 2.7+ must be installed</li>
+      </ul>
+      <note type="important">If desired, it is possible to skip this section and manually install
+        the NSX-v Liberty Neutron plugin on each <keyword keyref="kw-hos"/> controller after the
+        initial deployment is complete. The process of manually installing the plugin is explained
+        in the <xref type="section" href="#nsx_deploy/nsx_manconfig">Manually configure the NSX-v
+          Neutron plugin (Optional)</xref> section of this document.</note>
+      <p>To configure the Neutron environment, use these steps:</p>
+      <ol>
+        <li>With the <keyword keyref="kw-hos-phrase"/> ISO still mounted to
+            <codeph>/media/cdrom</codeph>, copy the tarball to a working directory. In the following
+          example, the directoy <codeph>~/work</codeph> is
+            used.<codeblock>cd ~
+mkdir work 
+cp /media/cdrom/hos/hos-3.0.0-20160503T085137Z.tar ~/work</codeblock><note>The
+            name of the <keyword keyref="kw-hos"/> tarball may differ depending on which <keyword
+              keyref="kw-hos"/> 3.x version is being used. You can query the
+              <codeph>/media/cdrom/hos</codeph> directory to confirm the filename before
+            copying.</note></li>
+        <li>Navigate to the working directory. Then, using git, clone VMware's NSX-v repository from
+          the vmware-nsx github
+          page:<codeblock>cd ~/work 
+git clone http://github.com/openstack/vmware-nsx</codeblock></li>
+        <li>Do a checkout of the Liberty
+          release:<codeblock>cd vmware-nsx
+git checkout stable/liberty</codeblock></li>
+        <li>Navigate back to the working directory. Then, using git, clone the Tooz library from
+          github:<codeblock>cd ~/work
+git clone http://github.com/openstack/tooz</codeblock></li>
+        <li>Extract the Neutron venv to a temporary directory using this series of
+            commands:<codeblock>cd ~/work
+mkdir tmp
+cd tmp
+tar xvf ../hos-3.0.0-20160503T085137Z.tar hos-3.0.0/venv.tar
+cd hos-3.0.0/
+tar xvf venv.tar ./neutron-20160503T082438Z.tgz
+tar xzvf neutron-20160503T082438Z.tgz</codeblock><note>This
+            example uses the filenames included in the <keyword keyref="kw-hos-phrase"/> product. If
+            you are using <keyword keyref="kw-hos"/> 3.0.1, then the filenames may be different and
+              <b>venv</b> has been renamed to <b>hlinux_venv</b>.</note></li>
+        <li>Install the <codeph>vmware-nsx</codeph> and <codeph>tooz</codeph> Python libraries to
+          the <codeph>hos-3.0.x</codeph> location (in this example the location is
+            <codeph>hos-3.0.0</codeph>).<codeblock>cd ~/work/vmware-nsx 
+python setup.py install --prefix=~/work/tmp/hos-3.0.0</codeblock><codeblock>cd ~/work/tooz
+python setup.py install --prefix=~/work/tmp/hos-3.0.0</codeblock></li>
+        <li>Rebuild the Neutron venv
+          tarball.<codeblock>cd ~/work/tmp/hos-3.0.0
+rm venv.tar
+rm neutron-20160503T082438Z.tgz
+tar cvzf neutron-20160503T082438Z.tgz ./*</codeblock></li>
+        <li>Rebuild the master <codeph>venv.tar</codeph> tarball using this series of
+          commands:<codeblock>cd ~/work/tmp/hos-3.0.0/
+mv neutron-20160503T082438Z.tgz ~/work
+cd ~/work/tmp/
+rm -rf hos-3.0.0/
+tar xvf ../hos-3.0.0-20160503T085137Z.tar hos-3.0.0/venv.tar
+cd hos-3.0.0/
+tar xvf venv.tar</codeblock><codeblock>cp ../../neutron-20160503T082438Z.tgz .
+rm venv.tar
+tar cvf venv.tar ./*</codeblock><codeblock>mv venv.tar ~/work
+cd ..
+rm -rf hos-3.0.0/</codeblock></li>
+        <li>Rebuild the <keyword keyref="kw-hos-phrase"/> tarball with the new
+            <codeph>venv.tar</codeph> and move it to the operating system account's home
+          directory.<codeblock>cd ~/work/tmp
+tar xvf ../hos-3.0.0-20160503T085137Z.tar</codeblock><codeblock>cd hos-3.0.0/
+cp ../../venv.tar .
+cd ..
+tar cvf hos-3.0.0-20160503T085137Z.tar .
+mv hos-3.0.0-20160503T085137Z.tar ~/</codeblock></li>
+      </ol>
+    </section>
+    <section id="nsx_config_inputmodel">
+      <title>Configure the cloud input model</title>
+      <p>Now that a modified <keyword keyref="kw-hos-phrase"/> tarball has been created with the
+        NSX-v Liberty Neutron plugin and libraries, it is time to extract the tar and run the
+          <codeph>hos-init.bash</codeph> script in order to setup the deployment files and
+        directories. If a modified tar file was not created, then extract the tar from the
+          <codeph>/media/cdrom/hos</codeph> location.</p>
+      <p>To run the <codeph>hos-init.bash</codeph> script which is included in the build, use these
+        commands:</p>
+      <p>Example for <keyword keyref="kw-hos-phrase-30"/>:</p>
+      <codeblock>~/hos-3.0.0/hos-init.bash</codeblock>
+      <p>Example for <keyword keyref="kw-hos-phrase-301"/>:</p>
+      <codeblock>~/hos-3.0.1/hos-init.bash</codeblock>
+      <p>You will be prompted to enter an optional SSH passphrase when running
+          <codeph>hos-init.bash</codeph>. This passphrase is used to protect the key used by Ansible
+        when connecting to its client nodes. If you do not want to use a passphrase then just press
+        return at the prompt.</p>
+      <p>An example set of cloud input model files is being provided for demonstration purposes
+        which you can download <xref href="../../../resources/nsxv_demo.zip" format="html"
+          scope="external">here</xref>. This example model contains an environment with one
+          <b>lifecycle manager</b>, three <b>controllers</b>, and one <b>Nova compute proxy</b>.
+        There are also other example model input files under <codeph>~/helion/examples</codeph>
+        which is included in the build that can be used as a reference as well. You can find more
+        details about the cloud input model files and the fields in them in <xref
+          href="../../architecture/input_model/input_model.dita"/>.</p>
+      <p>Place your cloud input model under the <codeph>~/helion/my_cloud/definition</codeph>
+        directory (this example uses the <codeph>HOS-NSXv-DEMO.tar</codeph> that this guide
+        provides).<codeblock>cd ~/helion/my_cloud/definition/
+tar xvf ~/HOS-NSXv-DEMO.tar</codeblock></p>
+      <p>Make any necessary modifications to the cloud input model files and save the changes.</p>
+      <p>Please take note of the following when configuring the cloud input model files:<ul
+          id="ul_y2h_m2l_bx">
+          <li>If deploying <keyword keyref="kw-hos"/> on virtual machines, ensure that
+              <b>tagged-vlan</b> is set to <b>false</b> for each network in the
+              <codeph>~/helion/my_cloud/definition/data/networks.yml</codeph> model file, even if
+            the network is a tagged vlan. The vSphere VDS port groups will handle VLAN tagging.</li>
+          <li>Since the NSX-v Liberty Neutron plugin will be used, ensure that
+              <b>neutron-ml2-plugin</b>, <b>neutron-vpn-agent</b>, <b>neutron-dhcp-agent</b>,
+              <b>neutron-metadata-agent</b>, and <b>neutron-openvswitch-agent</b>, are commented out
+            in the <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> model file
+            under the controller configuration.</li>
+          <li>If deploying <keyword keyref="kw-hos"/> on virtual machines, the iLO network for each
+            server will still need to be specified with fake IP addresses, as well as fake iLO
+            username and passwords, in the
+              <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> model file.</li>
+          <li>If deploying <keyword keyref="kw-hos"/> on virtual machines, the MAC address for each
+              <keyword keyref="kw-hos"/> node can be found within the vSphere client on each virtual
+            machine. Simply go into the settings of each virtual machine and grab the MAC address of
+            the interface that is attached to the Management network (which is <codeph>eth0</codeph>
+            if follownig the example model in this guide). The MAC address will be used to PXE boot
+            into the operating system installer by Cobbler.</li>
+        </ul></p>
+    </section>
+    <section id="nsx_commitinputmodel">
+      <title>Commit the cloud input model</title>
+      <p>Once the cloud input model files have been configured for the environment, it is necessary
+        to commit the cloud input model to the local git repository on the lifecycle manager. Once
+        committed, the lifecycle manager will be able to execute a Cobbler Ansible playbook that
+        will install the Linux for HPE Helion operating system on each virtual machine as defined in
+        the cloud input model files.</p>
+      <ol>
+        <li>To commit the cloud input model to the local git repository, run:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "Initial Cloud Input Model"</codeblock></li>
+        <li>Run the configuration
+          processor<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock>If
+          the playbook fails, review the error and fix any mistakes in the input model files. Then
+          repeat steps 1-2 again until the configuration processor playbook succeeds.</li>
+        <li>To deploy Cobbler, run: (you will be prompted for the password to use for each
+          configured node)
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
+        <li>To verify the nodes that will have an operating system installed by Cobbler, you can
+          choose this command:
+            <codeblock>sudo cobbler system find --netboot-enabled=1</codeblock><p>At minimum there
+            should be three controllers and one Nova compute.
+          Example:</p><codeblock>controller1
+controller2
+controller3
+esxi-compute-1</codeblock></li>
+      </ol>
+    </section>
+    <section id="nsx_deployos">
+      <title>Deploy the operating system with Cobbler</title>
+      <p>At this point, Cobbler should be presenting the <keyword keyref="kw-hos"/> operating system
+        installer to each configured node. Each configured virtual machine should be able to PXE
+        boot into the operating system installer.</p>
+      <ol>
+        <li>From within the vSphere environment, power on each <keyword keyref="kw-hos"/> virtual
+          machine and watch for them to PXE boot into the operating system installer.</li>
+        <li>If successful, each <keyword keyref="kw-hos"/> virtual machine will have its operating
+          system automatically installed and will then automatically power off.</li>
+        <li>Once powered off, power each virtual machine back on and let it boot into the operating
+          system.</li>
+        <li>Use SSH to connect to <b>each</b> virtual machine from the lifecycle manager and install
+          VMware Tools using this command
+          below:<codeblock>sudo apt install -y open-vm-tools</codeblock></li>
+        <li>Verify that the NIC bus mapping specified in the cloud model input file
+            (<codeph>~/helion/my_cloud/definition/data/nic_mappings.yml</codeph>) matches the NIC
+          bus mapping on each <keyword keyref="kw-hos"/> node.<p>Check the NIC bus mapping with this
+            command:<codeblock>sudo dmesg | grep eth</codeblock></p><p>Example
+            output:<codeblock>$ sudo dmesg | grep eth
+[    1.198525] vmxnet3 0000:0b:00.0 eth0: NIC Link is Up 10000 Mbps
+[    1.213644] vmxnet3 0000:13:00.0 eth1: NIC Link is Up 10000 Mbps
+[    1.234654] vmxnet3 0000:1b:00.0 eth2: NIC Link is Up 10000 Mbps</codeblock></p><p>Compare
+            that to the nic_mappings.yml file in your input
+            model:</p><codeblock>cat ~/helion/my_cloud/definition/data/nic_mappings.yml</codeblock><p>Example:</p><codeblock>nic-mappings:
+   - name: ESXI_VMXNET3_3PORT
+     physical-ports:
+       - logical-name: eth0
+         type: simple-port
+         bus-address: "0000:0b:00.0"
+       - logical-name: eth1
+         type: simple-port
+         bus-address: "0000:13:00.0"
+       - logical-name: eth2
+         type: simple-port
+         bus-address: "0000:1b:00.0"</codeblock></li>
+        <li>Verify that each node has an IP address configured for the interface on the Management
+          network using this command:<codeblock>ip addr</codeblock>.For example:
+          <codeblock>$ ip addr
+1: lo:  mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0:  mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 00:50:56:b8:25:a6 brd ff:ff:ff:ff:ff:ff
+    inet 10.246.62.9/24 brd 10.246.62.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::250:56ff:feb8:25a6/64 scope link
+       valid_lft forever preferred_lft forever
+3: eth1:  mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 00:50:56:b8:3e:f9 brd ff:ff:ff:ff:ff:ff
+4: eth2:  mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 00:50:56:b8:34:2e brd ff:ff:ff:ff:ff:ff</codeblock></li>
+        <li>From the lifecycle manager, comment out any Nova compute proxy nodes and compute
+          resources in the model input files <b>servers.yml</b> and <b>control_plane.yml</b>. The
+          Nova compute proxy node(s) will be provisioned in a later
+          step.<p>Examples:</p><codeblock>~/helion/my_cloud/definition/data/servers.yml
+ 
+    # Nova esxi-compute proxy node
+    #- id: esxi-compute-1
+    #  server-group: RACK1
+    #  nic-mapping: ESXI_VMXNET3_3PORT
+    #  ip-addr: 10.246.62.9
+    #  role: ESXI-COMPUTE-ROLE
+    #  mac-addr: "00:50:56:b8:25:a6"
+    #  ilo-ip: 1.1.1.5
+    #  ilo-user: dummy-user
+    #  ilo-password: dummy-password</codeblock><codeblock>~/helion/my_cloud/definition/data/control_plane.yml
+ 
+    #resources:
+    #  - name: esxi-compute
+    #    resource-prefix: esxi-novacompute-
+    #    server-role: ESXI-COMPUTE-ROLE
+    #    member-count: 1
+    #    allocation-policy: any
+    #    service-components:
+    #      - nova-esx-compute-proxy
+    #      - nova-compute
+    #      - ntp-client
+    #      - eon-client</codeblock></li>
+        <li>Commit any changes to your local
+          git:<codeblock>cd ~/helion/hos/ansible/
+git add -A
+git commit -m "Remove nova compute proxy from servers.yml and control_plane.yml"</codeblock></li>
+        <li>Re-run the configuration
+          processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+      </ol>
+      <note type="attention">It is necessary to comment out the Nova compute nodes from the cloud
+        model because the <keyword keyref="kw-hos"/> controllers must be configured first. The
+        reason the Nova compute nodes are initially included is so that they are populated within
+        Cobbler for the operating system deploy.</note>
+    </section>
+    <section id="nsx_configneutron">
+      <title>Configure the Neutron options</title>
+      <p>Modifications must be made to some of the cloud configuration files on the lifecycle
+        manager node in order to properly deploy the NSX-v Neutron plugin to the <keyword
+          keyref="kw-hos"/> controllers. From the lifecycle manager node, do the following:</p>
+      <ol>
+        <li>On the lifecycle manager, use this playbook to update the deployment
+          directory:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>VMware recommends that Neutron be in an active/standby mode when using the NSX-v plugin.
+          To make this change, edit the <codeph>~/helion/hos/services/neutron/server.yml</codeph>
+          and add the line <codeph>vip-backup-mode: true</codeph> to the <codeph>endpoints</codeph>
+          section. The section should look like the following once
+          edited:<codeblock>endpoints:
+-   port: '9696'
+    has-vip: true
+    roles:
+    - public
+    - internal
+    - admin
+    vip-backup-mode: true</codeblock></li>
+        <li>The <codeph>neutron.conf.j2</codeph> will need to be configured for NSX-v. To do this,
+          grab the <b>metadata proxy shared secret</b>, <b>metadata service VIP</b>, and <b>metadata
+            service port number</b> from the
+            <codeph>~/scratch/ansible/next/hos/ansible/group_vars</codeph> sub-directory using these
+            commands:<codeblock>grep metadata_proxy_shared_secret ~/scratch/ansible/next/hos/ansible/group_vars/*</codeblock><p>The
+            output of this command will give you the value for your
+              <codeph>metadata_proxy_shared_secret</codeph>. Here is an example
+            output:</p><codeblock>ExampleHosNSXv-control-plane-1:        metadata_proxy_shared_secret: <b>gTknqiqtV5I5ZMvD</b> </codeblock><p>Next
+            you will need to obtain the values for the metadata service VIP and port number. Do this
+            by checking the <codeph>NOV_MTD</codeph> section of the group_vars file. Using the
+            example from earlier, this would be the
+            command:<codeblock>cat ~/scratch/ansible/next/hos/ansible/group_vars/ExampleHosNSXv-control-plane-1</codeblock></p><p>Example
+            output, showing the <codeph>NOV_MTD</codeph> section of the
+          file:</p><codeblock>cat ExampleHosNSXv-control-plane-1
+              
+        NOV_MTD:
+            initiate_tls: false
+            networks:
+            -   cert_file: helion-internal-cert
+                ip_address: 10.241.103.16
+                ports:
+                - '<b>8775</b>'
+                server_ports:
+                - '8775'
+                terminate_tls: false
+                vip: <b>hlm003-cp1-vip-NOV-MTD-mgmt</b>
+                vip_backup_mode: false
+            servers:
+            - HOS-NSXv-demo-hpe-nsxv-demo-cnt1-internal
+            - HOS-NSXv-demo-hpe-nsxv-demo-cnt2-internal
+            - HOS-NSXv-demo-hpe-nsxv-demo-cnt3-internal
+            vars: {}</codeblock></li>
+        <li> Now edit the <codeph>~/helion/my_cloud/config/neutron/neutron.conf.j2</codeph> file.
+          Make the following changes:<ol id="ol_dny_35l_bx">
+            <li>Change the <codeph>core_plugin</codeph> value to
+                <codeph>vmware_nsx.plugin.NsxVPlugin</codeph>.</li>
+            <li>Remove all defined plugins from the <codeph>service_plugins</codeph> value.</li>
+            <li>Add the NSX-v configuration options near the end of the file under the section
+              labeled <codeph># Add additional options here</codeph>. The <b>metadata proxy shared
+                secret</b>, <b>metadata service VIP</b>, and <b>metadata service port number</b>
+              that was grabbed earlier will be used here, as well as vSphere specific options. This
+              example shows each value with a description on how to obtain it:
+                <codeblock>$ cat ~/helion/my_cloud/config/neutron/neutron.conf.j2
+ 
+core_plugin = <b>vmware_nsx.plugin.NsxVPlugin</b>
+<b>service_plugins = </b>
+...
+# Add additional options here
+[nsxv]
+manager_uri=https://10.247.174.5  #url of NSX Manager
+user=admin  <b>#username of NSX Manager</b>
+password=  <b>#password for NSX Manager</b>
+insecure=true  <b>#If true, the NSXv server certificate is not verified.  If false, then the default CA truststore is used for verification.  This option is ignored if "ca_file" is set.</b>
+datacenter_moid=datacenter-2  <b>#main vSphere datacenter ID</b>
+cluster_moid=domain-c281  <b>#domain id of compute clusters (comma separated if more than one)</b>
+resource_pool_id=resgroup-244  <b>#the resource pool id of the edge pool.  If edge resource pool not created, use the hidden "root" resource pool</b>
+datastore_id=datastore-29  <b>#datastore which edge pool resources will be provisioned to</b>
+vdn_scope_id=vdnscope-1  <b>#vdn scope id of the transport zone.  To find this, in vSphere client go to the transport zone under NSX and it will be listed in address bar of web browser</b>
+dvs_id=dvs-286  <b>#the DVS of the control_plane cluster which contains all of the defined VLANs</b>
+exclusive_router_appliance_size=compact
+edge_ha=False  <b>#if set to true, will duplicate any edge pool resources</b>
+spoofguard_enabled=True <b>#(Optional) Indicates if Nsxv spoofguard component is used to implement port-security feature.</b>
+backup_edge_pool=service:large:1:3,service:compact:1:3,vdr:large:1:3 <b>#This controls the # of edges that are pre-provisioned by Neutron. The numbers are minimum (1) and maximum (3)</b>
+external_network=dvportgroup-328  <b>#the external vlan-backed provider (External VM portgroup)</b>
+nova_metadata_port=8775  #metadata port group found in above step of guide
+nova_metadata_ips=10.246.63.10  <b>#metadata IP found in above step of guide</b>
+mgt_net_proxy_netmask=255.255.255.0  
+mgt_net_proxy_ips=10.246.63.251,10.246.63.252  <b>#two IPs on the same subnet as the nova_metadata_ips (be sure not to overlap with IPs defined in HOS model files)</b>
+mgt_net_moid=dvportgroup-291  <b>#port group for Internal API network which nova_metadata_ips sits on</b>
+metadata_shared_secret=gTknqiqtV5I5ZMvD  <b>#metadata shared secret found in above step of guide</b>
+{{ metadata_initializer }}  <b>#Disables metadata network initializer for HOS deployment, then enables on first controller after deployment</b>
+ 
+# Do not add anything after this line</codeblock><note>The
+                vSphere specific options to define in the <codeph>neutron.conf.j2</codeph> file
+                under the <codeph>nsxv</codeph> section can be obtained from the VMware vCenter's
+                managed object browser. The vCenter managed object browser can be reached by
+                appending a <codeph>/mob</codeph> to the end of the vCenter address in a web
+                browser. For more information regarding the vCenter MOB, refer to <xref
+                  href="https://pubs.vmware.com/vsphere-60/index.jsp?topic=%2Fcom.vmware.wssdk.pg.doc%2FPG_Appx_Using_MOB.20.1.html&amp;resultof=%22managed%22%20%22manag%22%20%22object%22%20%22browser%22%20"
+                  format="html" scope="external">VMware's documentation</xref>.</note><note><p>To
+                  obtain the vSphere <codeph>vdn_scope_id</codeph>, from the vSphere web client,
+                  click on <b>Home</b>, then click on <b>Networking &amp; Security</b>, click on
+                    <b>Installation</b>, click on the <b>Logical Network Preparation</b> tab, and
+                  finally click on the <b>Transport Zones</b> button. Double click on the transport
+                  zone being configured, select the <b>Manage</b> tab, and the <codeph>vdnscope
+                    id</codeph> will appear at the end of the web address. Refer to this
+                    image:</p><p><image href="../../../media/hos.docs/ihv/vmware_nsx/config1.png"
+                    id="image_xxf_p51_cx"/></p></note></li>
+          </ol></li>
+        <li>Commit your changes to the local
+          git:<codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "updated neutron.conf.j2"</codeblock></li>
+        <li>Run the configuration
+          processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Update your deployment
+          directory:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Edit the
+            <codeph>~/scratch/ansible/next/hos/ansible/roles/neutron-common/defaults/main.yml</codeph>
+          file to add support for NSX-v integration.<p>Make the following
+          edits:</p><codeblock><b>#Under the nova: section you will see 4 lines for metadata_*:, replace all 4 lines with the following.</b>
+ 
+metadata_ip: "{% if NEU_MDA is defined %}{% if NEU_MDA.consumes_NOV_MTD is defined %}{{ NEU_MDA.consumes_NOV_MTD.vips.private[0].ip_address }}{% else %}{{ NEU_SVR.consumes_NOV_API.vips.private[0].host }}{% endif %}{% endif %}"
+metadata_port: "{% if NEU_MDA is defined %}{% if NEU_MDA.consumes_NOV_MTD is defined %}{{ NEU_MDA.consumes_NOV_MTD.vips.private[0].port }}{% else %}8775{% endif %}{% endif %}"
+metadata_protocol: "{% if NEU_MDA is defined %}{% if NEU_MDA.consumes_NOV_MTD is defined %}{{ NEU_MDA.consumes_NOV_MTD.vips.private[0].protocol }}{% else %}http{% endif %}{% endif %}"
+metadata_proxy_shared_secret: "{% if NEU_MDA is defined %}{{ NEU_MDA.vars.metadata_proxy_shared_secret }}{% endif %}"
+ 
+<b>#At the very bottom of the file add the following line.</b>
+ 
+metadata_initializer: "{% for item in NEU_SVR.consumes_FND_MDB.members.mysql_gcomms %}{% if loop.index is even and item.host != host.my_dimensions.hostname %}{{ 'metadata_initializer = false' }}{% endif %}{% endfor %}"</codeblock></li>
+      </ol>
+    </section>
+    <section id="nsx_deploycont">
+      <title>Deploy the <keyword keyref="kw-hos"/> controllers</title>
+      <p>Now that all configuration options for Neutron have been made, it is time to deploy the
+        cloud. If following this guide, the cloud model input files are currently configured to only
+        deploy the <keyword keyref="kw-hos"/> controllers. The Nova-compute proxy nodes will be
+        deployed separately after the controllers are deployed. From the lifecycle manager node, do
+        the following:</p>
+      <p>Run the following playbook which will begin the deployment:</p>
+      <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts site.yml</codeblock>
+      <note type="important">This playbook can take up to 2+ hours to run.</note>
+      <p>If you are using <keyword keyref="kw-hos-phrase"/>, as opposed to HPE Helion OpenStack
+        3.0.1, the initial deployment is likely to fail when the Neutron playbooks are being run.
+        There is a race condition where the Ansible playbooks do not allow the neutron-server
+        processes enough time to completely start before proceeding. If this error is encountered,
+        simply check to ensure the neutron services are fully started on all controllers and kickoff
+        the <b>site.yml</b> playbook a second time. This bug is fixed in Helion OpenStack
+        3.0.1.<codeblock>failed: [HOS-NSXv-demo-cnt1-internal] => {"changed": true, "cmd": ["neutron", "--os-username", "neutron", "--os-project-name", "services", "--os-user-domain-name", "Default", "--os-project-domain-name", "Default", "--os-auth-url", "https://HOS-NSXv-demo-vip-KEY-API-internal:5000", "--os-endpoint-type", "internalURL", "net-list", "-f", "csv", "-c", "name", "--tenant-id", "2f37c8e795104f96a066dcca6c04315c"], "delta": "0:00:00.891904", "end": "2016-07-20 02:10:48.844100", "rc": 1, "start": "2016-07-20 02:10:47.952196", "warnings": []}
+stderr: Unable to establish connection to https://10.246.63.10:9696/v2.0/networks.json?tenant_id=2f37c8e795104f96a066dcca6c04315c</codeblock></p>
+      <p>After the <b>site.yml</b> Ansible playbook successfully finishes, if done correctly, there
+        will be edge and metadata proxy virtual machines running in the vSphere control_plane
+        cluster. If there are not any, then check the <codeph>neutron.conf</codeph> and
+          <codeph>neutron-server.log</codeph> files for any errors or mistakes on each <keyword
+          keyref="kw-hos"/> controller node and manually restart the <codeph>neutron-server</codeph>
+        service once corrected.</p>
+    </section>
+    <section id="nsx_deploycomp">
+      <title>Configure and deploy the <keyword keyref="kw-hos"/> Nova compute proxy nodes</title>
+      <p>Now that the <keyword keyref="kw-hos"/> controllers are deployed, it is time to configure
+        the <keyword keyref="kw-hos"/> nova-compute proxy node(s). To accomplish this, do the
+        following:</p>
+      <ol>
+        <li>Log in to the lifecycle manager node </li>
+        <li>Change the Nova compute driver to the default vCenter driver in the
+            <codeph>~/helion/my_cloud/config/nova/esx-hypervisor.conf.j2</codeph> file.<p>Value to
+            use:<codeblock>compute_driver = vmwareapi.VMwareVCDriver</codeblock></p><p>The file
+            should look like this after
+            editing:<codeblock>[DEFAULT]
+# Compute
+#Old Value: compute_driver = vmwareapi.hp_driver.HPVMwareVCDriver
+<b>compute_driver = vmwareapi.VMwareVCDriver</b>
+[vmware]
+host_ip = {{ vmware_host_ip }}
+host_port = {{ vmware_host_port }}
+host_username = {{ vmware_host_username }}
+host_password = {{ vmware_host_password }}
+cluster_name = {{ vmware_host_cluster }}
+insecure = True
+vmwareapi_nic_attach_retry_count = 60
+## Do NOT put anything after this line ##</codeblock></p></li>
+        <li>Source the <codeph>~/service.osrc</codeph> file and add the vCenter server through the
+          EON service. The following is a description of the relevant parameters: <ul>
+            <li><b>Resource Manager Name</b> - the resource name</li>
+            <li><b>Resource Manager IP address</b> - the IP address of the vCenter server</li>
+            <li><b>Resource Manager Username</b> - the admin privilege username for the vCenter</li>
+            <li><b>Resource Manager Password</b> - the password for the above username</li>
+            <li><b>Resource Manager Port</b> - the vCenter server port. By default it is 443.</li>
+            <li><b>Resource Manager Type</b> - specify "vcenter"<p>Example commands:</p></li>
+          </ul><codeblock>source ~/service.osrc
+eon resource-manager-add --name nb-vcenter --username administrator@vsphere.local --password &lt;PASSWORD&gt; --type vcenter --ip-address 10.246.64.10</codeblock></li>
+        <li>Edit the <codeph>~/helion/my_cloud/definition/data/servers.yml</codeph> file and
+          uncomment the compute node(s):<p>For
+          example:</p><codeblock>#Nova esxi-compute proxy node
+    - id: esxi-compute-1
+      server-group: RACK1
+      nic-mapping: ESXI_VMXNET3_3PORT
+      ip-addr: 10.246.62.9
+      role: ESXI-COMPUTE-ROLE
+      mac-addr: "00:50:56:b8:25:a6"
+      ilo-ip: &lt;ilo_ip_address>
+      ilo-user: &lt;ilo_username>
+      ilo-password: &lt;ilo_password></codeblock></li>
+        <li>Edit the <codeph>~/helion/my_cloud/definition/data/control_plane.yml</codeph> file and
+          uncomment the compute resource definition: <p>For
+          example:</p><codeblock>    resources:
+      - name: esxi-compute
+        resource-prefix: esxi-novacompute-
+        server-role: ESXI-COMPUTE-ROLE
+        member-count: 1
+        allocation-policy: any
+        service-components:
+          - nova-esx-compute-proxy
+          - nova-compute
+          - ntp-client
+          - eon-client</codeblock></li>
+        <li>Run this command in order to get the id of
+            vCenter:<codeblock>eon resource-manager-list</codeblock><p>Example
+          output:</p><codeblock>stack@HOS-NSXv-demo-hlm1-internal:~$ eon resource-manager-list
++--------------------------------------+------------+--------------+---------+
+| ID                                   | Name       | IP Address   | Type    |
++--------------------------------------+------------+--------------+---------+
+| e9e08d70-28d8-4b3f-a042-143ce0424393 | nb-vcenter | 10.246.64.10 | vcenter |
++--------------------------------------+------------+--------------+---------+</codeblock></li>
+        <li>Use the vCenter ID from the previous step to update the
+            <codeph>~/helion/my_cloud/definition/data/pass_through.yml</codeph> file. <p>For
+            example:</p><codeblock>---
+product:
+  version: 2
+pass-through:
+  global:
+    esx_cloud: true
+  servers:
+    -
+      id: esxi-compute-1
+      data:
+        vmware:
+          cert_check: false
+          vcenter_cluster: Compute
+          <b>vcenter_id: e9e08d70-28d8-4b3f-a042-143ce0424393</b>
+          vcenter_ip: 10.246.64.10
+          vcenter_port: 443
+          vcenter_username: administrator@vsphere.local</codeblock></li>
+        <li>Commit your changes to the local
+          git:<codeblock>cd ~/helion/hos/ansible/
+git add -A
+git commit -m "added esxi-compute configs"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Using the <codeph>--limit</codeph> option to specify the specific nova-compute proxy
+          node, run the <codeph>osconfig-run.yml</codeph> Ansible playbook.<p>To list out your
+            hostnames, use this
+            playbook:</p><codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml --list-hosts</codeblock><p>Then
+            use those hostnames and run these two
+          playbooks:</p><codeblock>cd ~/scratch/ansible/next/hos/ansible/          
+ansible-playbook -i hosts/verb_hosts osconfig-run.yml --limit &lt;hostname></codeblock></li>
+        <li>Next, run the <codeph>hlm-deploy.yml</codeph> playbook, specifying the same node as the
+          previous step using the <codeph>--limit</codeph>
+            option:<codeblock>cd ~/scratch/ansible/next/hos/ansible/          
+ansible-playbook -i hosts/verb_hosts hlm-deploy.yml --limit &lt;hostname></codeblock><note>The
+              <codeph>hlm-deploy.yml</codeph> Ansible playbook may fail on its first attempt to run
+            the task <codeph>Run Monasca Agent detection plugin</codeph>. Simply re-run the playbook
+            and the task should succeed the second time.</note></li>
+        <li>Validate that the nova-compute proxy node was successfully deployed by running
+            <codeph>nova service-list</codeph>. The nova-compute proxy's host name should appear in
+          the list as <b>enabled</b> and <b>up</b>. If not, then log into the nova-compute proxy
+          node and check its logs for any errors (namely look at the
+            <codeph>/var/log/nova/nova-compute.log</codeph> for
+            errors).<codeblock>nova service-list</codeblock><p>Example snippet
+          output:</p><codeblock>$ nova service-list
+...
++----+------------------+----------------------------------------------+----------+---------+-------+----------------------------+-----------------+
+| 27 | nova-compute     | HOS-NSXv-demo-esxi-novacompute-0001-internal | nova     | enabled | up    | 2016-07-20T16:03:22.000000 | -               |
++----+------------------+----------------------------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
+      </ol>
+    </section>
+    <section id="nsx_configblock">
+      <title>Configure and deploy Cinder block storage</title>
+      <p>At this point the <keyword keyref="kw-hos"/> controllers and nova-compute proxy nodes
+        should be deployed. The final step in completing the cloud deployment is to configure Cinder
+        to use the vSphere environment's vmdk storage. From the lifecycle manager node, do the
+        following:</p>
+      <ol>
+        <li>Log in to the lifecycle manager node.</li>
+        <li>Edit the <codeph>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeph> file. There
+          should be a <codeph>vmdk</codeph> section of the file with commented out entries.
+          Uncomment these entries, and at minimum, configure the following values:<ol
+            id="ol_zhc_tlz_bx">
+            <li>Uncomment the <b>enabled_backends</b> option (if it is already commented out) and
+              sepcify the backend name - the name can be any value desired.</li>
+            <li>Specify the backend section with the name used for the <b>enabled_backends</b>
+              option in brackets.</li>
+            <li>In the backend section, specify the vCenter ip address for
+              <b>vmware_host_ip</b>.</li>
+            <li>Specify the vCenter username and password for the <b>vmware_host_username</b> and
+                <b>vmware_host_password</b> options.</li>
+            <li>Specify the value of <b>True</b> for the <b>vmware_insecure</b> option.</li>
+            <li>Specify the value of <b>cinder.volume.drivers.vmware.vmdk.VMwareVcVmdkDriver</b> for
+              the <b>volume_driver</b> section.</li>
+            <li>Specify a value for the <b>volume_backend_name</b> option.</li>
+          </ol> For example, the configuration file will look similar to the following:
+          <codeblock><b>enabled_backends=vmdk-nb</b>
+...
+# Start of section for vmdk
+#
+# If you have configured vmdk storage for cinder you
+# must uncomment this section, and replace all strings in angle
+# brackets with the correct values for the cluster you have
+# configured.  You must also add the section name to the list of
+# values in the 'enabled_backends' variable above.
+#
+# If you have more than one vmdk backend you must provide this
+# whole section for each vmdk backend and provide a unique section name for
+# each. For example, replace  with
+# VMDK_1 for one backend and VMDK_2 for the other.
+#
+<b>[vmdk-nb]
+vmware_host_ip = 10.246.64.10
+vmware_host_password = 
+vmware_host_username = administrator@vsphere.local
+vmware_insecure = True
+volume_driver = cinder.volume.drivers.vmware.vmdk.VMwareVcVmdkDriver
+volume_backend_name=vmdk-nb</b></codeblock></li>
+        <li>Commit your changes to your local
+          git:<codeblock>cd ~/helion/hos/ansible/
+git add -A
+git commit -m 'Adding cluster vmdk configuration'</codeblock></li>
+        <li>Run the configuration
+          processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Change to the deployment directory and run the Cinder reconfigure playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+        <li>Validate that the vmdk block storage was successfully added to the <keyword
+            keyref="kw-hos"/> cloud environment by running this
+          command:<codeblock>cinder service-list</codeblock>Example output:
+          <codeblock>$ cinder service-list
++------------------+---------------------------+------+---------+-------+----------------------------+-----------------+
+|      Binary      |            Host           | Zone |  Status | State |         Updated_at         | Disabled Reason |
++------------------+---------------------------+------+---------+-------+----------------------------+-----------------+
+|  cinder-backup   |     ha-volume-manager     | nova | enabled |   up  | 2016-07-20T18:34:17.000000 |        -        |
+| cinder-scheduler |     ha-volume-manager     | nova | enabled |   up  | 2016-07-20T18:34:15.000000 |        -        |
+|  cinder-volume   |     ha-volume-manager     | nova | enabled |  down |             -              |        -        |
+|  cinder-volume   | ha-volume-manager@vmdk-nb | nova | enabled |   up  | 2016-07-20T18:34:12.000000 |        -        |
++------------------+---------------------------+------+---------+-------+----------------------------+-----------------+</codeblock></li>
+      </ol>
+    </section>
+    <section id="nsx_manconfig">
+      <title>Manually configure the NSX-v Neutron plugin (Optional)</title>
+      <p>If the NSX-v Liberty neutron plugin was not installed via the Ansible playbooks, it is
+        still possible to manually install the NSX-v neutron plugin on each controller. After the
+          <keyword keyref="kw-hos"/> controllers are deployed, use the following steps to manually
+        install the NSX-v neutron plugin.</p>
+      <p>Requirements before using this procedure:<ul id="ul_atd_mnz_bx">
+          <li>Git needs to be installed on each controller for this process to work. To install git,
+            use this command on each <keyword keyref="kw-hos"/>
+            controller.<codeblock>apt install -y git</codeblock></li>
+          <li>Each controller must have a connection to the internet. If this is not possible, then
+            it will be necessary to find another way to copy the NSX-v Liberty neutron plugin and
+            library files to each controller for installation. The following steps assume that the
+            controllers have access to the internet.</li>
+        </ul></p>
+      <ol>
+        <li>Log into each controller and stop the <codeph>neutron-server</codeph>
+          service:<codeblock>sudo service neutron-server stop</codeblock></li>
+        <li>Once the <codeph>neutron-server</codeph> service is stopped on all controllers, log into
+          the <b>master</b> controller holding the service VIP. Once logged in, become the
+            <b>root</b> user and source the <b>neutron venv</b>
+          environment.<codeblock>sudo su -
+source /opt/stack/venv/neutron-20160503T082438Z/bin/activate    </codeblock></li>
+        <li>Using git, clone the NSX-v repository from github and then do a checkout of the Liberty
+          release.<codeblock>git clone http://github.com/openstack/vmware-nsx
+cd vmware-nsx
+git checkout stable/liberty</codeblock></li>
+        <li>Within the <codeph>vmware-nsx</codeph> folder, run <codeph>python setup.py
+            install</codeph> to install the NSX-v neutron plugin. This should install the vmware-nsx
+          bits into
+            <codeph>/opt/stack/service/neutron-&lt;xxxxxxxxxxxxxxxx>/venv/lib/python2.7/site-packages/</codeph>
+            folder.<codeblock>cd vmware-nsx
+python setup.py install</codeblock><note>If behind a
+            proxy, before running <codeph>setup.py</codeph>, first run the command <codeph>pip
+              install -r requirements.txt --proxy=&lt;proxy server address></codeph> from the
+              <codeph>vmware-nsx</codeph> folder to install the required packages. In some cases, it
+            may also be necessary to define, within the terminal environment, the pbr version that
+            the server has installed in order to run the <codeph>setup.py</codeph> Python script
+            (example would be <codeph>export PBR_VERSION='1.8.0'</codeph>)</note></li>
+      </ol>
+      <p>Once installed, refer to the <b><xref type="section"
+            href="#nsx_deploy/nsx_configneutronenv">Editing neutron.conf.j2</xref></b> section of
+        this guide to edit the Neutron settings of the controller if not already done. However,
+        instead of editing the <codeph>neutron.conf.j2</codeph> file on the lifecycle manager node,
+        edit the <codeph>opt/stack/service/neutron-&lt;xxxxxxxxxxxxxxxx>/etc/neutron.conf</codeph>
+        on the controller node. On the "master" controller holding the service VIP, do not set the
+          <codeph>metadata_initializer</codeph> - leave the option out completely.</p>
+      <p>Once <codeph>neutron.conf</codeph> is updated with the appropriate values, attempt to start
+        the <codeph>neutron-server</codeph> service. Tail the
+          <codeph>/var/log/neutron/neutron-server.log</codeph> file for any errors. If done
+        successfully, the vSphere environment will spin up edge services and metadata proxy virtual
+        machines.</p>
+      <p>Repeat the same steps on the remaining controllers, but specify
+          <codeph>metadata_initializer=False</codeph> in the <codeph>neutron.conf</codeph> file
+        under the <codeph>nsxv</codeph> section. This is to prevent the other controllers from
+        spinning up new metadata proxy virtual machines.</p>
+    </section>
+
+  </body>
+</topic>
