@@ -64,12 +64,12 @@
         venv.</p>
       <codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost venv-edit.yml \
-     -e source=/opt/hlm_packager/nova-20150101T120000Z.tgz \
+     -e source=/opt/hlm_packager/hos-3.0.0/hlinux_venv/nova-20150101T120000Z.tgz \
      -e suffix=001 \
      -e wheelhouse=/home/hlmuser/third-party-wheelhouse \
      -e wheel='foo-driver'</codeblock>
       <p>The result of this will be to create a second venv,
-          <codeph>nova-20150101T120000Z001.tgz</codeph> in the <codeph>/opt/hlm_packager</codeph>
+          <codeph>nova-20150101T120000Z001.tgz</codeph> in the <codeph>/opt/hlm_packager/hos-3.0.0/hlinux_venv</codeph>
         directory, and update the <codeph>packages</codeph> manifest in that directory to record
         it.</p>
       <p>At this point, a deployment (or an upgrade) can take place as normal because the deployer
@@ -96,7 +96,7 @@ ansible-playbook -i hosts/localhost venv-edit.yml \
       <codeblock>mkdir ~/third-party-wheelhouse
 cp ~/third-party-wheelhouse-{foo,bar,baz}/* ~/third-party-wheelhouse
 ansible-playbook -i hosts/localhost venv-edit.yml \
-     -e source=/opt/hlm_packager/nova-20150101T120000Z.tgz \
+     -e source=/opt/hlm_packager/hos-3.0.0/hlinux_venv/nova-20150101T120000Z.tgz \
      -e suffix=001 \
      -e wheelhouse=/home/hlmuser/third-party-wheelhouse \
      -e wheel='foo-driver bar-driver baz-driver'</codeblock>
@@ -187,13 +187,13 @@ mkdir ~/third-party-wheelhouse
           </ol></li>
         <li>On your lifecycle manager, run the <codeph>venv-edit.yml</codeph> playbook to add the
           driver or plugin package to the desired virtual environment. <ol>
-            <li>Check in your <codeph>/opt/hlm_packager/</codeph> directory for the file name of
+            <li>Check in your <codeph>/opt/hlm_packager/hos-3.0.0/hlinux_venv/</codeph> directory for the file name of
               your <codeph>neutron-*.tgz</codeph> file to use in the command in the next step.</li>
             <li>For our 'networking-l2gw' example we would use this command using the wheel file we
               created in the previous step. Replace the source file name with the one relevant to
               your environment.
               <codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost venv-edit.yml -e source=/opt/hlm_packager/neutron-20151026T074248Z.tgz -e suffix=0001 -e wheelhouse=~/wheelhouse -e wheel='networking_l2gw'</codeblock></li>
+ansible-playbook -i hosts/localhost venv-edit.yml -e source=/opt/hlm_packager/hos-3.0.0/hlinux_venv/neutron-20151026T074248Z.tgz -e suffix=0001 -e wheelhouse=~/wheelhouse -e wheel='networking_l2gw'</codeblock></li>
             <li>The result should be a new <codeph>neutron-*.tgz</codeph> package in the
                 <codeph>opt/hlm-packager</codeph> directory.</li>
           </ol></li>
