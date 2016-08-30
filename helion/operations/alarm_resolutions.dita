@@ -707,16 +707,15 @@ ansible-playbook -i hosts/verb_hosts cinder-start.yml --limit &lt;hostname></cod
                   <codeblock>process_name=cinder-scheduler</codeblock>
                 </entry>
                 <entry>Process crashed.</entry>
-                <entry>Restart the process on the affected node. Review the associated logs.
-                  <ol>
-                  <li>Log in to the lifecycle manager.</li>
-                  <li>Run the cinder-start.yml playbook to start the process back
-                    up:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+                <entry>Restart the process on the affected node. Review the associated logs. <ol>
+                    <li>Log in to the lifecycle manager.</li>
+                    <li>Run the cinder-start.yml playbook to start the process back
+                        up:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts cinder-start.yml --limit &lt;hostname></codeblock><note>The
-                        <codeph>--limit &lt;hostname></codeph> switch is optional. If it is
+                          <codeph>--limit &lt;hostname></codeph> switch is optional. If it is
                         included, then the <codeph>&lt;hostname></codeph> you should use is the host
                         where the alarm was raised.</note></li>
-                </ol></entry>
+                  </ol></entry>
               </row>
               <row>
                 <entry>Process Check</entry>
@@ -2376,9 +2375,15 @@ ansible-playbook -i hosts/verb_hosts heat-start.yml</codeblock></li>
                     <li>Run the Monasca start playbook with the vertica tag, like this:
                       <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags vertica</codeblock></li>
-                    <li>Check that it is up on all nodes in the cluster with this
-                      playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags vertica</codeblock></li>
+                    <li>Check that it is up on all nodes in the cluster with this playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-status.yml --tags vertica</codeblock>
+                      <note>Vertica is not started under <codeph>systemd</codeph>. To check the
+                        process status from a host command line use <codeph>sudo
+                          /etc/init.d/verticad status</codeph>. The
+                          <codeph>monasca-status.yml</codeph> playbook reports whether Vertica
+                        thinks a node is down or not. The <codeph>verticad</codeph> process could be
+                        running when the node is down, so <codeph>monasca-status</codeph> is a more
+                        accurate way to tell if a Vertica host is up.</note></li>
                   </ol></entry>
               </row>
               <row>
