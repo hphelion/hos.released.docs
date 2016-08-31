@@ -2,7 +2,7 @@
 <!--Edit status: not edited--> 
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="charts">
-    <title><ph conkeyref="HOS-conrefs/product-title"/>Visualizing Data in Charts</title>
+    <title>Visualizing Data in Charts</title>
     <body>
         <p>Charts and graphs provide a quick way to visualize large amounts of complex data. It is
             especially useful when trying to find relationships and understand your data, which
@@ -15,6 +15,11 @@
             on the command line. After you select a metric, you can then specify a dimension, which
             is derived from the <b>monasca metric-list –name &lt;metric_name&gt;</b> command line
             results. The dimension list changes based on the selected metric. </p>
+        <p>This topic provides instructions on how to create a basic chart, and how to create a chart specifically to visualize your Cinder capacity.
+            <ul>
+                <li><xref type="section" href="#charts/ops_create_charts">Create a Chart</xref></li>
+                <li><xref type="section" href="#charts/ops_Cinder_chart">Chart Cinder Capacity</xref></li></ul></p>
+        
         <section id="ops_create_charts">
             <title>Create a Chart</title>
             <p>Create a chart to visually display data for up to 6 metrics over a period of time.</p>
@@ -114,5 +119,89 @@ https://VIP:9095</codeblock></li>
                 the top-right corner of the card to delete or edit the chart. You can also select an
                 option to create a comma-delimited file of the data in the chart.</p>
         </section>
+        <lines></lines>
+        <section id="ops_Cinder_chart">
+            <title>Chart Cinder Capacity</title>
+            <p>To visualize the use of storage capacity over time, you can create a chart that graphs the total block storage backend capacity. To find out how much of that total is being used, you can also create a chart that graphs the available block storage capacity.</p>
+            <p><b>Visualizing Cinder:</b></p>
+            <ul>
+                <li><xref type="section" href="#charts/ops_Cinder_chart_total">Chart Total Capacity</xref></li>
+                <li><xref type="section" href="#charts/ops_Cinder_chart_avail">Chart Available Capacity</xref></li>
+            </ul>
+            <note type="important">The total and free capacity values are based on the available capacity reported by the Cinder backend. Be aware that some backends can be configured to thinly provision.</note>
+        </section>
+        <section id="ops_Cinder_chart_total">
+            <title>Chart Total Capacity</title> To chart the total block-storage backend capacity:<ol>
+                <li>Log in to Operations Console.</li>
+                <li>Follow the steps in the previous instructions to start creating a chart.</li>
+                <li>To chart the total backend capacity, on the <b>Add New Time Series Chart</b>
+                    screen, in <b>Chart Definition</b> use the following settings: <table
+                        frame="all" rowsep="1" colsep="1" id="table_ckx_Cinder_opscon">
+                        <tgroup cols="2">
+                            <colspec colname="c1" colnum="1" colwidth="1*"/>
+                            <colspec colname="c2" colnum="2" colwidth="19*"/>
+                            <thead>
+                                <row>
+                                    <entry>Field</entry>
+                                    <entry>Setting</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry>Metrics</entry>
+                                    <entry>cinderlm.cinder.backend.total.size</entry>
+                                </row>
+                                <row>
+                                    <entry>Dimension</entry>
+                                    <entry>any hostname. If multiple backends are available, select
+                                        any one. The backends will all return the same metric
+                                        data.</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></li>
+                <li>Add the data to the chart and click <b>Create</b>.</li>
+            </ol>
+            <p>Example of a Cinder Total Capacity Chart:</p>
+            <image href="../../../media/opscon_chart_cinder_totalcap.png"/>
+        </section>
+        
+        <section id="ops_Cinder_chart_avail">
+            <title>Chart Available Capacity</title><p>To chart the available block-storage backend
+                capacity:</p><ol>
+                <li>Log in to Operations Console.</li>
+                <li>Follow the steps in the previous instructions to start creating a chart.</li>
+                <li>To chart the available backend capacity, on the <b>Add New Time Series Chart</b>
+                    screen, in <b>Chart Definition</b> use the following settings: <table
+                        frame="all" rowsep="1" colsep="1" id="table_ckx_Cinder2_opscon">
+                        <tgroup cols="2">
+                            <colspec colname="c1" colnum="1" colwidth="1*"/>
+                            <colspec colname="c2" colnum="2" colwidth="19*"/>
+                            <thead>
+                                <row>
+                                    <entry>Field</entry>
+                                    <entry>Setting</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry>Metrics</entry>
+                                    <entry>cinderlm.cinder.backend.total.avail</entry>
+                                </row>
+                                <row>
+                                    <entry>Dimension</entry>
+                                    <entry>any hostname. If multiple backends are available, select
+                                        any one. The backends will all return the same metric
+                                        data.</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table></li>
+                <li>Add the data to the chart and click <b>Create</b>.</li>
+            </ol>
+            <p>Example of a chart showing Cinder Available Capacity:</p>
+            <image href="../../../media/opscon_chart_cinder_totalavail.png"/>
+        </section>
+     
     </body>  
 </topic>
