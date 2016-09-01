@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="install_and_configure_qnap_drivers">
+    <title>Install and Configure QNAP Drivers</title>
+    <body>
+<section id="install_and_configure_qnap_drivers">
+            <p/>
+            <p>Your cloud's controller nodes must have external internet access to download the
+                driver files. If the controller nodes do not have external internet access, use a
+                separate system to download the drivers from the address specified in <b>Step 1</b>,
+                and manually place the driver files on each controller node.</p>
+            <ol id="ol_wvj_vnl_bx">
+                <li>Begin by downloading the QNAP driver to each <keyword keyref="kw-hos"/>
+                    controller
+                    node:<codeblock>sudo -i
+wget http://download.qnap.com/Storage/QES/Utility/qcinder_1_1_001.zip</codeblock><p/></li>
+                <li>On each controller node, extract the contents of the downloaded zip file to a
+                    directory. In this case, the command example is extracting the files to the
+                        <codeph>/tmp/qcinder/</codeph>
+                    directory:<codeblock>unzip qcinder_1_1_001.zip -d /tmp/qcinder/</codeblock><p/></li>
+                <li>On each controller node, locate the cinder driver file in the files you
+                    extracted in the previous step. Copy this driver to the <keyword keyref="kw-hos"
+                    /> cinder driver path shown in the following command example (note that the
+                    directory <codeph>cinder-20160524T000846Z</codeph> shown in the following
+                    example may have a different name depending on the HOS version you are
+                    using):<p/><codeblock>cp /tmp/qcinder/qnap.py /opt/stack/venv/cinder-20160524T000846Z/lib/python2.7/site-packages/cinder/volume/drivers/</codeblock><p/></li>
+                <li>Log in to your lifecycle manager. Add a new section to the
+                        <codeph>/home/stack/helion/my_cloud/config/cinder/cinder.conf.j2</codeph>
+                    file for your Qnap_ES_NAS storage pool. Adding this section will configure the
+                    cinder storage service to use your QNAP ES NAS. <p>The following snippet from
+                        the <codeph>cinder.conf.j2</codeph> file provides example values for
+                        configuring a QNAP ES NAS storage
+                        pool:</p><p/><codeblock>#QNAP QES
+[Qnap_ES_NAS]
+volume_backend_name=Qnap_ES_NAS
+volume_driver=cinder.volume.drivers.qnap.QnapISCSIDriver
+san_ip=172.23.102.240
+qnap_server_port=8080
+iscsi_ip_address=172.23.102.241
+qnap_storage_protocol=iscsi
+san_login=admin
+san_password=admin
+qnap_poolname=pool1
+san_thin_provision=True
+#End QNAP QES</codeblock><p/><p>If
+                        you are using more than one pool in your QNAP ES NAS appliance, you can add
+                        sections to the <codeph>cinder.conf.j2</codeph> for all pools. For example,
+                        you can add a second section, such as <codeph>[Qnap_ES_NAS_2]</codeph> that
+                        contains the details for that pool.</p><p/></li>
+                <li>Continue editing the <codeph>cinder.conf.j2</codeph> file, adding the new
+                    storage pool, Qnap_ES_NAS, to the <b>enabled_backends</b>
+                    line:<codeblock>enabled_backends=Qnap_ES_NAS</codeblock><p/></li>
+                <li>Exit the root user account, and commit your configuration changes to the local
+                    Git
+                    repository:<codeblock>exit
+cd ~/helion/hos/ansible/
+git add -A
+git commit -a -m "add QNAP QES to Cinder Backend Storage"</codeblock><p/></li>
+                <li>Run the following playbooks to verify your configuration files and prepare the
+                    deployment
+                    directory:<codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock><p/></li>
+                <li>Reconfigure the cinder service to enable the new storage
+                    pools:<codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock><p/></li>
+                <li>Run the following commands to verify that your new backend is operational:<codeblock>source services.osrc
+cinder service-list</codeblock>
+                    <p>The following screenshot shows that the new Qnap_ES_NAS backend has a status
+                        of <b>enabled</b>, and a state of <b>up</b>. This indicates a successful
+                        configuration of the new cinder backend.</p><p/><image
+                        href="../../../media/qnap/cinder_service_list.png"
+                        id="image_o41_mvt_bx" placement="break"/><p/><p/><p>You can also use the
+                        Horizon Dashboard to verify that the backend is running.<ul
+                            id="ul_pkh_pvt_bx">
+                            <li>Log in to Horizon Dashboard as user <b>admin</b></li>
+                            <li>Navigate to <b>Admin</b> → <b>System</b> → <b>System Information</b>
+                                → <b>Block Storage Services</b> and look for the QES volume manager
+                                service status.<p/><p/><image
+                                    href="../../../media/qnap/horizon_cinder_verification.png"
+                                    id="image_nwj_5vt_bx" placement="break"/><p/><p/><p>Again, a
+                                    status of <b>Enabled</b>, and state of <b>UP</b> indicate
+                                    successful configuration of the new backend.</p><p/><p/></li>
+                        </ul></p></li>
+            </ol>
+        </section>
+        <p></p>
+        <p></p>
+        <p></p>
+    </body>
+</topic>
