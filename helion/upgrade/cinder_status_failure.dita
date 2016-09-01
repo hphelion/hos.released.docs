@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="cinder_status_failure">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Resolve <codeph>cinder-status</codeph> Failure
+        Before Upgrade</title>
+    <body>
+        <!--not tested-->
+        <p conkeyref="HOS-conrefs/applies-to-302"/>
+
+        <section>
+            <p>When you run the <codeph>cinder-status</codeph> check
+                before upgrading from <keyword keyref="kw-hos-phrase-301"/> to <keyword keyref="kw-hos-version-302"/>, you may
+                encounter an  issue with the Cinder volume or backup services either:
+                <ul>
+                    <li>unexpectedly not running on a host or </li>
+                    <li>unexpectedly running on a host</li>
+                    
+                </ul>
+                
+                If so, you will need to run the following steps before proceeding with the upgrade process.
+            </p>
+            
+            
+            <ol>
+                <li>SSH to each of the  controller nodes.</li>
+                <li>On each host, run the following command to identify the node running the cinder volume and backup services.
+                    Only one node should be running the cinder volume and backup services.
+                    
+<codeblock>
+ps uaxww |grep -e cinder-volume -e cinder-backup
+</codeblock>                    
+                </li>
+                <li>Log in to the lifecycle manager and run the <codeph>cinder-show-volume-hosts.yml</codeph> playbook to 
+                     determine the index number of the node where the cinder-volume and backup services are running.
+<codeblock>
+cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts cinder-show-volume-hosts.yml 
+</codeblock>                                
+                </li>
+                
+                <li>Edit the <codeph>~/helion/my_cloud/config/cinder/cinder_vol_run_location.yml</codeph> file. 
+                    Set the value of the <codeph>cinder_vol_host_index</codeph> variable to the index number of the node the cinder-volume and backup services are running.</li>
+                
+                <li>Commit the changes to git:
+<codeblock>
+cd ~/helion/hos/ansible
+git add -A
+git commit -m "updating cinder_vol_host_index value"
+</codeblock>                
+                </li>
+                <li>Run the configuration processor:
+<codeblock>
+cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml
+</codeblock>
+                </li>
+                <li>Update your deployment directory:
+<codeblock>
+cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml
+</codeblock>
+                </li>
+                <li>Re-run the <codeph>cinder-status.yml</codeph> playbook and confirm no issues are reported
+<codeblock>
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-status.yml
+</codeblock>                
+                
+                </li>
+                
+            </ol>
+            
+        </section>
+
+    </body>
+</topic>
