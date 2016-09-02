@@ -24,35 +24,35 @@
         <li><xref type="section" href="#F5_BIGIP_30_verify/privateHTTPS">Walkthrough of creation of
             a private HTTPS load balancer using port 443 with instances using port 80</xref></li>
       </ul>
-      <note type="important">Be aware of the following known issues: <ul>
-          <li>For limitations of the F5 Networks driver, review the F5 OpenStack LBaaSv2 driver
-              <xref
-              href="http://f5-openstack-lbaasv2-driver.readthedocs.io/en/liberty/release_notes.html"
-              scope="external" format="html">Release Notes</xref>.</li>
-          <li>The members of a pool should be removed (neutron lbaas-member-delete) before deleting
-            the pool (neutron lbaas-pool-delete), or the members may linger in the F5 appliance
-            despite being deleted in Neutron.</li>
-          <li>The pools of a listener should be removed (neutron lbaas-pool-delete) before deleting
-            the listener (neutron lbaas-listener-delete), or the pools may linger in the F5
-            appliance despite being deleted in Neutron.</li>
-          <li>If a pool is being monitored, in the BIG-IP control panel, the listener, the pool, and
-            the pool members will display a monitoring status, but the nodes will continue to be
-            unmonitored. This is because a node is not a service to monitor in LBaaSv2. A pool
-            member is a node with a port/service.</li>
-        </ul></note>
+      <p><note type="important">Be aware of the following known issues: <ul>
+            <li>For limitations of the F5 Networks driver, review the F5 OpenStack LBaaSv2 driver
+                <xref
+                href="http://f5-openstack-lbaasv2-driver.readthedocs.io/en/liberty/release_notes.html"
+                scope="external" format="html">Release Notes</xref>.</li>
+            <li>The members of a pool should be removed (neutron lbaas-member-delete) before
+              deleting the pool (neutron lbaas-pool-delete), or the members may linger in the F5
+              appliance despite being deleted in Neutron.</li>
+            <li>The pools of a listener should be removed (neutron lbaas-pool-delete) before
+              deleting the listener (neutron lbaas-listener-delete), or the pools may linger in the
+              F5 appliance despite being deleted in Neutron.</li>
+            <li>If a pool is being monitored, in the BIG-IP control panel, the listener, the pool,
+              and the pool members will display a monitoring status, but the nodes will continue to
+              be unmonitored. This is because a node is not a service to monitor in LBaaSv2. A pool
+              member is a node with a port/service.</li>
+          </ul></note></p>
     </section>
     <section id="F5_SuppFunc">
       <title>Supported Function Testing</title>
       <p>The following is a list of the specific functions tested. Every API command listed here was
         run manually in Neutron LBaaS v2 and completed successfully.</p>
-      <note type="attention">If you use the API to create, update, or delete any of the following,
-        the changes apply to BIG-IP as well as to Neutron: <ul>
-          <li>load balancer</li>
-          <li>listener</li>
-          <li>pool</li>
-          <li>pool member</li>
-          <li>health monitor</li>
-        </ul></note>
+      <p><note type="attention">If you use the API to create, update, or delete any of the
+          following, the changes apply to BIG-IP as well as to Neutron: <ul>
+            <li>load balancer</li>
+            <li>listener</li>
+            <li>pool</li>
+            <li>pool member</li>
+            <li>health monitor</li>
+          </ul></note></p>
       <p><b>Loadbalancer Functions</b></p>
       <table frame="all" rowsep="1" colsep="1" id="table_F5HOS30_fxs_LBR">
         <tgroup cols="2">
@@ -334,7 +334,7 @@ ansible -i hosts/verb_hosts NEU-SVR --sudo -m shell --args="executable=/bin/bash
 wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
 glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img</codeblock></li>
         <li>If you do not already have an external network created in your environment, use the
-          steps outlined in <xref href="../operations/create_extnet.dita"/> to do so.</li>
+          steps outlined in <xref href="../../operations/create_extnet.dita"/> to do so.</li>
         <li>Create a private network for the instances.
           <codeblock>neutron net-create f5private</codeblock></li>
         <li>Create a subnet under that network. We chose the subnet CIDR of
@@ -474,7 +474,7 @@ Welcome to 10.1.0.8
                   <dd>IP address or hostname of the BIG-IP appliance</dd>
                 </dlentry>
               </dl><p>Sample output:</p>
-              <image href="../../media/F5BIGIP_verify.png"/></li>
+              <image href="../../../media/F5BIGIP_verify.png"/></li>
           </ol>
         </li>
       </ol>
@@ -585,7 +585,7 @@ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qco
 wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
 glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img</codeblock></li>
         <li>If you do not already have an external network created in your environment, use the
-          steps outlined in <xref href="../operations/create_extnet.dita"/> to do so.</li>
+          steps outlined in <xref href="../../operations/create_extnet.dita"/> to do so.</li>
         <li>Create a private network for the instances.
           <codeblock>neutron net-create f5private</codeblock></li>
         <li>Create a subnet under that network. We chose the subnet CIDR of
@@ -643,9 +643,9 @@ Created a new listener:
 | sni_container_refs        |                                                                             |
 | tenant_id                 | d59003927b7441c588e29f6f590f225d                                            |
 +---------------------------+-----------------------------------------------------------------------------+</codeblock></li>
-        <li>Create a round robin HTTP
-          pool:<codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener_tls --protocol HTTP --name f5pool_tlsflex</codeblock>
-          <note>Take note of the UUID of the pool that is created as you will use it in step #27.</note></li>
+        <li>Create a round robin HTTP pool:<codeblock>neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener f5listener_tls --protocol HTTP --name f5pool_tlsflex</codeblock>
+          <note>Take note of the UUID of the pool that is created as you will use it in step
+            #27.</note></li>
         <li>Create pool members. The two new pool members you create will plug into the instances'
           fixed IP addresses. <p>To create a new member, use this command, ensuring that you use an
             IP address from the subnet CIDR you
@@ -748,7 +748,7 @@ Welcome to 10.1.0.8
                   <dd>IP address or hostname of the BIG-IP appliance</dd>
                 </dlentry>
               </dl><p>Sample output:</p>
-              <image href="../../media/f5-bigip-console-showing-working-lbaas-tls.png"/></li>
+              <image href="../../../media/f5-bigip-console-showing-working-lbaas-tls.png"/></li>
           </ol>
         </li>
       </ol>
