@@ -51,6 +51,13 @@
         normal operational processes.</p>
       <p>However, there are other scenarios where an understanding of RabbitMQ is important when a
         graceful shutdown did not occur.</p>
+      <p>These examples that follow assume you are using one of the entry-scale models where
+        RabbitMQ is hosted on your controller node cluster. If you are using a mid-scale model or
+        have a dedicated cluster that RabbitMQ lives on you may need to alter the steps accordingly.
+        To determine which nodes RabbitMQ is on you can use the <codeph>rabbit-status.yml</codeph>
+        playbook from your lifecycle
+        manager.<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts rabbitmq-status.yml</codeblock></p>
       <p><b>Your entire control plane cluster goes down</b></p>
       <p>If you have a scenario where all of your controller nodes went down, either manually or via
         another process such as a power outage, then an understanding of how RabbitMQ should be
@@ -65,10 +72,11 @@
             of the nodes in your cluster. The primary node is simply the one that owns the RabbitMQ
             configuration database that will be synchronized across the cluster.</note></li>
         <li>Run the <codeph>hlm-start.yml</codeph> playbook specifying the primary node (aka the
-          last node down determined in the first step):<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml -e rabbit_primary_hostname=&lt;hostname></codeblock>
-          <note>The <codeph>&lt;hostname></codeph> value will be the "shortname" for your node, as
-            found in the <codeph>/etc/hosts</codeph> file.</note></li>
+          last node down determined in the first
+            step):<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts hlm-start.yml -e rabbit_primary_hostname=&lt;hostname></codeblock><note>The
+              <codeph>&lt;hostname></codeph> value will be the "shortname" for your node, as found
+            in the <codeph>/etc/hosts</codeph> file.</note></li>
       </ol>
       <p><b>If one of your controller nodes goes down</b></p>
       <p>First step here is to determine whether the controller that went down is the primary
