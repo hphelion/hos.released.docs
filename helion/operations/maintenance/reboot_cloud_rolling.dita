@@ -45,8 +45,7 @@
         <p><b>Migrate Singleton Services First</b></p>
         <note>If you have previously rebooted your lifecycle manager for any reason, ensure that the
           apache2 service is running before continuing. To start the apache2 service, use this
-          command: <codeblock>sudo systemctl start apache2</codeblock>
-        </note>
+          command: <codeblock>sudo systemctl start apache2 </codeblock></note>
         <p>The first consideration before rebooting any controller nodes is that there are a few
           services that run as singletons (non-HA), thus they will be unavailable while the
           controller they run on is down. Typically this is a very small window, but if you want to
@@ -59,9 +58,10 @@
         <p>Execute the following command on each controller node to determine which node is hosting
           the cinder-volume singleton. It should be running on only one node: </p>
         <codeblock>ps auxww | grep cinder-volume | grep -v grep</codeblock>
-        <p>Run the <codeph>cinder-migrate-volume.yml</codeph> playbook - details about the Cinder volume and backup migration instructions can be found in
-            <xref href="../blockstorage/singleton_service_cinder.dita">Managing Cinder Volume and
-            Backup Services</xref>.</p>
+        <p>Run the <codeph>cinder-migrate-volume.yml</codeph> playbook - details about the Cinder
+          volume and backup migration instructions can be found in <xref
+            href="../blockstorage/singleton_service_cinder.dita">Managing Cinder Volume and Backup
+            Services</xref>.</p>
         <p><b>For the <codeph>nova-consoleauth</codeph> singleton service:</b></p>
         <p>The <codeph>nova-consoleauth</codeph> component runs by default on the first controller
           node, that is, the host with <codeph>consoleauth_host_index=0</codeph>. To move it to
@@ -70,7 +70,7 @@
           example, to move it to controller 2 (index of 1), run:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_host_index=1"</codeblock></p>
-        <note>For the HPE Helion OpenStack versions prior to 2.1.2, manually stop the
+        <note>For the <keyword keyref="kw-hos"/> versions prior to 2.1.2, manually stop the
             <codeph>nova-consoleauth</codeph> service on the node which is going to reboot after
           moving the service to a different controller via the Ansible playbook above. Use
             <codeph>sudo systemctl stop nova-consoleauth</codeph> to stop the service
@@ -89,19 +89,17 @@ ansible-playbook -i hosts/verb_hosts nova-start.yml --extra-vars "consoleauth_ho
           <li>Stop all services on the controller node that you are rebooting first:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;controller node></codeblock></li>
-          <li>Reboot the controller node, e.g. run the following command on the controller itself: <codeblock>sudo reboot</codeblock>
-            <p>Note that the current node being rebooted could be hosting the lifecycle manager.</p>
-          </li>
+          <li>Reboot the controller node, e.g. run the following command on the controller itself:
+              <codeblock>sudo reboot</codeblock><p>Note that the current node being rebooted could
+              be hosting the lifecycle manager.</p></li>
           <li>Wait for the controller node to become ssh-able and allow an additional minimum of
             five minutes for the controller node to settle. Start all services on the controller
             node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock>
-          </li>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;controller node></codeblock></li>
           <li>Verify that the status of all services on that is OK on the controller node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node></codeblock>
-          </li>
+ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node></codeblock></li>
           <li>When above start operation has completed successfully, you may proceed to the next
             controller node. Ensure that you migrate your singleton services off the node
             first.</li>
@@ -125,8 +123,7 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
           <li>Identify instances that exist on the compute node, and then either: <ul>
               <li>Live migrate the instances off the node before actioning the reboot. OR </li>
               <li>Stop the instances</li>
-            </ul>
-          </li>
+            </ul></li>
           <li>Reboot the node </li>
           <li>Restart the Nova services </li>
 
@@ -140,12 +137,9 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
             The following command must be run with nova admin
             credentials.<codeblock>nova list --host &lt;hostname&gt; --all-tenants</codeblock></li>
           <li> Migrate or Stop the instances on the compute node. <p> Migrate the instances off the
-              node by running one of the following commands for each of the instances:</p>
-            <!--<p>Until
-              HOS 3.0 that will be based on the Mitaka release, the only live-migration cases that
-              will work are the following:</p> -->
-            <p>If your instance is booted from a volume and has any number of Cinder volume
-              attached, use the nova live-migration
+              node by running one of the following commands for each of the instances:</p><p>If your
+              instance is booted from a volume and has any number of Cinder volume attached, use the
+              nova live-migration
             command:</p><codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
             If your instance has local (ephemeral) disk(s) only, you can use the --block-migrate
             option:<codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
@@ -155,29 +149,24 @@ ansible-playbook -i hosts/verb_hosts hlm-status.yml --limit &lt;controller node>
             instances:</p><codeblock>nova stop &lt;instance-uuid&gt;</codeblock></li>
           <li>Stop all services on the Compute node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;compute node></codeblock>
-          </li>
-          <li>SSH to your Compute nodes and reboot them: <codeblock>sudo reboot</codeblock>
-            <p>The operating system cleanly shuts down services and then automatically reboots. If
-              you want to be very thorough, run your backup jobs just before you reboot.</p>
-          </li>
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;compute node></codeblock></li>
+          <li>SSH to your Compute nodes and reboot them: <codeblock>sudo reboot</codeblock><p>The
+              operating system cleanly shuts down services and then automatically reboots. If you
+              want to be very thorough, run your backup jobs just before you reboot.</p></li>
           <li>Run the hlm-start.yml playbook from the lifecycle manager. If needed, use the
             bm-power-up.yml playbook to restart the node. Specify just the node(s) you want to start
             in the 'nodelist' parameter arguments, i.e.
             nodelist=&lt;node1&gt;[,&lt;node2&gt;][,&lt;node3&gt;].<codeblock>cd ~/helion/hos/ansible
-ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;compute node></codeblock>
-          </li>
+ansible-playbook -i hosts/localhost bm-power-up.yml -e nodelist=&lt;compute node></codeblock></li>
           <li>Execute the <b>hlm-start.yml </b>playbook. Specifying the node(s) you want to start in
             the 'limit' parameter arguments. This parameter accepts wildcard arguments and also
             '@&lt;filename>' to process all hosts listed in the file.
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></codeblock>
-          </li>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></codeblock></li>
           <li>Re-enable provisioning on the node:
             <codeblock>nova service-enable &lt;node-name> nova-compute</codeblock></li>
           <li> Restart any instances you
-            stopped.<codeblock>nova start &lt;instance-uuid></codeblock>
-          </li>
+            stopped.<codeblock>nova start &lt;instance-uuid></codeblock></li>
         </ol>
       </sectiondiv>
     </section>
@@ -186,22 +175,17 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;compute node></co
 
     <section id="rebootSwift"><title outputclass="headerH">Rebooting Swift Nodes</title>
       <sectiondiv outputclass="insideSection"><p>If your Swift services are on controller node,
-          please follow the controller node reboot instructions above.</p>
-        <p id="firstp">For a dedicated Swift PAC cluster or Swift Object resource node: </p>For each
-        Swift host <ol>
+          please follow the controller node reboot instructions above.</p><p id="firstp">For a
+          dedicated Swift PAC cluster or Swift Object resource node: </p>For each Swift host <ol>
           <li>Stop all services on the Swift node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;swift node></codeblock>
-          </li>
+ansible-playbook -i hosts/verb_hosts hlm-stop.yml --limit &lt;swift node></codeblock></li>
           <li>Reboot the Swift node by running the following command on the Swift node itself:
-            <codeblock>sudo reboot</codeblock>
-          </li>
+            <codeblock>sudo reboot</codeblock></li>
           <li>Wait for the node to become ssh-able and then start all services on the Swift node:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </codeblock>
-          </li>
-        </ol>
-      </sectiondiv>
+ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </codeblock></li>
+        </ol></sectiondiv>
     </section>
 
 
@@ -254,30 +238,27 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
           <li>Ceph monitor node </li>
           <li>Ceph OSD nodes </li>
         </ol> -->
-        <p>There are two categories of ceph nodes:</p>
-        <ul>
+        <p>There are two categories of ceph nodes:</p><ul>
           <li>monitor nodes</li>
           <li>OSD nodes</li>
-        </ul>
-        <p>Ceph nodes should be rebooted in their position in the overall sequence described in the
-          reboot order section above.</p>
-        <p>You should reboot both categories of ceph nodes in the order: monitor nodes, then OSD
-          nodes. All ceph nodes should reboot one-by-one, in series. </p> If a monitor is deployed
-        on controller node, then the rebooting sequence of the controller caters for the monitor
-        nodes, so you need to additionally reboot only the OSD nodes. <p>If the monitor is deployed
-          as a standalone; i.e., as separate set of resource nodes, you should reboot the monitor
-          nodes before rebooting the OSD nodes.</p> For example, if there are three monitor nodes
-        and three OSD nodes say, MON1, MON2 and MON3, with OSD1, OSD2, OSD3, then you should reboot
-        MON1, then MON2 and then MON3 followed by OSD1, then OSD2 and so on In both cases, please
-        ensure that you are serializing the reboot of a given family (monitor or OSD or controller);
-        that is, don't reboot them all at the same time. This will ensure that each service is up
-        and running and there is no impact on the client side. To reboot Ceph nodes, follow the
-        sequence below to safely reboot the entire Ceph cluster: <ol>
+        </ul><p>Ceph nodes should be rebooted in their position in the overall sequence described in
+          the reboot order section above.</p><p>You should reboot both categories of ceph nodes in
+          the order: monitor nodes, then OSD nodes. All ceph nodes should reboot one-by-one, in
+          series. </p> If a monitor is deployed on controller node, then the rebooting sequence of
+        the controller caters for the monitor nodes, so you need to additionally reboot only the OSD
+        nodes. <p>If the monitor is deployed as a standalone; i.e., as separate set of resource
+          nodes, you should reboot the monitor nodes before rebooting the OSD nodes.</p> For
+        example, if there are three monitor nodes and three OSD nodes say, MON1, MON2 and MON3, with
+        OSD1, OSD2, OSD3, then you should reboot MON1, then MON2 and then MON3 followed by OSD1,
+        then OSD2 and so on In both cases, please ensure that you are serializing the reboot of a
+        given family (monitor or OSD or controller); that is, don't reboot them all at the same
+        time. This will ensure that each service is up and running and there is no impact on the
+        client side. To reboot Ceph nodes, follow the sequence below to safely reboot the entire
+        Ceph cluster: <ol>
           <li>Reboot a Ceph monitor node in the cluster. </li>
           <li>Once the monitor node comes up, wait for a minute and then execute the following
             command:
-            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostname></codeblock>
-          </li>
+            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;monitor-hostname></codeblock></li>
           <li>If the above playbook executes successfully, repeat from step 1 to reboot the next
             Ceph monitor node in the cluster. </li>
           <li>Once all the monitor nodes have been rebooted, execute
@@ -285,11 +266,9 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
             monitors have joined the quorum by observing that in the output, the "quorum_names"
             section lists all the monitors in the Ceph cluster. </li>
           <li>Login to the OSD node to be rebooted and execute the following command to avoid the
-            cluster rebalancing itself: <codeblock>ceph osd set noout</codeblock>
-          </li>
+            cluster rebalancing itself: <codeblock>ceph osd set noout</codeblock></li>
           <li>Stop all the OSD services on the current node by executing below command:
-            <codeblock>sudo systemctl stop  ceph-osd@*</codeblock>
-          </li>
+            <codeblock>sudo systemctl stop  ceph-osd@*</codeblock></li>
           <li>Now reboot the OSD node. </li>
           <li>Once the OSD node is up, log in and execute the following command and observe that a
             line similar to "osd.0 192.17.11.7:6801/3824 boot" appears for all the OSDs on the node:
@@ -301,26 +280,24 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit &lt;swift node> </cod
               <codeph>/var/log/ceph/&lt;cluster-name>-osd.&lt;osd_number>.log</codeph> file) for
             resolving the issue. </li>
           <li>Now execute the following command from the re-booted OSD node, to unset the cluster
-            from noout : <codeblock>ceph osd unset noout</codeblock>
-          </li>
+            from noout : <codeblock>ceph osd unset noout</codeblock></li>
           <li>Execute the following playbook from the lifecycle manager node to check the status of
             the OSDs that have just come up:
-            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname></codeblock>
-          </li>
+            <codeblock>ansible-playbook -i hosts/verb_hosts ceph-status.yml --limit &lt;OSD-hostname></codeblock></li>
           <li>If the above playbook does not report any errors, repeat from step 5 for another Ceph
             OSD node in the cluster. </li>
           <li>Once the entire cluster is rebooted, execute this command
             <codeblock>ceph health detail</codeblock> to ensure that you see HEALTH_OK. </li>
-        </ol>
-      </sectiondiv>
+        </ol></sectiondiv>
     </section>
 
     <section id="getStatus">
       <title outputclass="headerH">Get List of Status Playbooks</title>
-      <sectiondiv outputclass="insideSection">
-        <p>Running the following command will yield a list of status playbooks:</p>
-        <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ls *status*</codeblock> Here is the list:
+      <sectiondiv outputclass="insideSection"><p>Running the following command will yield a list of
+          status
+        playbooks:</p><codeblock>cd ~/scratch/ansible/next/hos/ansible
+ls *status*</codeblock> Here
+        is the list:
         <codeblock>stack@helion-control-plane-cluster1-m1-mgmt:~/scratch/ansible/next/hos/ansible$ ls *status*
 bm-power-status.yml    eon-status.yml      heat-status.yml      logging-producer-status.yml  monasca-status.yml      rabbitmq-status.yml
 ceilometer-status.yml  FND-AP2-status.yml  hlm-status.yml       logging-server-status.yml    neutron-status.yml      ceph-status.yml        
