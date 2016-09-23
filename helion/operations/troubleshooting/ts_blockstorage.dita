@@ -115,10 +115,11 @@
         <li>Check if the Cinder API service is active by listing the available volumes from the
           lifecycle manager: <codeblock>source ~/service.osrc
 openstack volume list</codeblock></li>
-        <li>Run a basic diagnostic from the lifecycle manager: <codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts _cinder_post_check.yml</codeblock>
-          <p>This ansible playbook will list all volumes, create a 1 GB volume and then delete it
-            using the v1 and v2 APIs, which will exercise basic Cinder capability.</p></li>
+        <li>Run a basic diagnostic from the lifecycle manager:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts _cinder_post_check.yml</codeblock><p>This
+            ansible playbook will list all volumes, create a 1 GB volume and then delete it using
+            the v1 and v2 APIs, which will exercise basic Cinder capability.</p></li>
       </ol>
     </section>
 
@@ -132,6 +133,44 @@ ansible-playbook -i hosts/verb_hosts _cinder_post_check.yml</codeblock>
       <p>The Operations Console (Ops Console) provides a web UI method for checking alarms. See
           <xref href="../opsconsole_overview.dita"/> for details on how to connect to the Ops
         Console.</p>
+      <p><b>Creating a Cinder bootable volume fails</b></p>
+      <p>When creating a bootable volume from an image, your Cinder volume must be larger than the
+        Virtual Size (raw size) of your image or creation will fail with an error.</p>
+      <p>An error like this error would appear in <codeph>cinder-volume.log</codeph> file:</p>
+      <codeblock>'2016-06-14 07:44:00.954 25834 ERROR oslo_messaging.rpc.dispatcher ImageCopyFailure: Failed to copy image to volume: qemu-img: /dev/disk/by-path/ip-192.168.92.5:3260-iscsi-iqn.2003-10.com.lefthandnetworks:mg-vsa:146:volume-c0e75c66-a20a-4368-b797-d70afedb45cc-lun-0: error while converting raw: Device is too small
+2016-06-14 07:44:00.954 25834 ERROR oslo_messaging.rpc.dispatcher'</codeblock>
+      <p>In an example where creating a 1GB bootable volume fails, your image may look like
+        this:</p>
+      <codeblock>$ qemu-img info /tmp/image.qcow2
+image: /tmp/image.qcow2
+file format: qcow2
+virtual size: 1.5G (1563295744 bytes)
+disk size: 354M
+cluster_size: 65536
+...</codeblock>
+      <p>In this case, note that the image format is qcow2 and hte virtual size is 1.5GB, which is
+        greater than the size of the bootable volume. Even though the compressed image size is less
+        than 1GB, this bootable volume creation will fail.</p>
+      <p>When creating your disk model for nodes that will have the cinder volume role make sure
+        that there is sufficient disk space allocated for a temporary space for image conversion if
+        you will be creating bootable volumes. You should allocate enough space to the filesystem as
+        would be needed to cater for the raw size of images to be used for bootable volumes - for
+        example Windows images can be quite large in raw format.</p>
+      <p>By default, Cinder uses <codeph>/var/lib/cinder</codeph> for image conversion and this will
+        be on the root filesystem unless it is explicitly separated. You can ensure there is enough
+        space by ensuring that the root file system is sufficiently large, or by creating a logical
+        volume mounted at <codeph>/var/lib/cinder</codeph> in the disk model when installing the
+        system.</p>
+      <p>If your system is already installed, use these steps to update this:</p>
+      <ol>
+        <li>Edit the configuration item <codeph>image_conversion_dir</codeph> in
+            <codeph>cinder.conf.j2</codeph> to point to another location with more disk space. Make
+          sure that the new directory location has the same ownership and permissions as
+            <codeph>/var/lib/cinder</codeph>.</li>
+        <li>Then run this playbook:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+      </ol>
       <p><b>Cinder volume service is down</b></p>
       <p>The Cinder volume service could be down if the server hosting the volume service fails. In
         this case you should follow the documented procedure linked below to start the volume
@@ -328,8 +367,7 @@ tcp: [3] 192.168.185.3:3260,1 iqn.2003-10.com.lefthandnetworks:vsacluster:423:vo
  4     instance-00000018              running</codeblock>
       <p>You can then check each of the instances to see whether the volume has been imported. Using
         the same example, we use a substring from the iSCSI target:</p>
-      <codeblock>$ sudo virsh dumpxml 4|grep volume-7237a7ea-c77f-4edb-9f4f-7928cb605f44
-        &lt;source dev='/dev/disk/by-path/ip-192.168.185.3:3260-iscsi-iqn.2003-10.com.lefthandnetworks:vsacluster:423:volume-7237a7ea-c77f-4edb-9f4f-7928cb605f44-lun-0'/></codeblock>
+      <codeblock>$ sudo virsh dumpxml 4|grep volume-7237a7ea-c77f-4edb-9f4f-7928cb605f44 &lt;source dev='/dev/disk/by-path/ip-192.168.185.3:3260-iscsi-iqn.2003-10.com.lefthandnetworks:vsacluster:423:volume-7237a7ea-c77f-4edb-9f4f-7928cb605f44-lun-0'/></codeblock>
       <p>If the iSCSI target does not appear in the XML representation of any of the instances on
         the compute host then you can use <codeph>iscsiadm</codeph> to log out from the scsi
         session, disconnect the volume on VSA as described above, and reset the volume state to
