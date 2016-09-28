@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="ts_compute_rhel">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Troubleshooting Compute Service on RHEL
+    Hosts</title>
+  <abstract><shortdesc outputclass="hdphidden">Troubleshooting scenarios with resolutions for the
+      Nova service on RHEL Compute hosts.</shortdesc></abstract>
+  <body>
+    <section conkeyref="rhel_support/rhel_support_text"/>
+    <section>
+      <title>Permission error received when creating an instance on a RHEL Compute host</title>
+      <p>If you receive a <codeph>permission denied</codeph> error that looks similar to the one
+        below and you are using RHEL Compute hosts we provide a workaround to resolve this.</p>
+      <codeblock>2016-04-03 06:20:05.664 31376 ERROR nova.compute.manager [instance: 152d55fe-aed3-4543-a0c6-638622ae37e6] libvirtError: internal error: process exited while connecting to monitor: Could not access KVM kernel module: Permission denied
+2016-04-03 06:20:05.664 31376 ERROR nova.compute.manager [instance: 152d55fe-aed3-4543-a0c6-638622ae37e6] failed to initialize KVM: Permission denied</codeblock>
+      <p>Workaround to resolve this issue:</p>
+      <ol>
+        <li>SSH to the RHEL Compute host.</li>
+        <li>Become root:<codeblock>sudo su</codeblock></li>
+        <li>Run the following series of commands:
+            <codeblock>lsmod | grep kvm
+rmmod kvm_intel
+rmmod kvm
+lsmod | grep kvm
+modprobe kvm_intel
+modprobe kvm
+lsmod | grep kvm</codeblock><p>Here
+            is an example showing the expected
+            output:<codeblock>[root@R1N7340-007-cp1-comp0001-mgmt log]# lsmod | grep kvm
+kvm_intel             162153  0
+kvm                   525259  1 kvm_intel
+[root@R1N7340-007-cp1-comp0001-mgmt log]# rmmod kvm_intel
+[root@R1N7340-007-cp1-comp0001-mgmt log]# rmmod kvm
+[root@R1N7340-007-cp1-comp0001-mgmt log]# lsmod | grep kvm
+[root@R1N7340-007-cp1-comp0001-mgmt log]# modprobe kvm_intel
+[root@R1N7340-007-cp1-comp0001-mgmt log]# modprobe kvm
+[root@R1N7340-007-cp1-comp0001-mgmt log]# lsmod | grep kvm
+kvm_intel             162153  0
+kvm                   525259  1 kvm_intel
+[root@R1N7340-007-cp1-comp0001-mgmt log]#</codeblock></p></li>
+      </ol>
+      <p>An alternative workaround, if that does not work is to use <codeph>chown</codeph> to change
+        the permissions of the <codeph>/dev/kvm</codeph> directory:</p>
+      <codeblock>chown root:kvm /dev/kvm</codeblock>
+    </section>
+  </body>
+</topic>

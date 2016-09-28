@@ -4,8 +4,8 @@
 <topic id="nsx_deploy">
   <title><ph conkeyref="HOS-conrefs/product-title"/>Deploying <keyword keyref="kw-hos"/> on
     Baremetal</title>
-  <abstract><shortdesc outputclass="hdphidden">Step-by-step instructions for deploying <keyword keyref="kw-hos"
-      /> on baremetal for your NSX for vSphere integration.</shortdesc></abstract>
+  <abstract><shortdesc outputclass="hdphidden">Step-by-step instructions for deploying <keyword
+        keyref="kw-hos"/> on baremetal for your NSX for vSphere integration.</shortdesc></abstract>
   <body>
     <!--not tested-->
     <section id="about">
@@ -13,7 +13,7 @@
           keyref="kw-hos"/> environment. You can deploy <keyword keyref="kw-hos"/> on either
         baremetal or virtual machines. However, deploying on virtual machines is supported only
         through Professional Services at this time as it is a non-core feature. For more details on
-        core vs non-core features, see <xref href="../../liberty_features.dita"/>.</p>
+        core vs non-core features, see <xref href="../../../liberty_features.dita"/>.</p>
       <p>This document will go over creating the <keyword keyref="kw-hos"/> virtual machines within
         the vSphere environment for the Nova compute proxy node, configuring the cloud model, and
         integrating the NSX-v liberty neutron plugin into the <keyword keyref="kw-hos"/>
@@ -88,7 +88,7 @@
             href="http://www.hpe.com/software/entitlements" format="html" scope="external">Software
             Entitlement Portal</xref>.</li>
         <li>You can verify the download was complete via the signature verification process outlined
-            in the following guide at <xref
+          in the following guide at <xref
             href="https://h20392.www2.hpe.com/portal/swdepot/displayProductInfo.do?productNumber=HPLinuxCodeSigning"
             scope="external" format="html">HPE Linux code signing</xref>.</li>
         <li>Attach the ISO file to the lifecycle manager (normally done via the IPMI address) via
@@ -217,13 +217,14 @@ mv hos-3.0.0-20160503T085137Z.tar ~/</codeblock></li>
         when connecting to its client nodes. If you do not want to use a passphrase then just press
         return at the prompt.</p>
       <p>An example set of cloud input model files is being provided for demonstration purposes
-        which you can download at the following location: <xref href="../../../../resources/nsxv_bare_demo.zip" format="html"
-          scope="external"><keyword keyref="kw-hos"/> with VMware NSX-v integration example</xref>. This example model contains an environment with one
-          <b>lifecycle manager</b>, three <b>controllers</b>, and one <b>Nova compute proxy</b>.
-        There are also other example model input files under <codeph>~/helion/examples</codeph>
-        which is included in the build that can be used as a reference as well. You can find more
-        details about the cloud input model files and the fields in them in <xref
-          href="../../../architecture/input_model/input_model.dita"/>.</p>
+        which you can download at the following location: <xref
+          href="../../../../resources/nsxv_bare_demo.tar" format="tar" scope="external"><keyword
+            keyref="kw-hos"/> with VMware NSX-v integration example</xref>. This example model
+        contains an environment with one <b>lifecycle manager</b>, three <b>controllers</b>, and one
+          <b>Nova compute proxy</b>. There are also other example model input files under
+          <codeph>~/helion/examples</codeph> which is included in the build that can be used as a
+        reference as well. You can find more details about the cloud input model files and the
+        fields in them in <xref href="../../../architecture/input_model/input_model.dita"/>.</p>
       <p>Place your cloud input model under the <codeph>~/helion/my_cloud/definition</codeph>
         directory (this example uses the <codeph>nsxv_bare_demo.tar</codeph> that this guide
         provides).<codeblock>cd ~/helion/my_cloud/definition/
@@ -282,11 +283,10 @@ esxi-compute-1</codeblock></li>
             option.<codeblock>cd ~/helion/hos/ansible
 ansible-playbook -i hosts/localhost bm-reimage.yml -e nodelist=controller1,controller2,controller3</codeblock><note>To
             confirm the names of your controller nodes to use, you can use the following
-              command:<codeblock>sudo cobbler system list</codeblock></note></li>
+            command:<codeblock>sudo cobbler system list</codeblock></note></li>
       </ol>
-      <p>Once the playbook has
-        completed, each controller node should have an operating system installed with an IP
-        configured on <codeph>eth0</codeph>.</p>
+      <p>Once the playbook has completed, each controller node should have an operating system
+        installed with an IP configured on <codeph>eth0</codeph>.</p>
       <p>After your controller nodes have been completed, next you should install the operating
         system on your Nova compute proxy virtual machines. Each configured virtual machine should
         be able to PXE boot into the operating system installer.</p>

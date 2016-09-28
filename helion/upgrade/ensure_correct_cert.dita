@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="cert_issues">
+  <title><ph conkeyref="HOS-conrefs/product-title"/> Ensure Custom Certificates Are Persisted During
+    Upgrade</title>
+  <body>
+    <section>
+      <p>In HPE Helion OpenStack 2.x if you used your own certificate for public endpoints instead
+        of using the default my-public-cert and you removed the default certificate file from the
+        input model files, you will see merge conflicts during the upgrade to HPE Helion OpenStack
+        3.0.2 and your certificates will not be copied correctly.</p>
+      <p>To prevent these issues, please follow the steps outlined here:</p>
+      <p>Before beginning the upgrade:</p>
+      <ol>
+        <li>Get the name of the certificate file that's used in the existing HPE Helion OpenStack
+          2.x configuration:
+          <codeblock>$ grep cert-file ~/helion/my_cloud/definition/data/network_groups.yml | grep -v "#" 
+     cert-file: myown-cert</codeblock></li>
+        <li>If the cert-file name is something other than <codeph>my-public-cert</codeph>, do the
+          following <ol>
+            <li>Create a directory named <codeph>public</codeph> under
+                <codeph>~/helion/my_cloud/config/tls/certs/</codeph><codeblock>$ mkdir ~/helion/my_cloud/config/tls/certs/public </codeblock></li>
+            <li>Copy your certificate file from
+                <codeph>~/helion/my_cloud/config/tls/certs/&lt;Certificate file></codeph> to
+                <codeph>~/helion/my_cloud/config/tls/certs/public</codeph>. <p>For
+              example:</p><codeblock>$ cp -p ~/helion/my_cloud/config/tls/certs/myown-cert ~/helion/my_cloud/config/tls/certs/public/</codeblock></li>
+            <li>If my-public-cert has been removed from the
+                <codeph>~/helion/my_cloud/config/tls/certs/</codeph> directory as part of the 2.x
+              installation, then do the following: <ol>
+                <li>First find the last two commits where there were changes made to the
+                  my-public-cert
+                  file:<codeblock>$ cd ~/helion
+$ git log -- hos/ansible/roles/tls-frontend/files/my-public-cert
+commit eec588b5b58beffc8cf390a06b8b576db4558961
+Author: Helion git user &lt;helion@hp.com>
+Date:   Fri Sep 16 11:48:48 2016 +0000
+HOS 2.1 - my-public-cert removed before first commit
+
+commit 6b5680273d4bf7e5ae8ef661d18a705a4fa46c2e
+Author: Helion git user &lt;helion@hp.com>
+Date:   Fri Sep 16 11:44:20 2016 +0000
+New drop</codeblock></li>
+                <li>Check in which commit <codeph>my-public-cert</codeph> still exists from the last
+                  two commits. Every new package of HPE Helion OpenStack 2.x would contain the
+                    <codeph>my-public-cert</codeph>:<codeblock>git ls-tree -r &lt;commit id> | grep "hos/ansible/roles/tls-frontend/files/my-public-cert"</codeblock><p>For
+                    example:</p><codeblock>$ cd ~/helion
+$ git ls-tree -r eec588b5b58beffc8cf390a06b8b576db4558961 | grep "hos/ansible/roles/tls-frontend/files/my-public-cert"
+$ git ls-tree -r 6b5680273d4bf7e5ae8ef661d18a705a4fa46c2e | grep "hos/ansible/roles/tls-frontend/files/my-public-cert"
+100644 blob 826d448875e47e1f03bf3fcc5260dfbea4f37655    hos/ansible/roles/tls-frontend/files/my-public-cert</codeblock><p>In
+                    the example above, the file exists in commit id
+                      <codeph>6b5680273d4bf7e5ae8ef661d18a705a4fa46c2e</codeph></p></li>
+                <li>Check out the file from that
+                    commit:<codeblock>$ git checkout &lt;commit id> hos/ansible/roles/tls-frontend/files/my-public-cert</codeblock><p>For
+                    example</p><codeblock>$ cd ~/helion
+$ git checkout 6b5680273d4bf7e5ae8ef661d18a705a4fa46c2e hos/ansible/roles/tls-frontend/files/my-public-cert</codeblock></li>
+                <li>Verify that the file exists in the
+                    <codeph>~/helion/my_cloud/config/tls/certs/</codeph> directory.<note>
+                    <codeph>~/helion/my_cloud/config/tls/certs</codeph> is a symbolic link to the
+                      <codeph>~/helion/hos/ansible/roles/tls-frontend/files</codeph>
+                    directory</note></li>
+                <li>Copy the <codeph>~/helion/my_cloud/config/tls/certs/my-public-cert</codeph> file
+                  to <codeph>~/helion/my_cloud/config/tls/certs/public</codeph>
+                  directory:<codeblock>cp -p ~/helion/my_cloud/config/tls/certs/my-public-cert ~/helion/my_cloud/config/tls/certs/public/</codeblock></li>
+              </ol></li>
+         
+        <li>Finally, verify that <codeph>my-public-cert</codeph> and your own certificate are
+              available in the <codeph>~/helion/my_cloud/config/tls/certs/public/</codeph>
+                directory.<p>For
+              example:</p><codeblock>$ ls -l ~/helion/my_cloud/config/tls/certs/public/
+total 8
+-rw-r--r-- 1 stack stack 3302 Sep 16 11:48 myown-cert
+-rw-r--r-- 1 stack stack 3306 Sep 16 15:42 my-public-cert</codeblock></li><li>Add the files to git and commit the
+              changes:<codeblock>$cd ~/helion
+$ git add -A
+$ git commit -a -m "Cetificate file changes for 3.x upgrade"
+[site 01ad9bd] Cetificate file changes for 3.x upgrade
+3 files changed, 163 insertions(+)
+create mode 100644 hos/ansible/roles/tls-frontend/files/my-public-cert
+create mode 100644 hos/ansible/roles/tls-frontend/files/public/myown-cert
+create mode 100644 hos/ansible/roles/tls-frontend/files/public/my-public-cert</codeblock></li>
+      </ol></li></ol>
+    </section>
+  </body>
+</topic>

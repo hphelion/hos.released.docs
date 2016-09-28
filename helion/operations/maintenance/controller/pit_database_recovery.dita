@@ -11,13 +11,23 @@
     <section>
       <title>Restore from a Swift backup</title>
       <ol>
-        <li>Log in to the first node running the MySQL service, which may be your first controller
-          node.</li>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Determine which node is the first host member in the <codeph>FND-MDB</codeph> group,
+          which will be the first node hosting the MySQL service in your cloud. You can do this by
+          looking at the contents of the file
+            below:<codeblock>~/scratch/ansible/next/hos/ansible/hosts/verb_hosts</codeblock><p>In
+            this example below, <codeph>helion-cp1-c1-m1-mgmt</codeph> would be the first
+            host:<codeblock>[FND-MDB-ccp-cluster1:children]
+<b>helion-cp1-c1-m1-mgmt</b>
+helion-cp1-c1-m2-mgmt
+helion-cp1-c1-m3-mgmt</codeblock></p></li>
+        <li>Log in to the first host member from the <codeph>FND-MDB</codeph> group.</li>
         <li>Become root: <codeblock>sudo su</codeblock></li>
         <li>Source the backup environment file
           <codeblock>source /home/stack/backup.osrc</codeblock></li>
         <li>List the jobs<codeblock>freezer-scheduler -c &lt;hostname&gt; job-list</codeblock></li>
-        <li>Get the id corresponding to the job "HLM Default: Mysql restore from Swift".</li>
+        <li>Get the id corresponding to the job <codeph>HLM Default: Mysql restore from
+            Swift</codeph>.</li>
         <li>Launch the restore.
           <codeblock>freezer-scheduler -c &lt;hostname&gt; job-start -j &lt;job-id&gt;</codeblock></li>
         <li>This will take some time. While you wait you can follow the progress in the
@@ -26,11 +36,16 @@
         <li>Stop the Percona DB service:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock></li>
-        <li>Log back in to the first node running the MySQL service.</li>
-        <li>Clean the Mysql directory by removing everything there:
+        <li>Log back in to the first node running the MySQL service. (Same node as step #3)</li>
+        <li>Clean the MySQL directory using this command:
           <codeblock>sudo rm -r /var/lib/mysql/*</codeblock></li>
-        <li>Copy the restored files back to the mysql
+        <li>Copy the restored files back to the MySQL
           directory:<codeblock>sudo cp -pr /tmp/mysql_restore/* /var/lib/mysql</codeblock></li>
+        <li>Log in to each of the other nodes in your MySQL cluster (the other nodes determined from
+          step #2) and remove the <codeph>grastate.dat</codeph> file from each of
+            them:<codeblock>sudo rm /var/lib/mysql/grastate.dat</codeblock><note>Do not remove this
+            file from the first node in your MySQL cluster. Ensure you only do this from the other
+            cluster nodes.</note></li>
         <li>Log back in to the lifecycle manager.</li>
         <li>Start the Percona DB service back up:
           <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -39,13 +54,13 @@ ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml</codeblock></li>
     </section>
     <section>
       <title>Restore from an SSH backup</title>
-      <p>Follow the same procedure as the one for Swift but select the job "HLM Default: Mysql
-        restore from SSH".</p>
+      <p>Follow the same procedure as the one for Swift but select the job <codeph>HLM Default:
+          Mysql restore from SSH</codeph>.</p>
     </section>
     <section>
       <title>Restore MySQL manually</title>
-      <p>If restoring MySQL fails during the <codeph>percona-bootstrap.yml</codeph> procedure
-        outlined above, you can follow this procedure to manually restore MySQL:</p>
+      <p>If restoring MySQL fails during the procedure outlined above, you can follow this procedure
+        to manually restore MySQL:</p>
       <ol>
         <li>Log in to the lifecycle manager.</li>
         <li>Stop the MySQL cluster:
@@ -54,9 +69,8 @@ ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock></li>
         <li>On all of the nodes running the MySQL service, which should be all of your controller
           nodes, run the following command to purge the old
           database:<codeblock>sudo rm -r /var/lib/mysql/*</codeblock></li>
-        <li>On the first node running the MySQL service, which is likely your first controller node,
-          restore the backup with the command below. If you have already restored to a temporary
-          directory, copy the files
+        <li>On the first node running the MySQL service restore the backup with the command below.
+          If you have already restored to a temporary directory, copy the files
           again.<codeblock>sudo cp -pr /tmp/mysql_restore/* /var/lib/mysql</codeblock></li>
         <li>If you need to restore the files manually from SSH, follow these steps: <ol>
             <li>Become root: <codeblock>sudo su</codeblock></li>
