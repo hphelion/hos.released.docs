@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="installation_prerequisites">
+    <title><u>Prerequisites</u></title>
+    <body>
+        <section id="section_bg5_qy4_jx">
+            <p><b>HPE Helion OpenStack</b></p>
+            <p><keyword keyref="kw-hos"/> must be deployed fully before performing the Cisco ACI
+                integration. Find instructions for deploying Helion OpenStack 3.0 <xref
+                    href="http://docs.hpcloud.com/#3.x/helion/installation/installing_kvm.html"
+                    format="html" scope="external">here</xref>.</p>
+            <p>On the lifecycle manager, the apache service must be listening for HTTP requests on
+                port 79. Further, <codeph>/opt/hlm_packager</codeph> must be set as the document
+                root. This is the default and automatic configuration for the Helion OpenStack
+                deployment.</p>
+            <p>Every Neutron Open vSwitch server (Neutron controllers and Nova compute nodes) must
+                have the apt service configured to use the following sources.<ul id="ul_r51_1z4_jx">
+                    <li>deb [arch=amd64] http://HLM_IP:79/hlm/hlinux cattleprod main contrib
+                        non-free</li>
+                    <li>deb [arch=i386] http://HLM_IP:79/hlm/cmc32 cattleprod main</li>
+                </ul></p>
+            <p>Replace <codeph>HLM_IP</codeph> with the IP address of your lifecycle manager. The
+                preceding apt sources are configured automatically (in
+                    <codeph>/etc/apt/sources.list.d</codeph>) as part of the Helion OpenStack cloud
+                deployment, and only require manual configuration if the defaults have been changed
+                since deployment.</p>
+        </section>
+        <section id="section_u2q_ry4_jx">
+            <p><b>Network</b></p>
+            <p>In addition to the standard network configuration described in <xref
+                    href="http://docs.hpcloud.com/#3.x/helion/installation/preinstall_checklist.html"
+                    format="html" scope="external">Helion OpenStack network configuration</xref>, a
+                physical network port on each Nova compute node must be plugged into the Cisco ACI
+                fabric. The command <codeph>sudo lldpcli show neighbors</codeph> should reveal a
+                router/leaf from the Cisco ACI fabric.<note><codeph>lldpcli</codeph> must be
+                    manually installed using the <codeph>apt</codeph> package manager in order to
+                    run the <codeph>lldpcli</codeph> command.</note></p>
+            <p>All of your Neutron controller nodes must be able to communicate with the APIC. Run
+                the following command on your Neutron controller nodes to fetch the APIC login
+                interface (the following command assumes that the APIC IP address is 10.105.1.10.
+                Substitiute the IP address of your APIC if
+                necessary).<codeblock>curl -k https://10.105.1.10</codeblock></p>
+            <p>
+                <note>Some Cisco third-party software is not available via the internet, but is
+                    provided by offline resources.</note>
+                <note>Your lifecycle manager and Neutron controller nodes must have internet access
+                    to successfully run the automatic deployment playbook. If necessary, the
+                    automatic deployment playbook can make use of an HTTP/HTTPS proxy.</note>
+            </p>
+            <p>To summarize the prerequisites:<ul id="ul_azx_g1p_jx">
+                    <li>Ensure that each Nova compute node has a dedicated network port that is
+                        connected to a Cisco ACI leaf.</li>
+                    <li>Ensure that each Neutron controller node can communicate with the APIC.</li>
+                    <li>Ensure that the lifecycle manager, as well as all Neutron controller nodes
+                        have internet connectivity.</li>
+                </ul></p>
+        </section>
+    </body>
+</topic>
+

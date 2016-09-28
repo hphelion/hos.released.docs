@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="nova_concepts">
+    <title><u>Nova</u></title>
+    <body>
+        <p>Nova compute nodes, which use Open vSwitch, interface directly with the APIC under the
+            guidance of the Neutron servers. A VLAN-tagged interface is created on the physical port
+            that is connected to the APIC, and is used for communications over OpFlex.</p>
+        <section id="section_lf1_y54_jx">
+            <p><b>OpFlex</b></p>
+            <p>OpFlex is the protocol used for the network traffic on the infrastructure ('infra')
+                VLAN.</p>
+            <p/>
+        </section>
+        <section id="section_x4h_z54_jx">
+            <p><b>Agent OVS</b></p>
+            <p><codeph>agent-ovs</codeph> is an agent that runs on the Nova compute nodes. It
+                functions as an OpFlex endpoint.</p>
+        </section>
+        <section id="section_e5t_bv4_jx">
+            <p><b>APIC Host Agent</b></p>
+            <p>The APIC host agent runs on Nova compute as well as Neutron nodes. The agent that
+                runs on Nova nodes detects its individual node's connection to the APIC and provides
+                that information to the agent running on the Neutron controller nodes.</p>
+        </section>
+        <section id="section_pjn_dv4_jx">
+            <p><b>APIC API &amp; APIC ML2 Driver</b></p>
+            <p>The APIC API and APIC ML2 driver packages support the Neutron OpFlex agent on Nova
+                compute nodes. Features such as the Neutron metadata agent are offloaded from the
+                Neutron controller nodes and onto the Nova compute nodes.</p>
+        </section>
+        <section id="section_st5_2v4_jx">
+            <p><b>Neutron OpFlex Agent</b></p>
+            <p>This agent, identified as <codeph>neutron-opflex-agent.service</codeph> on the Nova
+                compute nodes, monitors OpFlex spawns other processes described in the following
+                    list.<ul id="ul_ch4_3v4_jx">
+                    <li>Supervisor - Cisco's spinoff process monitoring system. Supervisor spawns
+                        the following processes.<ul id="ul_bb3_kv4_jx">
+                            <li>Neutron metadata agent (<codeph>neutron-metadata-agent</codeph>)
+                                provides the metadata for virtual machines, proxied through the APIC
+                                ML2 driver's metadata namespace proxy.</li>
+                            <li>OpFlex EP watcher (<codeph>opflex-ep-watcher</codeph>). This service
+                                monitors OpFlex endpoints.</li>
+                            <li>OpFlex state watcher (<codeph>opflex-state-watcher</codeph>). This
+                                service configures metadata routing.<ul id="ul_yqr_sv4_jx">
+                                    <li>OpFlex namespace proxy (<codeph>opflex-ns-proxy</codeph>).
+                                        This service performs the proxying for optimized
+                                        metadata.</li>
+                                </ul></li>
+                        </ul></li>
+                </ul></p>
+        </section>
+    </body>
+    
+</topic>
