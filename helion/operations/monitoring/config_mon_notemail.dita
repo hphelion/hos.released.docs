@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic xml:lang="en-us" id="config_mon_notemail">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring the Monitoring Email Notification Settings</title>
+  <abstract><shortdesc outputclass="hdphidden">The monitoring service, based on Monasca, allows you
+      to configure an external SMTP server for email notifications when alarms
+    trigger.</shortdesc>In <keyword keyref="kw-hos-phrase"/> you have the option to specify a SMTP
+    server for email notifications. These steps will assist in this process.</abstract>
+  <body>
+    <section id="email">
+      <title>Configuring Email Notifications</title>
+      <p>In order for the monitoring service to be able to send email notifications about alarms, it
+        needs to be configured with an email server. The email server is not provided by <keyword
+          keyref="kw-hos"/>, but must be specified in the configuration file described below. The
+        email server must support SMTP.</p>
+      <p>You can specify your SMTP server either during the installation phase of your cloud
+        deployment or post-installation if need be. We will show both methods below.</p>
+      <note type="note">You may need to change the "From" email address for notifications if your
+        email server rejects email from the default:
+        <codeblock>notification@exampleCloud.com</codeblock> You can also specify the email address
+        where notifications are sent; the "To" address. These can be configured either during or
+        after initial installation. The instructions are provided after you configure the SMTP
+        server.</note>
+      <p><b>During Initial Installation</b></p>
+      <p>To configure the SMTP server, edit the
+          <codeph>~/helion/my_cloud/definition/cloudConfig.yml</codeph> file during installation.
+        There should be a section at the bottom for <codeph>smtp-settings</codeph> that looks like
+        this below. If it doesn't exist, you can add it:</p>
+      <codeblock>smtp-settings:
+  #  server: mailserver.examplecloud.com
+  #  port: 25
+  #  timeout: 15
+  # These are only needed if your server requires authentication
+  #  user:
+  #  password:</codeblock>
+      <p>This table explains each of these values: <table frame="all" rowsep="1" colsep="1"
+          id="smtp_settings">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="1.0*"/>
+            <colspec colname="c2" colnum="2" colwidth="1.0*"/>
+            <thead>
+              <row>
+                <entry>Value</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>Server (required)</entry>
+                <entry>The server entry must be uncommented and set to a valid hostname or IP
+                  Address.</entry>
+              </row>
+              <row>
+                <entry>Port (optional)</entry>
+                <entry>If your SMTP server is running on a port other than the standard 25, then
+                  uncomment the port line and set it your port.</entry>
+              </row>
+              <row>
+                <entry>Timeout (optional)</entry>
+                <entry>If your email server is heavily loaded, the timeout parameter can be
+                  uncommented and set to a larger value. 15 seconds is the default.</entry>
+              </row>
+              <row>
+                <entry>User / Password (optional)</entry>
+                <entry>If your SMTP server requires authentication, then you can configure user and
+                  password. Use double quotes around the password to avoid issues with special
+                  characters.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></p>
+    </section>
+    <section id="emailAddress">
+      <title>Configuring the notification email addresses prior to initial installation</title>
+      <p>Prior to the initial cloud installation, you should make changes to the configuration files
+        to specify the sending and receiving email addresses for monitoring notifications. These
+        steps will show you how to do this.</p>
+      <p>To configure the receiving email address, during installation, <ol id="ol_oqf_ss2_lx">
+          <li>Log in to the lifecycle manager (deployer).</li>
+          <li>Open the following file:
+            <codeblock>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeblock></li>
+          <li>Find the following variable: <codeph>notification_address</codeph>. If it doesn't
+            exist, you can add it.</li>
+          <li>Change the value to be the email address you want to use.</li>
+          <li>Save the changes to the file. </li>
+        </ol></p>
+      <p>To configure the sending email address, during installation, <ol id="ol_pqf_ss2_lx">
+          <li>Log in to the lifecycle manager.</li>
+          <li>Edit the following file:
+            <codeblock>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeblock></li>
+          <li>Update the sending email address in the following variable:
+              <codeblock>email_from_addr</codeblock><p>Here is an example snippet, showing the
+              details of the
+            file:</p><codeblock>---
+alarm_topic: alarm-state-transitions
+<b>email_from_address: notification@exampleCloud.com</b>
+notification_kafka_group: monasca-notification</codeblock></li>
+          <li>Save the changes to the file. </li>
+        </ol></p>
+    </section>
+    <section id="After_Install">
+      <title>After Initial Installation</title>
+      <p>If you need to configure a SMTP server or make changes to your existing SMTP server after
+        your initial installation, these steps will show you how:</p>
+      <ol id="ol_qqf_ss2_lx">
+        <li>Log in to the lifecycle manager.</li>
+        <li>To configure the SMTP server, edit the
+            <codeph>~/helion/my_cloud/definition/cloudConfig.yml</codeph> file. There should be a
+          section at the bottom for <codeph>smtp-settings</codeph> that looks like the example
+          below. If it doesn't exist, you can add it. <p>This example also provides descriptions of
+            each
+            line.</p><codeblock>smtp-settings:
+  #  server: mailserver.examplecloud.com
+  #  port: 25
+  #  timeout: 15
+  # These are only needed if your server requires authentication
+  #  user:
+  #  password:</codeblock><p>Ensure
+            that you uncomment these lines by removing the hash (#) marks.</p></li>
+        <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local
+            git repo</xref>, as follows:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+        <li>Run the configuration processor with this command:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Use the playbook below to update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>Run the Monasca reconfigure playbook to deploy the changes:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml --tags notification</codeblock><note>You
+            may need to use the <codeph>--ask-vault-pass</codeph> switch if you opted for encryption
+            during the initial deployment.</note></li>
+      </ol>
+    </section>
+    <section id="emailAddress_after">
+      <title>Configuring Email Addresses After Installation</title>
+      <p>You can edit one or both of the addresses used to send and recieve email notifications. The
+        instructions are different for the "To" and "From" addresses. The instructions are also
+        different if you configure the addresses during or after installation.</p>
+      <p>To configure the "To" email address, after installation,</p>
+      <ol id="ol_rqf_ss2_lx">
+        <li>Log in to the Operations Console in a browser by entering either the URL or Virtual IP
+          connected to Ops Console. <p>For
+          example:</p><codeblock>https://myhelion.test:9095
+https://VIP:9095</codeblock></li>
+        <li>On the <b>Home</b> screen, click the menu represented by 3 horizontal lines. <image
+            href="../../../media/opsconsole/OpsConsoleBurgerMenu.png" id="image_sqf_ss2_lx"/></li>
+        <li>From the menu that slides in on the left side, click <b>Home</b>, and then <b>Alarm
+            Explorer</b>.</li>
+        <li>On the <b>Alarm Explorer</b> page, at the top, click the <b>Notification Methods</b>
+          text.</li>
+        <li>On the <b>Notification Methods</b> page, find the row with the <b>Default Email</b>
+          notification.</li>
+        <li>In the <b>Default Email</b> row, click the details icon <image
+            href="../../../media/opsconsole/DetailDots.png" id="image_tqf_ss2_lx"/>, and then click
+            <b>Edit</b>.</li>
+        <li>On the <b>Edit Notification Method: Default Email</b> page, in <b>Name</b>, <b>Type</b>,
+          and <b>Address/Key</b>, type in the values you want to use.</li>
+        <li>On the <b>Edit Notification Method: Default Email</b> page, click <b>Update
+            Notification</b>.</li>
+      </ol>
+      <note type="attention">Once the notification has been added, running playbooks will not change
+        it.</note>
+      <p>To configure the "From" email address, after installation, <ol id="ol_uqf_ss2_lx">
+          <li>Log in to the lifecycle manager (deployer).</li>
+          <li>Open the following file:
+            <codeblock>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeblock></li>
+          <li>Find the following variable: <codeph>from_addr:</codeph>. If it doesn't exist, you can
+            add it.</li>
+          <li>Change the value to be the email address you want to use.</li>
+          <li>Save the changes to the file. </li>
+          <li>To commit the changes to your local git
+            repository:<codeblock>cd ~/helion/hos/ansible
+git add -A git 
+commit -m "My config or other commit message"</codeblock></li>
+          <li>To run the configuration
+            processor:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+          <li>To create a deployment
+            directory:<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+          <li>To run the reconfigure
+            playbook:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts monasca-reconfigure.yml</codeblock></li>
+        </ol></p>
+    </section>
+  </body>
+</topic>
