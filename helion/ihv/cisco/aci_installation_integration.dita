@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="aci_installation_procedure">
+    <title><u>Integration</u></title>
+    <body>
+        <ol id="ol_tld_gfp_jx">
+            <li>On your lifecycle manager, write the file <codeph>ciscoaci-deploy.yml</codeph> to a
+                directory of your choice. This guide assumes that you have written the file into the
+                    <codeph>/home/stack/</codeph> directory (the relative path <codeph>~</codeph> is
+                used in this guide to refer to this directory). For example, you can write the file
+                to <codeph>~/ciscoaci-deploy.yml</codeph>. Download the file here: <xref
+                    format="html" scope="external"
+                    href="../../../media/hos.docs/ihv/cisco/ciscoaci-deploy.yml.zip"
+                    >ciscoaci-deploy.yml.zip</xref>.</li>
+            <li>Copy the file <codeph>ciscoaci-deploy-resources.tar.gz</codeph> to the same
+                directory where you put the <codeph>ciscoaci-deploy.yml</codeph> file. For example,
+                    <codeph>~/ciscoaci-deploy-resources.tar.gz</codeph>. Download the file here:
+                    <xref scope="external" format="html"
+                    href="../../../media/hos.docs/ihv/cisco/ciscoaci-deploy-resources.tar.gz"
+                    >ciscoaci-deploy-resources.tar.gz</xref>.</li>
+            <li>Run the Cisco ACI integration
+                    playbook.<codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts ~/ciscoaci-deploy.yml [OPTIONS]</codeblock><p>Replace
+                        <codeph>[OPTIONS]</codeph> with the following switches that are applicable
+                    to your integration.</p><p>
+                    <table id="table_lhs_xfp_jx">
+                        <tgroup cols="4">
+                            <colspec colnum="1" colname="col1"/>
+                            <colspec colnum="2" colname="col2"/>
+                            <colspec colnum="3" colname="col3"/>
+                            <colspec colnum="4" colname="col4"/>
+                            <thead>
+                                <row>
+                                    <entry>Switch</entry>
+                                    <entry>Requirement</entry>
+                                    <entry>Default</entry>
+                                    <entry>Description</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                                <row>
+                                    <entry><codeph>-e apic_ip='&lt;string>'</codeph></entry>
+                                    <entry>Recommended</entry>
+                                    <entry>10.105.1.10</entry>
+                                    <entry><codeph>&lt;string></codeph> is the IP address of the
+                                        APIC, as seen by the Neutron controller nodes.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e apic_username='&lt;string>'</codeph></entry>
+                                    <entry>Recommended</entry>
+                                    <entry>admin</entry>
+                                    <entry><codeph>&lt;string></codeph> is the username used to
+                                        authenticate to the APIC. </entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e apic_password='&lt;string>'</codeph></entry>
+                                    <entry>Recommended</entry>
+                                    <entry>cisco123</entry>
+                                    <entry><codeph>&lt;string></codeph> is the password used to
+                                        authenticate to the APIC. The password must not contain
+                                        single quotes ("<codeph>'</codeph>").</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e apic_system_id='&lt;string>'</codeph></entry>
+                                    <entry>Suggested</entry>
+                                    <entry>helion-openstack</entry>
+                                    <entry><codeph>&lt;string></codeph> is a string up to 16
+                                        characters long that identifies your cloud to the
+                                        APIC.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e
+                                        proxy='&lt;proxy_address:port>'</codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry><i>(blank)</i></entry>
+                                    <entry>If your environment requires a proxy to reach the
+                                        internet, specify the proxy information in
+                                            <codeph>&lt;proxy_address:port></codeph>. This proxy
+                                        information will be used by <codeph>git</codeph> on the
+                                        lifecycle manager, and by <codeph>pip</codeph> on the
+                                        Neutron controller and Nova compute nodes.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e
+                                            opflex_encapsulation_mode='&lt;string>'</codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry>vxlan</entry>
+                                    <entry><codeph>&lt;string></codeph> is one of the following two
+                                        options: <codeph>vxlan</codeph> or <codeph>vlan</codeph>.
+                                        This option will set the OpFlex port encapsulation mode to
+                                        VXLAN or VLAN, respectively. If any other string is
+                                        specified, deployment will fail at the OpFlex port
+                                        encapsulation configuration stage.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e
+                                        ml2_vlan_physnet='&lt;string>'</codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry>physnet1</entry>
+                                    <entry><codeph>&lt;string></codeph> is the name of the physical
+                                        network for the
+                                            <codeph>ml2_type_vlan.network_vlan_ranges</codeph>
+                                        configuration option. We recommend leaving this option set
+                                        as the default. This option only applies to the VLAN OpFlex
+                                        encapsulation mode.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e ml2_vlan_lower=&lt;int></codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry>1000</entry>
+                                    <entry><codeph>&lt;int></codeph> is the lower bound of the VLAN
+                                        for the <codeph>ml2_type_vlan.network_vlan_ranges</codeph>
+                                        configuration option. This option only applies to the VLAN
+                                        OpFlex encapsulation mode.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e ml2_vlan_upper=&lt;int></codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry>2000</entry>
+                                    <entry><codeph>&lt;int></codeph> is the upper bound of the VLAN
+                                        for the <codeph>ml2_type_vlan.network_vlan_ranges</codeph>
+                                        configuration option. This option only applies to the VLAN
+                                        OpFlex encapsulation mode.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e opflex_peer_ip='&lt;string>'</codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry>10.0.0.30</entry>
+                                    <entry><codeph>&lt;string></codeph> is the IP address of the
+                                        Cisco ACI OpFlex peer.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e opflex_peer_port=&lt;int></codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry>8009</entry>
+                                    <entry><codeph>&lt;int></codeph> is the port number of the Cisco
+                                        ACI OpFlex peer.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e vxlan_remote_ip='&lt;string>'</codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry>10.0.0.32</entry>
+                                    <entry><codeph>&lt;string></codeph> is the IP address of the
+                                        VXLAN tunnel endpoint in the Cisco ACI fabric. This option
+                                        only applies to the VXLAN OpFlex encapsulation mode.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e vxlan_remote_port=&lt;int></codeph></entry>
+                                    <entry>If necessary</entry>
+                                    <entry>8472</entry>
+                                    <entry>
+                                        <p><codeph>&lt;int></codeph> is the port number of the VXLAN
+                                            tunnel endpoint in the Cisco ACI fabric. This option
+                                            only applies to the VXLAN OpFlex encapsulation mode.</p>
+                                        <p><b>Warning:</b> Before changing this value, you must
+                                            first manually run the command <codeph>sudo ovs-vsctl
+                                                del-port br-int br-int_vxlan0</codeph> on every Nova
+                                            compute node.</p>
+                                    </entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e version_agent='&lt;string>'</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry>stable/liberty</entry>
+                                    <entry><codeph>&lt;string></codeph> is either a full
+                                        40-character SHA-1 hash, the literal string 'HEAD', a branch
+                                        name, or a tag name from the Noiro Networks Git repository
+                                            <xref
+                                            href="https://github.com/noironetworks/python-opflex-agent"
+                                            format="html" scope="external"
+                                            >https://github.com/noironetworks/python-opflex-agent</xref>.
+                                        Specify this only if you wish to use a specific version of
+                                        the OpFlex agent.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e version_ml2='&lt;string>'</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry>liberty</entry>
+                                    <entry><codeph>&lt;string></codeph> is either a full
+                                        40-character SHA-1 hash, the literal string 'HEAD', a branch
+                                        name, or a tag name from the Noiro Networks Git repository
+                                            <xref
+                                            href="https://github.com/noironetworks/apic-ml2-driver"
+                                            format="html" scope="external"
+                                            >https://github.com/noironetworks/apic-ml2-driver</xref>.
+                                        Specify this only if you wish to use a specific version of
+                                        the APIC ML2 driver for Neutron.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e version_api='&lt;string>'</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry>HEAD</entry>
+                                    <entry><codeph>&lt;string></codeph> is either a full
+                                        40-character SHA-1 hash, the literal string 'HEAD', a branch
+                                        name, or a tag name from the Noiro Networks Git repository
+                                            <xref href="https://github.com/noironetworks/apicapi"
+                                            format="html" scope="external"
+                                            >https://github.com/noironetworks/apicapi</xref>.
+                                        Specify this only if you wish to use a specific version of
+                                        the Python APIC API.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>-e keep_scratch=&lt;bool></codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry>False</entry>
+                                    <entry>By default, the playbook deletes its temporary files in
+                                        the <codeph>/tmp/scratch</codeph> directory after running.
+                                        Set <codeph>&lt;bool></codeph> to <codeph>True</codeph> if
+                                        you want to preserve the temporary files.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags setup</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to create the offline
+                                        apt repository, fetch the online resources, and do nothing
+                                        else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags setup-offline</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to create the offline
+                                        apt repository and do nothing else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags setup-online</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to fetch the online
+                                        resources and do nothing else. Note that these online
+                                        resources may have additional online dependencies which are
+                                        only downloaded at install time.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags install</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to install the
+                                        third-party software and do nothing else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags install-offline</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to install the
+                                        third-party software from
+                                            <codeph>~/ciscoaci-deploy-resources.tar.gz</codeph> and
+                                        do nothing else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags install-offline</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to install the
+                                        third-party software from <codeph>/tmp/scratch</codeph> and
+                                        do nothing else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags configure</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to perform the
+                                        configuration of the cloud components for the integration
+                                        and do nothing else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags configure-3rdparty</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to perform the
+                                        configuration of the installed third-party software and do
+                                        nothing else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags configure-os</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to modify Helion
+                                        OpenStack configuration files for the integration and do
+                                        nothing else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags services</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to disable any
+                                        conflicting services, stop conflicting services, enable
+                                        installed third-party services, restart installed
+                                        third-party services, restart
+                                            <codeph>neutron-server</codeph> , and do nothing
+                                        else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags services-removeconflicts</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to disable conflicting
+                                        services, stop conflicting services, and do nothing
+                                        else.</entry>
+                                </row>
+                                <row>
+                                    <entry><codeph>--tags services-restart</codeph></entry>
+                                    <entry>Optional</entry>
+                                    <entry><i>(N/A)</i></entry>
+                                    <entry>This switch will set the playbook to enable installed
+                                        third-party services, restart installed third-party
+                                        services, restart <codeph>neutron-server</codeph>, and do
+                                        nothing else.</entry>
+                                </row>
+                            </tbody>
+                        </tgroup>
+                    </table>
+                </p></li>
+        </ol>
+    </body>
+</topic>
