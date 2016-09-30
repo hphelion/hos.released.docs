@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="midonet_verification">
+    <title>MidoNet Verification</title>
+    <body>
+        <p>Use the following steps to verify your MidoNet deployment.<ol id="ol_ppb_skm_lx">
+                <li>Verify that the Zookeeper service is running on all of your cloud's controller
+                    nodes.<codeblock>$ ansible -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts NEU-SVR -m shell -a "sudo echo ruok | nc 127.0.0.1 2181"</codeblock><p/></li>
+                <li>Verifiy that your Cassandra cluster nodes show the state "Up" and
+                    "Normal".<codeblock>$ ansible -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts NEU-SVR -m shell -a "sudo nodetool status"</codeblock><p/></li>
+                <li>Verify that the MidoNet cluster service is running on all controller
+                    nodes.<codeblock>$ ansible -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts NEU-SVR -m shell -a "sudo systemctl status midonet-cluster"</codeblock><p/></li>
+                <li>Verify that the Midolman service is running on all controller and compute
+                    nodes.<codeblock>$ ansible -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts NEU-SVR,entry-scale-kvm-vsa-control-plane-1-compute -m shell -a "sudo systemctl status midolman"</codeblock><p/></li>
+                <li>Verify that you can create private
+                    networks.<codeblock>neutron net-create demo_net
+neutron subnet-create demo_net 172.0.0.0/24 --name demo_subnet
+neutron router-create demo_router
+neutron router-interface-add demo_router demo_subnet
+neutron router-gateway-set demo_router ext-net</codeblock><p/></li>
+                <li>Verify that the FWaaS service is
+                    working.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$  neutron firewall-rule-create --protocol tcp --destination-port 22:22 --action deny
+Created a new firewall_rule:
++------------------------+--------------------------------------+
+| Field                  | Value                                |
++------------------------+--------------------------------------+
+| action                 | deny                                 |
+| description            |                                      |
+| destination_ip_address |                                      |
+| destination_port       | 22                                   |
+| enabled                | True                                 |
+| firewall_policy_id     |                                      |
+| id                     | 40456b72-f111-427f-8a70-62d5c5421968 |
+| ip_version             | 4                                    |
+| name                   |                                      |
+| position               |                                      |
+| protocol               | tcp                                  |
+| shared                 | False                                |
+| source_ip_address      |                                      |
+| source_port            |                                      |
+| tenant_id              | c2d24c29dd7348269b02ab1c9c072c1c     |
++------------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron firewall-policy-create --firewall-rules 40456b72-f111-427f-8a70-62d5c5421968 myfirewallpolicy
+Created a new firewall_policy:
++----------------+--------------------------------------+
+| Field          | Value                                |
++----------------+--------------------------------------+
+| audited        | False                                |
+| description    |                                      |
+| firewall_rules | 40456b72-f111-427f-8a70-62d5c5421968 |
+| id             | 87a87027-dfea-4bdc-ba40-5ecd8362b11e |
+| name           | myfirewallpolicy                     |
+| shared         | False                                |
+| tenant_id      | c2d24c29dd7348269b02ab1c9c072c1c     |
++----------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron firewall-create 87a87027-dfea-4bdc-ba40-5ecd8362b11e
+Created a new firewall:
++--------------------+--------------------------------------+
+| Field              | Value                                |
++--------------------+--------------------------------------+
+| admin_state_up     | True                                 |
+| description        |                                      |
+| firewall_policy_id | 87a87027-dfea-4bdc-ba40-5ecd8362b11e |
+| id                 | 544037d8-90f9-4367-a106-a44ae3424b43 |
+| name               |                                      |
+| router_ids         | 4ee5b56d-397f-4ffd-addd-3cfc522fcb25 |
+|                    | a46b7701-5052-408b-83c0-c63ff2d55b45 |
+|                    | e63f0fec-1a81-4707-8fe5-c8708a2e7e29 |
+| status             | PENDING_CREATE                       |
+| tenant_id          | c2d24c29dd7348269b02ab1c9c072c1c     |
++--------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron firewall-show 544037d8-90f9-4367-a106-a44ae3424b43
++--------------------+--------------------------------------+
+| Field              | Value                                |
++--------------------+--------------------------------------+
+| admin_state_up     | True                                 |
+| description        |                                      |
+| firewall_policy_id | 87a87027-dfea-4bdc-ba40-5ecd8362b11e |
+| id                 | 544037d8-90f9-4367-a106-a44ae3424b43 |
+| name               |                                      |
+| router_ids         | 4ee5b56d-397f-4ffd-addd-3cfc522fcb25 |
+|                    | a46b7701-5052-408b-83c0-c63ff2d55b45 |
+|                    | e63f0fec-1a81-4707-8fe5-c8708a2e7e29 |
+| status             | ACTIVE                               |
+| tenant_id          | c2d24c29dd7348269b02ab1c9c072c1c     |
++--------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ nova list
++--------------------------------------+--------+--------+------------+-------------+----------------------------------+
+| ID                                   | Name   | Status | Task State | Power State | Networks                         |
++--------------------------------------+--------+--------+------------+-------------+----------------------------------+
+| a277c018-6a09-4d04-af5b-08f6374c075b | lb-01  | ACTIVE | -          | Running     | lb-net=10.1.0.12, 10.246.77.54   |
+| 6e81ba06-36b5-4ca5-8bf7-53d82ab98fdb | lb-02  | ACTIVE | -          | Running     | lb-net=10.1.0.13, 10.246.77.55   |
+| cfe1cb80-5e11-4734-9ad7-b3c2f0c4df66 | test-1 | ACTIVE | -          | Running     | demo_net=172.0.0.2, 10.246.77.52 |
+| 63192e2c-0c97-4ace-82d4-6d097c0abd71 | test-2 | ACTIVE | -          | Running     | demo_net=172.0.0.3, 10.246.77.51 |
++--------------------------------------+--------+--------+------------+-------------+----------------------------------+</codeblock><p/></li>
+                <li>Verify that your router(s) are blocking port 22. The following example attempts
+                    to open an SSH connection between two instances with IP addresses that are
+                    separated by a router(s) (addresses 10.246.77.52 and 10.246.77.55). If your
+                    routers are blocking port 22 the connection will fail.
+                    <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ ssh -o ConnectTimeout=5 10.246.77.52
+ssh: connect to host 10.246.77.52 port 22: Connection timed out
+stack@helion-cp1-c0-m1-mgmt:~$ 
+stack@helion-cp1-c0-m1-mgmt:~$ ssh -o ConnectTimeout=5 10.246.77.55
+ssh: connect to host 10.246.77.55 port 22: Connection timed out
+stack@helion-cp1-c0-m1-mgmt:~$</codeblock><p/></li>
+                <li>Alter the <codeph>edge_router</codeph> and <codeph>lb-router</codeph> to perform
+                    firewall functions.Verify that <codeph>demo_router</codeph> is not listed in the
+                    list of firewall-enabled
+                        routers.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron firewall-update 544037d8-90f9-4367-a106-a44ae3424b43 --router edge_router --router lb-router
+Updated firewall: 544037d8-90f9-4367-a106-a44ae3424b43
+stack@helion-cp1-c0-m1-mgmt:~$ neutron firewall-show 544037d8-90f9-4367-a106-a44ae3424b43
++--------------------+--------------------------------------+
+| Field              | Value                                |
++--------------------+--------------------------------------+
+| admin_state_up     | True                                 |
+| description        |                                      |
+| firewall_policy_id | 87a87027-dfea-4bdc-ba40-5ecd8362b11e |
+| id                 | 544037d8-90f9-4367-a106-a44ae3424b43 |
+| name               |                                      |
+| router_ids         | a46b7701-5052-408b-83c0-c63ff2d55b45 |
+|                    | e63f0fec-1a81-4707-8fe5-c8708a2e7e29 |
+| status             | ACTIVE                               |
+| tenant_id          | c2d24c29dd7348269b02ab1c9c072c1c     |
++--------------------+--------------------------------------+</codeblock><p/><p>The
+                        preceding example does not list <codeph>demo_router</codeph> (router ID
+                        a46b7701-5052-408b-83c0-c63ff2d55b45) in the list of firewall-enabled
+                        routers. This verifies that <codeph>demo_router</codeph> is not applying
+                        firewall rules to traffic.</p></li>
+                <li>Verify that <codeph>demo_router</codeph> and <codeph>lb_router</codeph> are not
+                    blocking port 22, by establishing an SSH connection between two instances that
+                    are separated by each
+                        router.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ ssh -o ConnectTimeout=5 10.246.77.52
+The authenticity of host '10.246.77.52 (10.246.77.52)' can't be established.
+RSA key fingerprint is 76:b9:ee:0a:f7:9a:4f:ec:ac:08:1b:46:c6:aa:84:c8.
+Are you sure you want to continue connecting (yes/no)? no
+Host key verification failed.
+stack@helion-cp1-c0-m1-mgmt:~$ ssh -o ConnectTimeout=5 10.246.77.55
+ssh: connect to host 10.246.77.55 port 22: Connection timed out</codeblock><p/><p>As
+                        expected, SSH connections to the host at IP address 10.246.77.55 should
+                        fail, because the router processing the traffic is blocking port
+                    22.</p></li>
+                <li>Verify that LBaaS pool creation works. In order to successfully test connections
+                    to members of a LBaaS pool, you will need to install and configure Apache, or
+                    another webserver of your choice, on an instance that will be a member of the
+                    LBaaS pool. You will also need to permit traffic over port 80 in the related
+                    security groups.<p>The following command examples illustrate the steps involved
+                        in creating and configuring a LBaaS
+                    pool.</p><codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron subnet-list
++--------------------------------------+-------------+----------------+---------------------------------------------------+
+| id                                   | name        | cidr           | allocation_pools                                  |
++--------------------------------------+-------------+----------------+---------------------------------------------------+
+| 7812029f-3143-415b-84bd-bd86c24906ca | ext-subnet  | 10.246.77.0/24 | {"start": "10.246.77.50", "end": "10.246.77.250"} |
+| 5deb62c2-10e4-4066-bc36-c1ce094ca24f | demo_subnet | 172.0.0.0/24   | {"start": "172.0.0.2", "end": "172.0.0.254"}      |
++--------------------------------------+-------------+----------------+---------------------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ nova list
++--------------------------------------+--------+--------+------------+-------------+--------------------+
+| ID                                   | Name   | Status | Task State | Power State | Networks           |
++--------------------------------------+--------+--------+------------+-------------+--------------------+
+| 862f9ba5-dd00-485a-a4fc-8fbdd60c5517 | test-1 | ACTIVE | -          | Running     | demo_net=172.0.0.3 |
+| b8498785-1fab-4361-8cca-5bdeb8e1f30a | test-2 | ACTIVE | -          | Running     | demo_net=172.0.0.2 |
+| 47edb6f4-0620-4d79-84df-97e7bef0816a | test-3 | ACTIVE | -          | Running     | demo_net=172.0.0.4 |
++--------------------------------------+--------+--------+------------+-------------+--------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-pool-create --lb-method ROUND_ROBIN --name Apache --subnet-id 5deb62c2-10e4-4066-bc36-c1ce094ca24f --protocol HTTP --provider midonet
+Created a new pool:
++------------------------+--------------------------------------+
+| Field                  | Value                                |
++------------------------+--------------------------------------+
+| admin_state_up         | True                                 |
+| description            |                                      |
+| health_monitors        |                                      |
+| health_monitors_status |                                      |
+| id                     | 37770d6c-0c04-47e1-bc85-62cffaf4cb8b |
+| lb_method              | ROUND_ROBIN                          |
+| members                |                                      |
+| name                   | Apache                               |
+| protocol               | HTTP                                 |
+| provider               | midonet                              |
+| status                 | ACTIVE                               |
+| status_description     |                                      |
+| subnet_id              | 5deb62c2-10e4-4066-bc36-c1ce094ca24f |
+| tenant_id              | eaf3c06d99a241cbbe7dce24dabdc30f     |
+| vip_id                 |                                      |
++------------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-member-create --address 172.0.0.2 --protocol-port 80 37770d6c-0c04-47e1-bc85-62cffaf4cb8b 
+Created a new member:
++--------------------+--------------------------------------+
+| Field              | Value                                |
++--------------------+--------------------------------------+
+| address            | 172.0.0.2                            |
+| admin_state_up     | True                                 |
+| id                 | 8cd7a9ca-1e9a-4afc-80de-61a07111d7a9 |
+| pool_id            | 37770d6c-0c04-47e1-bc85-62cffaf4cb8b |
+| protocol_port      | 80                                   |
+| status             | PENDING_CREATE                       |
+| status_description |                                      |
+| tenant_id          | eaf3c06d99a241cbbe7dce24dabdc30f     |
+| weight             | 1                                    |
++--------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-member-create --address 172.0.0.3 --protocol-port 80 37770d6c-0c04-47e1-bc85-62cffaf4cb8b 
+Created a new member:
++--------------------+--------------------------------------+
+| Field              | Value                                |
++--------------------+--------------------------------------+
+| address            | 172.0.0.3                            |
+| admin_state_up     | True                                 |
+| id                 | 6590b2b5-ebe0-40d9-a28f-8f7fc69f05e4 |
+| pool_id            | 37770d6c-0c04-47e1-bc85-62cffaf4cb8b |
+| protocol_port      | 80                                   |
+| status             | PENDING_CREATE                       |
+| status_description |                                      |
+| tenant_id          | eaf3c06d99a241cbbe7dce24dabdc30f     |
+| weight             | 1                                    |
++--------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-member-create --address 172.0.0.4 --protocol-port 80 37770d6c-0c04-47e1-bc85-62cffaf4cb8b 
+Created a new member:
++--------------------+--------------------------------------+
+| Field              | Value                                |
++--------------------+--------------------------------------+
+| address            | 172.0.0.4                            |
+| admin_state_up     | True                                 |
+| id                 | 749d461e-d26f-431d-93dc-c41a8fd83b05 |
+| pool_id            | 37770d6c-0c04-47e1-bc85-62cffaf4cb8b |
+| protocol_port      | 80                                   |
+| status             | PENDING_CREATE                       |
+| status_description |                                      |
+| tenant_id          | eaf3c06d99a241cbbe7dce24dabdc30f     |
+| weight             | 1                                    |
++--------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-member-list
++--------------------------------------+-----------+---------------+--------+----------------+--------+
+| id                                   | address   | protocol_port | weight | admin_state_up | status |
++--------------------------------------+-----------+---------------+--------+----------------+--------+
+| 6590b2b5-ebe0-40d9-a28f-8f7fc69f05e4 | 172.0.0.3 |            80 |      1 | True           | ACTIVE |
+| 749d461e-d26f-431d-93dc-c41a8fd83b05 | 172.0.0.4 |            80 |      1 | True           | ACTIVE |
+| 8cd7a9ca-1e9a-4afc-80de-61a07111d7a9 | 172.0.0.2 |            80 |      1 | True           | ACTIVE |
++--------------------------------------+-----------+---------------+--------+----------------+--------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-healthmonitor-create --type HTTP --delay 5 --max-retries 10 --timeout 5
+Created a new health_monitor:
++----------------+--------------------------------------+
+| Field          | Value                                |
++----------------+--------------------------------------+
+| admin_state_up | True                                 |
+| delay          | 5                                    |
+| expected_codes | 200                                  |
+| http_method    | GET                                  |
+| id             | 31b0cb8f-c242-495d-a0f3-cbd78aad19b3 |
+| max_retries    | 10                                   |
+| pools          |                                      |
+| tenant_id      | eaf3c06d99a241cbbe7dce24dabdc30f     |
+| timeout        | 5                                    |
+| type           | HTTP                                 |
+| url_path       | /                                    |
++----------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-healthmonitor-associate 31b0cb8f-c242-495d-a0f3-cbd78aad19b3 37770d6c-0c04-47e1-bc85-62cffaf4cb8b
+Associated health monitor 31b0cb8f-c242-495d-a0f3-cbd78aad19b3
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-vip-create --name Apache_VIP --protocol-port 80 --protocol HTTP --subnet-id 7812029f-3143-415b-84bd-bd86c24906ca 37770d6c-0c04-47e1-bc85-62cffaf4cb8b
+Created a new vip:
++---------------------+--------------------------------------+
+| Field               | Value                                |
++---------------------+--------------------------------------+
+| address             | 10.246.77.52                         |
+| admin_state_up      | True                                 |
+| connection_limit    | -1                                   |
+| description         |                                      |
+| id                  | 25986c66-7954-4258-a503-e46d708d4ff1 |
+| name                | Apache_VIP                           |
+| pool_id             | 37770d6c-0c04-47e1-bc85-62cffaf4cb8b |
+| port_id             | 0e4295f3-05de-4ab8-ad47-b07a9d8ce001 |
+| protocol            | HTTP                                 |
+| protocol_port       | 80                                   |
+| session_persistence |                                      |
+| status              | PENDING_CREATE                       |
+| status_description  |                                      |
+| subnet_id           | 7812029f-3143-415b-84bd-bd86c24906ca |
+| tenant_id           | eaf3c06d99a241cbbe7dce24dabdc30f     |
++---------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron lb-vip-list
++--------------------------------------+------------+--------------+----------+----------------+--------+
+| id                                   | name       | address      | protocol | admin_state_up | status |
++--------------------------------------+------------+--------------+----------+----------------+--------+
+| 25986c66-7954-4258-a503-e46d708d4ff1 | Apache_VIP | 10.246.77.52 | HTTP     | True           | ACTIVE |
++--------------------------------------+------------+--------------+----------+----------------+--------+</codeblock><p/></li>
+                <li>Use the <codeph>curl</codeph> command to verify HTTP connectivity to the host(s)
+                    in the LBaaS pool you created in step
+                    10.<codeblock>[chaudric@server ~]$ curl 10.246.77.52
+Welcome test-3
+^C
+[chaudric@server ~]$ curl 10.246.77.52
+Welcome test-2
+^C
+[chaudric@server ~]$ curl 10.246.77.52
+Welcome test-3</codeblock></li>
+            </ol></p>
+    </body>
+</topic>
