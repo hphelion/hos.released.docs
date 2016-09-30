@@ -63,21 +63,42 @@
                 </tgroup>
               </table></li>
           </ol></li>
-        <li>To configure the sending and receiving email addresses, edit the following file: <codeblock>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeblock><ol>
+        <li>To configure the sending email address, as well as any proxy address you may need, edit
+          the following file: <codeblock>~/helion/hos/ansible/roles/monasca-notification/defaults/main.yml</codeblock><ol>
             <li>For the sending address, edit the the following value:
                 <codeblock>email_from_addr</codeblock><note>The default value in the file is
                   <codeph>email_from_address: notification@exampleCloud.com</codeph> which you
                 should edit.</note></li>
-            <li>[optional] For the receiving address, add the following entry into the file along
-              with a valid receiving address:<codeblock>notification_address</codeblock><note>You
-                can also set the receiving email address via the Operations Console. Instructions
-                for this are in the last section.</note></li>
             <li>If your environment requires a proxy address then you can add that in as
               well:<codeblock># notification_environment can be used to configure proxies if needed.
 # Below is an example configuration. Note that all of the quotes are required.
 # notification_environment: '"http_proxy=http://&lt;your_proxy>:&lt;port>" "https_proxy=http://&lt;your_proxy>:&lt;port>"'
 <b>notification_environment: ''</b></codeblock></li>
           </ol></li>
+            <li>To configure the receiving address, edit the following file:
+            <codeblock>~/helion/hos/ansible/roles/monasca-default-alarms/defaults/main.yml</codeblock><p>In
+            this file you will find a default notification address entry that looks like
+            this:</p><codeblock>notification_address: root@localhost
+notification_name: 'Default Email'
+notification_type: EMAIL</codeblock><p>You
+            can edit this default notification address entry as well as add additional ones. For
+            example, if you have three separate email addresses you may want to use for
+            notifications you could set up this configuration file as
+            follows:<codeblock>notification_address: support@your_cloud.com
+notification_name: 'Support Email'
+notification_type: EMAIL
+
+notification_address: l3support@your_cloud.com
+notification_name: 'L3 Support Email'
+notification_type: EMAIL
+
+notification_address: noc@your_cloud.com
+notification_name: 'NOC Email'
+notification_type: EMAIL</codeblock></p><p>When
+            setting up notification methods later, you can select one or more of these notification
+            addresses via the Operations Console.</p><note>You can also set the receiving email
+            address via the Operations Console. Instructions for this are in the last
+            section.</note></li>
         <li>Commit your configuration to the <xref href="../../installation/using_git.dita">local
             git repo</xref>, as follows:
           <codeblock>cd ~/helion/hos/ansible
