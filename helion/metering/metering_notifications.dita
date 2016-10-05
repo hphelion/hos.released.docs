@@ -20,7 +20,7 @@
       <p>Helion OpenStack is designed to reduce the amount of data that is stored. Helion's use of a
         SQL-based cluster, which is not recommended for big data, means you must control the data
         that Ceilometer collects. You can do this by filtering (whitelisting) the data or by using
-        the configuration files for the Ceilometer Central Agent and the Ceilometer Notificfoation
+        the configuration files for the Ceilometer Polling Agent and the Ceilometer Notificfoation
         Agent.</p>
       
       <p>Whitelisting is used in a rule specification as a positive filtering parameter. Whitelist is only included in rules that can be used in direct mappings, for identity service issues such as service discovery, provisioning users, groups, roles, projects, domains as well as user authentication and authorization.</p>
@@ -31,11 +31,11 @@
           href="../installation/api_verification.dita#api_verification/list">Run Tests Matching a
           Series of White and Blacklists</xref>.</p>
       
-      <p>Ceilometer Central Agent (polling agent) and Ceilometer Notification Agent
-        (notification agent) use different pipeline.yaml files to configure meters that are
-        collected. This prevents accidentally polling for meters which can be retrieved by
-        the polling agent as well as the notification agent. For example, glance image and
-        image.size are meters which can be retrieved both by polling and notifications.</p>
+      <p>Ceilometer Polling Agent (polling agent) and Ceilometer Notification Agent (notification
+        agent) use different pipeline.yaml files to configure meters that are collected. This
+        prevents accidentally polling for meters which can be retrieved by the polling agent as well
+        as the notification agent. For example, glance image and image.size are meters which can be
+        retrieved both by polling and notifications.</p>
       
       <p>In both of the separate configuration files, there is a setting for
         <codeph>interval</codeph>. The interval attribute determines the frequency, in
@@ -54,7 +54,7 @@
       <p>Setting this interval to manage both notifications and polling is the recommended
         procedure when using a SQL cluster back-end.</p>
       
-      <p><b>Sample Ceilometer Central Agent (polling agent) file:</b></p>
+      <p><b>Sample Ceilometer Polling Agent file:</b></p>
       <codeblock>#File:    ~/opt/stack/service/ceilometer-common/etc/pipeline-agent-central.yaml
 ---
 sources:
@@ -128,7 +128,7 @@ sinks:
         >Telemetry Measurements</xref>
       </p>
       
-      <p><b>To change the Ceilometer Central Agent (polling) interval setting:</b></p>
+      <p><b>To change the Ceilometer Polling Agent interval setting:</b></p>
       <ol>
         <li>To find the polling agent configuration file, run:
           <codeblock>cd ~/opt/stack/service/ceilometer-common/etc</codeblock></li>
@@ -184,12 +184,12 @@ sinks:
    
     <section id="list">
       <title>Edit the List of Meters</title>
-      <p>The number of enabled meters can be reduced or increased by editing the pipeline configuration of the notification and polling
-      agents. To deploy these changes you must then restart the agent. If pollsters and
-      notifications are both modified, then you will have to restart both the Central Agent
-      (polling) and the Notification Agent. Ceilometer Collector will also need to be restarted. The
-      following code is an example of a compute-only Ceilometer Notification Agent (notification
-      agent) <b>pipeline.yml </b>file:</p>
+      <p>The number of enabled meters can be reduced or increased by editing the pipeline
+        configuration of the notification and polling agents. To deploy these changes you must then
+        restart the agent. If pollsters and notifications are both modified, then you will have to
+        restart both the Polling Agent and the Notification Agent. Ceilometer Collector will also
+        need to be restarted. The following code is an example of a compute-only Ceilometer
+        Notification Agent (notification agent) <b>pipeline.yml </b>file:</p>
       <codeblock>---
 sources:
     - name: meter_source
