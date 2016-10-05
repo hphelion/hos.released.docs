@@ -6,7 +6,9 @@
   <body><!--not tested-->    <p conkeyref="HOS-conrefs/applies-to"/>
     <section>This topic explains how you can configure MTUs, what to look out for, and the results
       and implications of changing the default MTU settings. It is important to note that every
-      network within a network group will have the same MTU.</section>
+      network within a network group will have the same MTU.
+    
+      <note type="warning"> An MTU change will not affect existing networks that have had VMs created on them.</note></section>
    <section><title>Overview</title>
       <p>A Maximum Transmission Unit, or MTU is the maximum packet size (in bytes) that a network
         device can or is configured to handle. There are a number of places in HPE Helion OpenStack
@@ -138,11 +140,10 @@ git commit -m "your commit message goes here in quotes"</codeblock></li> <li>If 
           deployment:<codeblock>ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock>Then
           run the network_interface-reconfigure.yml playbook, changing directories
           first:<codeblock>cd ~/scratch/ansible/next/hos/ansible 
-ansible-playbook -i hosts/verb_hosts network_interface-reconfigure.yml</codeblock>followed
-          by
-          nova-reconfigure.yml:<codeblock>ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml </codeblock>Then
+ansible-playbook -i hosts/verb_hosts network_interface-reconfigure.yml</codeblock>Then
           run neutron-reconfigure.yml:
-          <codeblock>ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock>Note:
+          <codeblock>ansible-playbook -i hosts/verb_hosts neutron-reconfigure.yml</codeblock>Then
+          nova-reconfigure.yml:<codeblock>ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml </codeblock>Note:
           adding/changing network-group mtu settings will likely require a network restart during
           network_interface-reconfigure.yml. </li>
         <li>Follow the normal process for creating a Neutron network and booting a VM or two. In
