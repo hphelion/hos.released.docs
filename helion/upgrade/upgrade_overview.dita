@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="upgrade_overview">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Introduction to the Upgrade Procedure</title>
+    <body><!--not tested-->
+        <p conkeyref="HOS-conrefs/applies-to"/>
+        
+        
+        <section id="overview">
+            <title>Overview</title>
+            
+            <!-- Reasons for Upgrade   Major OS releases, new features like...,  fixes, security  -->
+            <!-- OpenStack Releases -->
+            <!-- Reboot -->
+            <!-- Release Notes what's fixed, known issues -->
+            <!-- Alarm resolutions -->
+            <!--  backup -->
+            <!-- pre-upgrade tasks  VPN -->
+            <!-- POST UPGRADE tasks-->
+            
+            
+            
+            
+        </section>  
+        
+        <section id="reasons">
+            <title>Reasons to Upgrade to <keyword keyref="kw-hos-phrase-30"/></title>       
+            
+            <ul>
+                <li><xref keyref="liberty_features">OpenStack Liberty Features</xref>.</li>
+                <li><xref keyref="newfeatures30">New Features</xref> in <keyword keyref="kw-hos-phrase-30"/> 
+                    like  Boot From SAN and Multipath Configuration, RHEL Compute Nodes, Octavia Load Balancer, Barbican Key Management, etc. </li>
+                <li><xref keyref="fixedissues30">Fixes</xref> for issues that were present in previous releases.</li>
+                <li>Cumulative security patches that have been added in earlier releases.</li>
+            </ul>
+            
+            <note type="important">It is not possible to deploy Ironic Bare Metal Service as part of an upgrade. 
+            Ironic is deployed as a separate cloud using a specific <keyword keyref="kw-hos-phrase"/> installation
+                documented <xref keyref="install_ironic_overview">here</xref>.
+            </note>
+        
+
+        </section>
+        
+        
+        
+        <section id="preparing">
+            <title>Preparing for Upgrade</title>
+            
+            <ul>
+                <li>Read the <xref keyref="releasenotes30">Release Notes</xref>, especially the <xref keyref="knownissues30">Known Issues</xref> for the new version.</li>
+                <li>Ensure you have a Backup strategy in place - see <xref keyref="bura_overview"/></li>
+                <li>Ensure you have a known starting state by <xref keyref="alarm_resolutions">resolving any unexpected alarms</xref>.</li>
+                <li>Determine if you will need to follow the procedure to <xref keyref="upgrade21to30/rebooting_general">reboot your cloud</xref> after upgrading the software. In general, rebooting
+                is only needed if the HPE Linux kernel has changed between versions. In the case of upgrade to 3.0, the kernel has changed
+                and so a reboot is required.</li>
+                <li>Read about the changes in the <xref keyref="input_model_changes30">Input Model</xref> and <xref keyref="example_config_changes">Example Configurations</xref>
+                    and determine what services you want to add or remove. Note that some of these will require you to do work up-front before you upgrade,
+                    while others are performed after the upgrade completes.</li>
+                <li>Perform any pre-upgrade tasks you deem necessary, such as:
+                    <ul>
+                        <li>If you are upgrading from <keyword keyref="kw-hos-phrase-301"/> to <keyword keyref="kw-hos-version-302"/>
+                        and encounter a failure running the pre-upgrade <codeph>cinder-status</codeph> check, follow the procedure <xref keyref="cinder_status_failure">here</xref>.
+                        </li>
+                        <li>Handle <xref keyref="qemu_save_folder_move"><codeph>qemu/save</codeph> Folder Migration</xref></li>                        
+                        <li>Update your Input Model to <xref keyref="upgrade_deprecated">replace deprecated keys</xref></li>
+                        <li>Prepare for <xref keyref="upgrade_vpnaas">VPN Service Upgrade</xref></li>
+                        <li><xref keyref="upgrade_ceph_model">Upgrade Ceph Model from Single Network to Three Network</xref></li>
+                    </ul>
+                </li>
+                
+                <li>Perform the upgrade:
+                    <ul>
+                        <li><xref keyref="upgrade21to30">Upgrade your Cloud</xref>.</li>
+                        <li><xref keyref="upgrade21to30/bnx2x">Install bnx2x driver, if required, before rebooting.</xref></li>
+                        <li><xref keyref="upgrade_recover_rabbit">Recover RabbitMQ after Failure.</xref></li>
+                        <li><xref keyref="upgrade_git_merge">Resolve any Merge Conflicts.</xref></li>
+                        <li><xref keyref="upgrade21to30/rebooting_general">Reboot your Cloud.</xref></li>                      
+                    </ul>
+                </li>
+                
+                <li>Perform any post-upgrade tasks you deem necessary, such as: 
+                
+                    <ul>
+                        <li><xref keyref="enable_barbican_for_upgrade">Enabling Barbican Support</xref></li>
+                        <li><xref keyref="upgrade_designate">Upgrading DNS Service</xref></li>
+                        <li><xref keyref="upgrade_octavia">Upgrading LBaaS Driver to Octavia</xref></li>
+                        <li><xref keyref="update_disk_models">Disk Model Resizing after Upgrade</xref></li>
+                        <li>Re-enable <xref keyref="upgrade_nova_resize_migrate">Nova Resize and  Migrate Features</xref></li>
+                        <li><xref keyref="upgrade_delete_alarms">Delete Alarms</xref> that are no longer supported</li>
+                        
+                    </ul>
+                
+                </li>
+                
+            </ul>
+         
+        </section>
+  
+    </body>
+</topic>

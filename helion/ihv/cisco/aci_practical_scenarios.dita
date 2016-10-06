@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="aci_practical_scenarios">
+    <title><u>Practical Scenarios</u></title>
+    <body>
+        <section id="section_p1m_kgp_jx">
+            <p><b>Two Instances on a Private Network</b></p>
+            <p>The following instructions will create a new private network, as well as two new
+                virtual machine instances that will communicate ICMP messages with each other over
+                the new network.<ol id="ol_tjh_mgp_jx">
+                    <li>Run the following commands to download a CirrOS img file and import the file
+                        into the Glance service as a new
+                            image.<codeblock>source ~/service.osrc
+cd
+# Export a proxy if necessary (e.g. `export http_proxy="http://proxy.atlanta.hp.com:8080"`)
+wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
+glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img</codeblock><p/><p>Sample
+                            output from the preceding
+                            commands.<codeblock>stack@helion-cp1-c0-m1-mgmt:/tmp$ source ~/service.osrc
+stack@helion-cp1-c0-m1-mgmt:~$ cd
+stack@helion-cp1-c0-m1-mgmt:~$ wget 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img'
+--2016-08-23 15:16:56--  http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+Resolving download.cirros-cloud.net (download.cirros-cloud.net)... 64.90.42.85
+Connecting to download.cirros-cloud.net (download.cirros-cloud.net)|64.90.42.85|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 13287936 (13M) [text/plain]
+Saving to: ‘cirros-0.3.4-x86_64-disk.img’
+ 
+cirros-0.3.4-x86_64-disk.img                                           100%[=============================>]  12.67M  17.3MB/s   in 0.7s   
+ 
+2016-08-23 15:16:56 (17.3 MB/s) - ‘cirros-0.3.4-x86_64-disk.img’ saved [13287936/13287936]
+ 
+stack@helion-cp1-c0-m1-mgmt:~$ glance image-create --progress --name cirros-0.3.4-x86_64-disk --disk-format qcow2 --container-format bare --visibility public --file ~/cirros-0.3.4-x86_64-disk.img
+[=============================>] 100%
++------------------+--------------------------------------+
+| Property         | Value                                |
++------------------+--------------------------------------+
+| checksum         | ee1eca47dc88f4879d8a229cc70a07c6     |
+| container_format | bare                                 |
+| created_at       | 2016-08-23T15:17:09Z                 |
+| disk_format      | qcow2                                |
+| id               | f33a2066-d623-4db4-bea5-004b772fa00a |
+| min_disk         | 0                                    |
+| min_ram          | 0                                    |
+| name             | cirros-0.3.4-x86_64-disk             |
+| owner            | 688c22afba0c4a9f8b9b7be50cd62376     |
+| protected        | False                                |
+| size             | 13287936                             |
+| status           | active                               |
+| tags             | []                                   |
+| updated_at       | 2016-08-23T15:17:17Z                 |
+| virtual_size     | None                                 |
+| visibility       | public                               |
++------------------+--------------------------------------+</codeblock></p><p/><p/></li>
+                    <li>Create a new private
+                            network.<codeblock>neutron net-create Net100</codeblock><p/><p>Sample
+                            output from the preceding commands.</p><p>
+                            <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron net-create Net100
+Created a new network:
++---------------------------+--------------------------------------+
+| Field                     | Value                                |
++---------------------------+--------------------------------------+
+| admin_state_up            | True                                 |
+| id                        | d58b49af-c4ad-4288-92b7-9e792a393562 |
+| mtu                       | 0                                    |
+| name                      | Net100                               |
+| provider:network_type     | opflex                               |
+| provider:physical_network | physnet1                             |
+| provider:segmentation_id  |                                      |
+| router:external           | False                                |
+| shared                    | False                                |
+| status                    | ACTIVE                               |
+| subnets                   |                                      |
+| tenant_id                 | 688c22afba0c4a9f8b9b7be50cd62376     |
++---------------------------+--------------------------------------+</codeblock>
+                        </p><p/><p/></li>
+                    <li>Create a subnet in the network that you created in Step
+                            2.<codeblock>neutron subnet-create --name SubNet100 Net100 192.168.100.0/24 --gateway 192.168.100.1</codeblock><p/><p>Sample
+                            output from the preceding command.</p><p>
+                            <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron subnet-create --name SubNet100 Net100 192.168.100.0/24 --gateway 192.168.100.1
+Created a new subnet:
++-------------------+------------------------------------------------------+
+| Field             | Value                                                |
++-------------------+------------------------------------------------------+
+| allocation_pools  | {"start": "192.168.100.2", "end": "192.168.100.254"} |
+| cidr              | 192.168.100.0/24                                     |
+| dns_nameservers   |                                                      |
+| enable_dhcp       | True                                                 |
+| gateway_ip        | 192.168.100.1                                        |
+| host_routes       |                                                      |
+| id                | e09ec631-4eab-4818-9560-d18c2407df43                 |
+| ip_version        | 4                                                    |
+| ipv6_address_mode |                                                      |
+| ipv6_ra_mode      |                                                      |
+| name              | SubNet100                                            |
+| network_id        | d58b49af-c4ad-4288-92b7-9e792a393562                 |
+| subnetpool_id     |                                                      |
+| tenant_id         | 688c22afba0c4a9f8b9b7be50cd62376                     |
++-------------------+------------------------------------------------------+</codeblock>
+                        </p><p/><p/></li>
+                    <li>Run the following commands to create a new security group and add rules to
+                        it that will allow all TCP, UDP, and ICMP
+                            traffic.<codeblock>neutron security-group-create allow_all
+neutron security-group-rule-create allow_all --direction ingress --protocol icmp
+neutron security-group-rule-create allow_all --direction egress --protocol icmp
+neutron security-group-rule-create allow_all --direction ingress --protocol tcp
+neutron security-group-rule-create allow_all --direction egress --protocol tcp
+neutron security-group-rule-create allow_all --direction ingress --protocol udp
+neutron security-group-rule-create allow_all --direction egress --protocol udp</codeblock><p/><p>Sample
+                            output from the preceding commands.</p><p>
+                            <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-create allow_all
+Created a new security_group:
++----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field                | Value                                                                                                                                                                                                                                                           |
++----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| description          |                                                                                                                                                                                                                                                                 |
+| id                   | 4121c835-85f2-4e01-8cfe-846638834c66                                                                                                                                                                                                                            |
+| name                 | allow_all                                                                                                                                                                                                                                                       |
+| security_group_rules | {"remote_group_id": null, "direction": "egress", "remote_ip_prefix": null, "protocol": null, "tenant_id": "688c22afba0c4a9f8b9b7be50cd62376", "port_range_max": null, "security_group_id": "4121c835-85f2-4e01-8cfe-846638834c66", "port_range_min": null,      |
+|                      | "ethertype": "IPv4", "id": "e7b6a1e9-1ea8-4b60-9cd5-68777ab26c8b"}                                                                                                                                                                                              |
+|                      | {"remote_group_id": null, "direction": "egress", "remote_ip_prefix": null, "protocol": null, "tenant_id": "688c22afba0c4a9f8b9b7be50cd62376", "port_range_max": null, "security_group_id": "4121c835-85f2-4e01-8cfe-846638834c66", "port_range_min": null,      |
+|                      | "ethertype": "IPv6", "id": "348af9dc-deb5-4d69-b0f3-0d99a8dae5b5"}                                                                                                                                                                                              |
+| tenant_id            | 688c22afba0c4a9f8b9b7be50cd62376                                                                                                                                                                                                                                |
++----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction ingress --protocol icmp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | ingress                              |
+| ethertype         | IPv4                                 |
+| id                | 0ae259c6-dda6-4276-9e58-6a6da88c1a52 |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | icmp                                 |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | 4121c835-85f2-4e01-8cfe-846638834c66 |
+| tenant_id         | 688c22afba0c4a9f8b9b7be50cd62376     |
++-------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction egress --protocol icmp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | egress                               |
+| ethertype         | IPv4                                 |
+| id                | bbfcfde7-0e13-4a53-877f-170589f3a0ba |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | icmp                                 |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | 4121c835-85f2-4e01-8cfe-846638834c66 |
+| tenant_id         | 688c22afba0c4a9f8b9b7be50cd62376     |
++-------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction ingress --protocol tcp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | ingress                              |
+| ethertype         | IPv4                                 |
+| id                | 3c3452bb-9b97-4eff-b3d9-ffb5e646ac71 |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | tcp                                  |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | 4121c835-85f2-4e01-8cfe-846638834c66 |
+| tenant_id         | 688c22afba0c4a9f8b9b7be50cd62376     |
++-------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction egress --protocol tcp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | egress                               |
+| ethertype         | IPv4                                 |
+| id                | 4e5f1336-385e-47dc-b105-cc77e0035b54 |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | tcp                                  |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | 4121c835-85f2-4e01-8cfe-846638834c66 |
+| tenant_id         | 688c22afba0c4a9f8b9b7be50cd62376     |
++-------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction ingress --protocol udp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | ingress                              |
+| ethertype         | IPv4                                 |
+| id                | 448f5465-7d7a-4abe-a456-4c41a140b3ae |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | udp                                  |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | 4121c835-85f2-4e01-8cfe-846638834c66 |
+| tenant_id         | 688c22afba0c4a9f8b9b7be50cd62376     |
++-------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron security-group-rule-create allow_all --direction egress --protocol udp
+Created a new security_group_rule:
++-------------------+--------------------------------------+
+| Field             | Value                                |
++-------------------+--------------------------------------+
+| direction         | egress                               |
+| ethertype         | IPv4                                 |
+| id                | 939721cb-dbfd-48b7-af59-724392077d2b |
+| port_range_max    |                                      |
+| port_range_min    |                                      |
+| protocol          | udp                                  |
+| remote_group_id   |                                      |
+| remote_ip_prefix  |                                      |
+| security_group_id | 4121c835-85f2-4e01-8cfe-846638834c66 |
+| tenant_id         | 688c22afba0c4a9f8b9b7be50cd62376     |
++-------------------+--------------------------------------+</codeblock>
+                        </p><p/><p/></li>
+                    <li>Create two virtual machine
+                            instances.<codeblock>nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/Net100/ {print $2}')",v4-fixed-ip="192.168.100.11" --security-groups allow_all cisco-test-vm1
+nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/Net100/ {print $2}')",v4-fixed-ip="192.168.100.12" --security-groups allow_all cisco-test-vm2</codeblock><p/><p>Sample
+                            output from the preceding
+                            commands.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/Net100/ {print $2}')",v4-fixed-ip="192.168.100.11" --security-groups allow_all cisco-test-vm1
++--------------------------------------+-----------------------------------------------------------------+
+| Property                             | Value                                                           |
++--------------------------------------+-----------------------------------------------------------------+
+| OS-DCF:diskConfig                    | MANUAL                                                          |
+| OS-EXT-AZ:availability_zone          |                                                                 |
+| OS-EXT-SRV-ATTR:host                 | -                                                               |
+| OS-EXT-SRV-ATTR:hypervisor_hostname  | -                                                               |
+| OS-EXT-SRV-ATTR:instance_name        | instance-000001df                                               |
+| OS-EXT-STS:power_state               | 0                                                               |
+| OS-EXT-STS:task_state                | scheduling                                                      |
+| OS-EXT-STS:vm_state                  | building                                                        |
+| OS-SRV-USG:launched_at               | -                                                               |
+| OS-SRV-USG:terminated_at             | -                                                               |
+| accessIPv4                           |                                                                 |
+| accessIPv6                           |                                                                 |
+| adminPass                            | ue44DTfYviSx                                                    |
+| config_drive                         |                                                                 |
+| created                              | 2016-08-23T15:26:48Z                                            |
+| flavor                               | m1.tiny (1)                                                     |
+| hostId                               |                                                                 |
+| id                                   | 4197f2a5-fa69-4a25-9a13-b059f731e2bf                            |
+| image                                | cirros-0.3.4-x86_64-disk (f33a2066-d623-4db4-bea5-004b772fa00a) |
+| key_name                             | -                                                               |
+| metadata                             | {}                                                              |
+| name                                 | cisco-test-vm1                                                  |
+| os-extended-volumes:volumes_attached | []                                                              |
+| progress                             | 0                                                               |
+| security_groups                      | allow_all                                                       |
+| status                               | BUILD                                                           |
+| tenant_id                            | 688c22afba0c4a9f8b9b7be50cd62376                                |
+| updated                              | 2016-08-23T15:26:48Z                                            |
+| user_id                              | 4700ca14593c4224a5ad9a73c16ac374                                |
++--------------------------------------+-----------------------------------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ nova boot --flavor 1 --image "cirros-0.3.4-x86_64-disk" --nic net-id="$(neutron net-list | awk '/Net100/ {print $2}')",v4-fixed-ip="192.168.100.12" --security-groups allow_all cisco-test-vm2
++--------------------------------------+-----------------------------------------------------------------+
+| Property                             | Value                                                           |
++--------------------------------------+-----------------------------------------------------------------+
+| OS-DCF:diskConfig                    | MANUAL                                                          |
+| OS-EXT-AZ:availability_zone          |                                                                 |
+| OS-EXT-SRV-ATTR:host                 | -                                                               |
+| OS-EXT-SRV-ATTR:hypervisor_hostname  | -                                                               |
+| OS-EXT-SRV-ATTR:instance_name        | instance-000001e2                                               |
+| OS-EXT-STS:power_state               | 0                                                               |
+| OS-EXT-STS:task_state                | scheduling                                                      |
+| OS-EXT-STS:vm_state                  | building                                                        |
+| OS-SRV-USG:launched_at               | -                                                               |
+| OS-SRV-USG:terminated_at             | -                                                               |
+| accessIPv4                           |                                                                 |
+| accessIPv6                           |                                                                 |
+| adminPass                            | skQbnD2eDb9r                                                    |
+| config_drive                         |                                                                 |
+| created                              | 2016-08-23T15:27:00Z                                            |
+| flavor                               | m1.tiny (1)                                                     |
+| hostId                               |                                                                 |
+| id                                   | 0b20479b-2be2-4557-84f0-f5698d4ff7ec                            |
+| image                                | cirros-0.3.4-x86_64-disk (f33a2066-d623-4db4-bea5-004b772fa00a) |
+| key_name                             | -                                                               |
+| metadata                             | {}                                                              |
+| name                                 | cisco-test-vm2                                                  |
+| os-extended-volumes:volumes_attached | []                                                              |
+| progress                             | 0                                                               |
+| security_groups                      | allow_all                                                       |
+| status                               | BUILD                                                           |
+| tenant_id                            | 688c22afba0c4a9f8b9b7be50cd62376                                |
+| updated                              | 2016-08-23T15:27:00Z                                            |
+| user_id                              | 4700ca14593c4224a5ad9a73c16ac374                                |
++--------------------------------------+-----------------------------------------------------------------+</codeblock></p><p/><p/></li>
+                    <li>Run the following command to retrieve the VNC console URL of one of the new
+                        instances you created in Step
+                            5.<codeblock>nova get-vnc-console cisco-test-vm1 novnc</codeblock><p/><p>Sample
+                            output:<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ nova get-vnc-console cisco-test-vm1 novnc
++-------+----------------------------------------------------------------------------------+
+| Type  | Url                                                                              |
++-------+----------------------------------------------------------------------------------+
+| novnc | https://10.105.2.8:6080/vnc_auto.html?token=be773ae5-06c7-453b-b26c-9d51323e7952 |
++-------+----------------------------------------------------------------------------------+</codeblock></p><p/><p/></li>
+                    <li>Connect to the noVNC console of the new instance by navigating your web
+                        browser to the URL you retrieved in Step 6.<p/>Sample output from a VNC
+                            connection.<image placement="break"
+                            href="../../../media/cisco/cirros-login.png" id="image_l44_m3p_jx"
+                        /><p/><p/></li>
+                    <li>Log in to your new CirrOS instance using the default username
+                            <codeph>cirros</codeph> and the default password
+                            <codeph>cubswin:)</codeph>.</li>
+                    <li>Run the <codeph>ping</codeph> command to verifiy that you can comminicate
+                        with the other new
+                            instance.<codeblock>ping -c4 192.168.100.12</codeblock><p/><p>Sample output from the preceding command.<image placement="break"
+                                href="../../../media/cisco/cirros-ping-other-instance.png"
+                                id="image_lxw_53p_jx"/></p><p/><p/></li>
+                    <li>Log in to your APIC console and verify that the tenant, network
+                            <codeph>Net100</codeph>, and subnet 192.168.100.0/24, have been created.<p/><p/><p>
+                            <image placement="break"
+                                href="../../../media/cisco/apic-verify-subnet.png"
+                                id="image_h51_bjp_jx"/>
+                        </p></li>
+                </ol></p>
+        </section>
+        <section id="section_wbv_cjp_jx">
+            <p><b>External Network</b></p>
+            <p>This is a continuation of the previous <b>Two Instances on a Private Network</b>
+                scenario. The following steps will connect the two new instances you created in the
+                previous instruction set to an external network by means of floating IP
+                    addresses.<ol id="ol_g1p_xp5_jx">
+                    <li>Configure a routed external network in the APIC. For assistance, please
+                        contact your Cisco ACI specialist. This guide operates with the following
+                            assumptions.<ul id="ul_uyh_cjg_lx">
+                            <li>your layer 3 domain is named <codeph>ext-net</codeph></li>
+                            <li>your external endpoint group (external EPG) is called
+                                    <codeph>ext-net-EPG</codeph></li>
+                            <li>your host pool CIDR is 10.105.11.1/24</li>
+                            <li>your external IP address range is 10.105.12.0/24</li>
+                        </ul>
+                    </li>
+                    <li>On each Neutron controller node in your cloud, add the following
+                        configuration block and options to the
+                            <codeph>/opt/stack/service/neutron/etc/ml2_conf.ini</codeph> file. Be
+                        sure to set the configuration parameters according to your particular
+                        cloud's
+                        configuration.<codeblock>[apic_external_network:ext-net]
+external_epg = ext-net-EPG
+host_pool_cidr = 10.105.11.1/24
+preexisting = True</codeblock></li>
+                    <li>Restart the <codeph>neutron-server</codeph> service on all Neutron
+                        controller
+                            nodes.<codeblock>ansible --sudo -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts NEU-SVR -m service -a "name=neutron-server state=restarted"</codeblock><p/><p>Sample
+                            output from the preceding
+                            command.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ ansible --sudo -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts NEU-SVR -m service -a "name=neutron-server state=restarted"
+helion-cp1-c1-m2-mgmt | success >> {
+    "changed": true, 
+    "name": "neutron-server", 
+    "state": "started"
+}
+ 
+helion-cp1-c1-m3-mgmt | success >> {
+    "changed": true, 
+    "name": "neutron-server", 
+    "state": "started"
+}
+ 
+helion-cp1-c1-m1-mgmt | success >> {
+    "changed": true, 
+    "name": "neutron-server", 
+    "state": "started"
+}</codeblock></p></li>
+                    <li>Create a new Neutron external
+                            network:<codeblock>neutron net-create ext-net --router:external --shared</codeblock><p/><p>Sample
+                            output from the preceding
+                            command.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron net-create ext-net --router:external --shared
+Created a new network:
++---------------------------+--------------------------------------+
+| Field                     | Value                                |
++---------------------------+--------------------------------------+
+| admin_state_up            | True                                 |
+| id                        | 61dfcd28-7f36-4db2-8dae-ff86b3e64c04 |
+| mtu                       | 0                                    |
+| name                      | ext-net                              |
+| provider:network_type     | opflex                               |
+| provider:physical_network | physnet1                             |
+| provider:segmentation_id  |                                      |
+| router:external           | True                                 |
+| shared                    | True                                 |
+| status                    | ACTIVE                               |
+| subnets                   |                                      |
+| tenant_id                 | 688c22afba0c4a9f8b9b7be50cd62376     |
++---------------------------+--------------------------------------+</codeblock></p><p/><p>
+                            <note>If the preceding command results in the message
+                                    <codeph>create_network_postcommit failed.</codeph> then the
+                                external network names in the APIC and the Neutron service do not
+                                match. The new external network name must be identical in the APIC
+                                and Neutron settings.</note>
+                        </p><p/><p/></li>
+                    <li>Create the public subnet
+                            10.105.12.0/24.<codeblock>neutron subnet-create ext-net 10.105.12.0/24 --name ext-subnet --gateway 10.105.12.1</codeblock><p/><p>Sample
+                            output from the preceding
+                            command.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron subnet-create ext-net 10.105.12.0/24 --name ext-subnet --gateway 10.105.12.1
+Created a new subnet:
++-------------------+--------------------------------------------------+
+| Field             | Value                                            |
++-------------------+--------------------------------------------------+
+| allocation_pools  | {"start": "10.105.12.2", "end": "10.105.12.254"} |
+| cidr              | 10.105.12.0/24                                   |
+| dns_nameservers   |                                                  |
+| enable_dhcp       | True                                             |
+| gateway_ip        | 10.105.12.1                                      |
+| host_routes       |                                                  |
+| id                | 9ba2d15a-100e-4dda-9dd8-4e8383905901             |
+| ip_version        | 4                                                |
+| ipv6_address_mode |                                                  |
+| ipv6_ra_mode      |                                                  |
+| name              | ext-subnet                                       |
+| network_id        | 61dfcd28-7f36-4db2-8dae-ff86b3e64c04             |
+| subnetpool_id     |                                                  |
+| tenant_id         | 688c22afba0c4a9f8b9b7be50cd62376                 |
++-------------------+--------------------------------------------------+</codeblock></p><p/><p/></li>
+                    <li>Run the following command to confirm that a network with a name beginning
+                        with <codeph>host-snat-network-for-internal-use-</codeph> has been
+                            created.<codeblock>neutron net-list</codeblock><p/><p>Sample output from
+                            the preceding
+                            command.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron net-list
++--------------------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| id                                   | name                                                                    | subnets                                               |
++--------------------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+
+| 699a35b6-ff60-4ce3-ab1e-1f9911a19b11 | OCTAVIA-MGMT-NET                                                        | b266ffd3-75fb-457c-a68d-3934b0a9170e 10.105.6.0/24    |
+| a1a38e64-0132-4e85-b3a9-38f20df7e050 | host-snat-network-for-internal-use-61dfcd28-7f36-4db2-8dae-ff86b3e64c04 | 52b03b85-9508-4a97-9e4a-ec163db2bbb8 10.105.11.0/24   |
+| 61dfcd28-7f36-4db2-8dae-ff86b3e64c04 | ext-net                                                                 | 9ba2d15a-100e-4dda-9dd8-4e8383905901 10.105.12.0/24   |
+| d58b49af-c4ad-4288-92b7-9e792a393562 | Net100                                                                  | e09ec631-4eab-4818-9560-d18c2407df43 192.168.100.0/24 |
++--------------------------------------+-------------------------------------------------------------------------+-------------------------------------------------------+</codeblock></p><p/><p/></li>
+                    <li>Create a router to connect the private network to the external
+                            network:<codeblock>neutron router-create Net100-router
+neutron router-interface-add Net100-router SubNet100
+neutron router-gateway-set Net100-router ext-net</codeblock><p/><p>Sample
+                            output from the preceding
+                            command.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron router-create Net100-router
+Created a new router:
++-----------------------+--------------------------------------+
+| Field                 | Value                                |
++-----------------------+--------------------------------------+
+| admin_state_up        | True                                 |
+| external_gateway_info |                                      |
+| id                    | f3667713-408c-46e2-98a8-1795fae73458 |
+| name                  | Net100-router                        |
+| routes                |                                      |
+| status                | ACTIVE                               |
+| tenant_id             | 688c22afba0c4a9f8b9b7be50cd62376     |
++-----------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron router-interface-add Net100-router SubNet100
+Added interface dcb034e1-fd00-4ceb-a7de-a25a16d11d07 to router Net100-router.
+stack@helion-cp1-c0-m1-mgmt:~$ neutron router-gateway-set Net100-router ext-net
+Set gateway for router Net100-router</codeblock></p><p/><p/></li>
+                    <li>Create floating IP addresses for the two instances you created in the
+                        previous instruction
+                            set.<codeblock>neutron floatingip-create ext-net --floating-ip-address 10.105.12.11
+neutron floatingip-create ext-net --floating-ip-address 10.105.12.12</codeblock><p/><p>Sample
+                            output from the preceding
+                            command.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron floatingip-create ext-net --floating-ip-address 10.105.12.11
+Created a new floatingip:
++---------------------+--------------------------------------+
+| Field               | Value                                |
++---------------------+--------------------------------------+
+| fixed_ip_address    |                                      |
+| floating_ip_address | 10.105.12.11                         |
+| floating_network_id | 61dfcd28-7f36-4db2-8dae-ff86b3e64c04 |
+| id                  | b188f515-d5c5-4b73-822c-96229ba0cf5d |
+| port_id             |                                      |
+| router_id           |                                      |
+| status              | DOWN                                 |
+| tenant_id           | 688c22afba0c4a9f8b9b7be50cd62376     |
++---------------------+--------------------------------------+
+stack@helion-cp1-c0-m1-mgmt:~$ neutron floatingip-create ext-net --floating-ip-address 10.105.12.12
+Created a new floatingip:
++---------------------+--------------------------------------+
+| Field               | Value                                |
++---------------------+--------------------------------------+
+| fixed_ip_address    |                                      |
+| floating_ip_address | 10.105.12.12                         |
+| floating_network_id | 61dfcd28-7f36-4db2-8dae-ff86b3e64c04 |
+| id                  | 498b3515-e148-4c8e-8ed9-6e070cf6fcff |
+| port_id             |                                      |
+| router_id           |                                      |
+| status              | DOWN                                 |
+| tenant_id           | 688c22afba0c4a9f8b9b7be50cd62376     |
++---------------------+--------------------------------------+</codeblock></p><p/><p/></li>
+                    <li>Connect the new floating IP addresses to each
+                            instance.<codeblock>nova floating-ip-associate cisco-test-vm1 10.105.12.11
+nova floating-ip-associate cisco-test-vm2 10.105.12.12</codeblock><p/><p>Sample
+                            output from the preceding
+                            command.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ nova floating-ip-associate cisco-test-vm1 10.105.12.11
+stack@helion-cp1-c0-m1-mgmt:~$ nova floating-ip-associate cisco-test-vm2 10.105.12.12</codeblock></p><p/><p/></li>
+                    <li>Run the following command to confirm that you can SSH to the instances on
+                        their floating IP
+                            addresses:<codeblock>ssh cirros@10.105.12.11
+ssh cirros@10.105.12.12</codeblock><p/><p>Sample
+                            output from the preceding command.</p><p>
+                            <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ ssh cirros@10.105.12.11
+Warning: Permanently added '10.105.12.11' (RSA) to the list of known hosts.
+cirros@10.105.12.11's password: 
+$ ip addr
+1: lo: &lt;LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    link/ether fa:16:3e:21:0f:b1 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.100.11/24 brd 192.168.100.255 scope global eth0
+    inet6 fe80::f816:3eff:fe21:fb1/64 scope link 
+       valid_lft forever preferred_lft forever
+$ Connection to 10.105.12.11 closed.
+stack@helion-cp1-c0-m1-mgmt:~$ ssh cirros@10.105.12.12
+Warning: Permanently added '10.105.12.12' (RSA) to the list of known hosts.
+cirros@10.105.12.12's password: 
+$ ip addr
+1: lo: &lt;LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue 
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    link/ether fa:16:3e:86:2e:c6 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.100.12/24 brd 192.168.100.255 scope global eth0
+    inet6 fe80::f816:3eff:fe86:2ec6/64 scope link 
+       valid_lft forever preferred_lft forever
+$ Connection to 10.105.12.12 closed.</codeblock>
+                        </p></li>
+                </ol></p>
+        </section>
+    </body>
+</topic>

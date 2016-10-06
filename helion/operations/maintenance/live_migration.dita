@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="liveInstMigration">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Live Migration of Instances</title>
+  <abstract><shortdesc outputclass="hdphidden">Live migration allows you to move active Compute
+      instances between Compute nodes, allowing for less downtime during
+    maintenance.</shortdesc></abstract>
+  <body>
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="about">
+      <p>HPE Helion OpenStack Nova offers a set of commands that allow you to move Compute instances
+        between Compute hosts. These Compute hosts can be in any state. This feature is called
+        evacuation or live migration, depending on the state of the Compute host.</p>
+      <p>You can perform these actions on instances that are booted from block storage volumes, have
+        block storage volumes attached, or instances that utilize their local ephemeral storage
+        only.</p>
+    </section>
+
+    <section>
+      <title>Migration Options</title>
+      <p>If your Compute host is powered on and the data disks in working order you can utilize the
+        live migration feature to migrate Your Compute instance must remain powered on and in an
+          <codeph>Active</codeph> status during the migration process. There should be zero
+        downtime, thus your Compute instance should remain accessible during the process.</p>
+      <p><b>If your Compute host has failed</b></p>
+      <p>A Compute host failure could be because of a hardware failure, such as the data disk
+        needing to be replaced, or any other type of failure which requires that you replace the
+        baremetal host.</p>
+      <p>In these cases you will want to use one of the Nova evacuate commands, which will we
+        describe below.</p>
+    </section>
+    <table frame="all" rowsep="1" colsep="1" id="table_fnj_tq1_sw">
+      <tgroup cols="2">
+        <colspec colname="c1" colnum="1"/>
+        <colspec colname="c2" colnum="2"/>
+        <thead>
+          <row>
+            <entry>Command</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><codeph>nova evacuate &lt;instance> &lt;hostname></codeph></entry>
+            <entry>This command is used to evacuate a single server from a failed host. You specify
+              the Compute instance UUID and the target host you want to evacuate it to. If no host
+              is specified then the Nova scheduler will choose one for you.<p>See <codeph>nova help
+                  evacuate</codeph> for more information and syntax. Further details can also be
+                seen in the OpenStack documentation here: <xref
+                  href="http://docs.openstack.org/admin-guide/cli_nova_evacuate.html" format="html"
+                  scope="external">Evacuate Instances</xref>.</p></entry>
+          </row>
+          <row>
+            <entry><codeph>nova host-evacuate &lt;hostname> --target_host
+                &lt;target_hostname></codeph></entry>
+            <entry>This command is used to evacuate all instances from a failed host. You specify
+              the hostname of the Compute host you want to evacuate. Optionally you can specify a
+              target host. If no target host is specified then the Nova scheduler will choose a
+              target host for each instance.<p>See <codeph>nova help host-evacuate</codeph> for more
+                information and syntax.</p></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <p><b>If your Compute host has not failed</b></p>
+    <p>If your Compute host has not failed, meaning it can power on and the data disk is intact,
+      then you can utilize the live migration feature which will allow you to migrate the instances
+      from one host to another with minimal downtime.</p>
+    <p id="notes">There are two migration features, <codeph>nova migrate</codeph> and <codeph>nova
+        live-migration</codeph>. Migration and live migration are two different functions. Migration
+      is used to copy a stopped instances data from one Compute host to another. It does this using
+      passwordless SSH access and has security concerns associated with it. Live migration can be
+      performed on a running (Active/Paused) instance and uses the qemu hypervisor to manage the
+      copy of the running processes and associated resources to the destination Compute host using
+      the hypervisors own protocol and thus is a more secure method and allows for less
+      downtime.</p>
+    <p>For this reason, the <codeph>nova migrate</codeph> function has been disabled by default but
+      you have the ability to enable this feature if you would like. Details on how to do this can
+      be found in <xref href="../compute/enabling_resize.dita"/>.</p>
+    <p>We describe the limitations of and how to use the live migration feature in the next
+      sections.</p>
+
+    <section id="limitations"><title>Limitations of these Features</title>
+      <p>There are limitations that may impact your use of this feature:</p>
+      <ul>
+        <li>Your Compute instances must be in either an <codeph>Active</codeph> or
+            <codeph>Paused</codeph> state on the Compute node. Instances in other states will not
+          live migrate.</li>
+        <li>Instances in a <codeph>Paused</codeph> state cannot be live migrated using the Horizon
+          GUI. You will need to utilize the CLI to perform these.</li>
+        <li>If you are using HPE Helion OpenStack 3.0, then live migration will not work between
+          compute hosts that are not using shared ephemeral storage and have both Cinder block
+          storage volumes and ephemeral volumes attached. This limitation does not exist in HPE
+          Helion OpenStack 3.0.1 and later versions. <!-- DOCS-3134 --></li>
+        <li>The <codeph>nova host-evacuate-live</codeph> command cannot be used for a Compute host
+          that has a mix of instances that use ephemeral storage and instances that are booted from
+          a block storage volume or have any number of block storage volumes attached. It will only
+          work if the host has instances that are comprised of one or the other.
+          <!-- Thanks Lash --></li>
+        <li>If you are using both Linux for HPE Helion (KVM) and RHEL compute hosts, you cannot live
+          migrate instances between them. Instances on KVM hosts can only be live migrated to other
+          KVM hosts and the same for RHEL hosts. This is due to Red Hat's use of non-standard
+          machine models. </li>
+        <li>Block live-migration between RHEL compute hosts is not supported due to Red Hat not
+          supporting the necessary packages needed for this operation. The only forms of live
+          migration that are supported between RHEL hosts are ones where block storage volumes are
+          used exclusively or if shared storage is being used.</li>
+        <li>Ensure that you read and take into account any other limitations that exist in the
+          release notes. See <xref href="../../releasenotes30.dita"/> for more details.</li>
+      </ul>
+    </section>
+
+
+    <section id="liveMigrate"><title>Performing a Live Migration</title>
+      <p>Cloud administrators can perform a live migration on an instance using either the Horizon
+        dashboard, API, or CLI. The instance must be in an <codeph>Active</codeph> or
+          <codeph>Paused</codeph> status prior and during the live migration. Instances in a
+          <codeph>Paused</codeph> state cannot be live migrated using the Horizon GUI. You will need
+        to utilize the CLI to perform these.</p>
+      <p>We have documented both single-instance live migration and also the method to use if you
+        wish to live migrate all of the instances off of a single Compute host:</p>
+      <ul>
+        <li><xref href="live_migration.dita#liveInstMigration/single_horizon">Single Instance Live
+            Migration using Horizon</xref></li>
+        <li><xref href="live_migration.dita#liveInstMigration/single_cli">Single Instance Live
+            Migration using the NovaClient CLI</xref></li>
+        <li><xref href="live_migration.dita#liveInstMigration/multi">Multiple Instance Live
+            Migration using the NovaClient CLI</xref></li>
+      </ul>
+    </section>
+    <section id="single_horizon">
+      <title outputclass="headerH">Single Instance Live Migration using Horizon</title>
+      <sectiondiv outputclass="insideSection">
+        <p>The Horizon dashboard offers a GUI method for performing live migrations. Instances in a
+            <codeph>Paused</codeph> state will not provide you the live migration option in Horizon
+          so you will need to use the CLI instructions in the next section to perform these.</p>
+        <ol>
+          <li>Log into the Horizon dashboard with admin credentials.</li>
+          <li>Navigate to the <b>Admin -> System -> Instances</b> menu as seen in the screenshot
+            below.</li>
+          <li>Next to the instance you want to migrate, select the drop down menu and choose the
+              <b>Live Migrate Instance</b> option. <p><image
+                href="../../../media/hos.docs/livemigration1.png"/></p></li>
+          <li>In the Live Migrate wizard you will see the Compute host the instance currently
+            resides on and then a drop down menu that allows you to choose the Compute host you want
+            to migrate the instance to. Select a destination host from that menu. You also have two
+            checkboxes for additional options, which are described below: <p><b>Disk Over Commit</b>
+              - If this is not checked then the value will be <codeph>False</codeph>. If you check
+              this box then it will allow you to override the check that occurs to ensure the
+              destination host has the available disk space to host the instance.</p>
+            <p><b>Block Migration</b> - If this is not checked then the value will be
+                <codeph>False</codeph>. If you check this box then it will migrate the local disks
+              by using block migration. Use this option if you are only using ephemeral storage on
+              your instances. If you are using block storage for your instance then ensure this box
+              is not checked.</p>
+            <p><image href="../../../media/hos.docs/livemigration2.png"/></p></li>
+          <li>Select the <b>Live Migrate Instance</b> button to begin your live migration.</li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="single_cli"><title outputclass="headerH">Single Instance Live Migration using the
+        NovaClient CLI</title>
+      <sectiondiv outputclass="insideSection">
+        <p>For command-line access you can utilize the NovaClient to perform live migrations. The
+          lifecycle manager node in your cloud environment should have the NovaClient already
+          installed. If you will be accessing your environment through a different method you will
+          need to ensure that the NovaClient is installed. You can do this via python-pip and the
+          instructions can be found here: <xref
+            href="http://docs.openstack.org/user-guide/common/cli_install_openstack_command_line_clients.html"
+            format="html" scope="external">Install the OpenStack command-line clients</xref>.</p>
+        <p>You will need to utilize admin credentials to perform the commands in the steps. From the
+          lifecycle manager you can use this command below otherwise you will need to do this
+          manually on the system you are using: <codeblock>source ~/service.osrc</codeblock></p>
+        <p>The full details about the <codeph>nova live-migration</codeph> command can be listed by
+          using the <codeph>nova help live-migration</codeph> help command as seen below:</p>
+        <codeblock>$ nova help live-migration
+usage: nova live-migration [--block-migrate] [--disk-over-commit]
+                           &lt;server> [&lt;host>]
+          
+Migrate running server to a new machine.
+          
+Positional arguments:
+   &lt;server>            Name or ID of server.
+   &lt;host>              destination host name.
+              
+Optional arguments:
+   --block-migrate     True in case of block_migration.
+                       (Default=False:live_migration)
+   --disk-over-commit  Allow overcommit.(Default=False)</codeblock>
+        <p>Here are the steps to perform:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+          <li>Identify the instances on the compute node you wish to migrate: <codeblock>nova list --all-tenants --host &lt;hostname&gt;</codeblock>
+            <p>Example showing a host with a single Compute instance on it:</p>
+            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0001-mgmt --all-tenants
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+
+| ID                                   | Name | Tenant ID                        | Status | Task State | Power State | Networks              |
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+
+| 553ba508-2d75-4513-b69a-f6a2a08d04e3 | test | 193548a949c146dfa1f051088e141f0b | ACTIVE | -          | Running     | adminnetwork=10.0.0.5 |
++--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+</codeblock></li>
+          <li>When using live migration you can either specify a target host that the instance will
+            be migrated to or you can omit the target to allow the nova-scheduler to choose a node
+            for you. If you want to get a list of available hosts you can use this command:
+            <codeblock>nova host-list</codeblock></li>
+          <li>Migrate the instance(s) on the compute node using the notes below. <p>If your instance
+              is booted from a block storage volume or has any number of block storage volumes
+              attached, use the <codeph>nova live-migration</codeph> command with this syntax:</p>
+            <codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
+            <p>If your instance has local (ephemeral) disk(s) only or if your instance has a mix of
+              ephemeral disk(s) and block storage volume(s), you should use the
+                <codeph>--block-migrate</codeph> option:</p>
+            <codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
+            <note>The [&lt;target compute host&gt;] option is optional. If you do not specify a
+              target host then the nova scheduler will choose a node for you.</note>
+          </li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="multi"><title outputclass="headerH">Multiple Instance Live Migration using the
+        NovaCLient CLI</title>
+      <sectiondiv outputclass="insideSection">
+        <p>If you want to live migrate all of the instances off a single Compute host you can
+          utilize the <codeph>nova host-evacuate-live</codeph> command.</p>
+        <p>
+          <note type="important">There is a limitation with this feature which is that if you have a
+            mix of instances on the Compute host in that some have at least one ephemeral disk and
+            others have no ephemeral disks (i.e. they use only block storage volumes) then this
+            command will fail as it will not be able to evacuate all instances. This is because the
+              <codeph>--block-migrate</codeph> option is required for instances with ephemeral disks
+            and must be omitted for instances with only block storage volumes. In this case you will
+            need to live migrate the instances off the host individually using the instructions in
+            the earlier sections.</note>
+        </p>
+        <ol>
+          <li>Using admin credentials, determine the hostname of the Compute host you wish to live
+            migrate. <p>You can determing the hostname by getting a list of instances using this
+              command:</p>
+            <codeblock>nova list --all-tenants --fields=name,status,task_state,host,flavor</codeblock></li>
+          <li>You will want to ensure that all of the instances on the host are in either
+              <codeph>Active</codeph> or <codeph>Paused</codeph> state:
+            <codeblock>nova list --all-tenants --host &lt;hostname></codeblock></li>
+          <li>Issue the host-evacuate-live command, which will begin the live migration process.
+              <p>If all of the instances on the host are using at least one local (ephemeral) disk,
+              you should use this syntax:</p>
+            <codeblock>nova host-evacuate-live --block-migrate &lt;hostname></codeblock>
+            <p>Alternatively, if all of the instances are only using block storage volumes then omit
+              the <codeph>--block-migrate</codeph> option:</p>
+            <codeblock>nova host-evacuate-live &lt;hostname></codeblock>
+            <note>You can either let the nova-scheduler choose a suitable target host or you can
+              specify one using the <codeph>--target-host &lt;hostname> </codeph> switch. See
+                <codeph>nova help host-evacuate-live</codeph> for details.</note></li>
+          <li>You can then monitor the migrations by using the command below:
+            <codeblock>nova list --all-tenants --fields=name,status,task_state,host,flavor</codeblock></li>
+        </ol>
+      </sectiondiv>
+    </section>
+
+
+  </body>
+</topic>

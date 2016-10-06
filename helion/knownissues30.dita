@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "concept.dtd" >
+<topic xml:lang="en-us" id="knownissues30">
+    <title>Known Issues in this Release</title>
+    <body>
+        <!--not tested-->
+
+        <section id="bnx2x">
+            <title>Upgrade may fail - Can't load firmware file bnx2x/bnx2x-e2-7.12.30.0.fw</title>
+            <!--  HLM-3865 -->
+            <p>After running the upgrade procedure, and before re-booting your nodes, you must check
+                to see if you need to install the most recent version of the bnx2x driver on every
+                node in your cluster. SSH to each node and run the command: </p>
+            <codeblock>sudo lsmod | grep bnx2x</codeblock>
+            <p>If this command generates any output, then you will need to install the driver on the
+                node. To check what files, if any, are already present for this driver on the node,
+                run: </p>
+            <codeblock>sudo ls /lib/firmware/bnx2x</codeblock>
+            <p>This may generate output similar to the following:</p>
+            <codeblock>
+bnx2x-e1-7.0.29.0.fw  bnx2x-e1h-7.0.29.0.fw  bnx2x-e2-7.0.29.0.fw
+bnx2x-e1-7.8.17.0.fw  bnx2x-e1h-7.8.17.0.fw  bnx2x-e2-7.8.17.0.fw
+bnx2x-e1-7.8.19.0.fw  bnx2x-e1h-7.8.19.0.fw  bnx2x-e2-7.8.19.0.fw
+</codeblock>
+            <p> Note that the required file <codeph>bnx2x-e2-7.12.30.0.fw</codeph> is not present in
+                the list. To install the latest version of the driver, run the following command on
+                each node where you have determined it is needed:</p>
+            <codeblock>sudo apt-get install firmware-bnx2x</codeblock>
+            <p>Now, when you list the contents of the <codeph>/lib/firmware/bnx2x</codeph>
+                directory, you should see the file <codeph>bnx2x-e2-7.12.30.0.fw</codeph>:</p>
+            <codeblock>
+bnx2x-e1-7.0.29.0.fw   bnx2x-e1h-7.0.29.0.fw   bnx2x-e2-7.0.29.0.fw
+bnx2x-e1-7.12.30.0.fw  bnx2x-e1h-7.12.30.0.fw  <b>bnx2x-e2-7.12.30.0.fw</b>
+bnx2x-e1-7.8.17.0.fw   bnx2x-e1h-7.8.17.0.fw   bnx2x-e2-7.8.17.0.fw
+bnx2x-e1-7.8.19.0.fw   bnx2x-e1h-7.8.19.0.fw   bnx2x-e2-7.8.19.0.fw
+</codeblock>
+            <note type="important">If you reboot a node before installing the required driver, you
+                may lose all networking on the node.</note>
+        </section>
+
+        <section id="DOCS-3198">
+            <title>Upgrade from <keyword keyref="kw-hos-phrase-215"/> to <keyword
+                    keyref="kw-hos-phrase-30"/> or from HPE Helion OpenStack 2.0.2 to <keyword
+                    keyref="kw-hos-phrase-30"/> is not recommended</title>
+            <p>It is advised that you wait for the the release of <keyword
+                    keyref="kw-hos-phrase-301"/> before upgrading from <keyword
+                    keyref="kw-hos-phrase-215"/> or from version 2.0.2. However, if you must upgrade
+                from <keyword keyref="kw-hos-phrase-215"/> or from HPE Helion OpenStack 2.0.2, you
+                will need to run the following commands on the deployer to work around a timestamp
+                issue involving 2.x releases that are newer than 3.0: </p>
+            <codeblock>
+ansible resources -a "sudo rm -rf /var/lib/apt/lists"
+ansible resources -a "sudo mkdir /var/lib/apt/lists"
+ansible resources -a "sudo apt-get update"
+</codeblock>
+        </section>
+
+        <section>
+            <title>Swift Capacity Limitations</title>
+            <!-- DOCS-3433 -->
+            <p>There is a Swift capacity upper limit of 5 petabytes (PB) usable (15 petabytes (PB)
+                raw total taking into account the x3 replication).</p>
+        </section>
+
+        <section>
+            <title>Ceph Deployment</title>
+            <!-- DOCS-3272 -->
+            <p><b>Example Entry-scale KVM with Ceph model files includes unneeded service</b></p>
+            <p>If you are using the Ceph example files in
+                    <codeph>~/helion/examples/entry-scale-kvm-ceph</codeph> you should edit the
+                    <codeph>control_plane.yml</codeph> file to remove the
+                    <codeph>cmc-service</codeph> service-component which is listed under the control
+                plane cluster information.</p>
+            <p>Full path to file:</p>
+            <codeblock>~/helion/examples/entry-scale-kvm-ceph/data/control_plane.yml</codeblock>
+            <p>Line to remove:</p>
+            <codeblock>- cmc-service</codeblock>
+            <!-- DOCS-3149 -->
+            <p><b>Ceph deployments must use dedicated RADOS gateway cluster</b></p>
+            <p>When using a deployment that utilizes Ceph, such as the example configuration
+                entry-scale-kvm-ceph, it's important to use a dedicated cluster for the RADOS
+                gateway, as described in <xref href="architecture/examples/entryscale_kvm_ceph.dita"
+                />. If you attempt to deploy the Ceph RADOS gateway service on the controller node
+                cluster, you will run into issues as it cannot co-exist with the Horizon dashboard
+                service.</p>
+        </section>
+
+        <section>
+            <title>Helion Development Platform</title>
+            <p>Helion Development Platform (HDP) 2.0 or earlier versions are not supported on
+                    <keyword keyref="kw-hos-phrase"/> If you have existing HDP 2.0 deployment on
+                    <keyword keyref="kw-hos"/> 2.X platform, consider the following before upgrading
+                to <keyword keyref="kw-hos-phrase-30"/>. <ul>
+                    <li>Helion Stackato 3.6.2 is the recommended and supported PaaS product on
+                            <keyword keyref="kw-hos-phrase-30"/>. </li>
+                    <li>Helion Database Service and Messaging Service are not included and not
+                        supported on <keyword keyref="kw-hos-phrase-30"/>. </li>
+                </ul>
+            </p>
+            <p>Please see: <xref href="http://docs.hpcloud.com/#devplatform/2.0/upgrade_HOS_30.html"
+                    format="html" scope="external">Upgrading HPE Helion OpenStack to Version
+                    3.0</xref> for more information.</p>
+        </section>
+
+        <section>
+            <title>MySQL is sensitive to logrotate</title>
+            <!-- LOG-360 -->
+            <p>If a cluster is broken and MySQL attempts a logrotate, it could end up creating a
+                secondary log file, such as <codeph>error.log.1</codeph> or
+                    <codeph>mysql-slow.log.1</codeph>. In this state, the files will continue to
+                grow and will not be rotated. To fix the issue, a mysql restart must be run on all
+                nodes where MySQL is running. </p>
+        </section>
+
+        <section>
+            <title>RabbitMQ stalls the cluster in large scale</title>
+            <!-- DOCS-3083 -->
+            <p>The RabbitMQ management plugin will cause performance issues with large scale
+                installations. The work around is to disable the plugin with the following command: <codeblock>sudo rabbitmq-plugins disable rabbitmq_management</codeblock>
+                <note type="important">This should be done on all controllers running
+                    RabbitMQ.</note>
+            </p>
+        </section>
+
+        <section id="DOCS-3057" conkeyref="upgrade_recover_rabbit/recover_rabbit"/>
+
+        <!--        <section id="DOCS-3012">
+            <title>Upgrade from 2.1 to 3.0 fails due to Kibana error</title>
+            
+            <p>The failure results in output similar to:</p>
+            
+<codeblock>
+TASK: [logging-server | status | Checking systemd status for Kibana] **********
+failed: [helion-cp1-c1-m1-mgmt] => {"changed": false, "cmd": ["systemctl", "status", "kibana"], "delta": "0:00:00.023937", "end": "2016-04-14 10:09:20.297810", "rc": 3, "start": "2016-04-14 10:09:20.273873", "warnings": []}
+stdout:  kibana.service - Kibana Service
+   Loaded: loaded (/etc/systemd/system/kibana.service; enabled)
+   Active: failed (Result: exit-code) since Thu 2016-04-14 09:04:45 UTC; 1h 4min ago
+Main PID: 28978 (code=exited, status=143)
+....
+FATAL: all hosts have already failed -\- aborting
+
+PLAY RECAP ********************************************************************
+_hlm-upgrade-base | Apply package updates -\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- 204.28s
+neutron-server | start | Restart the neutron-server -\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- 91.09s
+kafka | kafka | start | stop kafka service -\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- 91.03s
+rabbitmq | configure-users | Create RabbitMQ users -\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- 70.62s
+monasca-thresh | monasca-thresh | start | restart monasca thresh service -\- 64.92s
+CMC-DEP | install | Install CMC -\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- 58.84s
+horizon_post_configure | post-configure | Compress static files -\-\-\-\-\-\-\- 51.42s
+horizon_post_configure | post-configure | Compress static files -\-\-\-\-\-\-\- 49.00s
+horizon_post_configure | post-configure | Compress static files -\-\-\-\-\-\-\- 48.22s
+vertica | vertica | upgrade vertica version | start vertica service -\-\-\- 46.73s
+-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+Total: -\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- 4362.51s
+           to retry, use: -\-limit @/home/stack/hlm-upgrade.retry
+
+helion-cp1-c1-m1-mgmt      : ok=2538 changed=860  unreachable=0    failed=1
+helion-cp1-c1-m2-mgmt      : ok=2392 changed=828  unreachable=0    failed=1
+helion-cp1-c1-m3-mgmt      : ok=2392 changed=828  unreachable=0    failed=1
+</codeblock>            
+            
+            <p>To workaround this failure, manually start Kibaba on all the controller nodes
+                and then start the upgrade again.</p>
+            
+<codeblock>
+sudo systemctl start kibana
+</codeblock> 
+ 
+        </section>-->
+
+        <section>
+            <title>NIC-Mapping</title>
+            <!-- DOCS-2799 -->
+            <p>This is only relevant if you are using the NIC mapping feature in your input model,
+                you are running hLinux and have multi-port cards.</p>
+            <p>During internal testing it has been identified that the udev rules for multi-port NIC
+                cards generated by earlier versions of <keyword keyref="kw-hos"/> could prevent
+                hLinux 4.4 from booting.</p>
+            <p>For reference these rules are defined in this file:
+                    <codeph>/etc/udev/rules.d/90-helion-nic-mapping.rules</codeph>.</p>
+            <p>During the <keyword keyref="kw-hos"/> upgrade this file will be re-generated with
+                updated contents. The new udev file fixes the issue that could prevent hLinux 4.4
+                from booting while performing the required mapping of devices to device-names.</p>
+        </section>
+
+        <section>
+            <title>Subsequent runs of bm-reimage.yml sometimes fail to trigger network
+                install</title>
+            <!-- HLM-3522 -->
+            <p>If you've run the <codeph>site.yml</codeph> playbook during an install and have a
+                reason to run the <codeph>bm-reimage.yml</codeph> playbook afterwards, it may fail
+                to trigger the network install over PXE due to the name of the interface changing
+                during this process.</p>
+            <p>To resolve this issue, you can run the <codeph>cobbler-deploy.yml</codeph> playbook
+                to refresh these settings and then proceed to run
+                <codeph>bm-reimage.yml</codeph>.</p>
+        </section>
+
+        <section>
+            <title>Dashboard (Horizon)</title>
+            <!-- DOCS-3177 -->
+            <p><b>When creating a Swift container, the progress bar never ends</b></p>
+            <p>There is a bug in the dashboard when you create a new Swift object storage container
+                where the progress bar never ends even after the container has been successfully
+                created. There is no workaround, it can just be ignored.</p>
+            <!-- DOCS-3269 / HORI-5545 -->
+            <p><b>Swift container file uploads initiated via the dashboard may stall out and
+                    fail</b></p>
+            <p>Due to the way the Horizon dashboard is architected, some file uploads to Swift
+                containers may stall out and fail. You will mostly see this in large files but it
+                can happen with smaller files depending on the size of root disk partition on your
+                controller nodes.</p>
+            <p>The way the Horizon dashboard transfers files is that they stage the files in a
+                temporary directory before sending the files to Swift. If the root disk partition is
+                less than the size of the file you are attempting to upload, it will run out of disk
+                space and cause an error.</p>
+            <p>There is an architectural fix being worked in upstream OpenStack to alleviate this
+                issue but right now the workaround is to either increase the disk space for your
+                root disk partition or you can use the Swift CLI or the API to upload files, which
+                does not run into this issue. Keep in mind that Swift still has the 5GB file
+                limitation in general before segmenting the file is necessary.</p>
+        </section>
+
+        <section>
+            <title>Compute (Nova)</title>
+            <p><!-- DOCS-2653 --><b>Change in policy.json File</b></p>
+            <p>The <codeph>policy.json</codeph> file for the Nova service has been changed, although
+                the location of the file remains the same:</p>
+            <p>Old name/location: <codeph>~/helion/my_cloud/config/nova/policy.json</codeph></p>
+            <p>New name/location: <codeph>~/helion/my_cloud/config/nova/policy.json.j2</codeph></p>
+            <p>If you have made changes to this file in your environment, you should recreate these
+                changes in the new file.</p>
+
+            <p><!-- DOCS-3112 --><b>The Nova v2.1 API policy.json file does not cover all
+                    operations</b></p>
+            <p>The Nova v2.1 API policy does not cover every operation. The absence of the policies
+                below, which normally are admin-only actions, would allow non-admin users to perform
+                these operations against their own resources through the Nova API:</p>
+            <codeblock>For servers:
+"os_compute_api:servers:detail:get_all_tenants": "is_admin:True",
+"os_compute_api:servers:index:get_all_tenants": "is_admin:True",
+"os_compute_api:servers:create:forced_host": "rule:admin_api",
+"os_compute_api:os-lock-server:unlock:unlock_override": "rule:admin_api",
+
+For networking:
+"os_compute_api:os-floating-ip-dns:domain:update": "rule:admin_api",
+"os_compute_api:os-floating-ip-dns:domain:delete": "rule:admin_api",
+
+For quotas:
+"os_compute_api:os-quota-class-sets:update": "rule:admin_api",
+"os_compute_api:os-quota-class-sets:show": "is_admin:True or quota_class:%(quota_class)s",</codeblock>
+            <p>There are two workarounds available to fix this: you can edit the file in your
+                environment manually and add these values or you can download a modified Nova
+                policy.json file that includes these values and add it to your cloud
+                configuration.</p>
+            <p>To modify your existing file to add these values, follow these steps:</p>
+            <ol>
+                <li>Log in to the lifecycle manager.</li>
+                <li>Edit the Nova policy.json.j2 file at the following location:
+                    <codeblock>~/helion/my_cloud/config/nova/policy.json.j2</codeblock></li>
+                <li>Add the values in the codeblock above and save the file.</li>
+                <li>Commit the changes to git:
+                    <codeblock>git add -A
+git commit -a -m "changing Nova policy json file"</codeblock></li>
+                <li>Run the configuration processor:
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+                <li>Update your deployment directory:
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+                <li>Reconfigure the Nova service with this playbook:
+                    <codeblock>cd ~/scratch/ansible/next/hos/ansible/
+ansible-playbook -i hosts/verb_hosts nova-reconfigure.yml</codeblock></li>
+            </ol>
+            <p>If you wish to use our modified Nova policy.json file, you can download it here:
+                    <xref href="../media/download/policy.json.j2" format="json" scope="external">Download modified Nova
+                    policy.json.j2 file</xref>. Then save the file in the location in step #2 above
+                and then follow the rest of the steps to commit the change.</p>
+            
+            <p><b>Live Migration between KVM and RHEL Compute Hosts Isn't Supported</b></p>
+            <p>If you are using both Linux for HPE Helion (KVM) and RHEL compute hosts, you cannot
+                live migrate instances between them. Instances on KVM hosts can only be live
+                migrated to other KVM hosts and the same for RHEL hosts. For more details about live
+                migration, see <xref href="operations/maintenance/live_migration.dita"/>.</p>
+            
+            <!-- DOCS-3169 -->
+            <p><b>Two upstream limitations regarding live migration abortion parameters that
+                    exist</b></p>
+            <p>There are two upstream limitations when configuring the live-migration abortion
+                parameters that also exist in our product:</p>
+            <ol>
+                <li>The <codeph>live_migration_downtime</codeph>,
+                        <codeph>live_migration_downtime_steps</codeph> and
+                        <codeph>live_migration_downtime_delay</codeph> default values are not
+                    honored. See <xref href="https://bugs.launchpad.net/nova/+bug/1583107"
+                        scope="external" format="html"/> for more details. If you want to set up
+                    values different than the minimum ones then you need to do it explicitly.</li>
+                <li>Live-migration monitoring is not working properly. The consequence is that the
+                        <codeph>live_migration_completion_timeout</codeph> parameter has no effect
+                    and is overridden by <codeph>live_migration_progress_timeout</codeph>. See <xref
+                        href="https://bugs.launchpad.net/nova/+bug/1583145" scope="external"
+                        format="html"/> for more details.</li>
+            </ol>
+            <!-- DOCS-3103 -->
+            <p><b>Enabling migrate or resize</b></p>
+            <p>If you want to enable the Nova migrate or resize features and you are using
+                encryption then you must do so after installing or upgrading to <keyword
+                    keyref="kw-hos-phrase-30"/> and before any subsequent configuration change which
+                requires running the configuration processor.</p>
+            <p>For the steps involved with enabling these features during initial installation, see
+                    <xref href="operations/compute/enabling_resize.dita"/>.</p>
+            <p>If you are using encryption and are attempting to enable these features after your
+                initial installation, see: <xref
+                    href="operations/troubleshooting/ts_compute.dita#ts_compute/ts_resize">Compute
+                    Troubleshooting</xref> for details on the workaround to ensure these features
+                work for you.</p>
+        </section>
+
+        <section>
+            <title>Compute (ESX)</title>
+            <!-- DOCS-2925 -->
+            <p><b>Unable to Create Instance Snapshot when Instance is Active</b></p>
+            <p>There is a known issue with VMWare vCenter where if you have a compute instance in
+                    <codeph>Active</codeph> state you will receive the error below when attempting
+                to take a snapshot of it:</p>
+            <codeblock>An error occurred while saving the snapshot: Failed to quiesce the virtual machine</codeblock>
+            <p>The workaround for this issue is to stop the instance prior to taking the snapshot.
+                For details on the workaround, see <xref
+                    href="operations/troubleshooting/ts_compute.dita#ts_compute/esx"/>.</p>
+            <!-- DOCS-2999 -->
+            <p><b>Parallel activations and/or deactivations are not allowed for ESX Compute</b></p>
+            <p>You should not attempt parallel activations/deactivations for ESX computes using Eon
+                command-line interface (CLI) . Eon CLI used for activate and deactivate are
+                    <codeph>eon resource-activate</codeph> and <codeph>eon
+                    resource-deactivate</codeph>, respectively.</p>
+            <p>You should check if cluster resource has changed to the desired states before
+                attempting activation or deactivation of ESX cluster. The desired states are
+                    <i>imported</i>, <i>activated</i> and <i>provisioned</i>. The ESX cluster
+                compute states can be obtained using <codeph>eon resource-list</codeph> CLI.</p>
+            <p><b>ESX Attach Interface</b></p>
+            <!-- DOCS-3028 -->
+            <p>In an ESX cloud environment <i>Attach Interface</i> to the instances is not
+                supported.</p>
+        </section>
+
+        <section>
+            <title>Use of InfluxDB version 9.5.1 Not Recommended</title>
+            <p><!-- DOCS-2993 --> Although Helion OpenStack ships with InfluxDB version 9.5.1, it is
+                not recommended to be used in a HOS 3.0 environment. InfluxDB will randomly start to
+                fail silently without any indication to the user. This can happen at any time. The
+                only sign of failure is InfluxDB will start timing out connections to it. The only
+                way to find that the problem is occurring is looking at the influxdb logs. The only
+                way to fix it is to either stop the load from pushing through it or restart
+                InfluxDB.</p>
+        </section>
+
+        <section>
+            <title>Block Storage (Cinder)</title>
+            <!-- DOCS-3135 -->
+            <p><b>Volume backups when you have multiple volume types</b></p>
+            <p>If you have more than one volume type, then before you restore a volume from backup
+                you should create a new volume of the correct type and size. Then restore the backup
+                into the new volume. This is particularly relevant if the backed-up volume is
+                encrypted.</p>
+            <p><!-- DOCS-2878 --> Although <keyword keyref="kw-hos-version-30"/> supports encrypted
+                Block Storage volumes, the following limitations apply: <ul>
+                    <li>Creating encrypted volumes from an image is not supported.</li>
+                    <li>Creating encrypted volumes when using a Ceph backend is not supported. This
+                        bug can be seen <xref href="https://bugs.launchpad.net/nova/+bug/1463525"
+                            scope="external" format="html">here</xref>.</li>
+                    <!-- DOCS-2979 -->
+                    <li>Attaches and detaches of encrypted volumes are not supported with
+                        non-multipath Fiber Channel backends.</li>
+                </ul>
+            </p>
+            <!-- DOCS-2980 -->
+            <p>Under the following conditions the <i>allow_availability_zone_fallback</i> flag must
+                be set to True in cinder.conf in order to boot Nova instances: <ul>
+                    <li>The instance boot source is an image</li>
+                    <li>A new volume is being created to persist the instance data</li>
+                    <li>The availability zone specified is different to the Cinder availability
+                        zone</li>
+                </ul>
+            </p>
+            <!-- DOCS-3001 -->
+            <p> If a volume is created from a cached image or from a volume snapshot, and a size is
+                specified that is different than the cached image or snapshot size, the volume will
+                not be created at the requested size. Cinder will report that the volume size is the
+                size requested; however the volume on the back-end will only be the size of the
+                cached image or snapshot. This is a known limitation in Cinder and applies to most
+                back-ends, including 3Par and StoreVirtual. </p>
+            <!-- DOCS-2998 -->
+            <p>The Attach volume operation will fail frequently after scaling to 2200 instances with
+                volume attached, if it is triggered with concurrency 25. In order to avoid this, the
+                    <codeph>rpc_timeout</codeph> value must be increased to 180. Increasing the
+                value merely postpones the error and is only meant to be a temporary solution. </p>
+            <!-- DOCS-3095 -->
+            <p>If you have enabled CHAP authentication on a 3PAR backend then you will not be able
+                to backup an attached volume that is provisioned on that backend.</p>
+            <p> It is not possible to backup an attached volume that was provisioned on VSA.</p>
+            <!-- DOCS-3033 -->
+            <p>Consistency groups are not supported with VSA backends.</p>
+            <!-- DOCS-3029 -->
+            <p>Cinder volumes on backends connected using native FCoE are not supported.</p>
+            <!-- DOCS-2826 -->
+            <p>In some configurations where iSCSI targets are configured / enabled an entry similar
+                to the following may appear frequently in the syslog:
+                <codeblock>systemd-sysv-generator[&lt;pid&gt;]: Ignoring creation of an alias umountiscsi.service for itself</codeblock>
+                This doesn't indicate a problem and is a result of systemd being overly verbose for
+                informational messages.</p>
+            <!-- DOCS-3100 -->
+            <p>Cinder volume creation with VMDK as backend will take approximately 30 minutes with
+                200 ESXi hosts in the environment. In a smaller environment, the time to create a
+                volume will be approximately 10 minutes.</p>
+            <!-- DOCS-3145 -->
+            <p><b>Multipath cannot be enabled when using VSA</b></p>
+            <p>If a compute node is configured to use multipath to attach volumes, that is, if it
+                has the configuration variable <codeph>iscsi_use_multipath</codeph> set to true in
+                the libvirt section of the nova config file, then it will not be possible to attach
+                a VSA volume to a nova instance hosted on that compute node.</p>
+        </section>
+
+        <section>
+            <title>glance image-show for a snapshot stored in CEPH fails</title>
+            <p>Glance has been configured to use CEPH as the store for images. An instance is
+                created and then snapshotted and the resulting snapshot is seen in CEPH as expected.
+                However, when using the <codeph>glance image-show</codeph> command against the
+                snapshot it will fail. You can view the snapshot using the <codeph>openstack image
+                    show</codeph>command instead. </p>
+        </section>
+
+        <section>
+            <title>Ceph health status</title>
+            <!-- DOCS-3091 -->
+            <p>If Ceph health status displays <i>WARN</i> with <i>too few pgs</i>, you can increase
+                the pg_num and pgp_num to resolve the issue. </p>
+            <p>Example: <codeblock>health HEALTH_WARN pool .rgw has too few pgs</codeblock></p>
+            <p>Increase the pg_num and pgp_num count by running:
+                <codeblock>ceph osd pool get &lt;pool-name> pg_num</codeblock>
+            </p>
+            <p> More information on pg_num and pgp_num can be found here: <xref
+                    href="http://docs.ceph.com/docs/master/rados/operations/placement-groups/"
+                    format="html" scope="external"/>
+            </p>
+        </section>
+
+        <section>
+            <title>Identity (Keystone)</title>
+            <!-- DOCS-2513 -->
+            <p>There will be performance degradation to a user's account in your cloud environment
+                if the number of roles assigned to that user goes above ~1000. You are advised to
+                use the user account functionality in an efficient way so that this does not become
+                an issue. This was reported in upstream OpenStack <xref
+                    href="https://bugs.launchpad.net/keystone/+bug/1499555" scope="external"
+                    format="html">here</xref>.</p>
+            <p><b>Rados Gateway error in fetching token revocation list from Keystone</b></p>
+            <!-- DOCS-2863 -->
+            <p>Fetching the list of revoked tokens from OpenStack Keystone is only supported for PKI
+                tokens. <keyword keyref="kw-hos-phrase-30"/> does not support using PKI tokens
+                (disables it by default) due to security concerns. The below error encountered
+                (periodically) in Rados Gateway logs can be safely ignored and does not require any
+                corrective action.
+                <codeblock>ERROR: keystone revocation processing returned error r=-22</codeblock></p>
+            <p><b>Brocade backends - Existing volume detach fails after modifying the
+                    zoning_mode=fabric from none.</b></p>
+            <!-- DOCS-3075 -->
+            <p><xref href="https://bugs.launchpad.net/cinder/+bug/1486613" format="html"
+                    scope="external"/></p>
+            <p>Due to this bug, you cannot change the <codeph>zoning_mode</codeph>
+                post-installation. You must use either a preconfigured zone or auto_zoning with
+                Brocade.</p>
+        </section>
+
+        <section><title>Image Service (Glance)</title>
+            <!-- DOCS-1997 -->
+            <p><b>Image sharing between projects is disabled for non-admin users</b></p>
+            <p>By default in <keyword keyref="kw-hos-phrase-30"/> we have altered the Glance
+                policies to only allow image sharing by the admin user. The policies are set as
+                follows:</p>
+            <codeblock>"add_member": "role:admin or role:glance_admin",
+"delete_member": "role:admin or role:glance_admin",
+"get_member": "role:admin or role:glance_admin",
+"get_members": "role:admin or role:glance_admin",
+"modify_member": "role:admin or role:glance_admin",</codeblock>
+            <p>This is due to the security issue documented <xref
+                    href="https://wiki.openstack.org/wiki/OSSN/1226078" scope="external"
+                    format="html">here</xref>.</p>
+        </section>
+        <section>
+            <title>Bare Metal (Ironic)</title>
+            <p>Multipath in not supported for the boot device. In case multiple paths exist use
+                zoning so that only one path is available. </p>
+            <p> If there are multiple NICs that are connected to the Management network, and the
+                first NIC does not have access, then deployment will fail. Ensure that the first
+                NIC’s connection is UP. </p>
+        </section>
+
+        <section>
+            <title>Network (Neutron)</title>
+            <!-- DOCS-2857 -->
+            <p>VM's may not get an IP address from the DHCP server when creating VMs in large scale.
+                This may occur when booting a large number of VMs at the same time when all of the
+                networking may not be up in time before the DHCP retries timeout. If this occurs,
+                reboot the VM.</p>
+            <!-- DOCS-3096 -->
+            <p><b>Support for IPv6 on tenant networks (listed as non-core)</b></p>
+            <p> Enabling IPv6 for tenant networks is a manual step as no Helion lifecycle management
+                support is provided. <xref
+                    href="http://docs.openstack.org/mitaka/networking-guide/adv-config-ipv6.html"
+                    format="html" scope="external"/></p>
+            <p>There is no support for IPv6 on cloud infrastructure networks (i.e., MANAGEMENT)</p>
+        </section>
+
+        <section>
+            <title>RBAC (Neutron)</title>
+            <!-- DOCS-2836 -->
+            <p>Port creation on a shared network fails if <codeph>--fixed-ip</codeph> is specified
+                in the <codeph>neutron port-create</codeph> command. This is reported in <xref
+                    href="https://bugs.launchpad.net/neutron/+bug/1543756" format="html"
+                    scope="external">https://bugs.launchpad.net/neutron/+bug/1543756</xref>.</p>
+        </section>
+
+        <section>
+            <title>DNS (Designate) Service</title>
+            <!-- DOCS-3539 -->
+            <p>The PowerDNS and BIND DNS backed servers are not supported in <keyword keyref="kw-hos-phrase-30"/>.  
+                Please consider another supported backend server option including InfoBlox, Akamai or DYNect.</p>
+        </section>
+        
+        <section>
+            <title>VPN Service(Neutron)</title>
+            <!--DOCS-2840-->
+            <p>In <keyword keyref="kw-hos"/> 2.X and <keyword keyref="kw-hos-phrase-30"/> the
+                Metering agent cannot be used in conjunction with VPNaaS.</p>
+        </section>
+
+        <section>
+            <title>Load Balancer Octavia Driver (Neutron)</title>
+            <!--DOCS-2879-->
+            <!-- Updated Octavia content per DOCS-3601 -->
+            <p>
+                <ul>
+                    <li>The Load Balancer Octavia driver requires KVM based compute nodes for hosting 
+                        the load balancer images but also supports mixed environments for load balancing 
+                        applications.
+                        <ul>
+                            <li>The Octavia load balancers, launched in VMs called Amphora, are currently 
+                                hosted only in KVM-hosted VMs.</li>
+                            <li>An Octavia load balancer can load balance applications hosted by either KVM 
+                                and ESX-VMs.</li>
+                        </ul>
+                    </li>
+                    <!-- DOCS-2981 -->
+                    <li>Using a Floating IP with Octavia will not work in DVR enabled networks. The
+                        recommendation is to create a router with DVR switched off when using a
+                        Floating IP.</li>
+                </ul>
+            </p>
+        </section>
+
+        <section>
+            <title>Monitoring (Monasca)</title>
+            <!-- DOCS-3010 -->
+            <p>Whenever a system that is part of the Monasca cluster is rebooted, there is a
+                possibility that the Monasca Threshold Engine will fail to recover. The symptom will
+                be Alarms in the Ops Console that stay red or grey even though they should be green.
+                The Monasca Threshold Engine is what determines the states of the alarms based on
+                the measurements being received from the Monasca agents. </p>
+            <p>The workaround is to restart the Monasca Threshold Engine. Use the following commands
+                to stop and start the Monasca Threshold Engine:
+                <codeblock>ansible-playbook -i hosts/verb_hosts monasca-stop.yml --tags thresh
+ansible-playbook -i hosts/verb_hosts monasca-start.yml --tags thresh</codeblock>
+            </p>
+            <!-- JAH-2800 -->
+            <p><b>Monasca api logs showing "OutOfMemoryError: Java heap space"</b></p>
+            <p>If the Monasca API fails with <i>OutOfMemoryError: Java heap space</i> errors it is
+                recommended that you restart the monasca-api.</p>
+        </section>
+
+        <section>
+            <title>SOSReport error during data collection</title>
+            <!-- HLX-1836 -->
+            <p>In rare instances when issuing command <codeph>ansible-playbook -i hosts/verb_hosts
+                    sosreport-run.yml</codeph> from the lifecycle manager, one of the nodes may list
+                an error about not being able to collect data. If this issue occurs, ssh to the node
+                that is experiencing the problem. Once on the node, attempt to run <codeph>sudo
+                    sosreport -v</codeph>. If sosreport fails to complete gathering, record what is
+                shown on the screen. A reboot of the affected node will clear the error condition.
+                The exact messages last shown on screen on local run was:
+                <codeblock>Running 64/87: openvswitch... 
+[plugin:openvswitch] unpacked command tuple: ('ovs-dpctl -s show', 'None', 'None', 300, 'None')
+*[plugin:openvswitch] collecting output of 'ovs-dpctl -s show' *</codeblock>
+            </p>
+        </section>
+
+        <section id="DOCS-2555">
+            <title>Change to Monasca Monitoring Roles in Keystone</title>
+            <p>In Helion OpenStack version 2.x, the keystone role for submitting cross-tenant
+                metrics was called 'monasca-agent'. In HOS 3.0, the keystone role for submitting
+                cross-tenant metrics is now called 'monitoring-delegate'. Any user who submits
+                cross-tenant metrics without the 'monitoring-delegate' role will now receive a '403
+                Forbidden' http response.</p>
+        </section>
+
+        <section id="DOCS-3036">
+            <!-- https://jira.hpcloud.net/browse/DOCS-3036 -->
+            <title>Cannot use wildcards in multipath blacklist on RHEL Boot from SAN nodes</title>
+            <p>You will need to change your input model if your system includes RHEL nodes that are
+                configured to boot from a multipath device (boot from SAN). Otherwise those nodes
+                will not be able to access their boot devices when you reboot them. Most of the
+                example models supplied with HOS 3.0 include a blacklist with wildcards like
+                this:</p>
+            <p><b>~/helion/my_cloud/config/multipath/multipath_settings.yml</b></p>
+            <codeblock>
+multipath_blacklist:
+  - device:
+      vendor: ".*"
+      product: ".*"
+</codeblock>
+            <p>These do not work properly on RHEL 7.2, so you will need to change it to a specific
+                list of devices. In particular, you need to ensure that the device you are booting
+                from is not represented in the blacklist stanza. For example, you could use the
+                following to blacklist all volumes on the local HP SmartArray:</p>
+            <p><b>Change to a specific list of device types:</b></p>
+            <codeblock>
+multipath_blacklist:
+- device:
+vendor: "HP"
+product: "LOGICAL VOLUME"
+</codeblock>
+            <p>The exact list that you need will vary depending on the hardware that is in use.
+                However, this example is appropriate for most HP servers that use SmartArray
+                technology for their local disks, assuming you don't want multipath configured on
+                the local devices which is typically the case. </p>
+            <note type="important">If you have a mix of RHEL and HPE Linux nodes in your compute
+                pool, you need to be aware that any configuration you use for
+                    <codeph>multipath_blacklist</codeph> is global and will also apply to the HPE
+                Linux nodes. </note>
+        </section>
+
+        <section>
+            <title>Cannot remove disks from disk model post deployment.</title>
+            <!-- DOCS-2973 -->
+            <p>You must ensure your device model aligns with your node configuration at all times.
+                If you remove a device from a server, it may lead to renaming of devices on your
+                system either immediately, or following a reboot or rescan, and you may invalidate
+                your device model. Follow the documented procedures for replacement of broken disk
+                drives so that the device model remains accurate.</p>
+        </section>
+
+        <section>
+            <title>Agent monitoring feature of networking-vsphere needs to be disabled during
+                installation or upgrade.</title>
+            <!-- DOCS-2961 -->
+            <p>You should disable Agent monitoring feature of networking-vsphere if you have
+                modified the <codeph>ml2_conf.ini.j2</codeph> file in the input model folder. If the
+                Agent monitoring is not disabled, this feature will generate false positives and
+                place hosts into maintenance mode.</p>
+            <p>To disable the Agent monitoring feature, set the configuration parameter
+                    <codeph>enable_ovsvapp_monitor</codeph> to <codeph>False</codeph> in the
+                [OVSVAPP] section of the <codeph>ml2_conf.ini.j2</codeph> file. Once the parameter
+                has been set, it is safe to proceed with installation or upgrade.</p>
+            <p>Example:
+                <codeblock>...
+ [OVSVAPP]
+ enable_ovsvapp_monitor = False
+                </codeblock>
+            </p>
+        </section>
+
+        <section>
+            <title>Vertica upgrade failure</title>
+            <!-- DOCS-3081 -->
+            <p>On rare occasion Vertica hangs on start up during upgrade. This is due to temporary
+                network drops. To resolve the issue, exit out of the hanging upgrade and then run
+                    <codeph>monasca-start.yml --tags vertica</codeph>. You can then continue by
+                rerunning the upgrade. </p>
+        </section>
+
+        <section>
+            <title>Rapidly Creating VMs</title>
+            <p>If creating large numbers of VMs in a synchronous manner (greater than 3 VMs per
+                minute), VM creation failure of up to 10% may be experienced. To work around this
+                behavior, lower the VM creation rate until consistent success is achieved.</p>
+            <!--docs-1050-->
+        </section>
+
+
+        <section id="fact_cache">
+            <title>Fact cache entry isn't valid</title>
+            <p><!--https://jira.hpcloud.net/browse/HLM-3357--> If at the very start of an Ansible
+                run you see a message like the following:
+                <codeblock>
+Fact cache entry for host COMPUTE-0002 isn't valid, deleting and failing
+Fact cache entry for host COMPUTE-0001 isn't valid, deleting and failing
+ERROR: The JSON cache files COMPUTE-0002, COMPUTE-0001 were corrupt, or did not otherwise contain valid JSON data. They have been removed, so you can re-run your command now.
+</codeblock>
+                Then please just re-run your Ansible command. </p>
+        </section>
+
+        <section>
+            <title>Instance fail to spawn with type &lt;tuple error&gt; in <keyword keyref="kw-hos"
+                /> ESXi environment.</title>
+            <!-- DOCS-3099 -->
+            <p>The percentage of the failure is approximately 1.4% out of 8000 instance spawned.
+                    <keyword keyref="kw-hos"/> 4.0 will have a fix for this issue.</p>
+        </section>
+
+        <section>
+            <title>Remote Catalog (Sherpa)</title>
+            <!-- DOCS-2806 -->
+            <p>The Sherpa Service is no longer provided with <keyword keyref="kw-hos-phrase-30"
+                />.</p>
+        </section>
+
+        <section>
+            <title>Best Practices for Backup and Restore (Freezer)</title>
+            <!-- DOCS-3027 -->
+            <p>You should not add or modify the files in the following standard control-plane
+                directories. These directories are automatically backed up and modifying their
+                contents will cause control-plane restore jobs to fail.</p>
+            <p>
+                <ol>
+                    <li>Lifecycle Manager
+                        <codeblock>/home/stack
+/etc/ssh/
+/etc/shadow
+/etc/passwd
+/etc/group
+/var/lib/cobbler/
+/srv/www/cobbler/</codeblock></li>
+                    <li>Controllers <codeblock>/var/audit
+/var/lib/mysql/</codeblock></li>
+                    <li>Swift Nodes <codeblock>/etc/swiftlm/builder_dir/</codeblock></li>
+                </ol>
+            </p>
+        </section>
+
+        <section>
+            <title>VSA server creation sometimes fails</title>
+            <!-- STOR-1424 -->
+            <p>Create VSA appliance playbook sometimes fails to complete on one or more VSA servers.
+                If this happens and the installation fails then re-run the playbook. For example, if
+                the installation failed when running the site.yml playbook, re-run the site.yml
+                playbook. </p>
+        </section>
+
+        <section>
+            <title>Security groups in an ESX Cloud</title>
+            <!-- VNETEE-769 & HLX-1711 per Alok Kumar Maurya -->
+            <p>You cannot have more than 400 virtual machines per security group in an ESX
+                cloud.</p>
+        </section>
+        <section><title>After running upgrade, keystone.log warns that policy.json cannot be
+                found</title>
+            <p>Fleeting errors such as this may occur during live upgrades. During a live upgrade,
+                services are not prevented from contacting each other. Thus you may see transient
+                errors. Such errors are only a concern if the logs show continued failure after the
+                upgrade completes. </p>
+            <!-- https://jira.hpcloud.net/browse/DOCS-3146 -->
+        </section>
+        
+        <section id="DOCS-2813">
+            <title>VXLan and Emulex-based NIC configured in UMC mode</title>
+            
+            <ul>
+                <li>Due to a firmware issue, UMC mode does not function in conjunction with VXLan. 
+                    This means that currently the only supported configuration for Emulex-based NIC 
+                    are in non-partitioned mode</li>
+                
+                <li>
+                    If a firmware can be released to address the issue, then support will be limited 
+                    to non-bonded setups only. This applies to both Emulex and Qlogic-based NIC 
+                    where bonding is not supported in partitioned or UMC based configs. 
+                    
+                </li>
+                
+            </ul>
+            
+
+            
+        </section>
+        
+        
+    </body>
+</topic>

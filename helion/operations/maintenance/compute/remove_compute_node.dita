@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: Edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="remove_compute_node">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Removing a Compute Node</title>
+  <abstract>
+    <shortdesc outputclass="hdphidden">Removing a compute node lets you remove capacity.</shortdesc>
+    <p>If you need to remove a compute node, these steps will help you do so.</p>
+    <p>The steps involved are:</p>
+  </abstract>
+  <body>
+    <!--not tested-->
+    <p conkeyref="HOS-conrefs/applies-to"/>
+    <section id="disable_provisioning">
+      <title>Disable provisioning on the compute node</title>
+      <ol>
+        <li>Get a list of the Nova services running. This will provide the details needed to disable
+          the provisioning on the compute node you want to remove:
+            <codeblock>nova service-list</codeblock><p>The following example highlights a compute
+            node to be
+          removed:</p><codeblock>$ nova service-list
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
+| Id | Binary           | Host                     | Zone     | Status  | State | Updated_at                 | Disabled Reason |
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+
+| 1  | nova-conductor   | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2015-11-22T22:50:43.000000 | -               |
+| 10 | nova-scheduler   | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2015-11-22T22:50:34.000000 | -               |
+| 13 | nova-conductor   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2015-11-22T22:50:43.000000 | -               |
+| 16 | nova-conductor   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2015-11-22T22:50:43.000000 | -               |
+| 25 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled | up    | 2015-11-22T22:50:38.000000 | -               |
+| 28 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled | up    | 2015-11-22T22:50:38.000000 | -               |
+| 31 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled | up    | 2015-11-22T22:50:42.000000 | -               |
+| 34 | nova-compute     | helion-cp1-comp0001-mgmt | AZ1      | enabled | up    | 2015-11-22T22:50:35.000000 | -               |
+<b>| 37 | nova-compute     | helion-cp1-comp0002-mgmt | AZ2      | enabled | up    | 2015-11-22T22:50:44.000000 | -               |</b>
++----+------------------+--------------------------+----------+---------+-------+----------------------------+-----------------+</codeblock></li>
+        <li>Disable the Nova service on the compute node you want to remove. This will take it out
+          of the scheduling rotation.
+            <codeblock>nova service-disable --reason "&lt;enter reason here>" &lt;node hostname> nova-compute</codeblock><p>The
+            following example shows the disabling step necessary if I want to remove the
+              <codeph>helion-cp1-comp0002-mgmt</codeph> compute node highlighted in the preceding
+            output:</p><codeblock>$ nova service-disable --reason "hardware reallocation" helion-cp1-comp0002-mgmt nova-compute
++--------------------------+--------------+----------+-----------------------+
+| Host                     | Binary       | Status   | Disabled Reason       |
++--------------------------+--------------+----------+-----------------------+
+| helion-cp1-comp0002-mgmt | nova-compute | disabled | hardware reallocation |
++--------------------------+--------------+----------+-----------------------+</codeblock></li>
+      </ol>
+    </section>
+    <section id="remove_az">
+      <title>Remove the compute node from its availability zone</title>
+      <p>If you configured the compute node to be part of an availability zone, these steps will
+        show you how to remove it.</p>
+      <ol>
+        <li>The following command removes the compute node from the availability zone it was a part
+          of:
+            <codeblock>nova aggregate-remove-host &lt;availability zone> &lt;nova hostname></codeblock><p>Using
+            the same example as the previous step, the <codeph>helion-cp1-comp0002-mgmt</codeph>
+            node was in the <codeph>AZ2</codeph> availability zone, so the following command will
+            remove
+          it:</p><codeblock>$ nova aggregate-remove-host AZ2 helion-cp1-comp0002-mgmt
+Host helion-cp1-comp0002-mgmt has been successfully removed from aggregate 4
++----+------+-------------------+-------+-------------------------+
+| Id | Name | Availability Zone | Hosts | Metadata                |
++----+------+-------------------+-------+-------------------------+
+| 4  | AZ2  | AZ2               |       | 'availability_zone=AZ2' |
++----+------+-------------------+-------+-------------------------+</codeblock></li>
+        <li>You can confirm the success of the previous two steps by running another <codeph>nova
+            service-list</codeph>. <p>The following example confirms that the node has been disabled
+            and that it has been removed from the availability zone, as
+          highlighted:</p><codeblock>$ nova service-list
++----+------------------+--------------------------+----------+----------+-------+----------------------------+-----------------------+
+| Id | Binary           | Host                     | Zone     | Status   | State | Updated_at                 | Disabled Reason       |
++----+------------------+--------------------------+----------+----------+-------+----------------------------+-----------------------+
+| 1  | nova-conductor   | helion-cp1-c1-m1-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:33.000000 | -                     |
+| 10 | nova-scheduler   | helion-cp1-c1-m1-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:34.000000 | -                     |
+| 13 | nova-conductor   | helion-cp1-c1-m3-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:33.000000 | -                     |
+| 16 | nova-conductor   | helion-cp1-c1-m2-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:33.000000 | -                     |
+| 25 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:28.000000 | -                     |
+| 28 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:28.000000 | -                     |
+| 31 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:32.000000 | -                     |
+| 34 | nova-compute     | helion-cp1-comp0001-mgmt | AZ1      | enabled  | up    | 2015-11-22T23:04:25.000000 | -                     |
+<b>| 37 | nova-compute     | helion-cp1-comp0002-mgmt | nova     | disabled | up    | 2015-11-22T23:04:34.000000 | hardware reallocation |</b>
++----+------------------+--------------------------+----------+----------+-------+----------------------------+-----------------------+</codeblock></li>
+      </ol>
+    </section>
+    <section id="live_migration">
+      <title>Use live migration to move any instances on this node to other nodes</title>
+      <p>
+        <ol>
+          <li>You need to verify if the compute node is currently hosting any instances. You can do
+            this with this command:
+              <codeblock>nova list --host=&lt;nova hostname> --all_tenants</codeblock><p>The
+              following example shows a single running instance on this
+            node:</p><codeblock>$ nova list --host=helion-cp1-comp0002-mgmt --all_tenants=1
++--------------------------------------+--------+----------------------------------+--------+------------+-------------+-----------------+
+| ID                                   | Name   | Tenant ID                        | Status | Task State | Power State | Networks        |
++--------------------------------------+--------+----------------------------------+--------+------------+-------------+-----------------+
+| 78fdb938-a89c-4a0c-a0d4-b88f1555c3b9 | paul4d | 5e9998f1b1824ea9a3b06ad142f09ca5 | ACTIVE | -          | Running     | paul=10.10.10.7 |
++--------------------------------------+--------+----------------------------------+--------+------------+-------------+-----------------+</codeblock></li>
+          <li>See <xref href="../live_migration.dita"/> for details on how to perform a live
+            migration.</li>
+          <li> After you have performed the necessary steps to remove all the instances off the
+            node, run <codeph>nova list</codeph> again to confirm:
+            <codeblock>nova list --host=&lt;hostname> --all_tenants</codeblock></li>
+        </ol>
+      </p>
+    </section>
+    <section>
+      <title>Disable the Neutron agents on the node to be removed</title>
+      <ol>
+        <li>You should also locate and disable or remove the Neutron agents. The following command
+          will show you the Neutron agents
+            running:<codeblock>neutron agent-list | grep &lt;hostname></codeblock><p>Here is an
+            example:</p><codeblock>$ neutron agent-list | grep helion-cp1-comp0002-mgmt
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+| id                                   | agent_type           | host                     | alive | admin_state_up | binary                    |
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+| 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4 | L3 agent             | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-l3-agent          |
+| dbe4fe11-8f08-4306-8244-cc68e98bb770 | Metadata agent       | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-metadata-agent    |
+| f0d262d1-7139-40c7-bdc2-f227c6dee5c8 | Open vSwitch agent   | helion-cp1-comp0002-mgmt | :-)   | True           | neutron-openvswitch-agent |
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+</codeblock></li>
+        <li>You can then disable the agents with this command:
+            <codeblock>neutron agent-update --admin-state-down &lt;agent_id></codeblock><p>Here is
+            an
+          example:</p><codeblock>$ neutron agent-update --admin-state-down 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4
+$ neutron agent-update --admin-state-down dbe4fe11-8f08-4306-8244-cc68e98bb770
+$ neutron agent-update --admin-state-down f0d262d1-7139-40c7-bdc2-f227c6dee5c8</codeblock></li>
+      </ol>
+    </section>
+
+    <section id="shutdown_node">
+      <title>Shut down or stop the Nova and Neutron services on the compute node</title>
+      <p>To perform this step, you have a few options.</p>
+      <p><b>Option #1</b>:</p>
+      <ol>
+        <li>SSH to the compute node you are removing and run the following commands which will stop
+          the Nova and Neutron services on that node:
+          <codeblock>sudo systemctl stop nova-compute</codeblock><codeblock>sudo systemctl stop neutron-*</codeblock></li>
+        <li>Because the Neutron agent self-registers against the Neutron server, you may want to
+          prevent the following services from coming back online. <p>You can pull the list of
+            services with this command:
+            </p><codeblock>sudo systemctl list-units neutron-* --all</codeblock><p>Here is an
+            example:</p><codeblock>UNIT                                  LOAD        ACTIVE     SUB      DESCRIPTION
+neutron-common-rundir.service         loaded      inactive   dead     Create /var/run/neutron
+neutron-dhcp-agent.service          not-found     inactive   dead     neutron-dhcp-agent.service
+neutron-l3-agent.service              loaded      inactive   dead     neutron-l3-agent Service
+neutron-lbaasv2-agent.service         loaded      inactive   dead     neutron-lbaasv2-agent Service
+neutron-metadata-agent.service        loaded      inactive   dead     neutron-metadata-agent Service
+neutron-openvswitch-agent.service     loaded      failed     failed   neutron-openvswitch-agent Service
+neutron-ovs-cleanup.service           loaded      inactive   dead     Neutron OVS Cleanup Service
+        
+        LOAD   = Reflects whether the unit definition was properly loaded.
+        ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+        SUB    = The low-level unit activation state, values depend on unit type.
+        
+        7 loaded units listed.
+        To show all installed unit files use 'systemctl list-unit-files'.</codeblock></li>
+        <li>For each loaded service, issue this command:
+            <codeblock>sudo systemctl disable &lt;service-name></codeblock><note>In the example
+            above, you do not need to issue the command for the
+              <codeph>neutron-dhcp-agent.service</codeph> service as that was not
+            found.</note><p>You can list multiple services, separated by a space, like
+          this:</p><codeblock>sudo systemctl disable neutron-common-rundir neutron-l3-agent neutron-lbaasv2-agent neutron-metadata-agent neutron-openvswitch-agent</codeblock></li>
+        <li>Now you can shut down the node: <codeblock>sudo shutdown now</codeblock></li>
+      </ol>
+      <p>
+        <b>Option #2:</b></p>
+      <ol>
+        <li>From the lifecycle manager, you can use the <codeph>bm-power-down.yml</codeph> playbook
+          to shut down the node:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-power-down.yml -e nodelist=&#60;node name></codeblock><note>The
+              <codeph>&#60;node name></codeph> value will be the value corresponding to this node in
+            Cobbler. You can run <codeph>sudo cobbler system list</codeph> to retrieve these
+            names.</note></li>
+      </ol>
+    </section>
+
+    <section id="delete_node">
+      <title>Delete the compute node from Nova</title>
+      <ol>
+        <li>Retrieve the list of Nova services: <codeblock>nova service-list</codeblock><p>The
+            following example highlights the compute node to be
+          removed:</p><codeblock>$ nova service-list
++----+------------------+--------------------------+----------+----------+-------+----------------------------+-----------------------+
+| Id | Binary           | Host                     | Zone     | Status   | State | Updated_at                 | Disabled Reason       |
++----+------------------+--------------------------+----------+----------+-------+----------------------------+-----------------------+
+| 1  | nova-conductor   | helion-cp1-c1-m1-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:33.000000 | -                     |
+| 10 | nova-scheduler   | helion-cp1-c1-m1-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:34.000000 | -                     |
+| 13 | nova-conductor   | helion-cp1-c1-m3-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:33.000000 | -                     |
+| 16 | nova-conductor   | helion-cp1-c1-m2-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:33.000000 | -                     |
+| 25 | nova-consoleauth | helion-cp1-c1-m1-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:28.000000 | -                     |
+| 28 | nova-scheduler   | helion-cp1-c1-m2-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:28.000000 | -                     |
+| 31 | nova-scheduler   | helion-cp1-c1-m3-mgmt    | internal | enabled  | up    | 2015-11-22T23:04:32.000000 | -                     |
+| 34 | nova-compute     | helion-cp1-comp0001-mgmt | AZ1      | enabled  | up    | 2015-11-22T23:04:25.000000 | -                     |
+<b>| 37 | nova-compute     | helion-cp1-comp0002-mgmt | nova     | disabled | up    | 2015-11-22T23:04:34.000000 | hardware reallocation |</b>
++----+------------------+--------------------------+----------+----------+-------+----------------------------+-----------------------+</codeblock></li>
+        <li>Delete the node from Nova using this command:
+            <codeblock>nova service-delete &lt;service ID></codeblock><p>Following the previous
+            example, you would use this:</p><codeblock>nova service-delete 37</codeblock></li>
+        <li>Use the following command to confirm that the compute node has been completely removed
+          from Nova: <codeblock>nova hypervisor-list</codeblock></li>
+      </ol>
+    </section>
+
+    <section id="deletefromneutron">
+      <title>Delete the compute node from Neutron</title>
+      <ol>
+        <li>Multiple Neutron agents are running on the compute node. You can list them out with this
+          command: <codeblock>neutron agent-list | grep &lt;hostname></codeblock> In the following
+          example, the <codeph>L3-agent</codeph>,
+          <codeph>openvswitch-agent</codeph>, and <codeph>metadata-agent</codeph> are running:
+          <codeblock>$ neutron agent-list | grep NODE_NAME
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+| id                                   | agent_type           | host                     | alive | admin_state_up | binary                    |
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+
+| 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4 | L3 agent             | helion-cp1-comp0002-mgmt | :-)   | False          | neutron-l3-agent          |
+| dbe4fe11-8f08-4306-8244-cc68e98bb770 | Metadata agent       | helion-cp1-comp0002-mgmt | :-)   | False          | neutron-metadata-agent    |
+| f0d262d1-7139-40c7-bdc2-f227c6dee5c8 | Open vSwitch agent   | helion-cp1-comp0002-mgmt | :-)   | False          | neutron-openvswitch-agent |
++--------------------------------------+----------------------+--------------------------+-------+----------------+---------------------------+</codeblock></li>
+        <li>You have to remove all of the Neutron agents running on the compute node using the
+            <codeph>neutron agent-delete</codeph>
+            command:<codeblock>neutron agent-delete &lt;agent_id></codeblock><p>Using the preceding
+            example, you would delete these Neutron agents with these
+          commands:</p><codeblock>$ neutron agent-delete 08f16dbc-4ba2-4c1d-a4a3-a2ff2526ebe4
+$ neutron agent-delete dbe4fe11-8f08-4306-8244-cc68e98bb770
+$ neutron agent-delete f0d262d1-7139-40c7-bdc2-f227c6dee5c8</codeblock></li>
+      </ol>
+    </section>
+
+    <section id="remove_node">
+      <title>Remove the compute node from your cloud configuration file and run the configuration
+        processor</title>
+      <p>Complete these steps from the lifecycle manager to remove the compute node:</p>
+      <ol>
+        <li>Log in to the lifecycle manager</li>
+        <li>Edit your <codeph>servers.yml</codeph> file in the following location to remove
+          references to the compute node(s) you want to remove from your cloud:
+          <codeblock>~/helion/my_cloud/definition/data/servers.yml</codeblock></li>
+        <li>You may also need to edit your <codeph>control_plane.yml</codeph> file to update the
+          values for <codeph>member-count</codeph>, <codeph>min-count</codeph>, and
+            <codeph>max-count</codeph> if you used those values to ensure that they reflect the
+          proper number of nodes you are using. <p>See <xref keyref="configobj_controlplane">Input
+              Model - Control Plane</xref> for more details.</p></li>
+        <li>Commit the changes to git:
+          <codeblock>git commit -a -m "Remove node &lt;name>"</codeblock></li>
+        <li>Run the configuration processor:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock><p>You
+            may want to use the <codeph>remove_deleted_servers</codeph> and
+              <codeph>free_unused_addresses</codeph> switches to free up the resources when running
+            the configuration processor. See <xref keyref="persisteddata">Persisted Data</xref> for
+            more details. </p><p>Here's an
+          example:</p><codeblock>ansible-playbook -i hosts/localhost config-processor-run.yml -e remove_deleted_servers="y" -e free_unused_addresses="y"</codeblock></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+      </ol>
+    </section>
+    <section id="remove_cobbler">
+      <title>Remove the compute node from Cobbler</title>
+      <p>Complete these steps to remove the compute<?oxy_insert_start author="mwelch" timestamp="20160730T112240-0700"?>
+        <?oxy_insert_end?>node from Cobbler:</p>
+      <ol>
+        <li>Confirm the system name in Cobbler with this command:
+          <codeblock>sudo cobbler system list</codeblock></li>
+        <li>Remove the system from Cobbler using this command:
+          <codeblock>sudo cobbler system remove --name=&lt;node></codeblock></li>
+        <li>Run the <codeph>cobbler-deploy.yml</codeph> playbook to complete the process:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock></li>
+      </ol>
+    </section>
+    <section id="remove_monitoring">
+      <title>Remove the compute node from monitoring</title>
+      <p>After you remove<?oxy_delete author="mwelch" timestamp="20160730T112312-0700" content="d"?>
+        the compute nodes, their alarms will trigger. To resolve this issue, take the following
+        steps.</p>
+      <p>You will want to SSH to each of the Monasca API servers and edit the
+          <codeph>/etc/monasca/agent/conf.d/host_alive.yaml</codeph> file to remove references to
+        the compute node you removed. This requires <codeph>sudo</codeph> access. The entries will
+        look similar to the following:</p>
+      <codeblock>- alive_test: ping
+  built_by: HostAlive
+  host_name: helion-cp1-comp0001-mgmt
+  name: helion-cp1-comp0001-mgmt ping</codeblock>
+      <p>After you remove<?oxy_delete author="mwelch" timestamp="20160730T112531-0700" content="d"?>
+        the references on each of your Monasca API servers you then need to restart the
+          <codeph>monasca-agent</codeph> on each of those servers with this command:</p>
+      <codeblock>sudo service monasca-agent restart</codeblock>
+      <p>With the compute node references removed and the <codeph>monasca-agent</codeph> restarted,
+        you can then delete the corresponding alarm to finish this process. To do so we recommend
+        using the Monasca
+        CLI<?oxy_insert_start author="mwelch" timestamp="20160730T112641-0700"?>,<?oxy_insert_end?>
+        which should be installed on each of your Monasca API servers by default:</p>
+      <codeblock>monasca alarm-list --metric-dimensions hostname=&#60;compute node deleted></codeblock>
+      <p>For example, if your compute node looked like the preceding example, then you would use
+        this command to get the alarm ID:</p>
+      <codeblock>monasca alarm-list --metric-dimensions hostname=helion-cp1-comp0001-mgmt</codeblock>
+      <p>You can then delete the alarm with this command:</p>
+      <codeblock>monasca alarm-delete &#60;alarm ID></codeblock>
+    </section>
+  </body>
+</topic>

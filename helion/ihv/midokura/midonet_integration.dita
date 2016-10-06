@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="midonet_integration">
+    <title>MidoNet Integration</title>
+    <body>
+        <p><b>Pre <keyword keyref="kw-hos"/> Installation Configuration</b></p>
+        <p>Before deploying your <keyword keyref="kw-hos"/> cloud, you must change the configuration
+            of the disks in your controller nodes. Remove or comment out the Zookeeper section in
+            the <codeph>disk_controller_1TB.yml</codeph> and
+                <codeph>disk_controller_600GB.yml</codeph> files. Create a new volume group two
+            related logical volumes. This new group and related volumes will be used by Zookeeper
+            and Cassandra. Make sure to specify an unused physical-volume for this group. In the
+            example file below, the physical-volume <codeph>sdd</codeph> is used. The recommended
+            configuration is to allocate as much space as possible to these two logical volumes.</p>
+        <p/>
+        <p>
+            <codeblock># Zookeeper is used to provide cluster co-ordination in the monitoring
+# system. Although not a high user of disc space we have seen issues
+# with zookeeper snapshots filling up filesystems so we keep it in its
+# own space for stability.
+#- name: zookeeper
+# size: 1%
+# mount: /var/lib/zookeeper
+# fstype: ext4
+ 
+        consumer:
+           name: os
+
+# MidoNet Zookeeper and Cassandra partitions.
+volume-groups:
+  - name: nsdb-vg
+    physical-volumes:
+    - /dev/sdd
+    logical-volumes:
+      - name: zookeeper
+        size: 45%
+        mount: /var/lib/zookeeper
+        fstype: ext4
+      - name: cassandra
+        size: 45%
+        mount: /var/run/cassandra
+        fstype: ext4
+    consumer:
+       name: nsdb</codeblock>
+        </p>
+        <p/>
+        <p>This confuguration will cause the <codeph>config-processor-run.yml</codeph> playbook to
+            issue warnings, however, you can ignore the resulting warning messages.</p>
+        <p>Midonet functionality requires two dedicated network interfaces. One interface is used
+            for communication between the nodes, and one interface is used for external network
+            communication. The following <codeph>net_interfaces.yml</codeph> sample file illustrates
+            how to set interface <codeph>eth1</codeph> as the external network interface, and
+                <codeph>eth0</codeph> as the inter-node interface.</p>
+        <p/>
+        <p>
+            <codeblock>---
+  product:
+    version: 2
+  interface-models:
+    - name: LIFECYCLE-MANAGER-INTERFACES
+      network-interfaces:
+        - name: eth0
+          device:
+              name: eth0
+          network-groups:
+            - MANAGEMENT
+# Making changes here are is it needed for the MidoNet Gateways
+    - name: CONTROLLER-INTERFACES
+      network-interfaces:
+        - name: eth0
+          device:
+              name: eth0
+          network-groups:
+            - EXTERNAL-API
+            - GUEST
+            - MANAGEMENT
+        - name: eth1
+          device:
+              name: eth1
+          network-groups:
+            - EXTERNAL-VM
+    - name: COMPUTE-INTERFACES
+      network-interfaces:
+        - name: eth0
+          device:
+              name: eth0
+          network-groups:
+            - EXTERNAL-API
+            - GUEST
+            - MANAGEMENT
+        - name: eth1
+          device:
+              name: eth1
+          network-groups:
+            - EXTERNAL-VM</codeblock>
+        </p>
+        <p/>
+        <p><b><keyword keyref="kw-hos"/> Deployment</b></p>
+        <p>Continue and deploy <keyword keyref="kw-hos"/> using <xref
+                href="https://docs.hpcloud.com/#3.x/helion/installation/installing_kvm.html"
+                format="html" scope="external"
+                >https://docs.hpcloud.com/#3.x/helion/installation/installing_kvm.html</xref></p>
+        <p/>
+        <p/>
+        <p><b>MidoNet Deployment</b></p>
+        <p>To deploy Mitaka MidoNet on your cloud, you will run a number of custom-made Ansible
+            playbooks. These playbooks are not included in your Helion OpenStack media or in the
+            fully installed cloud. Download and run the playbooks with the following steps.<ol
+                id="ol_yj2_vhm_lx">
+                <li>Login to your deployer node and clone the MidoNet Ansible Deploy git repository.
+                    Find the repository here: <xref
+                        href="https://github.hpe.com/roberto-chaud-ricardo/IHV_Repo/tree/master/MidoNet_Ansible_Deploy"
+                        format="html" scope="external"
+                        >https://github.hpe.com/roberto-chaud-ricardo/IHV_Repo/tree/master/MidoNet_Ansible_Deploy</xref><codeblock>stack@helion-cp1-c0-m1-mgmt:~/MidoNet_v52$ pwd
+/home/stack/MidoNet_v52
+stack@helion-cp1-c0-m1-mgmt:~/MidoNet_v52$ ls -l
+total 144
+-rw-rw-r-- 1 stack stack 32229 Jul  8 04:46 midokura-neutron-plugin.tgz
+-rw-rw-r-- 1 stack stack 28427 Aug 13 21:16 midonet_deploy.yml
+-rw-rw-r-- 1 stack stack  2318 Aug 13 21:36 midonet_static.yml
+-rw-rw-r-- 1 stack stack 81113 Jul  8 04:46 python-midonetclient.tgz
+stack@helion-cp1-c0-m1-mgmt:~/MidoNet_v52$</codeblock></li>
+                <li>Refer to the following sample commands and output for methods to find the
+                    Horizon IP address (VIP), deployer node IP and the Horizon admin
+                    password.<codeblock>stack@helion-cp1-c0-m1-mgmt:~/MidoNet_v52$ grep -E "OS_PASSWORD|OS_AUTH_URL" ../service.osrc
+export OS_PASSWORD=WWWWWWWW
+export OS_AUTH_URL=https://xx.xx.xx.xx:5000/v3
+stack@helion-cp1-c0-m1-mgmt:~/MidoNet_v52$ ip addr show eth0
+2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 5c:b9:01:c4:1f:00 brd ff:ff:ff:ff:ff:ff
+    inet yy.yy.yy.yy/24 brd 10.246.74.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::5eb9:1ff:fec4:1f00/64 scope link 
+       valid_lft forever preferred_lft forever
+stack@helion-cp1-c0-m1-mgmt:~/MidoNet_v52$</codeblock></li>
+                <li>Run the <codeph>midonet_deploy.yml</codeph> playbook, passing in your HOS
+                    installation details as
+                    arguments.<codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts midonet_deploy.yml \
+--limit '!localhost' \
+-e deployer="&lt;DEPLOYER_IP>" \
+-e vip="&lt;KEEPALIVED_VIP>" \
+-e admin_password="&lt;KEYSTONE_ADMIN_PASS>"</codeblock></li>
+            </ol></p>
+        <p/>
+        <p/>
+        <p><b>MidoNet Static Setup Configuration</b></p>
+        <p>
+            <ol id="ol_kqv_f3m_lx">
+                <li>Run the <codeph>midonet_static.yml</codeph> playbook. If your configuration
+                    includes BGP Peers, refer to steps 5-7 of the Midonet Official Documentation,
+                    found here: <xref
+                        href="https://docs.midonet.org/docs/latest-en/quick-start-guide/ubuntu-1404_liberty/content/index.html"
+                        format="html" scope="external"
+                        >https://docs.midonet.org/docs/latest-en/quick-start-guide/ubuntu-1404_liberty/content/index.html</xref>
+                    ).</li>
+                <li>Locate your cloud's external VLAN ID,  found in the
+                        <codeph>~/helion/my_cloud/data/networks.yml</codeph>
+                    file.<codeblock>- name: EXTERNAL-VM-NET
+  vlanid: 818
+  tagged-vlan: true
+  network-group: EXTERNAL-VM</codeblock></li>
+                <li>Create a new external network and related subnet. The following command example
+                    names the new network <codeph>ext-net</codeph>, and the subnet
+                        <codeph>ext-subnet</codeph>.<codeblock>stack@helion-cp1-c0-m1-mgmt:~$ neutron net-create ext-net --router:external
+stack@helion-cp1-c0-m1-mgmt:~$ neutron subnet-create ext-net xx.xx.xx.xx/24 --name ext-subnet --allocation-pool start=xx.xx.xx.xx,end=xx.xx.xx.xx --disable-dhcp --gateway xx.xx.xx.xx</codeblock></li>
+                <li>Run the <codeph>midonet_static.yml</codeph>  playbook, passing in the name of
+                    the subnet you created in step 3, as well as the name of the external VLAN you
+                    found in step
+                        2.<codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts midonet_static.yml -e ext_subnet="&lt;EXTERNAL SUBNET>" -e ext_vlan="&lt;EXTERNAL-VM-NET>"</codeblock><p>The
+                        following command example runs the <codeph>midonet_static.yml</codeph>
+                        playbook, passing in the names of the VLAN from step 2 and the subnet from
+                        step
+                        3.<codeblock>ansible-playbook -i ~/scratch/ansible/next/hos/ansible/hosts/verb_hosts midonet_static.yml -e ext_subnet="xx.xx.xx.xx/24" -e ext_vlan="818"</codeblock></p></li>
+                <li>When the <codeph>midonet_static.yml</codeph> playbook is completed, verify that
+                    the external VLAN from step 2 has the status of "plugged yes" at the MidoNet
+                    External
+                        Bridge.<!--I have no idea what this means, so I can't really improve the language.--><p>The
+                        following command example demonstrates the method by which you can check the
+                        "plugged" status of the
+                        VLAN.</p><codeblock>stack@helion-cp1-c1-m1-mgmt:~$ EXT_NET=$(midonet-cli -A -e bridge list|awk '/ext-net/ {print $2}')
+stack@helion-cp1-c1-m1-mgmt:~$ midonet-cli -A -e bridge $EXT_NET list port</codeblock><p>Example
+                        output for the preceding commands. Please note that the "plugged yes" status
+                        indicates success.
+                        <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ EXT_NET=$(midonet-cli -A -e bridge list|awk '/ext-net/ {print $2}')
+stack@helion-cp1-c1-m1-mgmt:~$ midonet-cli -A -e bridge $EXT_NET list port
+port 9dbb204b-a1ad-4623-9923-d6c4c24da878 device 421f1236-562c-4642-a771-e8beb2dcb91d state up plugged no vlan 0 peer 018b1045-68b2-493a-9167-4bf32456c888
+port 13ff4404-5e1e-42a0-ade0-323c8fa775b6 device 421f1236-562c-4642-a771-e8beb2dcb91d state up plugged no vlan 0 peer c05b1480-0e31-41c6-b237-e05048f11cc4
+port 9ca0f3ad-71a2-4b61-bcc8-7d80399815bd device 421f1236-562c-4642-a771-e8beb2dcb91d state up plugged yes vlan 0
+port 6c0782fd-5d41-448c-839d-ec4171aef909 device 421f1236-562c-4642-a771-e8beb2dcb91d state up plugged yes vlan 0
+stack@helion-cp1-c1-m1-mgmt:~$</codeblock></p></li>
+            </ol>
+        </p>
+    </body>
+</topic>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="topic_l1p_vpy_jt">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Managing the Cinder Singleton Services</title>
+  <abstract><shortdesc outputclass="hdphidden">When you need to perform a procedure that requires
+      keeping the cinder-volume and backup services online, such as maintenance tasks involving
+      rebooting your controller nodes or upgrading your environment, you will need to perform tasks
+      to migrate these services so they stay online during this process.</shortdesc><p>Due to the
+      single threading required in both cinder volume and the drivers, the Cinder volume and backup
+      services are run as singleton services in the control plane. It is possible to migrate these
+      services between controller nodes. This page describes how to achieve this.</p>
+    <p>By default the Cinder volume and backup services are started on the first controller node. If
+      the deployer is on the first controller node you will not be able to migrate the these
+      services if that node fails. This can be mitigated by migrating the cinder volume and backup
+      services off of the shared deployer/controller node and on to one of the other controller nodes
+      after the system has been initially setup.</p></abstract>
+  <body>
+    <!--not tested-->
+    <section>
+      <title>Prerequisite</title>
+      <p><keyword keyref="kw-hos"/> cloud must be successfully deployed. </p>
+    </section>
+    <section>
+      <title>Migrating the Cinder Volume and Backup Services</title>
+      <p>Due to the single threading required in both cinder-volume and the drivers, and because
+        Cinder backups have a dependency on cinder-volume, the Cinder volume and backup services are
+        started on one controller node at a time. By default, these services are started on the
+        first controller node. If needed, the volume and backup services can be migrated to a
+        different controller node. The following steps describe how to migrate the services to a
+        specified node.</p>
+      <ol>
+        <li>Log in to the lifecycle manager.</li>
+        <li>Run the <codeph>cinder-show-volume-hosts.yml</codeph> playbook to determine the index
+          number of the node the cinder-volume and backup services are to be migrated
+          to:<codeblock>cd ~/scratch/ansible/next/hos/ansible 
+ansible-playbook -i hosts/verb_hosts cinder-show-volume-hosts.yml</codeblock>The
+          index number and hostname of each cinder-volume node will be displayed as
+          follows:<codeblock>TASK: [Cinder Common | show_volume_hosts | Show Cinder Volume hosts index and hostname] *** 
+ok: [&lt;hostname>] => (item=(0, '&lt;hostname>')) => {
+"item": [
+0, 
+"&lt;hostname>"
+], 
+"msg": "Index 0 Hostname &lt;hostname>"
+}
+ok: [&lt;hostname>] => (item=(1, '&lt;hostname>
+;')) => {
+    "item": [
+        1, 
+        "&lt;hostname>"
+    ], 
+    "msg": "Index 1 Hostname &lt;hostname>"
+}
+ok: [&lt;hostname>] => (item=(2, '&lt;hostname>')) => {
+    "item": [
+        2, 
+        "&lt;hostname>"
+    ], 
+    "msg": "Index 2 Hostname &lt;hostname>"
+}</codeblock></li>
+        <li>Edit the <codeph>~/helion/my_cloud/config/cinder/cinder_vol_run_location.yml</codeph>
+          file. Set the value of the <codeph>cinder_vol_host_index</codeph> variable to the index
+          number of the node the cinder-volume and backup services are to be migrated to.</li>
+        <li>Commit the changes to git:
+          <codeblock>git add -A
+git commit -a -m "migrating cinder-volume and backup services"</codeblock></li>
+        <li>Run the configuration processor:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>Update your deployment directory:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>If you are using data encryption on your lifecycle manager, ensure that you add the
+          encryption key to your environment
+          variables:<codeblock>export HOS_USER_PASSWORD_ENCRYPT_KEY=&lt;encryption key></codeblock></li>
+        <li>Run the playbook below to migrate the cinder-volume and backup services. The playbook
+          will check for confirmation that the Cinder volume and backup services are being migrated
+          to the expected host:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-migrate-volume.yml</codeblock></li>
+        <li>After successfully running the <codeph>cinder-migrate-volume.yml</codeph> playbook, the
+          cinder-volume and backup services should be running on the specified host.</li>
+      </ol>
+      <p>If the original node where the services were running is restarted, the cinder-volume and
+        backup services will not restart on this node. To get the Cinder volume and backup services
+        running again on a specific node run the <codeph>cinder-migrate-volume.yml</codeph> playbook
+        again specifying the index number of the node as described above.</p>
+    </section>
+    <section>
+      <title>Managing Cinder Volume and Backup Services During a Node Replacement</title>
+      <p>If the controller node running Cinder volume and backup is going to be replaced with a new
+        node, perform the following steps: <ol id="ol_b1c_ngf_pt">
+          <li>Migrate the Cinder volume and backup services to another controller node using the
+              <codeph>cinder-migrate-volume.yml</codeph> playbook.</li>
+          <li>For control plane nodes, follow the steps in <xref
+              href="../maintenance/controller/replace_controller.dita#replacing_controller"/>. </li>
+        </ol></p>
+    </section>
+  </body>
+</topic>

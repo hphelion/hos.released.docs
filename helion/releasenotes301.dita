@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="relnotes301">
+  <title><keyword keyref="kw-hos-tm"/>
+    <keyword keyref="kw-hos-version-301"/>: Release Notes</title> 
+  <body>
+    <p> <keyword keyref="kw-hos-phrase-301"/> focuses mainly on Boot from SAN support over FCoE
+      using QLogic FlexFabric adapters. Other issues addressed are listed below. </p>
+    
+    <section><title>Fixed in this release</title>
+    <p>HPE Linux Updates: </p><ul id="ul_qyc_v2z_sw">
+   
+    <li>Fixed: Issues with FCOE Boot from SAN support: <ul>
+            <li><!--HLX-1832-->Failed to detect 3PAR disks for
+              native-fcoe install boot from san</li>
+            <li><!--HLX-1824-->Persistent device naming/FCoE
+              indentification</li>
+            <li> <!--HLX-1828-->Multipath does not return all paths for a four-path/LUN,
+              256 LUN FCoE/multipath setup</li>
+            <li><!--HLX-1917-->The -B option on the multipathd is not being
+              honoured.</li>
+          </ul>
+        </li>
+      <li><!--HLX-1817-->Fixed kernel defect where compute node was unreachable from the lifecycle manager
+          node during run of <codeph>hlm-status</codeph> playbook.</li>
+      <li><!--HLX-1932-->Fixed race condition in <codeph>/etc/init.d/open-iscsi</codeph></li>
+    </ul>
+    
+    <!--<p>Verify update to Ceph 0.80.11: STOR-1562 As an operator, I want to deploy (or upgrade to)
+      0.80.11 Ceph cluster using Helion OpenStack 3.0.1 - IN PROGRESS </p>-->
+    <p>Fixed Ironic OSSA (Vulnerability  in OpenStack Ironic whereby Ironic node information
+        including credentials is exposed to unauthenticated users.)</p>
+      <p>Fixed upgrade failure (Can't load firmware file bnx2x/bnx2x-e2-7.12.30.0.fw). This issue,
+        present in <keyword keyref="kw-hos-phrase-30"/>  has been fixed in <keyword keyref="kw-hos-phrase-301"/> .</p>
+  </section>
+    
+    <section><title>New in this release</title> 
+      
+      <p>Update to Ceph Firefly 0.80.11 </p>
+      
+      <p> A new check has been added to the percona play to
+      check for cluster partitioning. Information is available in the article <xref
+        href="operations/troubleshooting/percona_partitioning_check.dita#topic_hzq_2nz_sw"
+        >Checking for Percona Cluster Partitioning</xref></p>
+      
+      <p>The behaviour of status playbooks has changed so that the play stops immediately when a failure is encountered.
+        These status playbooks are typically used after installation and both before and after upgrade. Previously, if a node 
+        failed verificaton, the status playbook would remove that node from the list of nodes to check in subsequent tests, and then proceed.
+        This deprecated behaviour could result in some nodes being upgraded while others were not. It was also confusing 
+        from an end-user point of view as a status playbook could fail much later on, leaving the original cause hard to track down.
+      </p>
+      
+    </section>
+    <section><title>Known Issues in this release</title><b> Problem:</b> The ESX compute instance
+      loses its ping to the instance private IP address after taking snapshot of ESX compute
+      instances. </section>
+    <section><b>Workaround:</b> Restart the particular OVSvAPP node of the host on which instance is
+      launched. </section>
+    <section><b>Problem:</b> Load balancer instances stuck in pending_delete or Error state require
+      manual ceanup. </section>
+    <section><b>Workaround:</b> See the article <xref
+      href="networking/cleanupErrorInstances.dita#deleteStuckLoadbalancer">Deleting Load Balancer Instances Stuck in Pending_delete or Error State</xref> for
+      instructions.</section>
+ 
+    <section id="DOCS-3594"><b>Problem:</b> <codeph>bm-reimage</codeph> fails during the disk partitioning/filesystem creation phase on RedHat node that has been installed previously. </section>
+    <section><b>Workaround:</b> Power cycle the node to restart the imaging process for this node.</section>
+    
+    
+    <section>
+      
+      <title>Upgrading to <keyword keyref="kw-hos-phrase-301"/></title> 
+      
+      <p>Whether you are upgrading from <keyword keyref="kw-hos-version-21X"/> or <keyword keyref="kw-hos-version-30"/>, the
+        core procedure is the same and is documented <xref href="upgrade/upgrade21to30.dita#upgradeto30">here</xref>.
+      Note that you are required to reboot your nodes so that they will get the latest version of Linux for HPE Helion. 
+      </p>
+    
+    </section>
+    
+
+    
+    
+  </body>
+</topic>

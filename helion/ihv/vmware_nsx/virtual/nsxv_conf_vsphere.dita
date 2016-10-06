@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="NSXv_config_vSphere">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Configuring the vSphere Environment on a Virtual
+    Installation</title>
+  <abstract><shortdesc outputclass="hdphidden">Step-by-step instructions for configuring your
+      vSphere Environment.</shortdesc></abstract>
+  <body>
+    <!--not tested-->
+    <section id="about">
+      <p>Before deploying <keyword keyref="kw-hos"/> with NSX-v, the VMware vSphere environment must
+        be properly configured. This includes setting up vSphere distributed switches, installing
+        and configuring the VMware NSX Manager, and creating the NSX network within the vSphere
+        environment.</p>
+    </section>
+    <section id="ref_model">
+      <title>vSphere reference model</title>
+      <p>The following images are examples of a newly deployed environment illustrating <keyword
+          keyref="kw-hos"/> installed onto virtual machines. This reference model may not be
+        suitable for all environments - it is demonstrated here to provide context to this install
+        guide.</p>
+      <p><b>vSphere datacenter overview</b></p>
+      <p><image href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_vsphere_ref1.png"/></p>
+      <p><b>vSphere distributed switches</b></p>
+      <p><image href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_vsphere_ref2.png"/></p>
+      <p><b>VDS port groups</b></p>
+      <p><image href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_vsphere_ref3.png"/></p>
+      <p>Before proceeding any further with the install, ensure that the following are configured in
+        the vSphere environment. Use the guidelines on the <xref href="nsxv_pre.dita">NSX for
+          vSphere Pre-Integration Checklist</xref> if needed.</p>
+      <ul>
+        <li>The vSphere datacenter is configured with at least two clusters, one
+            <b>control-plane</b> cluster and one <b>compute</b> cluster.</li>
+        <li>Verify that all software, hardware, and networking requirements have been met.</li>
+        <li>Ensure the vSphere distributed switches are configured for each cluster.</li>
+      </ul>
+      <note>The <b>MTU</b> setting for each VDS should be set to <b>1600</b>. NSX should
+        automatically apply this setting to each VDS during the setup process. Alternatively, the
+        setting can be manually applied to each VDS before setup if desired.</note>
+      <p>For more information on planning VDS topology, see VMware's <xref
+          href="https://pubs.vmware.com/NSX-62/index.jsp?topic=%2Fcom.vmware.nsx.install.doc%2FGUID-9B22794A-AC90-418D-BAA7-199D9559CF29.html"
+          scope="external" format="html">NSX and vSphere Distributed Switches</xref>.</p>
+      <p>To configure the underlying vSphere environment, use the following steps:</p>
+      <ol>
+        <li><xref type="section" href="#NSXv_config_vSphere/NSXv_vs_manager">Install NSX
+            Manager</xref></li>
+        <li><xref type="section" href="#NSXv_config_vSphere/NSXv_vs_controller">Add NSX
+            Controllers</xref></li>
+        <li><xref type="section" href="#NSXv_config_vSphere/NSXv_vs_preparec">Prepare Clusters for
+            NSX Management</xref></li>
+        <li><xref type="section" href="#NSXv_config_vSphere/NSXv_vs_VXTP">Configure VXLAN Transport
+            Parameters</xref></li>
+        <li><xref type="section" href="#NSXv_config_vSphere/NSXv_vs_segment">Assign Segment ID
+            Pool</xref></li>
+        <li><xref type="section" href="#NSXv_config_vSphere/NSXv_vs_transport">Create a Transport
+            Zone</xref></li>
+      </ol>
+    </section>
+    <section id="NSXv_vs_manager">
+      <title>Install NSX Manager</title>
+      <p>The NSX Manager is the centralized network management component of NSX. It provides a
+        single point of configuration and REST API entry-points.</p>
+      <p>The NSX Manager is installed as a virtual appliance on one of the ESXi hosts within the
+        vSphere environment. This guide will cover installing the appliance on one of the ESXi hosts
+        within the control-plane cluster as illustrated in the <b><xref type="section"
+            href="#NSXv_config_vSphere/ref_model">vSphere Reference Model</xref></b> detailed
+        earlier. For more detailed information, refer to <xref
+          href="https://pubs.vmware.com/NSX-62/index.jsp?topic=%2Fcom.vmware.nsx.install.doc%2FGUID-D8578F6E-A40C-493A-9B43-877C2B75ED52.html"
+          format="html" scope="external">VMware's NSX Installation Guide</xref>.</p>
+      <p>To install the NSX Manager, download the virtual appliance from <xref
+          href="https://www.vmware.com/go/download-nsx-vsphere" format="html" scope="external"
+          >VMware</xref> and deploy the appliance within vCenter onto one of the ESXi hosts. For
+        information on deploying appliances within vCenter, refer to VMware's documentation for ESXi
+          <xref
+          href="https://pubs.vmware.com/vsphere-55/index.jsp?topic=%2Fcom.vmware.vsphere.vm_admin.doc%2FGUID-AFEDC48B-C96F-4088-9C1F-4F0A30E965DE.html"
+          format="html" scope="external">5.5</xref> or <xref
+          href="https://pubs.vmware.com/vsphere-60/index.jsp?topic=%2Fcom.vmware.vsphere.vm_admin.doc%2FGUID-AFEDC48B-C96F-4088-9C1F-4F0A30E965DE.html"
+          format="html" scope="external">6.0</xref>.</p>
+      <p>During the deployment of the NSX Manager appliance, be aware of the following:</p>
+      <ul>
+        <li>When prompted, select <b>Accept extra configuration options</b>. This will present
+          options for configuring IPv4 and IPv6 addresses, the default gateway, DNS, NTP, and SSH
+          properties during the installation, rather than configuring these settings manually after
+          the installation.</li>
+        <li>Choose an ESXi host that resides within the control-plane cluster if following the
+          reference model of this guide.</li>
+        <li>Ensure that the network mapped port group is the VDS port group which represents the
+          VLAN that the NSX Manager will use for its networking (in this guide it is labeled as the
+            <b>NSX Management</b> network).</li>
+      </ul>
+      <note>The IP address assigned to the NSX Manager must be able to resolve reverse DNS.</note>
+      <p>The following images is an example of the final review screen with all configurable
+        options:</p>
+      <p><image href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_vsphere_ref4.png"/></p>
+      <p>Power on the NSX Manager virtual machine after it finishes deploying and wait for the
+        operating system to fully load. Once ready, carry out these steps in order to have the NSX
+        Manager use single sign-on (SSO) and to register the NSX Manager with vCenter:</p>
+      <ol id="ol_ztj_kdk_bx">
+        <li>Open a web browser and enter the hostname or IP address that was assigned to the NSX
+          Manager during setup.</li>
+        <li>Log in with the username <b>admin</b> and the password set during the deployment.</li>
+        <li>Once logged in, click on <b>Manage vCenter Registration</b>.</li>
+        <li>Configure the NSX Manager to connect to the vCenter server. <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_manager1.png"/></p></li>
+        <li>Configure NSX manager for single sign on (SSO) under the <b>Lookup Server URL</b>
+          section. <p><image href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_manager2.png"
+          /></p></li>
+      </ol>
+      <note>When configuring SSO, use Lookup Service Port 443 for vCenter version 6.0. Use Lookup
+        Service Port 7444 for vCenter version 5.5.</note>
+      <note>SSO makes vSphere and NSX more secure by allowing the various components to communicate
+        with each other through a secure token exchange mechanism, instead of requiring each
+        component to authenticate a user separately. For more details, refer to VMware's
+        documentation on <xref
+          href="https://pubs.vmware.com/NSX-62/index.jsp?topic=%2Fcom.vmware.nsx.install.doc%2FGUID-523B0D77-AAB9-4535-B326-1716967EC0D2.html"
+          format="html" scope="external">Configure Single Sign-On</xref>.</note>
+      <p>Both the <b>Lookup Service URL</b> and the <b>vCenter Server</b> sections should have a
+        status of <b>connected</b> if configured properly.</p>
+      <p><image href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_manager3.png"/></p>
+      <p>Log into the vSphere Web Client (log out and and back in if already logged in). The NSX
+        Manager will appear under the <b>Networking &amp; Security</b> section of the client.</p>
+      <note>The <b>Networking &amp; Security</b> section will not appear under the vSphere desktop
+        client. Use of the web client is required from this point on.</note>
+    </section>
+    <section id="NSXv_vs_controller">
+      <title>Add an NSX Controller</title>
+      <p>The NSX controllers serve as the central control point for all logical switches within the
+        vSphere environment's network and maintain information about all hosts, logical switches
+        (VXLANs), and distributed logical routers.</p>
+      <p>NSX controllers will each be deployed as a virtual appliance on the ESXi hosts within the
+        control-plane cluster to form the <b>NSX Controller cluster</b>. For more details about NSX
+        controllers and the NSX control plane in general, refer to <xref
+          href="https://pubs.vmware.com/NSX-62/index.jsp?topic=%2Fcom.vmware.nsx.install.doc%2FGUID-4E0FEE83-CF2C-45E0-B0E6-177161C3D67C.html"
+          format="html" scope="external">VMware's NSX documentation</xref>.</p>
+      <note type="important">No matter the size of the NSX deployment, VMware requires the following
+        condition are met: <ul>
+          <li>Each NSX Controller cluster contain three controller nodes. Having a different number
+            of controller nodes is not supported.</li>
+          <li>Before deploying NSX Controllers, you must deploy an NSX Manager appliance and
+            register vCenter with NSX Manager.</li>
+          <li>Determine the IP pool settings for your controller cluster, including the gateway and
+            IP address range. DNS settings are optional.</li>
+          <li>The NSX Controller IP network must have connectivity to the NSX Manager and to the
+            management interfaces on the ESXi hosts.</li>
+        </ul></note>
+      <p>Log into the vSphere web client and do the following to add the NSX controllers:</p>
+      <ol>
+        <li>In vCenter, navigate to Home, select <b>Networking &amp; Security</b>, Installation, and
+          then select the <b>Management</b> tab.</li>
+        <li>In the <b>NSX Controller nodes</b> section, click the <b>Add Node</b> icon, represented
+          by a green plus sign. <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_addcont1.png"/></p></li>
+        <li>Enter the NSX Controller settings appropriate to your environment. If following the
+              <b><xref type="section" href="#NSXv_config_vSphere/ref_model">vSphere Reference
+              Model</xref></b> in this guide, use the control-plane clustered ESXi hosts and
+          control-plane VDS port group for the controller settings. <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_addcont2.png"/></p></li>
+        <li>If not already done, create an IP pool for the NSX Controller cluster with at least
+          three IPs by clicking <b>New IP Pool</b>. Individual controllers can be in separate IP
+          subnets, if necessary. <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_addcont3.png"/></p></li>
+        <li>Click <b>OK</b> to deploy the controller. After the first controller is completely
+          deployed, deploy two additional controllers.</li>
+        <li>Once all three controllers are deployed, the environment should look similar to this:
+              <p><image href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_addcont4.png"/></p><note
+            type="important">Having three NSX controllers is mandatory. VMware recommends
+            configuring a DRS anti-affinity rule to prevent the controllers from residing on the
+            same ESXi host.</note></li>
+      </ol>
+    </section>
+    <section id="NSXv_vs_preparec"><title>Prepare Clusters for NSX Management</title><p>Host
+        preparation is the process in which the NSX Manager does the following:</p><ul>
+        <li>Installs the NSX kernel modules on ESXi hosts that are members of vSphere clusters</li>
+        <li>Builds the NSX control-plane and management-plane infrastructure. </li>
+      </ul><p>The NSX kernel modules, which are packaged in VIB files, run within the hypervisor
+        kernel and provide services such as distributed routing, distributed firewall, and VXLAN
+        bridging capabilities. These files are installed on a per-cluster level, and the setup
+        process deploys the required software on all ESXi hosts in the target cluster. When a new
+        ESXi host is added to the cluster, the required software is automatically installed on the
+        newly added host.</p>
+      <p>Before beginning the NSX host preparation process, make sure the following conditions exist
+        in your environment:</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_prep_NSXv_clusters">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="25pt"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>&#9744;</entry>
+              <entry>Item</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry/>
+              <entry>Register vCenter with NSX Manager and deploy the NSX controllers.</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>Verify that DNS reverse lookup returns a fully qualified domain name when
+                queried with the IP address of NSX Manager.</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>Verify that the ESXi hosts can resolve the DNS name of vCenter server.</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>Verify that the ESXi hosts can connect to vCenter Server on port 80.</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>Verify that the network time on vCenter Server and the ESXi hosts is
+                synchronized.</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>For each vSphere cluster that will participate in NSX, verify that the ESXi
+                hosts within each respective cluster are attached to a common VDS. <note>For
+                  example, given a deployment with two clusters named Host1 and Host2. Host1 is
+                  attached to VDS1 and VDS2. Host2 is attached to VDS1 and VDS3. When you prepare a
+                  cluster for NSX, you can only associate NSX with VDS1 on the cluster. If you add
+                  another host (Host3) to the cluster and Host3 is not attached to VDS1, it is an
+                  invalid configuration, and Host3 will not be ready for NSX functionality.
+                </note></entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>If you have vSphere Update Manager (VUM) in your environment, you must disable
+                it before preparing clusters for network virtualization. For information on how to
+                check if VUM is enabled and how to disable it if necessary, see the <xref
+                  href="http://kb.vmware.com/kb/2053782" scope="external" format="html">VMware
+                  knowledge base</xref>.</entry>
+            </row>
+            <row>
+              <entry/>
+              <entry>In the vSphere web client, ensure that the cluster is in the resolved state
+                (listed under the <b>Host Preparation</b> tab. If the Resolve option does not appear
+                in the cluster's <b>Actions</b> list, then it is in a resolved state.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table><p>To prepare the vSphere clusters for NSX:</p><ol>
+        <li>In vCenter, select <b>Home</b>, <b>Networking &amp; Security</b>, <b>Installation</b>,
+          and then select the <b>Host Preparation</b> tab.</li>
+        <li>If following the <b><xref type="section" href="#NSXv_config_vSphere/ref_model">vSphere
+              Reference Model</xref></b> in this guide, click on the Actions button (gear icon) and
+          select <b>install</b> for both the <b>control-plane</b> cluster and <b>compute</b> cluster
+          (if not using the model in this guide, then only install on the clusters that require NSX
+          logical switching, routing, and firewalls).</li>
+        <li>Monitor the installation until the <b>Installation Status</b> column displays a green
+          check mark. <note type="important">While installation is in progress, do not deploy,
+            upgrade, or uninstall any service or component.</note>
+          <note type="important">If the <b>Installation Status</b> column displays a red warning
+            icon and says <b>Not Ready</b>, click <b>Resolve</b>. Clicking <b>Resolve</b> might
+            result in a reboot of the host. If the installation is still not successful, click the
+            warning icon. All errors are displayed. Take the required action and click
+              <b>Resolve</b> again.</note></li>
+        <li>If the installation completed successfully, the clusters and hosts should resemble the
+          following image within the vSphere web client: <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_prepareclust1.png"/></p></li>
+        <li>To verify the VIBs (<b>esx-vsip</b> and <b>esx-vxlan</b>) are installed and registered,
+          SSH into an ESXi host within the prepared cluster. To list the name and version of the
+          VIBs installed, run the following command:
+          <codeblock>esxcli software vib list | grep esx</codeblock> For example:
+          <codeblock>[root@host:~] esxcli software vib list | grep esx
+          ...
+          esx-vsip      6.0.0-0.0.2732470    VMware  VMwareCertified   2015-05-29
+          esx-vxlan     6.0.0-0.0.2732470    VMware  VMwareCertified   2015-05-29
+          ...</codeblock></li>
+      </ol><note type="important">After host preparation: <ul>
+          <li>A host reboot is not required</li>
+          <li>If you add a host to a prepared cluster, the NSX VIBs automatically get installed on
+            the host.</li>
+          <li>If you move a host to an unprepared cluster, the NSX VIBs automatically get
+            uninstalled from the host. In this case, a host reboot is required to complete the
+            uninstall process.</li>
+        </ul></note></section>
+    <section id="NSXv_vs_VXTP">
+      <title>Configure VXLAN Transport Parameters </title>
+      <p>VXLAN is configured on a per-cluster basis, where each vSphere cluster that is to
+        participate in NSX is mapped to a vSphere distributed switch (VDS). When mapping a vSphere
+        cluster to a distributed switch, each ESXi host in that cluster is enabled for logical
+        switches. The settings chosen in this section will be used in creating the VMkernel
+        interface.</p>
+      <p>Configuring transport parameters involves selecting a VDS, a VLAN ID, an MTU size, an IP
+        addressing mechanism, and a NIC teaming policy. The MTU for each switch must be set to 1550
+        or higher. By default, it is set to 1600 by NSX. This is also the recommended setting for
+        integration with <keyword keyref="kw-hos"/>.</p>
+      <p>To configure the VXLAN transport parameters: </p>
+      <ol>
+        <li>In the vSphere web client, navigate to <b>Home</b> , then <b>Networking &amp;
+            Security</b>, then <b>Installation</b>.</li>
+        <li>Select the <b>Host Preparation</b> tab. </li>
+        <li>Click the <b>Configure</b> link in the VXLAN column.</li>
+        <li>Enter the required information. <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_confvxlan1.png"/></p></li>
+        <li>If not already done, create an IP pool for the VXLAN tunnel enpoints (VTEP) by clicking
+            <b>New IP Pool</b>: <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_confvxlan2.png"/></p></li>
+        <li> Click <b>OK</b> to create the VXLAN network.</li>
+      </ol>
+      <note>When configuring the VXLAN transport network, consider the following:<ul>
+          <li>Use a NIC teaming policy that best suits the environment being built. <b>Load Balance
+              - SRCID</b> as the VMKNic teaming policy is usually the most flexible out of all the
+            available options. This allows each host to have a VTEP vmkernel interface for each
+            dvuplink on the selected distributed switch (two dvuplinks gives two VTEP interfaces per
+            ESXi host).</li>
+          <li>Do not mix different teaming policies for different portgroups on a VDS where some use
+            Etherchannel or LACPv1 or LACPv2 and others use a different teaming policy. If uplinks
+            are shared in these different teaming policies, traffic will be interrupted. If logical
+            routers are present, there will be routing problems. Such a configuration is not
+            supported and should be avoided.</li>
+          <li>For larger environments it may be better to use DHCP for the VMKNic IP
+            Addressing.</li>
+          <li>For more information and further guidance, see the <xref
+              href="https://communities.vmware.com/docs/DOC-27683" format="html" scope="external"
+              >VMware NSX for vSphere Network Virtualization Design Guide</xref>.</li>
+        </ul></note>
+    </section>
+    <section id="NSXv_vs_segment">
+      <title>Assign a Segment ID Pool</title>
+      <p>Each VXLAN tunnel will need a segment ID in order to isolate its network traffic. As such,
+        it is necessary to configure a segment ID pool for the NSX VXLAN network to use. If an NSX
+        controller is not deployed within the vSphere environment, a multicast address range must be
+        added to spread traffic across the network and avoid overloading a single multicast
+        address.</p>
+      <p>If following the <b><xref type="section" href="#NSXv_config_vSphere/ref_model">vSphere
+            Reference Model</xref></b> in this guide, do the following to assign a segment ID pool.
+        Otherwise, follow best practices as outlined in <xref
+          href="https://pubs.vmware.com/NSX-62/index.jsp?topic=%2Fcom.vmware.nsx.install.doc%2FGUID-7B33DE72-78A7-448C-A61C-9B41D1EB12AD.html"
+          format="html" scope="external">VMware's documentation</xref>.</p>
+      <ol>
+        <li>In the vSphere web client, navigate to <b>Home</b>, then <b>Networking &amp;
+            Security</b>, then <b>Installation</b>.</li>
+        <li>Select the <b>Logical Network Preparation </b>tab.</li>
+        <li>Click <b>Segment ID</b>, and then <b>Edit</b>. <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_assignsegment1.png"/></p></li>
+        <li> Click <b>OK</b> to save your changes.</li>
+      </ol>
+    </section>
+    <section id="NSXv_vs_transport">
+      <title>Create a Transport Zone</title>
+      <p>A transport zone controls which hosts a logical switch can reach. It can span one or more
+        vSphere clusters. Transport zones dictate which clusters and, therefore, which VMs can
+        participate in the use of a particular network. A vSphere NSX environment can contain one or
+        more transport zones based on the environment's requirements. A host cluster can belong to
+        multiple transport zones. A logical switch can belong to only one transport
+          zone.<note>Currently <keyword keyref="kw-hos"/> has only been verified to work with a
+          single transport zone within a vSphere NSX-v environment. Other configurations are
+          currently not supported.</note></p>
+      <p>For more details on transport zones, refer to the guidelines in <xref
+          href="https://pubs.vmware.com/NSX-62/topic/com.vmware.nsx.install.doc/GUID-0B3BD895-8037-48A8-831C-8A8986C3CA42.html"
+          format="html" scope="external">VMware's Add A Transport Zone</xref>.</p>
+      <p>To create a transport zone:</p>
+      <ol>
+        <li>In the vSphere web client, navigate to <b>Home</b>, then <b>Networking &amp;
+            Security</b>, then <b>Installation</b>.</li>
+        <li>Select the <b>Logical Network Preparation</b> tab.</li>
+        <li>Click <b>Transport Zones</b>, and then click the <b>New Transport Zone</b> (New Logical
+          Switch) icon.</li>
+        <li>In the New Transport Zone dialog box, type a name and an optional description for the
+          transport zone.</li>
+        <li>If following the <b><xref type="section" href="#NSXv_config_vSphere/ref_model">vSphere
+              Reference Model</xref></b> in this guide, select the control plane mode as
+            <b>Unicast</b>.<note>Depending on whether there is a controller in the environment, or
+            if the environment is going to use multicast addresses, will determine the cotnrol plane
+            mode to use:<ul id="ul_etd_rkk_bx">
+              <li><b>Multicast</b>: Multicast IP addresses in the physical network are used for the
+                control plane. This mode is recommended only when upgrading from older VXLAN
+                deployments. Requires PIM/IGMP in the physical network.</li>
+              <li><b>Unicast</b> (what this guide uses): The control plane is handled by an NSX
+                controller. All unicast traffic leverages optimized headend replication. No
+                multicast IP addresses or special network configuration is required.</li>
+              <li><b>Hybrid</b>: Offloads local traffic replication to the physical network (L2
+                multicast). This requires IGMP snooping on the first-hop switch and access to an
+                IGMP querier in each VTEP subnet, but does not require PIM. The first-hop switch
+                handles traffic replication for the subnet.</li>
+            </ul></note></li>
+        <li>Select the clusters to be added to the transport zone. <p><image
+              href="../../../../media/hos.docs/ihv/vmware_nsx/nsx_createtransport1.png"/></p></li>
+        <li>Click <b>OK</b> to save your changes.</li>
+      </ol>
+    </section>
+  </body>
+</topic>

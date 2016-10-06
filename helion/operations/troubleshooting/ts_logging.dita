@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="troubleshooting_logging">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Logging Troubleshooting</title>
+  <abstract><shortdesc outputclass="hdphidden">Troubleshooting scenarios with resolutions for the
+      Centralized Logging service.</shortdesc>We have gathered some of the common issues and
+    troubleshooting steps that will help when resolving issues that occur with the Centralized
+    Logging service.</abstract>
+  <body><!--not tested-->
+    <p conkeyref="HOS-conrefs/applies-to"/>
+
+    <section id="log_collection"><title outputclass="headerH">Situations In Which Logs Might Not Be
+        Collected</title>
+      <sectiondiv outputclass="insideSection">
+        <p>Centralized logging might not collect log data under the following circumstances:</p>
+        <ul>
+          <li>If the Beaver service is not running on one or more of the nodes (controller or
+            compute), logs from these nodes will not be collected.</li>
+          <li>Beaver watches the log files for any additions and only pushes the incremental log
+            records for centralized logging. It does not parse all the existing log records in the
+            log files that were added <b>before</b> Beaver started watching those files. Similarly,
+            if Beaver was stopped for some reason and then started again later, the logs that were
+            added during the time span that Beaver was not running will not be collected for
+            centralized logging.</li>
+          <li>The logging service uses a RabbitMQ queue and this queue is not persistent. This
+            means, if the RabbitMQ service on the master node is restarted for some reason, all
+            messages that are not yet consumed by the logstash workers might be lost.</li>
+        </ul>
+      </sectiondiv>
+    </section>
+
+    <section id="kibana_visualization"><title outputclass="headerH">Error When Creating a Kibana
+        Visualization</title>
+      <sectiondiv outputclass="insideSection">        
+        <p>When creating a visualization in Kibana you may get an error similar to this:
+          <codeblock>"logstash-*" index pattern does not contain any of the following field types: number</codeblock></p>
+        <p>To resolve this issue:</p>
+        <ol>
+          <li>Log in to Kibana.</li>
+          <li>Navigate to the <codeph>Settings</codeph> page.</li>
+          <li>Select the <codeph>logstash-*</codeph> index in the left panel.</li>
+          <li>Click the refresh button. You may see a mapping conflict warning after refreshing the
+            index.</li>
+          <li>Re-create the visualization.</li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="curator"><title outputclass="headerH">Elasticsearch Will Stop Storing Data in Its Shards When the
+        Elasticsearch Disk Partition Reaches 90% Capacity</title>
+      <sectiondiv outputclass="insideSection">
+        <p>To resolve this issue, we recommend changing the default value for
+            <codeph>curator_high_watermark_percent</codeph> from 95% to 89% to ensure that this
+          doesn't happen:</p>
+        <ol>
+          <li>Log in to the lifecycle manager.</li>
+
+          <li>Edit the ~/helion/my_cloud/config/logging/main.yml file and change the value of
+              <codeph>curator_high_watermark_percent</codeph> from the default setting of
+              <codeph>95</codeph> to the new value of <codeph>89</codeph>
+            <p>Example:</p>
+            <codeblock># The following high watermark will be used to decide if it is time to delete old indices.
+# The following approach is taken:
+# An hourly cronjob checks if the current used ES partition size is over this value.
+# If it is, curator will be run to delete old indices per the curator_num_of_indices_to_keep setting.
+# Then, a check is made again to see if the partition size is below the high watermark percent.
+# If it is still high, curator will be run again to delete all indices except the current one that
+# are over curator_max_index_size_in_gb size.
+# A check is made again and if it is still high, curator will be run to delete all indices except
+# the current one. Finally, if the usage is still high, just an error message is written to the log
+# file but the current index is NOT deleted.
+<b>curator_high_watermark_percent: 95</b>
+curator_max_index_size_in_gb: 30</codeblock></li>
+
+          <li>Save the changes to the file and commit the changes to your local git:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"</codeblock></li>
+
+          <li>Run the configuration processor, as follows:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+
+          <li>Run the following command to create a deployment directory:
+            <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+
+          <li>Run the logging reconfigure playbook:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts kronos-reconfigure.yml</codeblock></li>
+        </ol>
+      </sectiondiv>
+    </section>
+    <section id="ts_beaver_logs"><title outputclass="headerH">Beaver Log Files Show Queue Overflow Errors</title>
+      <sectiondiv outputclass="insideSection">
+        <p>If the Beaver Consumer worker is being overworked and cannot keep up with the amount of logging from the nodes, you will see something similar to the example below in the <b>beaver.log</b> file.</p>
+        <codeblock>[2016-06-09 00:40:02,727] ERROR   Exception caught sending message/s : Producer async queue overfilled. Current queue size 100.
+[2016-06-09 00:40:02,729] INFO    Caught transport exception: Unspecified exception encountered
+[2016-06-09 00:40:02,729] INFO    Reconnecting in 2187 seconds</codeblock>
+        <p>This exception error is not a critical issue. Centralized Logging is still working, just very slowly. The workaround available is to increase the queue timeout setting if this issue occurs. Even after changing the timeout, it is likely that you will continue to see 'Queue is full' errors, which should not occur very often. This error does not cause any logs to be lost. It is simply letting you know that the logging rate is faster than it can work. The Beaver Consumer worker will eventually catch up and Centralized Logging will continue to function.</p> 
+        
+        <p><b>To increase the queue timeout:</b></p>
+        <ol>
+          <li>In a text editor, open:
+            <codeblock>~/helion/hos/ansible/roles/logging-common/defaults/main.yml</codeblock></li>
+          <li>To reset the timeout period, change the following parameter from 10 seconds to 30
+            seconds: <codeblock>kronos_kafka_queue_put_timeout</codeblock></li>
+          <li>To commit your changes and run the reconfigure playbook, run:
+            <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts kronos-reconfigure.yml</codeblock>
+          </li>
+        </ol> 
+
+      </sectiondiv>
+    </section>
+  </body>
+</topic>

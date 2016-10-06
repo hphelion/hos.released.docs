@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic
+  PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
+<topic xml:lang="en-us" id="central_log_manage">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Managing the Centralized Logging Feature</title>
+  <body>
+   <section id="running_overview">
+     <p>No specific configuration tasks are required to use Centralized Logging, as it is enabled by
+        default after installation. However, you can configure the individual components as needed
+        for your environment. This topic provides information on how to configure the following
+        settings:</p>
+     <dl>
+       <dlentry>
+         <dt><b>Managing the Centralized Logging Service</b></dt>
+         <dd>
+           <ul>
+             <li><xref href="central_log_access_data.dita">How Do I Use Kibana to Access Collected Data?</xref></li>
+             <li><xref href="central_log_access_data.dita">How Do I Use Operations Console to Access Collected Data?</xref></li>
+             <li><xref href="#central_log_manage/CL_stop_start">How Do I Stop and Start the
+               Service?</xref></li>
+             <li><xref href="#central_log_manage/CL_disable">Can I Disable and Enable Centralized Logging
+               for a Service?</xref></li>
+           </ul>
+         </dd>
+       </dlentry>
+       <dlentry>
+         <dt><xref href="central_log_configure_CL.dita">Settings for Centralized Logging</xref></dt>
+         <dd>
+           <ul>
+             <li><xref href="central_log_configure_CL.dita">Where Can I Find the Log Files?</xref></li>
+             <li><xref href="central_log_configure_CL.dita">How Do I Set Disk Space Requirements?</xref></li>
+             <li><xref href="central_log_configure_CL.dita">How Do I Back-Up Log Files to Elasticsearch</xref></li>
+           </ul>
+         </dd>
+       </dlentry>
+       <dlentry>
+         <dt><xref href="central_log_configure_services.dita">Configuring Settings for Other Services</xref></dt>
+         <dd>
+           <ul>
+             <li><xref href="central_log_configure_CL.dita">How Do I Set Logging Levels for a Service?</xref></li>
+             <li><xref href="central_log_configure_CL.dita">How Do I Change the Length of Time Service Log
+               Files Are Retained?</xref></li>
+             <li><xref href="central_log_configure_CL.dita">How Do I Configure Elasticsearch for Centralized Logging?</xref></li>
+           </ul>
+         </dd>
+       </dlentry>
+     </dl>
+     <dl>
+       <dlentry>
+         <dt>Troubleshooting the Centralized Logging Feature</dt>
+         <dd><ul>
+           <li><xref href="#central_log_troubleshoot/review_logs">Reviewing Log Files</xref></li>
+           <li><xref href="#central_log_troubleshoot/monitoring">Monitoring Centralized Logging</xref></li>
+           <li><xref href="#central_log_troubleshoot/log_collection">Situations In Which Logs Might Not Be Collected</xref></li>
+           <li><xref href="#central_log_troubleshoot/kibana_visualization">Error When Creating a Kibana Visualization</xref></li>
+         </ul></dd>
+       </dlentry>
+     </dl>
+   </section>
+<lines>
+  
+</lines>
+    <section id="CL_stop_start">
+      <title>How Do I Stop and Start the Logging Service?</title>
+      <p>Although you might not need to stop and start the logging service very often, you may need to if, for example, one of the logging services is not behaving as expected or not working. </p>
+      
+      <p>You cannot enable or disable centralized logging across all services unless you stop all
+        centralized logging. Instead, it is recommended that you enable or disable individual log
+        files in the &lt;service&gt;-clr.yml files and then reconfigure logging. You would enable
+        centralized logging for a file when you want to make sure you are able to monitor those logs
+        in Kibana.</p>
+      <p>The steps in this section only impact centralized logging. Logrotate is an essential
+        feature that keeps the service log files from filling the disk and will not be affected.
+          <note type="attention">These playbooks must be run from the lifecycle manager.</note></p>
+      <lines>        
+      </lines>
+      <p><b>To stop the Logging service:</b></p>
+      <ol>
+        <li>To change to the directory containing the ansible playbook, run
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock></li>
+        <li>To run the ansible playbook that will stop the logging service, run:
+          <codeblock>ansible-playbook -i hosts/verb_hosts logging-stop.yml</codeblock></li>
+      </ol>
+      <p><b>To start the Logging service:</b></p>
+      <ol>
+        <li>To change to the directory containing the ansible playbook, run
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible</codeblock></li>
+        <li>To run the ansible playbook that will stop the logging service, run:
+          <codeblock>ansible-playbook -i ansible-playbook -i hosts/verb_hosts logging-start.yml
+</codeblock></li>
+      </ol>
+    </section>
+<lines>
+  
+  
+</lines>
+    <section id="CL_disable">
+      <title>Can I Disable and Enable Centralized Logging For a Service?</title>
+      <p>To enable or disable Centralized Logging for a service you need to modify the configuration
+        for the service, set the <b>enabled</b> flag to <b>true</b> of <b>false</b>, and then
+        reconfigure logging.</p>
+      <note type="attention">There are consequences if you enable too many logging files for a service. If there isn’t enough storage to support the increased logging, the retention period of logs in elasticsearch is decreased. Alternatively, if you wanted to increase the retention period of log files or if you didn’t want those logs to show up in Kibana, you would disable centralized logging for a file. </note>
+      <p>To enable Centralized Logging for a service:</p>
+      <ol>
+        <li>Use the documentation provided with the service to ensure it is configured for
+          logging.</li>
+        <li>To find the Helion Openstack file to edit, run:
+          <codeblock>find ~/helion/my_cloud/config/logging/vars/ -name *&lt;service-name&gt;*</codeblock></li>
+        <li>To edit the file, in a text editor, open the file for the service you want to disable for logging.</li>
+        <li>To enable Centralized Logging, find the following code and change the enabled flag to
+            <b>true</b>:
+          <codeblock>logging options:
+ - centralized_logging:
+        enabled: true
+        format : json</codeblock></li>
+        <li>Save the changes to the file.</li>  
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To reconfigure logging:
+          <codeblock>~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook  -i hosts/verb_hosts kronos-reconfigure.yml </codeblock></li>
+      </ol>
+      <p>Sample of a BURA file enabled for Centralized logging:
+        <codeblock>---
+sub service:
+name: freezer-api
+service: freezer
+logging options:
+  - centralized_logging:
+      enabled: true
+      format : json</codeblock>
+      </p>
+      <p><b>To disable Centralized Logging for a service:</b></p>
+      <ol>
+        <li>Use the documentation provided with the service to ensure it is not configured for
+          logging.</li>
+        <li>To find the Helion Openstack file to edit, run:
+          <codeblock>find ~/helion/my_cloud/config/logging/vars/ -name *&lt;service-name&gt;*</codeblock></li>
+        <li>To edit the file, in a text editor, open the file for the service you want to disable for logging.</li>
+        <li>To disable Centralized Logging, find the following code and change the enabled flag to
+            <b>false</b>:
+          <codeblock>logging options:
+   - centralized_logging:
+        enabled: false
+        format : json</codeblock>
+        </li>
+        <li>Save the changes to the file.</li>  
+        <li>To commit the changes to your local git repository:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A 
+commit -m "My config or other commit message"</codeblock></li>
+        <li>To reconfigure logging:
+          <codeblock>~/helion/hos/ansible/
+ansible-playbook -i hosts/localhost config-processor-run.yml
+ansible-playbook -i hosts/localhost ready-deployment.yml
+
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook  -i hosts/verb_hosts kronos-reconfigure.yml</codeblock>
+        </li>
+      </ol>
+      <p>Sample of a BURA file where Centralized logging is disabled:
+        <codeblock>          ---
+          sub service:
+            name: freezer-api
+            service: freezer
+            logging options:
+             - centralized_logging:
+                 enabled: false
+                 format : json</codeblock>
+      </p>
+    </section>
+
+  </body>
+</topic>

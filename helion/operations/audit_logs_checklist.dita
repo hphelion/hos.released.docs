@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="audit_log_checklist">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Audit Logging Checklist</title>
+  <body><!--not tested-->
+    <p>Before enabling audit logging, make sure you understand how much disk space you will need, and configure the disks that will store the logging data. Use the following table to complete these tasks:</p>
+    
+    <section id="audit_log_checklist">
+      <p>
+        <table frame="all" rowsep="1" colsep="1" id="table_ckx_rd4_ht">
+          <tgroup cols="2">
+            <colspec colname="c1" colnum="1" colwidth="25pt"/>
+            <colspec colname="c2" colnum="2" colwidth="1*"/>
+            <thead>
+              <row>
+                <entry>&#9744;</entry>
+                <entry>Item</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_FAQ">Read the FAQ</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_log_est">Estimate Disk Size</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_add_disks">Add disks to the controller nodes</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_update_disks">Update the disk templates</xref></entry>
+              </row>
+              <row>
+                <entry/>
+                <entry><xref type="section" href="#audit_log_checklist/audit_save_update_disks">Save your changes</xref></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </p>
+      
+    </section>
+    
+    <p>Click on an item in the checklist for more information on how to complete the task.</p>
+    
+    <section id="audit_FAQ">
+     <title>Frequently Asked Questions</title>
+      <dl>
+        <dlentry>
+          <dt>How are audit logs generated?</dt>
+          <dd>The audit logs are created by services running in the cloud management controller nodes. The events that create auditing entries are formatted using a structure that is complaint with Cloud Auditing Data Federation (CADF) policies. The formatted audit entries are then saved to disk files. For more information, see the <xref href="http://www.dmtf.org/standards/cadf" scope="external" format="html">Cloud Auditing Data Federation Website.</xref></dd>
+        </dlentry>
+        <dlentry>
+          <dt>Where are audit logs stored?</dt>
+          <dd>The audit logs are stored on the management controller nodes in the following partition:
+            /var/audit
+            <note type="important">This is the default name for the audit partition. If it needs to be changed, you must<xref href="audit_logs_enable.dita">edit the configuration file</xref> where this is set.</note>
+            The audit log for each service is stored in a file under the service’s directory. For example, all Nova audit logs are stored by default in the following file: /var/audit/nova/nova-audit.log </dd>
+        </dlentry>
+        <dlentry>
+          <dt>Are audit logs centrally stored?</dt>
+          <dd>No. Centralized logging is not enabled for audit logs because they are more sensitive than service logs. All auditing log files should be stored in separate indices with access controls enabled.</dd>
+        </dlentry>
+        <dlentry>
+          <dt>How long are audit log files retained?</dt>
+          <dd>Audit logs are retained as long as there is available space in the audit partition, for example in /var/audit. Due to security compliance regulations, audit log files typically have longer retention periods. For this reason, audit logs are not included in the default log rotate configuration. It is recommended that you do not configure audit log files to be rotated until after you ensure that sufficient retention or offline backup measures are in place.</dd>
+        </dlentry>
+        <dlentry>
+          <dt>Do I lose audit data if a management controller node goes down?</dt>
+          <dd>Yes. For this reason, it is strongly recommended that you back up the audit partition in each of the management controller nodes for protection against any data loss.</dd>
+        </dlentry>
+      </dl>
+    </section>
+    
+    <section id="audit_log_est">
+      <title>Estimate Disk Size</title>
+      <p>The table below provides estimates from each service of audit log size generated per day. The estimates are provided for environments with 100 nodes, 300 nodes, and 500 nodes.</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_aud_est">
+        <tgroup cols="4">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <colspec colname="c3" colnum="3" colwidth="1*"/>
+          <colspec colname="c4" colnum="4" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>Service</entry>
+              <entry>Log File Size
+              <p>100 nodes</p></entry>
+              <entry>Log File Size
+                <p>300 nodes</p></entry>
+              <entry>Log File Size
+                <p>500 nodes</p></entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>Barbican</entry>
+              <entry>2.6 MB</entry>
+              <entry>4.2 MB</entry>
+              <entry>5.6 MB</entry>
+            </row>
+            <row>
+              <entry>Keystone</entry>
+              <entry>96 - 131 MB</entry>
+              <entry>288 - 394 MB</entry>
+              <entry>480 - 657 MB</entry>
+            </row>
+            <row>
+              <entry>Nova</entry>
+              <entry>186 (with a margin of 46) MB</entry>
+              <entry>557 (with a margin of 139) MB</entry>
+              <entry>928 (with a margin of 232) MB</entry>
+            </row>
+            <row>
+              <entry>Ceilometer</entry>
+              <entry>12 MB</entry>
+              <entry>12 MB</entry>
+              <entry>12 MB</entry>
+            </row>
+            <row>
+              <entry>Cinder</entry>
+              <entry>2 - 250 MB</entry>
+              <entry>2 - 250 MB</entry>
+              <entry>2 - 250 MB</entry>
+            </row>
+            <row>
+              <entry>Neutron</entry>
+              <entry>145 MB</entry>
+              <entry>433 MB</entry>
+              <entry>722 MB</entry>
+            </row>
+            <row>
+              <entry>Glance</entry>
+              <entry>20 (with a margin of 8) MB</entry>
+              <entry>60 (with a margin of 22) MB</entry>
+              <entry>100 (with a margin of 36) MB</entry>
+            </row>
+            <row>
+              <entry>Heat</entry>
+              <entry>432 MB (1 transaction per second)</entry>
+              <entry>432 MB (1 transaction per second)</entry>
+              <entry>432 MB (1 transaction per second)</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+    
+    <section id="audit_add_disks">
+      <title>Add disks to the controller nodes</title>
+        <p>You need to add disks for the audit log partition to store the data in a secure manner. The steps to complete this task will vary depending on the type of server you are running. Please refer to the manufacturer’s instructions on how to add disks for the type of server node used by the management controller cluster. If you already have extra disks in the controller node, you can identify and unused one and use it for the audit log partition.</p>
+    </section>
+    
+    <section id="audit_update_disks">
+      <title>Update the disk template for the controller nodes</title>
+      <p>Since audit logging is disabled by default, the audit volume groups in the disk templates are commented out. If you want to turn on audit logging, the template needs to be updated first. If it is not updated, there will be no back-up volume group for the /var/audit partition. To update the disk template, you will need to copy templates from the examples folder to the definition folder and then edit the disk controller settings.</p> 
+      
+      <p>To update the disk controller template:</p>
+      <ol>
+        <li>To securely log in to lifecycle manager (deployer node), run:
+          <codeblock>$ ssh &lt;lifecycle-manager&gt;</codeblock></li>
+        <li>To copy the example templates folder, run:
+            <codeblock>$ cp -r ~/helion/examples/entry-scale-esx/*  ~/helion/my_cloud/definition/</codeblock><note
+            type="important">If you have already the required templates in the definition folder,
+            you can skip this step.</note></li>
+        <li> To change to the data folder, run:
+          <codeblock>$ cd ~/helion/my_cloud/definition/</codeblock></li>
+        <li>To edit the disks controller settings, open the file that matches your server model and
+          disk model in a text editor: <table frame="all" rowsep="1" colsep="1"
+            id="table_filelist_edit">
+            <tgroup cols="2">
+              <colspec colname="c1" colnum="1" colwidth="1*"/>
+              <colspec colname="c2" colnum="2" colwidth="3.88*"/>
+              <thead>
+                <row>
+                  <entry>Model</entry>
+                  <entry>File</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>entry-scale-kvm-vsa</entry>
+                  <entry>
+                    <codeblock>disks_controller_1TB.yml</codeblock>
+                    <codeblock>disks_controller_600GB.yml</codeblock>
+                  </entry>
+                </row>
+                <row>
+                  <entry>mid-scale</entry>
+                  <entry>
+                    <codeblock>disks_compute.yml</codeblock>
+                    <codeblock>disks_control_common_600GB.yml</codeblock>
+                    <codeblock>disks_dbmq_600GB.yml</codeblock>
+                    <codeblock>disks_mtrmon_2TB.yml</codeblock>
+                    <codeblock>disks_mtrmon_4.5TB.yml</codeblock>
+                    <codeblock>disks_mtrmon_600GB.yml</codeblock>
+                    <codeblock>disks_swobj.yml</codeblock>
+                    <codeblock>disks_swpac.yml</codeblock>
+                    <codeblock>disks_vsa.yml</codeblock>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </table><note type="note">If you are unsure which file to edit, open your server_roles.yml
+            file to see the disk model you are using and then edit the appropriate file.</note></li>
+        <li>To update the settings, edit the file to include the following changes:</li>
+      </ol>
+      <table frame="all" rowsep="1" colsep="1" id="table_sett_chg">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="3.88*"/>
+          <thead>
+            <row>
+              <entry>Setting</entry>
+              <entry>Change</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>-name: audit-vg</entry>
+              <entry>Remove the comments markered with a #</entry>
+            </row>
+            <row>
+              <entry>/dev/sdz</entry>
+              <entry>This is the default for the physical volume settings. Change this to match the
+                disk you added.</entry>
+            </row>
+            <row>
+              <entry>Logical-volumes</entry>
+              <entry>These are preset to optimal defaults. Review the settings to ensure they will
+                work in your environment.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+  
+    <section id="audit_save_update_disks">
+      <title>Save your changes</title>
+        <p>To save your changes you will use the GIT repository to add the setup disk files.</p>
+      <p>To save your changes:</p>
+      <ol>
+        <li>To change to the helion directory, run: <codeblock>$ cd ~/helion </codeblock></li>
+        <li>To check out a copy of the site, run: <codeblock>$ git checkout site </codeblock></li>
+        <li>To add the new and updated files, run: <codeblock>$ git add -A </codeblock></li>
+        <li>To verify the files are added, run: <codeblock>$ git status</codeblock></li>
+        <li>To commit your changes, run:
+          <codeblock>$ git commit -m “Setup disks for audit logging”</codeblock>
+        </li>
+      </ol>
+    </section>
+  </body>
+</topic>

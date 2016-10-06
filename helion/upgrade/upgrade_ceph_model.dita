@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="upgrade_ceph_model">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>Upgrade Ceph Model
+        <!--from Single Network to Three Network--></title>
+    <body>
+        <!--not tested-->
+        <p conkeyref="HOS-conrefs/applies-to"/>
+        <section>
+            <title>Introduction</title>
+            <p><keyword keyref="kw-hos-phrase"/> supports a new Ceph component called RADOS Gateway.
+                RADOS Gateway allows Ceph to support Swift and S3 API object access protocol (for
+                more details, see <xref
+                    href="../architecture/examples/entryscale_kvm_ceph.dita#entryscale_kvm_ceph"
+                    >here</xref>). You can upgrade your cloud and deploy RADOS Gateway.</p>
+            <p>The <codeph>entry-scale-kvm-ceph</codeph> input model in HPE Helion OpenStack 2.0
+                defines a single network/VLAN for Ceph traffic, while HPE Helion OpenStack 2.1 and
+                above define multiple networks for Ceph . The default
+                    <codeph>entry-scale-kvm-ceph</codeph> model of <keyword keyref="kw-hos-phrase"/>
+                defines the network model which uses separate VLANs for Ceph data traffics (i.e. one
+                each for cloud management traffic, client traffic, and cluster traffic). See <xref
+                    href="../installation/ceph/ceph-overview.dita#config_ceph/ceph-networking">Ceph
+                    Networking</xref> for more details. </p>
+            <p>Before performing any step to upgrade your HPE Helion OpenStack cloud, you must be
+                aware of the network model of your existing Ceph cluster. Also, you should be extra
+                cautious while following the network aspects in the
+                    <codeph>entry-scale-kvm-ceph</codeph> model of <keyword keyref="kw-hos-phrase"/>
+                (as changing the network model might result in old volume instances not being
+                accessible after the upgrade as monitor address will change after reboot). If you
+                need to perform this operation because of some reason, please consult Professional
+                Services team for assistance.</p>
+            <!--<p>The <codeph>entry-scale-kvm-ceph</codeph> input model in HOS 2.0 defines a single network, while HOS 2.1 and above define multiple networks for the Ceph deployment. HOS 3.0 refers to a change in the network model for Ceph clusterwhich uses separate VLANs for the Ceph data traffic (i.e. cloud management traffic, client traffic, and cluster traffic). Hence you must be aware of the network model of your existing Ceph cluster. You should be extra cautious while following the networking aspects in the <codeph>entry-scale-kvm-ceph</codeph> model of Helion 3.0 as changing the network model might result in workloads/instances losing connectivity to attached volumes after the upgrade (as the Ceph monitor address will change after reboot).</p><p/><p>HOS 3.0 refers to a change in the network model for Ceph clusterwhich uses separate VLANs for the Ceph data traffic (i.e. cloud management traffic, client traffic, and cluster traffic). Hence you must be aware of the network model of your existing Ceph cluster. You should be extra cautious while following the networking aspects in the <codeph>entry-scale-kvm-ceph</codeph> model of Helion 3.0 as changing the network model might result in workloads/instances losing connectivity to attached volumes after the upgrade (as the Ceph monitor address will change after reboot).</p><p/><p/><p/><p>There is a change in the network model for the Ceph cluster in a default <codeph>entry-scale-kvm-ceph</codeph> model that is shipped with Helion distro. In this model Ceph data traffic is primarily categorized into three segments: cloud management traffic, client traffic, and cluster traffic. See <xref href="../installation/ceph/ceph-overview.dita#config_ceph/ceph-networking">Ceph Networking</xref> for more details. </p><p>The examples in 2.1 and prior releases were based on a single network model where all data traffic is multiplexed to a single VLAN. But the <codeph>entry-scale-kvm-ceph</codeph> example mentioned in 3.0 release refers to the network model which uses separate VLANs for the mentioned three data traffic. Note that the 2.1 release (not 2.0) supports multiple network model for Ceph, although it is not captured as a default model. Hence you must be aware of the network model of your existing Ceph cluster. You should be extra cautious while following the networking aspects in the <codeph>entry-scale-kvm-ceph</codeph> model of Helion 3.0 as changing the network model might result in workloads/instances losing connectivity to attached volumes after the upgrade (as the Ceph monitor address will change after reboot).</p>-->
+            <!--<p id="ceph_upgrade_summary">New <keyword keyref="kw-hos-phrase"/> clouds use the three network Ceph model as documented in the example configurations section <xref keyref="entryscale_kvm_ceph">here</xref>. If you are upgrading an existing Ceph cluster from a single network model to a three network model, the old volume instances might not be accessible after upgrade as monitor address will change (after reboot) and hence will require manual intervention. </p>
+-->
+        </section>
+        <p/>
+    </body>
+</topic>
+
+        

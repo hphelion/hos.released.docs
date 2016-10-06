@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="three_controller_recovery">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Three Control Plane Node Disaster
+    Recovery</title>
+  <abstract><shortdesc outputclass="hdphidden">In this scenario, all control plane nodes are
+      destroyed which need to be rebuilt or replaced.</shortdesc></abstract>
+  <body>
+    <p>In this scenario, all control plane nodes are destroyed which need to be rebuilt or
+      replaced.</p>
+    <section>
+      <title>Restore from a Swift backup:</title>
+      <p>Restoring from a Swift backup is not possible because Swift is gone.</p>
+    </section>
+    <section>
+      <title>Restore from an SSH backup</title>
+      <p>
+        <ol id="ol_ws5_pyh_1v">
+          <li>On the lifecycle manager, follow the procedure below to deploy the control plane
+            nodes:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts site.yml --limit helion-ccp-c1-m1-mgmt,helion-ccp-c1-m2-mgmt,helion-ccp-c1-m3-mgmt -e '{ "freezer_backup_jobs_upload": false }'</codeblock>You
+            can now perform the procedure for <xref href="#topic_tb4_lqy_qt/pointdb" format="dita"
+              >Point-in-time database recovery</xref> at the top of this document. Once everything
+            is restored, re-enable the backups. </li>
+          <li>From the lifecycle manager run _freezer_manage_jobs.yml:
+            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts _freezer_manage_jobs.yml</codeblock></li>
+        </ol>
+      </p>
+      <p>If you are using a dedicated lifecycle manager, then you can skip these initial steps as
+        they are showing you how to recover your shared controller/lifecycle manager first.</p>
+    </section>
+  </body>
+</topic>

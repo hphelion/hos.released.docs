@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="install_rhel_uefi">
+    <title><ph conkeyref="HOS-conrefs/product-title"/>RHEL Compute Node Installation on UEFI Node</title>
+    <body><!--not tested-->
+        <p conkeyref="HOS-conrefs/applies-to"/>
+        <section id="overview">
+            <title>Introduction</title>
+            
+            <p>If you want to use <keyword keyref="kw-hos-phrase"/> lifecycle manager to install RHEL 7.2 on UEFI nodes,
+                 you will need to manually configure Cobbler to perform the task. Afterwards, you will need to reverse the 
+                 steps to restore the normal Cobbler configuration. 
+            
+            </p>
+            
+            
+            <p>Before you attempt to use the lifecycle manager to install RHEL  on UEFI nodes, you should 
+                install any hLinux nodes or any RHEL on legacy BIOS nodes first.</p>
+            
+            <p>The lifecycle manager  configures PXE to supply the hLinux secondary loader <codeph>grub-x86_64.efi</codeph> 
+                to UEFI nodes. However, bootstrapping  RHEL on UEFI nodes requires a different
+                secondary loader <codeph>grubx64.efi</codeph> that is RHEL-specific. You need to 
+                <ul>
+                    <li>Extract <codeph>grubx64.efi</codeph> from a RHEL 7.2 iso on an existing RHEL installation.</li>
+                    <li>Copy <codeph>grubx64.efi</codeph> to the lifecycle manager. </li>
+                    <li>Reconfigure Cobbler/PXE to use the RedHat secondary loader <codeph>grubx64.efi</codeph>.</li>
+                    <li>Create a separate Grub2 configuration file in <codeph>/srv/tftp/grub/</codeph> for each UEFI RHEL server 
+                        that you intend to install.</li>
+                    <li>Carry out the installation.</li>
+                    <li>Restore the original configuration.</li>
+                    
+                </ul>
+                
+                 
+                
+                
+            </p>
+
+        </section>
+        
+        
+        
+        <section>
+            <title>Extracting the RedHat secondary loader <codeph>grubx64.efi</codeph>  from a RHEL 7.2 iso</title>
+            
+            <p>You must perform these steps on an existing RHEL installation as it depends on 
+                <codeph>rpm2cpio</codeph> which is not available on HPE Linux.
+            </p>
+            
+<codeblock>sudo mount rhel7.iso /mnt
+cp /mnt/Packages/grub2-efi-2.02-0.29.el7.x86_64.rpm /tmp
+cd /tmp
+rpm2cpio grub2-efi-2.02-0.29.el7.x86_64.rpm | cpio -dimv</codeblock>
+            <p>The output from this command should look similar to the following:</p>
+<codeblock>./boot/efi/EFI/redhat
+./boot/efi/EFI/redhat/fonts
+./boot/efi/EFI/redhat/fonts/unicode.pf2
+./boot/efi/EFI/redhat/gcdx64.efi
+<b>./boot/efi/EFI/redhat/grubx64.efi</b>
+./boot/grub2/grubenv
+./etc/grub2-efi.cfg
+./usr/share/doc/grub2-efi-2.02
+./usr/share/doc/grub2-efi-2.02/COPYING</codeblock>
+            
+            <p>The required RHEL secondary loader file is <codeph>/tmp/boot/efi/EFI/redhat/grubx64.efi</codeph>.
+            
+            </p>
+        </section>
+        
+        
+        <section>
+            <title>Reconfiguring Cobbler/PXE to use the RedHat secondary loader <codeph>grubx64.efi</codeph></title>
+            
+            <p></p>
+            
+            <ul>
+                <li>Copy the RedHat secondary loader file <codeph>grubx64.efi</codeph> to /var/lib/cobbler/loaders/</li>
+                <li>Edit
+                        <codeph>~/helion/hos/ansible/roles/cobbler/templates/cobbler.dhcp.template.j2</codeph>
+                    and navigate to the section containing <codeph>00:07</codeph>
+                    <codeblock>  if option pxe-system-type = 00:02 {
+          filename "ia64/elilo.efi";
+  } else if option pxe-system-type = 00:06 {
+          filename "grub/grub-x86.efi";
+  } <b>else if option pxe-system-type = 00:07 {
+          filename "grub/grub-x86_64.efi";
+  }</b> else {
+          filename "pxelinux.0";
+  }</codeblock>
+                </li>
+                <li>Change <codeph>grub-x86_64.efi</codeph> to <codeph>grubx64.efi</codeph> to select the RHEL 
+                secondary bootloader, instead of the HPE Linux one.</li>
+                
+                <li>Save your changes and then re-run the cobbler-deploy playbook.
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock>
+                </li>
+                
+                
+            </ul>
+            
+            <note type="important">There are a number of checks you should perform to make sure the
+                reconfiguration of Cobbler has succeeded. Do not proceed any further with the
+                installation if any of these checks should fail. Retrace your steps though the
+                reconfiguration procedure until your system pass these tests. <ul>
+                    <li>Check the directory <codeph>/srv/tftp/grub/</codeph> and confirm that the
+                        RHEL loader file <codeph>grubx64.efi</codeph> has been copied there by the
+                        playbook, as well as the HPE Linux loader file
+                            <codeph>grub/grub-x86_64.efi</codeph>. </li>
+                    <li>Check the file <codeph>/etc/dhcp/dhcpd.conf</codeph> and confirm that the
+                        RHEL loader file <codeph>grubx64.efi</codeph> is in the
+                            <codeph>00:07</codeph> section </li>
+                </ul>
+            </note>
+            
+            
+        </section>
+        
+        
+        <section>
+            <title>Create a Grub2 config file for each RHEL UEFI node</title>
+            
+            <p>For every UEFI RHEL server that you intend to install, you will need to create a corresponding 
+                Grub2 file in <codeph>/srv/tftp/grub/</codeph>. The file name is based on the MAC address of the
+                target node, and follows the pattern <codeph>grub.cfg-01-</codeph> followed by the MAC address
+                of the node, with hyphens replacing colons. For example, a node with a MAC address of 
+                <codeph>ec:b1:d7:77:d0:b0</codeph> will have a filename of <codeph>grub.cfg-01-<b>ec-b1-d7-77-d0-b0</b></codeph></p>
+            
+            <p>The contents of each file needs to be modified to reflect the MAC address of the node, the IP of the 
+                lifecycle manager and the node name (the <codeph>id</codeph> parameter in the appropriate entry 
+                in the <codeph>servers.yml</codeph> file. For example, given the following stanzas from <codeph>servers.yml</codeph>
+                where <codeph>controller1</codeph> is also the lifecycle manager:
+            
+            </p>
+            
+<codeblock>    # Controllers
+    - id: controller1
+      ip-addr: <b>10.13.111.12</b>
+      role: CONTROLLER-ROLE
+      server-group: RACK1
+      nic-mapping: DL360p_G8_2Port
+      mac-addr: ec:b1:d7:77:11:c8
+...
+    - id: <b>compute1</b>
+      ip-addr: 10.13.111.15
+      role: RHEL-COMPUTE-ROLE
+      server-group: RACK1
+      nic-mapping: DL360p_G8_2Port
+      mac-addr: <b>ec:b1:d7:77:d0:b0</b>
+      ilo-ip: 10.12.13.14
+      ilo-password: *********
+      ilo-user: Administrator
+      distro-id: rhel72-x86_64</codeblock>         
+            
+            <p>Then you should create a Grub2 file named <codeph>grub.cfg-01-<b>ec-b1-d7-77-d0-b0</b></codeph>  with the following content:</p>            
+            
+<codeblock>set timeout=5
+menuentry 'RHEL 7.2 Cobbler install' {
+  linuxefi images/rhel72-x86_64/vmlinuz interface=<b>ec:b1:d7:77:d0:b0</b> inst.ks=http://<b>10.13.111.12</b>:79/cblr/svc/op/ks/system/<b>compute1</b> inst.repo=http://<b>10.13.111.12</b>:79/cblr/ks_mirror/rhel72 inst.ks.sendmac inst.text ip=dhcp ksdevice=bootif lang=
+  initrdefi images/rhel72-x86_64/initrd.img
+}</codeblock>            
+
+<note type="important">For each node, you will need to create such a file, with a name based 
+on the MAC address, and with the contents above updated with the node MAC address, lifecycle manager IP (in two places) 
+and node name.
+</note>
+
+        </section>
+        
+        <section>
+            <title>Carry out the installation</title>
+            
+            <p>To install RHEL on the configured UEFI nodes, run the <codeph>bm-reimage</codeph> playbook, 
+                specifying the nodes in the <codeph>-e nodelist</codeph> option.
+            </p>
+<codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost bm-reimage.yml [-e nodelist=node1,node2,node3]</codeblock>            
+            
+        </section>
+        
+        <section>
+            <title>Restore the original configuration</title>
+            
+            <p>When you have finished installing your RHEL/UEFI nodes, you must undo the steps you took when 
+                Reconfiguring Cobbler/PXE to use the RedHat loader. </p>
+            
+            <ul>
+                
+                <li>Edit <codeph>~/helion/hos/ansible/roles/cobbler/templates/cobbler.dhcp.template.j2</codeph> and 
+                    navigate to the section containing <codeph>00:07</codeph>. 
+                </li>
+                <li>Change <codeph>grubx64.efi</codeph> back to <codeph>grub-x86_64.efi</codeph> to select the HPE Linux loader, instead of the RHEL one.</li>
+                <li>Save your changes and then re-run the cobbler-deploy playbook.
+                    <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost cobbler-deploy.yml</codeblock>
+                </li>
+            </ul>               
+              
+            <note type="important">
+                
+                <p>To confirm that you have successfully undone the changes:</p>
+                <ul>
+                    <li>Check the file <codeph>/etc/dhcp/dhcpd.conf</codeph> and confirm that the HPE Linux loader file <codeph>grub-x86_64.efi</codeph> is 
+                        in back in the <codeph>00:07</codeph> section 
+                        
+                    </li>
+                    <li>You do not need to remove the Grub2 files named <codeph>grub.cfg-01-*</codeph> in <codeph>/srv/tftp/grub/</codeph>. 
+                        You also do not need to remove the <codeph>grubx64.efi</codeph> from  the same directory. They will be ignored during 
+                        the normal installation and my be convenient if you need to reimage the RHEL/UEFI nodes 
+                        in the future.                                               
+                    </li>
+                </ul>
+            </note>
+                      
+        </section>
+        <section>
+            <title>Re-imaging RHEL/UEFI nodes</title>
+            
+            
+            <p>If you need to reimage a RHEL/UEFI node, just follow the above instructions again to 
+                reconfigure Cobbler, reimage the node(s) and then restore the original configuration yet again.</p>
+            
+        </section>        
+    </body>
+</topic>
+

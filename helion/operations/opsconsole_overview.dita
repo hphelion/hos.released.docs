@@ -1,63 +1,208 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--Edit status: not edited-->
 <!DOCTYPE topic
   PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd" >
 <topic xml:lang="en-us" id="opsconsole">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Operations Console</title>
+  <title>Using the Operations Console</title>
+  <abstract><shortdesc outputclass="hdphidden">Often referred to as the Ops Console, you can use this web-based
+      graphical user interface (GUI) to view data about your cloud infrastructure and ensure your
+      cloud is operating correctly.</shortdesc></abstract>
   <body>
-    <p conkeyref="HOS-conrefs/applies-to"/>
-    <!--Needs Work-->
-    <section><title>About the Operations Console</title></section>
-    <section id="about">
-      <p>The Operations Console (Ops Console) for <keyword keyref="kw-hos-phrase"/> is designed for
-          <keyword keyref="kw-hos"/> Administrators to have a web-based UI they can use to view data
-        about their cloud infrastructure. The Ops Console is a web-based GUI that offers the user
-        access to data such as monitoring alarms data by service, performance data, compute nodes
-        and instances lists, and a drilldown to Kibana for a deep look into logs. The Business Logic
-        Layer is a middleware component that serves as a single point of contact for the UI to
-        communicate with OpenStack services such as Monasca, Nova, and others.</p>
-      <p>The operations console processes use a message queue while processing requests from the web browser. 
-        There are two options for the technology used for this message queue: Apache Kafka (the default) and RabbitMQ. 
-        The advatage of using either of these options is as follows:</p>
-      <ul>
-        <li>The advantages of using Apache Kafka include its architecture that is optimized for high performance 
-         and reliability, and the fact that it is isolated from the RabbitMQ messaging system that is being monitored 
-         by Monasca and displayed in the Operations Console. This allows the Operations Console to work even when 
-         RabbitMQ has issues, which can be useful to help resolve the RabbitMQ issues.</li>
-        <li>The main advantage of RabbitMQ is that it is requires credentials in order to connect and to send and receive 
-          messages. Regardless of the message queue system, the Operations Console encrypts all messages using AES-CBC.
-          Since Kafka does not require credentials to interact with it, it is recommended to avoid re-configuring Kafka 
-          to listen on publicly accessible ports or to disable encryption. The encryption key and RabbitMQ credentials 
-          are generated randomly and stored in the Operations Console configuration file.</li>
-      </ul>
-    </section>
-    <section><title>Connecting to the Operations Console</title></section>
+    <section id="about"><p> You can use the Operations Console (Ops Console) for to view data about
+        your Helion cloud infrastructure in a web-based graphical user interface (GUI) and ensure
+        your cloud is operating correctly. By logging on to the console, administrators can manage
+        data in the following ways: </p>
+      <b>Triage alarm notifications.</b><ul>
+        <li>Alarm Definitions and notifications now have their own screens and are collected under
+          the <b>Alarm Explorer</b> menu item which can be accessed from the Central Dashboard.
+          Central Dashboard now allows you to customize the view in the following ways: <ul>
+            <li>Rename or re-configure existing alarm cards to include services different from the
+              defaults</li>
+            <li>Create a new alarm card with the services you want to select</li>
+            <li>Reorder alarm cards using drag and drop</li>
+            <li>View all alarms that have no service dimension now grouped in an <b>Uncategorized
+                Alarms</b> card</li>
+            <li>View all alarms that have a service dimension that does not match any of the other
+              cards -now grouped in an <b>Other Alarms</b> card</li>
+          </ul></li>
+        <li> You can also easily access alarm data for a specific component. On the Summary page for
+          the following components, a link is provided to an alarms screen specifically for that component:<ul>
+            <li><xref href="../operations/opsconsole/en/compute_instances.dita">Compute
+                Instances</xref></li>
+            <li><xref href="../operations/opsconsole/block_storage_alarm.dita">Block
+              Storage</xref></li>
+            <li><xref
+                href="../operations/opsconsole/OpsConsole_manage_swift.dita#manage_swift_perf/Ops_Swift_AlarmSumm"
+                >Object Storage</xref></li>
+            <li><xref href="../operations/opsconsole/en/networking_summary.dita"
+              >Networking</xref></li>
+            <li><xref href="http://docs.hpcloud.com/#helion/operations/opsconsole/hdp_summary.html"
+                scope="external" format="html">Developer Platform</xref></li>
+          </ul></li>
+        <li><b>Monitor the environment by giving priority to alarms that take precedence.</b> Alarm
+          Explorer now allows you to manage alarms in the following ways:<ul>
+            <li>Refine the monitoring environment by creating new alarms to specify a combination of
+              metrics, services, and hosts that match the triggers unique to an environment</li>
+            <li>Filter alarms in one place using an enumerated filter box instead of service
+              badges</li>
+            <li>Specify full alarm IDs as dimension key-value pairs in the form of
+                <b>dimension=value</b></li>
+          </ul></li>
+        <li>
+          <xref href="opsconsole/manage_compute_instances.dita"><b> Manage compute hosts and easily
+              use a form to create a new host.</b></xref> As your deployment grows and changes, you
+          may need to add more compute hosts to increase your capacity for VMs, or delete a host to
+          reallocate hardware for a different use. Ops Console allows you to perform the following
+          tasks using a graphical interface:<ul>
+            <li>Create a Compute Host</li>
+            <li>Deactivate a Compute Host</li>
+            <li>Activate a Compute Host</li>
+            <li>Delete a Compute Host</li>
+          </ul></li>
+        <li><xref href="opsconsole/charts.dita"><b>Visualize data by creating charts</b></xref>.
+          Present data in a pictorial or graphical format to enable administrators and decision
+          makers to grasp difficult concepts or identify new patterns.<ul>
+            <li><b>Create new time-series graphs from My Dashboard.</b></li>
+            <li>My Dashboard also allows you to customize the view in the following ways:<ul>
+                <li>Include alarm cards from the Central Dashboard </li>
+                <li>Customize graphs in new ways</li>
+                <li>Reorder items using drag and drop</li>
+              </ul></li>
+            <li><b>Plan for future storage</b> Track capacity over time to predict with some degree
+              of reliability the amount of additional storage needed.</li>
+          </ul></li>
+      </ul><p>
+        <note type="important">
+          <p>Support Changes:</p>
+          <ul>
+            <li>To resolve scalability issues, plain text search through alarm sets is no longer
+              supported</li>
+            <li>Helion OpenStack 3.0 no longer supports DBaaS and MSGaaS panels in the Helion
+              Development Platform (HDP). If these products were installed in HDP 2.x, they will be
+              removed during upgrade.</li>
+          </ul>
+        </note>
+      </p><p>The Business Logic Layer of Ops Console is a middleware component that serves as a
+        single point of contact for the user interface to communicate with OpenStack services such
+        as Monasca, Nova, and others.</p></section>
     <section id="connecting">
-      <p>If your administrator set a hostname value for <codeph>external_name</codeph> in your
-          <codeph>network_groups.yml</codeph> file during the configuration process for your cloud
-        then the Operations Console will be accessed over port 9095 on that hostname.</p>
-      <p>If your administrator did not set a hostname value then in order to determine which IP
-        address to use to access Horizon you can use this command from your lifecycle manager:
-        <codeblock>grep vip-HZN-WEB /etc/hosts</codeblock></p>
-      <p>The output of that command will show you the virtual IP address you should use. It is
-        listening over port 9095 on that virtual IP address, so you can use the following syntax to
-        access it:<codeblock>http://VIP:9095</codeblock></p>
-      <p>The default username for the Administrator user is <codeph>admin</codeph>. In order to find
-        the randomized password that is created for this user you will need to look into the
-          <codeph>~/service.osrc</codeph> file on the lifecycle manager. You can do that with this
-        command:</p>
-      <codeblock>cat ~/service.osrc</codeblock>
+      <title>Connecting to the Operations Console</title>
+      <p>To connect to OpsConsole you will need to understand the following tasks:</p>
+      <ul>
+        <li><xref type="section" href="#opsconsole/access_creds">Ensure your login has the required
+            access credentials</xref></li>
+        <li><xref type="section" href="#opsconsole/command">Connect through a browser</xref></li>
+        <li><xref type="section" href="#opsconsole/find_nameIP">Optionally use a Hostname OR virtual
+            IP address to access Ops Console</xref></li>
+      </ul>
+      <p>OpsConsole will always be accessed over port 9095. </p>
     </section>
+    <section id="access_creds">
+      <title>Required Access Credentials</title>
+      <p>In previous versions of OpsConsole you were required to have only the password for the
+        Administrator account (admin by default). Now the Administrator user account must also have
+        all of the following credentials:</p>
+      <table frame="all" rowsep="1" colsep="1" id="table_TinT_preinstall_chklt">
+        <tgroup cols="2">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="1*"/>
+          <colspec colname="c3" colnum="3" colwidth="1*"/>
+          <colspec colname="c4" colnum="4" colwidth="1*"/>
+          <thead>
+            <row>
+              <entry>Project</entry>
+              <entry>Domain</entry>
+              <entry>Role</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>*All projects*</entry>
+              <entry>*not specific*</entry>
+              <entry>Admin</entry>
+              <entry>Admin role on at least one project</entry>
+            </row>
+            <row>
+              <entry>*All projects*</entry>
+              <entry>*not specific*</entry>
+              <entry>Admin</entry>
+              <entry>Admin role in default domain</entry>
+            </row>
+            <row>
+              <entry>Admin</entry>
+              <entry>default</entry>
+              <entry>Admin or Monasca-user</entry>
+              <entry>Admin or Monasca-user role on admin project</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+      <note type="important"> If your login account has administrator role on the administrator
+        project, then you only need to make sure you have the administrator role on the default
+        domain. </note>
+      <p><b>Administrator account</b></p>
+      <p>During installation, an Administrator account called “admin” is created default.</p>
+      <p><b>Administrator password</b></p>
+      <p>During installation, an Administrator password is randomly created by default. It is not
+        recommend that you change the default password.</p>
+      <p>To find the randomized password:</p>
+      <ol>
+        <li>To display the password, log on to the lifecycle manager and run:
+          <codeblock>cat ~/service.osrc</codeblock></li>
+      </ol>
+    </section>
+
+    <section id="command">
+      <title>Connect Through a Browser</title>
+      <p>The following instructions will show you how to find the URL to access Ops Console. You
+        will use SSH, also known as Secure Socket Shell, which provides administrators with a secure
+        way to access a remote computer.</p>
+      <p><b>To access OpsConsole:</b></p>
+      <ol>
+        <li>To log on to the lifecycle manager (deployer node), run:
+          <codeblock>  $ ssh &lt;lifecycle manager&gt;</codeblock></li>
+        <li>To find the URL, run: <codeblock>$ . ~/service.osrc &amp;&amp; openstack endpoint list | grep opsconsole | grep public</codeblock>
+          <b>Sample output:</b>
+          <codeblock>| eec0d2c02d9341db8e535b8dea561d6a | region1 | opsconsole | opsconsole | True | public | https://myhelion.test:9095/api/v1/</codeblock></li>
+        <li>To access Ops Console, in the sample output, remove everything after port 9095 and in a
+          browser, type: <codeblock>https://myhelion.test:9095</codeblock></li>
+      </ol>
+    </section>
+
+    <section id="find_nameIP">
+      <title>Optionally use a Hostname OR virtual IP address to access Ops Console</title>
+      <note type="important">If you can access Ops Console using the above instructions, then you
+        can skip this section. These steps provide an alernate way to access Ops Console if the
+        above steps do not work for you.</note>
+      <p>To find your hostname OR IP address:</p>
+      <ol>
+        <li>Navigate to and open in a text editor the following file:
+          <codeblock>network_groups.yml</codeblock></li>
+        <li>Find the following entry: <codeblock>external-name</codeblock></li>
+        <li>If your administrator set a hostname value in the external-name field, you will use that
+          hostname when logging in to OpsConsole. or example, in a browser you would type:
+          <codeblock>https://VIP:9095</codeblock></li>
+        <li>If your administrator did not set a hostname value, then to determine the IP address to
+          use, from your lifecycle manager, run: <codeblock>Grep vip -HZN-WEB /etc/hosts</codeblock>
+          The output of that command will show you the virtual IP address you should use. For
+          example, in a browser you would type: <codeblock>https://VIP:9095</codeblock>
+        </li>
+      </ol>
+      <p>The Ops Console Login Screen <image href="../../media/opsconsole/OpsConsoleLogin.png"/>
+      </p>
+    </section>
+
     <section id="help"><title>Getting Help</title>
       <p>On each of the Operations Console pages there is a help menu that you can click on to take
         you to a help page specific to the console you are currently viewing.</p>
       <p>To reach the help page:</p>
       <ol>
         <li>Click the help menu option in the upper-right corner of the page, depicted by the
-          question mark seen in the screenshot below.</li>
+          question mark.</li>
         <li>Click on the <uicontrol>Get Help For This Page</uicontrol> link which will open the help
           page in a new tab in your browser.</li>
       </ol>
-      <p><image href="../../media/opsconsole/help.png"/></p>
     </section>
   </body>
 </topic>
