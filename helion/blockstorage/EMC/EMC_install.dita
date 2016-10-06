@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="EMC_install">
+  <title>Install and Configure EMC Drivers</title>
+  <body>
+    <p>You must configure VNX storage and storage pools using EMC Unisphere and Naviseccli. After
+      you download and install the drivers, you must register the compute and block storage nodes
+      with VNX to be able to access VNX storage. Finally, you must configure Cinder to add the VNX
+      iSCSI Direct Driver storage.</p>
+
+<p>To integrate EMC VNX storage with Helion OpenStack:</p>
+    <ol>
+      <li><xref href="#EMC_install/EMC_install_Navi">Install the NaviSecCLI Driver </xref></li>
+      <li><xref href="#EMC_install/EMC_config_Cinder">Update Your Cinder Configuration</xref></li>
+    </ol>
+    <section id="EMC_install_Navi">
+      <title>Install the NaviSecCLI driver</title>      
+    
+    <p>To install the NaviSecCLI driver, you must prepare the Block Storage nodes to use the EMC VNX direct driver. To do this, download Navisphere CLI, install the driver, ensure you have correct configurations, and register the driver.</p>
+      
+      <p>Part of the driver registration process involves setting the initiator name to identify the iSCSI node. Both target and initiator names use the same unique formats. You can use either the iSCSI Qualified Name (IQN) format or the Enterprise Unique Identifier (EUI) format. These instructions use the most common format, which is the IQN format.</p>
+      
+      <p>The IQN format takes the following form:
+        <codeblock>iqn.yyyy-mm.naming-authority:unique name</codeblock>
+        The values are defined as:</p>
+        <dl>
+          <dlentry>
+            <dt>yyyy-mm</dt>
+            <dd>the year and month when the naming authority was established</dd>
+          </dlentry>
+          <dlentry>
+            <dt>naming-authority</dt>
+            <dd>usually reverse syntax of the Internet domain name of the naming authority. For example, the iscsi.mycloud.com naming authority could have the iSCSI qualified name form of iqn.2015-01.com.mycloud.iscsi. The name indicates that the mycloud.com domain name was registered in January of 2015, and iSCSI is a subdomain, maintained by mycloud.com.</dd>
+          </dlentry>
+          <dlentry>
+            <dt>unique name</dt>
+            <dd>any name you want to use, for example, the name of your host. The naming authority must make sure that any names assigned following the colon are unique, such as:
+            <ul>
+              <li>iqn.2015-01.com.mycloud.iscsi:name1</li>
+              <li>iqn.2015-01.com.mycloud.iscsi:name2</li>
+              <li>iqn.2015-01.com.mycloud.iscsi:name999</li>
+            </ul>
+            </dd>
+          </dlentry>
+        </dl>
+      
+      <note type="attention">The following instructions should be repeated on all controller nodes in your cloud deployment.</note>
+      
+      <p>To install the driver:</p>
+      <ol>
+        <li>Login to a controller node.</li>
+        <li>To download the driver, run:
+          <codeblock>cd /home/stack
+wget http://github.com/emc-openstack/naviseccli/blob/master/navicli-linux-64-x86-en-us_7.33.2.0.51-1_all.deb</codeblock></li>
+        <li>Copy the Debian software package to all Block Storage nodes within your OpenStack deployment, including all controller and compute nodes.</li>
+        <li>To move the Debian software package into a virtual environment and extract the package,
+          run:
+          <codeblock>mkdir ~/scratch/Navisphere
+virtualenv ~/scratch/Navisphere
+     #Sample output:
+     #Running virtualenv with interpreter /usr/bin/python2
+     #New python executable in /home/stack/scratch/Navisphere/bin/python2
+     #Also creating executable in /home/stack/scratch/Navisphere/bin/python
+     #Installing setuptools, pip...done.        
+ cd ~/scratch/Navisphere/         
+ cp ~/navicli-linux-64-x86-en-us_7.33.2.0.51-1_alldeb .
+ dpkg -x navicli-linux-64-x86-en-us_7.33.2.0.51-1_alldeb .</codeblock></li>
+        <li>To list the folder content and verify that the bin file named
+            <codeph>naciseccli</codeph> is available, run:
+          <codeblock>ls ~scratch/Navisphere/opt/Navisphere/bin/naviseccli</codeblock></li>
+        <li>To begin the registration process and start the iSCSI initiator service, run:
+            <codeblock>sudo /etc/init.d/open-iscsi start</codeblock></li>
+        <li>To discover the iSCSI target portals on VNX, run:
+<codeblock>sudo iscsiadm -m discovery -t st -p 10.1.34.25
+     #Sample output: 10.1.34.25:3260,1 iqn.2015-01.com.mycloud:cx.apm00131214040.a5
+     #Sample output: 10.1.34.26:3260,2 iqn.2015-01.com.mycloud:cx.apm00131214040.b5</codeblock><note
+            type="note">In the above example output, the value <codeph>10.1.38.250</codeph> is the
+            iSCSI target.</note></li>
+        <li>To continue the registration process, run:
+            <codeblock>cd /etc/iscsi</codeblock></li>
+        <li>To find out the iqn of the node, run:
+<codeblock>sudo more initiatorname.iscsi</codeblock></li>
+         
+          <li>To login to VNX from the compute node using the target corresponding to the SPA port: <codeblock>sudo iscsiadm -m node -T iqn.1992-04.com.emc:cx.apm00131214040.b5 -p 10.1.38.250 -l
+     #Sample output: Logging in to [iface: default, target: iqn.1992-04.com.emc:cx.apm00131214040.a5, portal: 10.1.34.25,3260] (multiple)
+     #Sample output: Login to [iface: default, target: iqn.1992-04.com.emc:cx.apm00131214040.a5, portal: 10.1.34.25,3260] successful.</codeblock>
+          <note type="note">In the above example output, the initiator name is:
+            <codeblock>iqn.2015-01.com.mycloud:cx.apm00131214040.a5</codeblock></note></li>
+          
+        <li>On the VNX node, login to Unisphere.</li>
+        <li>In Unisphere, go to <b>VNX00000</b>, then <b>Hosts</b>, <b>Initiators</b>, and then click <b>Refresh</b>.</li>
+        <li>Wait to make sure the initiator you just created appears. For example:
+          <codeblock>iqn.2015-01.com.mycloud:cx.apm00131214040.a5 with SP Port A-8v0</codeblock></li>
+        <li>Click on the initiator, then click <b>Register</b>.</li>
+        <li>Select <b>CLARiiON/VNX</b>, and in <b>Host Name</b> type in the host name used in your deployment,
+          and in <b>IP address</b> type the host name used in your deployment.</li>
+          <li>Click <b>Register</b>. </li>
+            <li>On the <b>Hosts</b> screen under <b>Host List</b>, wait for the host to appear.</li>
+        <li>To logout iSCSI on the node, run: <codeblock>sudo iscsiadm -m node -u</codeblock></li>
+        <li>Log in to VNX storage using the target corresponding to the SPB port. For example:
+          <codeblock>sudo iscsiadm -m node -T iqn.1992-04.com.emc:cx.apm00131214040.b5 -p 10.1.38.251 -l
+sudo iscsiadm -m node -u</codeblock></li>
+          <li>To create a VNX NaviSphere security file and add login credential, run:
+          <codeblock>~/scratch/Navisphere/opt/Navisphere/bin/naviseccli security -certificate -setLevel low
+
+#check the level after assigned as low
+~/scratch/Navisphere/opt/Navisphere/bin/naviseccli security -certificate -getlevel low</codeblock></li>
+        <li>To logout iSCSI on the node, run: <codeblock>sudo iscsiadm -m node -u</codeblock></li>
+      </ol>
+      
+    </section>
+    <section id="EMC_config_Cinder">
+      <title>Update Your Cinder Configuration</title>      
+      
+      <p>To update your Cinder configuration and add VNX iSCSI Direct Driver Storage, you need to update the Cinder configuration file on the Lifecycle Manager, save your changes, and reconfigure Cinder.</p>
+      
+      <p>To configure the driver:</p>
+      <ol>
+        <li>Login to the lifecycle manager.</li>
+        <li>In a text editor, open the following file:
+          <codeblock>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeblock></li>
+        <li>To enable your EMC VNX 5300 backend, in the <codeph>enabled_backends section</codeph>
+          add the following text, replacing &lt;VNX_isCSI&gt; with the name used in your deployment:
+          <codeblock># Configure the enabled back-ends
+enabled_backends=VNX5300</codeblock></li>
+        <li>To configure the VNX iSCSI driver, add the following entries, where: <dl>
+            <dlentry>
+              <dt>10.1.34.25</dt>
+              <dd>the IP address of the VNX iSCSI target</dd>
+            </dlentry>
+            <dlentry>
+              <dt>10.1.34.15/16</dt>
+              <dd>the IP address of the VNX array (SPA or SPB)</dd>
+            </dlentry>
+            <dlentry>
+              <dt>default_timeout</dt>
+              <dd>the default time out for CLI operations in minutes</dd>
+            </dlentry>
+          </dl><codeblock><b>[VNX5300]</b>
+storage_vnx_pool_name = Pool_0
+san_ip = 10.1.34.15
+san_secondary_ip = 10.1.34.16
+san_login = sysadmin
+san_password = sysadmin
+
+#storage_vnx_security_file_dir = /etc/secfile/array1
+storage_vnx_authentication_type = global
+naviseccli_path = ~/scratch/Navisphere/opt/Navisphere/bin/naviseccli
+default_timeout = 10
+volume_driver=cinder.volume.drivers.emc.emc_cli_iscsi.EMCCLIISCSIDriver
+#volume_driver = cinder.volume.drivers.emc.emc_cli_fc.EMCCLIFCDriver
+destroy_empty_storage_group = False
+inititator_auto_regsitration = True
+
+#iscsi_initiators = {"overcloud-ce-controller-controller0-y3fd3nvs3zag":["192.0.2.23"]}
+iscsi_initiators = {"helion-cp1-c1-m1-mgmt":["10.2.33.5"],"helion-cp1-c1-m2-mgmt":["10.2.33.6"],"helion-cp1-c1-m3-mgmt":["10.2.33.7"],"helion-cp1-comp0001-mgmt":["10.2.33.8"],"helion-cp1-comp0002-mgmt":["10.2.33.9"]}
+volume_backend_name = BE_Pool_0
+host = ha-volume-manager
+<b>
+[VNX5300-1]
+#This section is for creating multiple pools using the same storage box</b>
+storage_vnx_pool_name = Pool_1
+san_ip = 10.1.34.15
+san_secondary_ip = 10.1.34.16
+san_login = sysadmin
+san_password = sysadmin
+
+#storage_vnx_security_file_dir = /etc/secfile/array1
+storage_vnx_authentication_type = global
+naviseccli_path = ~/scratch/Navisphere/opt/Navisphere/bin/naviseccli
+default_timeout = 10
+volume_driver=cinder.volume.drivers.emc.emc_cli_iscsi.EMCCLIISCSIDriver
+#volume_driver = cinder.volume.drivers.emc.emc_cli_fc.EMCCLIFCDriver
+
+#destroy_empty_storage_group = False
+inititator_auto_regsitration = True
+
+#iscsi_initiators = {"overcloud-ce-controller-controller0-y3fd3nvs3zag":["192.0.2.23"]}
+iscsi_initiators = {"helion-cp1-c1-m1-mgmt":["10.2.33.5"],"helion-cp1-c1-m2-mgmt":["10.2.33.6"],"helion-cp1-c1-m3-mgmt":["10.2.33.7"],"helion-cp1-comp0001-mgmt":["10.2.33.8"],"helion-cp1-comp0002-mgmt":["10.2.33.9"]}
+volume_backend_name = BE_Pool_1
+host = ha-volume-manager</codeblock></li>
+        <li>To commit your configuration changes to a local git repository, run:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "&lt;Added EMC to Cinder Backend Storage&gt;"</codeblock></li>
+        <li>To use an ansible playbook to run the configuration processor, run:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+        <li>To use an ansible playbook to create a deployment directory, run:
+          <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+        <li>To complete the configuration, run:
+          <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+      </ol>
+      
+    </section>
+  </body>
+</topic>

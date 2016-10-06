@@ -193,6 +193,13 @@ git checkout site
                 environment relies on HPE Helion Development Platform, please refrain from upgrading
                 HPE Helion OpenStack until the complete HPE Helion Development Platform upgrade
                 process is made available.</p>
+            
+            <p><b>Swift Capacity Limitations</b></p>
+                <!-- DOCS-3433 -->
+                <p>There is a Swift capacity upper limit of 5 petabytes (PB) usable (15 petabytes
+                (PB) raw total taking into account the x3 replication).</p>
+            
+            
             <!--  https://jira.hpcloud.net/browse/DOCS-2052  -->
             <p id="DOCS-2052"><b>Changes to Alarm Definition in Centralized Logging may require
                     existing alarms to be deleted and recreated on upgrade from <keyword
@@ -243,6 +250,19 @@ ansible-playbook -i hosts/verb_hosts nova-stop.yml --limit hlm002-cp1-c1-m3-mgmt
 ansible-playbook -i hosts/verb_hosts nova-start.yml --limit hlm002-cp1-c1-m3-mgmt    
 </codeblock>
             </p>
+            <!-- https://jira.hpcloud.net/browse/DOCS-2686 -->
+            <p>After an upgrade you must run <codeph>ceilometer-reconfigure.yml</codeph> to ensure 
+                ceilometer picks up the new password correctly.
+                <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts ceilometer-reconfigure.yml               
+                </codeblock>
+            </p>
+            
+            <!-- https://jira.hpcloud.net/browse/DOCS-3078 -->
+            <p id="DOCS-3078"><b>Monasca ping_status and host_alive_status metrics</b></p>
+            <p>In <keyword keyref="kw-hos"/> the Monasca ping_status and 
+            host_alive_status metrics are not available.</p>
+            
             <!--  https://jira.hpcloud.net/browse/DOCS-2269 -->
             <p id="DOCS-2269"><b>Multipath attach over iSCSI is not supported for 3PAR backend
                     storage</b></p>

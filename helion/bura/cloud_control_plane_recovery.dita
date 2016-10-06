@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="topic_tb4_lqy_qt">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Recovering the Cloud Control Plane</title>
+  <title><ph conkeyref="HOS-conrefs/product-title-both"/>Recovering the Cloud Control Plane</title>
   <body>
-    <p conkeyref="HOS-conrefs/applies-to"/>
+    <p conkeyref="HOS-conrefs/applies-to-all"/>
 
     <section>There are a number of ways you can lose your cloud control plane, whether you've
       completely lost power, or lost just one or two controllers. Below are seven supported recovery
@@ -45,18 +45,27 @@
             will take some time. While you wait you can follow the progress in the
             /var/log/freezer-agent/freezer-agent.log.<p/>
           </li>
-          <li>From the lifecycle manager run the following steps:
-            <codeblock>cd ~/scratch/ansible/next/hos/ansible
+          <li>From the lifecycle manager run the following steps: <p>Switch from the root user back
+              to the stack user, then run the following
+            playbook:</p><codeblock>exit
+cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock>
           </li>
-          <li>On the first MySQL node run the following steps. <p>Clean the Mysql directory by
-              removing everything there:</p>
-            <codeblock>sudo rm -r /var/lib/mysql/*</codeblock>Copy the restored files back to the
-            mysql
-            directory:<codeblock>sudo cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql</codeblock></li>
+          <li>On the first MySQL node run the following steps. <p>Become the root user and clean the
+              Mysql directory by removing everything
+            there:</p><codeblock>sudo su
+rm -r /var/lib/mysql/*</codeblock>Copy the restored files
+            back to the mysql directory, then switch from the root user back to the stack
+            user:<codeblock>cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql
+exit</codeblock></li>
           <li>On the lifecycle manager, from the following directory, run
-            percona-bootstrap.yml:<codeblock>cd ~/scratch/ansible/next/hos/ansible
-ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml</codeblock></li>
+              percona-bootstrap.yml:<codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml</codeblock><p>Note:
+              The percona-bootstrap.yml playbook may hang indefinitely at the initial warning
+              dialogue. If the playbook pauses for more than the normal 5-minute delay, you can
+              trigger the playbook to continue executing by pressing the key combination
+                <codeph>Ctrl+C</codeph> then <codeph>a</codeph> to abort, or <codeph>c</codeph> to
+              continue. </p></li>
         </ol>
         <p><b>Restore from an SSH backup</b></p><p>Follow the same procedure as the one for Swift
           but select the job "HLM Default: Mysql restore from SSH".</p>
@@ -67,11 +76,13 @@ ansible-playbook -i hosts/verb_hosts percona-bootstrap.yml</codeblock></li>
           <li>From the lifecycle manager, run the following commands to stop the MySQL
             cluster:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts percona-stop.yml</codeblock></li>
-          <li>On all MySQL nodes, run the following command to purge the old
-            database:<codeblock>sudo rm -r /var/lib/mysql/*</codeblock></li>
-          <li>On the first MySQL node, restore the backup as follows. If you have already restored
-            to a temporary directory, copy the files again:
-            <codeblock>sudo cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql</codeblock>If you need to
+          <li>On all MySQL nodes, run the following commands to become the root user, then  purge
+            the old database:<codeblock>sudo su
+rm -r /var/lib/mysql/*</codeblock></li>
+          <li>On the first MySQL node, restore the backup as follows. <p>Switch to the root user (if
+              not already):<codeblock>sudo su</codeblock></p>If you have already restored to a
+            temporary directory, copy the files again:
+            <codeblock>cp -pr /tmp/hlm_mysql_restore/* /var/lib/mysql</codeblock>If you need to
             restore the files manually from SSH, follow these steps: <p>Become root:</p>
             <codeblock>sudo su</codeblock> Create the /root/mysql_restore.ini file with the contents
             below. Be careful to substitute the {{ values }}. Note that the SSH information refers
@@ -93,9 +104,11 @@ restore_from_host = {{ hostname of the first MySQL node }}</codeblock>
           <li>On the first MySQL node, follow the next steps to start the cluster. <p/>Become root:
             <codeblock>sudo su</codeblock> When the last step executed successfully, start the MySQL
             cluster: <codeblock>/etc/init.d/mysql bootstrap-pxc</codeblock>Start the process with
-            systemctl to make sure the process is monitored by upstard:
+            systemctl to make sure the process is monitored by upstart:
             <codeblock>systemctl start mysql</codeblock>Make sure the mysql process started
-            successfully by getting the status: <codeblock>systemctl status mysql</codeblock></li>
+            successfully by getting the status:
+              <codeblock>systemctl status mysql</codeblock><p>Switch from the root user back to the
+              stack user:<codeblock>exit</codeblock></p></li>
           <li>From the lifecycle manager, execute the following commands to start all MySQL
             instances:<codeblock>cd ~/scratch/ansible/next/hos/ansible
 ansible-playbook -i hosts/verb_hosts percona-start.yml</codeblock>Mysql
@@ -182,11 +195,10 @@ ansible-playbook -i hosts/verb_hosts swift-reconfigure.yml</codeblock></li>
 
 
 
-    <section id="onecontroller"><title outputclass="headerH">One or Two Control Plane Node Disaster
-        Recovery</title>
+    <section id="onecontroller"><title outputclass="headerH">Control Plane Node Disaster Recovery</title>
       <sectiondiv outputclass="insideSection">
-        <p>In this scenario, everything is still running (lifecycle manager, control plane node, and
-          compute nodes) but you've lost one or two control plane nodes.</p>
+        <p>In this scenario, everything is still running (lifecycle manager, two control plane
+          nodes, compute nodes) but you've lost one control plane node.</p>
         <b>Restore from other nodes</b><ol id="ol_ag2_y13_1v">
           <li>On the lifecycle manager, install the nodes that were destroyed:
             <codeblock>cd ~/scratch/ansible/next/hos/ansible

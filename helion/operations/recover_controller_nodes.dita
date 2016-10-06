@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
 <topic id="recover_downed_cluster">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Recovering Controller Nodes</title>
+  <title><ph conkeyref="HOS-conrefs/product-title-both"/>Recovering Controller Nodes</title>
   <body>
-    <p conkeyref="HOS-conrefs/applies-to"/>
+    <p conkeyref="HOS-conrefs/applies-to-all"/>
     <!-- tested on HOS 2.1.2 on 3/1/2016 -->
     <section id="about">
       <p>These are the recovery step for one or more of your controller nodes. This includes steps
@@ -30,7 +30,7 @@
     </section>
 
     <section id="mysql"><title>Recovering the MySQL Database</title>
-      <p conkeyref="HOS-conrefs/applies-to"/>
+      <p conkeyref="HOS-conrefs/applies-to-all"/>
       <p>The recovery process for your MySQL database cluster will use the bootstrap command
         described below. The node that you perform these steps on should be the last node to go
         down. So if only one of your controller nodes went down, then you would skip to step #2 and
@@ -47,24 +47,27 @@ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1</codeb
             means you can run the bootstrap on either node but you can only run the bootstrap
             command once and only on one node.</note>
           <codeblock>stack@helion-cp-c1-m1-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
-stack@helion-cp-c1-m1-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:37:12 InnoDB: Shutdown completed; log sequence number <b>165002105</b> 
+stack@helion-cp-c1-m1-mgmt:~$ sudo grep --text 'Recovered position' /var/log/mysql/error.log| tail -1
+151119 14:37:12 32123 [Note] WSREP: Recovered position: a0cd6b29-f027-11e5-b9e3-fb0ed503c0ac:<b>165002105</b>
 
 stack@helion-cp-c1-m2-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
-stack@helion-cp-c1-m2-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number <b>165252407</b>
+stack@helion-cp-c1-m2-mgmt:~$ sudo grep --text 'Recovered position' /var/log/mysql/error.log| tail -1
+151119 14:37:1214:37:52 32336 [Note] WSREP: Recovered position: a0cd6b29-f027-11e5-b9e3-fb0ed503c0ac:<b>165252407</b>
 
-stack@helion-cp-c1-m3-mgmt:~$ sudo /usr/bin/mysqld_safe --wsrep-recover
-stack@helion-cp-c1-m3-mgmt:~$ sudo grep --text 'log sequence number' /var/log/mysql/error.log | tail -1 
-151119 14:53:22 Percona XtraDB (http://www.percona.com) 5.5.41-37.0 started; log sequence number <b>165252407</b>
-151119 14:53:23 InnoDB: Shutdown completed; log sequence number 165252407</codeblock></li>
+stack@helion-cp-c1-m3-mgmt:~$  sudo /usr/bin/mysqld_safe --wsrep-recover
+stack@helion-cp-c1-m3-mgmt:~$ sudo grep --text 'Recovered position' /var/log/mysql/error.log| tail -1
+151119 14:37:1214:37:52 32332 [Note] WSREP: Recovered position: a0cd6b29-f027-11e5-b9e3-fb0ed503c0ac:<b>165252407</b></codeblock></li>
         <li>SSH into the node with the highest log sequence number and bootstrap the cluster with
-          these commands:
-          <codeblock>sudo /etc/init.d/mysql bootstrap-pxc
-sudo service mysql restart</codeblock></li>
-        <li>Log onto any other controller nodes that went down and run this command to start MySQL
-          back up: <codeblock>sudo service mysql start</codeblock>
+          these commands: <codeblock>sudo /etc/init.d/mysql bootstrap-pxc</codeblock>
         </li>
+        <li>Log onto any other controller nodes that went down and run this command to start MySQL
+          back up: <codeblock>sudo service mysql start</codeblock></li>
+        <li>Wait for a few minutes for the services to be fully up and sycned.</li>
+        <li>Log in to the controller node on which you did a bootstrap and issue a restart: <codeblock>sudo service mysql restart</codeblock>
+          <p>This is to correct the systemctl status, the mysql service on this controller node
+            should show it is active and running, which you can confirm with this command:</p>
+          <codeblock>sudo service mysql status |grep Active
+   Active: active (running) since Thu 2016-05-05 17:50:48 UTC; 2min 17s ago</codeblock></li>
       </ol>
     </section>
     <!-- 2.0 Instructions -->
@@ -133,7 +136,7 @@ ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml</codeblock>
       <codeblock>ansible-playbook -i hosts/verb_hosts monasca-vertica-recovery.yml --ask-vault-pass</codeblock>
     </section>
     <section id="hlm"><title>Restarting Services on the Controller Nodes</title>
-      <p conkeyref="HOS-conrefs/applies-to"/>
+      <p conkeyref="HOS-conrefs/applies-to-all"/>
       <p>Log in to the lifecycle manager and execute the hlm-start playbook for each node that was
         brought down so the services can be started back up:</p>
       <codeblock>cd ~/scratch/ansible/next/hos/ansible
@@ -144,7 +147,7 @@ ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=&lt;hostname&gt;</cod
       <codeblock>ansible-playbook -i hosts/verb_hosts hlm-start.yml --limit=helion-cp-c1-m1-mgmt,helion-cp-c1-m2-mgmt,helion-cp-c1-m3-mgmt</codeblock>
     </section>
     <section id="monasca"><title>Restart the Monitoring Agents</title>
-      <p conkeyref="HOS-conrefs/applies-to"/>
+      <p conkeyref="HOS-conrefs/applies-to-all"/>
       <p>As part of the recovery process, you shoudl also restart the <codeph>monasca-agent</codeph>
         and these steps will show you how:</p>
       <ol>

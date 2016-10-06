@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="SolidFire_install">
+  <title>Configure SolidFire as a Backend</title>
+  <body>
+    <p>To integrate SolidFire storage with Helion OpenStack 2.0, you must configure the SolidFire storage array as a Cinder backend. This is done by modifying the cinder.conf.j2 file. In this configuration file you will create an Internet Small Computer Systems Interface (iSCSI) cluster. iSCSI is an Internet Protocol (IP)-based storage networking standard for linking data storage facilities.</p>
+      
+      <p>To configure the Cinder backend:</p>
+    <ol>
+      <li>Log in to the lifecycle manager.</li>
+      <li>In a text editor, open the following file:
+        <codeblock>~/helion/my_cloud/config/cinder/cinder.conf.j2</codeblock></li>
+      <li>To create a SolidFire backend, in the <codeph>enabled_backends section</codeph> add the
+        following text:
+        <codeblock># Configure the enabled back-ends
+enabled_backends=SolidFire_iSCSI</codeblock></li>
+<li>In the same file, create a new SolidFire iSCSI cluster section and fill the values used in your
+        environment as shown in the following code sample:
+          <codeblock># SolidFire
+[SolidFire_iSCSI]
+volume_driver = 
+san_ip = 
+san_login = 
+san_password = 
+sf_emulate_512 = 
+volume_backend_name = 
+# end solidfire</codeblock><p>Sample
+          SolidFire iSCSI
+        section:</p><codeblock># SolidFire
+[SolidFire_iSCSI]
+volume_driver = cinder.volume.drivers.solidfire.SolidFireDriver
+san_ip = 10.2.17.252
+san_login = openstack
+san_password = temp123
+sf_emulate_512 = True
+volume_backend_name = solidfire
+# end solidfire</codeblock></li>
+      <li>To commit your configuration changes to a local git repository, run:
+        <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "&lt;Added SolidFire to Cinder Backend Storage&gt;"</codeblock></li>
+      <li>To use an ansible playbook to run the configuration processor, run:
+        <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost config-processor-run.yml</codeblock></li>
+      <li>To use an ansible playbook to create a deployment directory, run:
+        <codeblock>cd ~/helion/hos/ansible
+ansible-playbook -i hosts/localhost ready-deployment.yml</codeblock></li>
+      <li>To complete the configuration, run:
+        <codeblock>cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook -i hosts/verb_hosts cinder-reconfigure.yml</codeblock></li>
+      </ol>
+
+    <p>For more on configuring SolidFire, use the <xref href="http://www.solidfire.com/solutions/cloud-orchestration/openstack" scope="external" format="html">SolidFire Documentation Resources</xref> list.</p>
+  
+  </body>
+</topic>

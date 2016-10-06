@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="scality_verify">
+  <title>Verify Scality Integration</title>
+  <body>
+
+    <p>To verify Scality integration, Helion testers created a volume, attached to the volume, and created a file system.</p>
+
+    <p><b>To create a volume:</b></p>
+    <ol>
+      <li>Run the following command:
+            <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ cinder create --volume-type scality-sofs 1</codeblock><p><b>Sample
+            output:</b></p><codeblock>+---------------------+--------------------------------------+
+| Property            | Value |
++---------------------+--------------------------------------+
+| attachments         | [] |
+| availability_zone   | nova |
+| bootable            | false |
+| created_at          | 2016-05-04T20:50:25.817152 |
+| display_description | None |
+| display_name        | None |
+| encrypted           | False |
+| id                  | 3154aba8-730a-4b89-9b7c-93672a04ca00 |
+| metadata            | {} |
+| multiattach         | false |
+| size                | 1 |
+| snapshot_id         | None |
+| source_volid        | None |
+| status              | creating |
+| volume_type         | scality-sofs |
++---------------------+--------------------------------------+</codeblock></li>
+      <li>To list the volumes and verify the new volume was successfully created, run:
+            <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ cinder list</codeblock><p><b>Sample
+            output:</b></p><codeblock>+--------------------------------------+-----------+--------------+------+--------------+----------+-------------+
+|                  ID                  |   Status  | Display Name | Size | Volume Type  | Bootable | Attached to |
++--------------------------------------+-----------+--------------+------+--------------+----------+-------------+
+| 3154aba8-730a-4b89-9b7c-93672a04ca00 | available |     None     |  1   | scality-sofs |  false   |             |
+| 493421a2-2298-43ec-855a-f06b204d9f9c | available |     None     |  1   | scality-sofs |  false   |             |
++--------------------------------------+-----------+--------------+------+--------------+----------+-------------+</codeblock></li>
+    </ol>
+    
+    <p><b>To attach to the volume you just created:</b></p>
+    <ol>
+      <li>Run the following command:
+        <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ nova volume-attach 5587e557-ba82-499e-928e-4f65dea7c3e1 3154aba8-730a-4b89-9b7c-93672a04ca00 /dev/vdc</codeblock></li>
+    </ol>
+    <p><b>Sample output:</b></p>
+    <codeblock>+----------+--------------------------------------+
+| Property | Value                                |
++----------+--------------------------------------+
+| device   | /dev/vdc                             |
+| id       | 3154aba8-730a-4b89-9b7c-93672a04ca00 |
+| serverId | 5587e557-ba82-499e-928e-4f65dea7c3e1 |
+| volumeId | 3154aba8-730a-4b89-9b7c-93672a04ca00 |
++----------+--------------------------------------+</codeblock>
+    
+    <p><b>To create a file system on the volume:</b></p>
+    <ol>
+      <li>Run the following command:
+        <codeblock>stack@helion-cp1-c0-m1-mgmt:~$ ssh -i .ssh/scalitykey.pem centos@10.246.65.28</codeblock></li>
+    </ol>
+    <p><b>Sample output:</b></p>
+    <codeblock>Last login: Wed May  4 21:03:44 2016 from 10.246.62.5
+ 
+[centos@junk ~]$ sudo fdisk -l /dev/vdc
+Disk /dev/vdc: 1073 MB, 1073741824 bytes
+16 heads, 63 sectors/track, 2080 cylinders
+Units = cylinders of 1008 * 512 = 516096 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+ 
+[centos@junk ~]$ sudo fdisk -l /dev/vdc
+Disk /dev/vdc: 1073 MB, 1073741824 bytes
+16 heads, 63 sectors/track, 2080 cylinders
+Units = cylinders of 1008 * 512 = 516096 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xd6a4374a
+   Device Boot      Start         End      Blocks   Id  System
+/dev/vdc1               1        2080     1048288+  83  Linux
+ 
+[centos@junk ~]$ sudo mkfs -V /dev/vdc1
+mkfs (util-linux-ng 2.17.2)
+mkfs.ext2 /dev/vdc1
+mke2fs 1.41.12 (17-May-2010)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+65536 inodes, 262072 blocks
+13103 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=268435456
+8 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376
+Writing inode tables: done
+Writing superblocks and filesystem accounting information: done
+This filesystem will be automatically checked every 28 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
+ 
+[centos@junk ~]$ sudo mount /dev/vdc1 /mnt
+ 
+[centos@junk ~]$ df -lh
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1       7.8G  716M  6.7G  10% /
+tmpfs           939M     0  939M   0% /dev/shm
+/dev/vdb1      1008M  1.3M  956M   1% /a
+/dev/vdc1      1008M  1.3M  956M   1% /mnt</codeblock>
+  </body>
+</topic>

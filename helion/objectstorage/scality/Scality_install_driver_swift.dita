@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
+<topic id="scality_install_driver_swift">
+  <title>Install the Scality Driver for Swift</title>
+  <body>
+    
+    <p>This procedure steps you through the following tasks:</p>
+      <ol>
+        <li><xref type="section" href="#scality_install_driver_swift/scality_dwnld_swift">Download, extract, and distribute the files to the controller nodes</xref>.</li>
+        <li><xref type="section" href="#scality_install_driver_swift/scality_install_swift1">Configure Controller Nodes</xref></li>
+        <li><xref type="section" href="#scality_install_driver_swift/point_to_RING">Configure the
+          object server to use RING</xref>. <note type="important">Steps 1, 2, and 3 must be
+          completed on every controller.</note></li>
+        <li><xref type="section" href="#scality_install_driver_swift/point_to_RING">Update the Helion-RING configuration</xref>.</li>
+        <li><xref type="section" href="#scality_install_driver_swift/scality_popboot">Populate bootstrap entries on RING</xref>.</li>
+        <li><xref type="section" href="#scality_install_driver_swift/cdv_function">Commit changes, deploy, and verify functionality</xref>.</li>
+      </ol>
+         <p>During these procedures you will need to understand the following concepts:</p>
+    <dl>
+      <dlentry>
+        <dt>Wheelhouse files</dt>
+        <dd>HPE Helion OpenStack comes with a selection of built-in plugins and drivers that services use. The third-party driver contains a directory of packaged Python content (wheels). The wheelhouse files can be injected into a virtual environment. By default the wheelhouse is unpacked in the <codeph>/home/hlmuser/third-party-wheelhouse</codeph> directory. For more details, see <xref href="../../administration/thirdparty_driver_support.dita">Third-party Driver Support</xref>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>Python egg files</dt>
+        <dd>A Python egg is simply a way of distributing Python packages. For more information, see the <xref href="http://peak.telecommunity.com/DevCenter/PythonEggs" scope="external" format="html">Python Enterprise Application Kit</xref>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>Third-party driver support</dt>
+        <dd>HPE Helion OpenStack comes with a selection of built-in plugins and drivers that services use. For more details, see <xref href="../../administration/thirdparty_driver_support.dita">Third-party Driver Support</xref>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>Virtual environments</dt>
+        <dd>The Virtual Environment (ESX) option allows you to configure, manage and control multiple virtual instances. Virtualenv can be used to create an isolated Python development environment. This helps isolate your dependencies, especially when used with pip. For more information, see <xref href="https://docs.hpcloud.com/index.html#commercial/GA1/1.1commercial.undercloud-resource-esx-manage-vm.html" scope="external" format="html">Working with Virtual Environments</xref>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>pip</dt>
+        <dd>pip is a package management system used to install and manage software packages written in Python. Many packages can be found in the Python Package Index (PyPI). For more information, see the <xref href="https://pip.pypa.io/en/stable/" scope="external" format="html">PIP User Guide</xref>.</dd>
+      </dlentry>
+      <dlentry>
+        <dt>tar</dt>
+        <dd>The tape archive (tar) command is used to convert a group of files into an archive. For more information, see the <xref href="http://www.linfo.org/tar.html" scope="external" format="html">The tar Command</xref>.</dd>
+      </dlentry>
+    </dl>
+  <section id="scality_dwnld_swift">
+    <title>Download, Extract, and Distribute the Files to the Controller Node</title>
+    <p>This procedure steps you through download, conversion, extraction, and compression of the Scality drivers for Swift. This procedure also includes steps to distribute the compressed file to the controller nodes.</p>
+  <ol>
+    <li>To create a directory for the driver package, run:
+          <codeblock>cd ~/scratch
+mkdir pkg</codeblock></li>
+    <li>To download and extract the driver, run:
+          <codeblock>cd ~/scratch/pkg
+wget https://github.com/scality/ScalitySproxydSwift/archive/swift-scality-backend-0.4.0.tar.gz
+tar xzf swift-scality-backend-0.4.0.tar.gz
+ 
+wget  https://github.com/scality/scality-sproxyd-client/archive/scality-sproxyd-client-0.1.1.tar.gz
+tar xzf scality-sproxyd-client-0.1.1.tar.gz</codeblock></li>
+    <li>To install the 3rd-party driver, first create a specific directory for the file by running:
+          <codeblock>cd ~/scratch
+mkdir third-party-wheelhouse</codeblock></li>
+    <li>To convert downloaded packages from Python egg to wheel format, run:
+    <codeblock>pip wheel --no-deps convert ./ScalitySproxydSwift-swift-scality-backend-0.4.0/
+pip wheel --no-deps convert ./scality-sproxyd-client-scality-sproxyd-client-0.1.1/</codeblock></li>
+    <li>To copy the converted files, run:
+    <codeblock>cp wheelhouse/swift_scality_backend-0.4.0-py2-none-any.whl ../third-party-wheelhouse
+cp wheelhouse/scality_sproxyd_client-0.1.1-py2-none-any.whl ../third-party-wheelhouse</codeblock></li>
+    <li>To create a temporary directory for extraction, run:
+    <codeblock>cd ~/scratch
+mkdir scalitytemp</codeblock></li>
+    <li>To create the virtual environment, run:
+    <codeblock>sudo virtualenv scalitytemp</codeblock></li>
+    <li>To activate the virtual environment, run:
+    <codeblock>cd ~/scratch/scalitytemp
+source bin/activate</codeblock></li>
+    <li>To install the wheel files using pip, run:
+    <codeblock>sudo pip install ../third-party-wheelhouse/scality_sproxyd_client-0.1.1-py2-none-any.whl
+sudo pip install ../third-party-wheelhouse/swift_scality_backend-0.4.0-py2-none-any.whl</codeblock></li>
+    <li>To go to the installation directory, run:
+    <codeblock>cd /usr/local/lib/python2.7/dist-packages/</codeblock></li>
+    <li>To compress the files into a tar file named <b>scalitydriver.tar</b>, run:
+    <codeblock>sudo tar –cvf scalitydriver.tar .</codeblock></li>
+    <li>To change the permissions to the default user, run:
+    <codeblock>sudo chown stack:stack scalitydriver.tar</codeblock></li>
+    <li>To copy the file to all controller nodes, run:
+            <codeblock>scp scalitydriver.tar stack@10.246.62.6
+scp scalitydriver.tar stack@10.246.62.7
+scp scalitydriver.tar stack@10.246.62.8</codeblock><note
+            type="attention">Remember to replace the IP addresses in the example with the ones used
+            in your deployment. In the example above, the addresses that begin with 10.246.62.x
+            should not be used but should be replaced with an IP address used in your
+            environment.</note></li>
+  </ol>
+</section>
+   
+    <section id="scality_install_swift1">
+     <title>Configure Controller Nodes</title>
+      
+      <ol>
+        <li>To activate the virtual environment, run:
+        <codeblock>cd /opt/stack/service/swift/venv
+source bin/activate</codeblock></li>
+        <li>To untar the Scality compressed file, run:
+          <codeblock>cd lib/python2.7/site-packages
+tar –xvf /home/stack/scalitydriver.tar .</codeblock></li>
+        <li>To check the drivers list and verify the Scality Swift drivers are installed, run:
+        <codeblock>pip list</codeblock></li>
+      </ol>
+   </section>
+    
+  <section id="point_to_RING">
+  <title>Configure the Object Server to Use RING</title>  
+    <p>Yuo must update the configuration file for the object server to point it to the Scality RING.</p>
+      
+      <p>To update the configuration file:</p>
+    <ol>
+      <li>To edit the configuration file, run:
+        <codeblock>vi /home/stack/helion/my_cloud/config/swift/object-server.conf.j2</codeblock></li>
+      <li>Find the following text:
+      <codeblock>[app:object-server]
+use = egg:swift#object</codeblock></li>
+      <li>Edit the existing text to match the following text, substituting any IP adresses with those used in your deployment:
+      <codeblock>[app:object-server]
+use = egg:swift_scality_backend#sproxyd_object
+sproxyd_endpoints=http://10.246.65.19:81/proxy/bparc</codeblock></li>
+      <li>Save and close the file.</li>
+      <li>To deactivate the Python virtual environment, run:
+      <codeblock>deactivate</codeblock></li>
+    </ol>
+  </section>
+  
+    <section id="scality_HR_config">
+      <title>Update the Helion-RING Configuration</title>
+      <ol>
+        <li>To update Helion-Swift RING configuration, run:
+          <codeblock>cd /etc/swift
+mv object.builder object.builder.bkp
+mv object.ring.gz object.ring.gz.bkp
+swift-ring-builder object.builder create 1 1 1
+swift-ring-builder object.builder add r1z1-10.246.62.6:6000/ignored 100
+swift-ring-builder object.builder rebalance</codeblock></li>
+          <li>Verify that the configuration looks similar to the following example:
+          <codeblock>stack@helion-cp1-c1-m1-mgmt:/etc/swift$ sudo swift-ring-builder object.builder
+object.builder, build version 1
+2 partitions, 1.000000 replicas, 1 regions, 1 zones, 1 devices, 0.00 balance, 0.00 dispersion
+The minimum number of hours before a partition can be reassigned is 1
+The overload factor is 0.00% (0.000000)
+Devices: id region zone ip address port replication ip replication port name weight partitions balance meta
+0 1 1 10.246.62.6 6000 10.246.62.6 6000 ignored 100.00 2 0.00</codeblock></li>
+      </ol>
+    </section>
+    
+    <section id="scality_popboot">
+      <title>Populate Bootstrap Entries on RING</title>
+      <p>To populate entries quickly you can log into the admin user interface.</p>
+      <ol>
+        <li> Log into UI.</li> 
+        <li>Navigate to the following location:
+          <codeblock>Local -> DATA -> Operation -> Connector.10.0.0.12:7001 -> QuickEdit</codeblock></li>
+        <li>On a screen similar to the graphic below, click all of the <b>Populate</b> buttons.</li>
+      </ol>
+      <p><image href="../../../media/scality_populate_RING.png"/></p>
+    </section>
+      
+    <section id="cdv_function">
+      <title>Commit Changes, Deploy, and Verify Functionality</title>
+      <p>To commit changes and deploy:</p>
+        <ol>
+          <li>Run the following commands:
+          <codeblock>cd ~/helion/hos/ansible
+git add -A
+git commit -m "My config or other commit message"
+ansible-playbook –i hosts/localhost config-processor-run.yml
+ansible-playbook –i hosts/localhost ready-deployment.yml
+cd ~/scratch/ansible/next/hos/ansible
+ansible-playbook –i hosts/verb_hosts site.yml</codeblock></li>
+        </ol>
+      
+      <p>To verify functionality:</p>
+      <ol>
+        <li>Run the following commands:
+        <codeblock>http_proxy= curl -v http://10.246.65.19:81/proxy/bparc/myobject -T /etc/hosts
+http_proxy= curl -v http://10.246.65.19:81/proxy/bparc/myobject</codeblock></li>
+      </ol>
+    </section>
+  </body>
+</topic>
