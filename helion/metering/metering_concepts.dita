@@ -24,9 +24,6 @@
     </lines>
         <section id="ceilo_architecture">
       <title>Metering Architecture</title>
-      <p> As illustrated in the diagram below, the OpenStack Ceilometer API acts as the central
-        collection and data access service to the meters provided by all OpenStack services.</p>
-      <p><image href="../../media/Ceilo_Architecture.png"/></p>
       <p>Helion OpenStack automatically configures Ceilometer to use Logging and Monitoring Service
         (Monasca) as its backend. Ceilometer is deployed on the same control plane nodes as
         Monasca.</p><p>The installation of Celiometer creates several management nodes running
@@ -35,9 +32,9 @@
       <p>This controller node is the first of the High Available (HA) cluster. In this node there is
         an instance of the Ceilometer API running under the HA Proxy Virtual IP address. </p>
       <b>Ceilometer Sample Polling</b>
-      <p>Sample Polling is part of the Polling Agent. Once sent to the RabbitMQ service, they are
-        consumed by the Collector and stored in the database. The Collector is also responsible for
-        consuming and storing notifications.</p>
+      <p>Sample Polling is part of the Polling Agent. Now that Ceilometer API uses Monasca API (query)
+        instead of the MySQL database, messages are posted by Notification Agent directly to Monasca
+        API.</p>
       <b>Ceilometer Polling Agent</b>
       <p>The Polling Agent is responsible for coordinating the polling activity. It parses the
           <b>pipeline.yml</b> configuration file and identifies all the sources that need to be
@@ -45,9 +42,11 @@
         translated to resources where a dedicated pollster can retrieve and publish data. At each
         identified interval the discovery mechanism is triggered, the resource list is composed, and
         the data is polled and sent to the queue.</p>
-      <b>Ceilometer Collector</b>
-      <p>The collector is responsible for getting the samples/events from the RabbitMQ service and
-        storing it in the main database.</p></section>
+      <b>Ceilometer Collector No Longer Required</b>
+      <p>In previous versions, the collector was responsible for getting the samples/events from the
+        RabbitMQ service and storing it in the main database. The Ceilometer Collector is no longer enabled. Now
+        that Notification Agent posts the data directly to Monasca API, the collector is no longer
+        required</p></section>
     <lines>      
     </lines>
    
