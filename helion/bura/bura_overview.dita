@@ -8,9 +8,10 @@
       restore process for your data. Freezer executes backups and restores as jobs, and executes
       these jobs independently and/or as managed sessions (multiple jobs in multiple machines
       sharing a state).</p> 
-    <p><keyword keyref="kw-hos-phrase"/> supports backup and restore of control plane
-      services. It comes with playbooks and procedures to recover the control plane from various
-      disaster scenarios.</p> 
+    <p><keyword keyref="kw-hos-phrase"/> supports backup and restore of control plane services. It
+      comes with playbooks and procedures to recover the control plane from various disaster
+      scenarios. Note that freezer is automatically installed on any compute nodes during initial
+      install and during the addition of nodes.</p>
     <p>The following features are supported:</p>
     <ul id="ul_pg4_5s3_dt">
       <li>Back up your file system using point in time snapshot.</li>
@@ -62,11 +63,11 @@
               <entry>Freezer Agent </entry>
               <entry>Multiprocessing Python software that runs at the client side where the data
                 backup is executed. It can be executed as a standalone or by the Freezer Scheduler.
-                The freezerc provides a flexible way to execute backup, restore, and perform other
-                actions on a running system. <p>To provide flexibility in terms of data integrity,
-                  speed, performance, resources usage, and so on, the Freezer Agent offers a wide
-                  range of options to execute optimized backup according the available resources,
-                  such as: </p>
+                The freezer-agent provides a flexible way to execute backup, restore, and perform
+                other actions on a running system. <p>To provide flexibility in terms of data
+                  integrity, speed, performance, resources usage, and so on, the Freezer Agent
+                  offers a wide range of options to execute optimized backup according the available
+                  resources, such as: </p>
                 <ul id="ul_o43_253_dt">
                   <li>Segments size (the amount of memory used) </li>
                   <li>Queues size (optimize backups where I/O, bandwidth, memory, or CPU is a
@@ -103,6 +104,41 @@
     <section id="diagram">
       <title>Diagram of the Backup Service</title>
       <p><image href="../../media/bura/bura_architecture.png"/></p>
+    </section>
+    <section>
+      <table frame="all" rowsep="1" colsep="1" id="table_igp_j1f_z5">
+    
+        <tgroup cols="3">
+          <colspec colname="c1" colnum="1" colwidth="1*"/>
+          <colspec colname="c2" colnum="2" colwidth="3.16*"/>
+          <colspec colname="c3" colnum="3" colwidth="2.08*"/>
+          <thead>
+            <row>
+              <entry>Component</entry>
+              <entry>Description</entry>
+              <entry>Runs on</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>API</entry>
+              <entry>API service to add / fetch Freezer jobs</entry>
+              <entry>Controller nodes with ElasticSearch</entry>
+            </row>
+            <row>
+              <entry>Scheduler</entry>
+              <entry>Daemon that stores and retrieves backup/restore jobs and executes them</entry>
+              <entry>Nodes needing backup/restore (controllers, lifecycle manager)</entry>
+            </row>
+            <row>
+              <entry>Agent</entry>
+              <entry>The agent that backs up and restores to and from targets. Invoked from
+                scheduler or manually.</entry>
+              <entry>Nodes needing backup/restore (controllers, lifecycle manager)</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
   </body>
 </topic>

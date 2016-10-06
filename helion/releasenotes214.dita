@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd" >
+<topic xml:lang="en-us" id="release-notes-214">
+    <title><keyword keyref="kw-hos-tm"/> 2.1.4 Release Notes</title>
+    <body>
+
+        <section id="about">
+            <p>This document provides an overview of the new features contained within HPE Helion OpenStack 2.1.4.
+            </p>
+        </section>
+        <section></section>
+        <section id="issues_fixed">
+            <title>Issues Fixed in this Release</title>
+            <p>This release includes the following fixes:</p>
+            <p><b>CVE-2016-2074 - Remote Code Execution (RCE) or Denial of Service (DoS) attacks in OVS. </b></p>
+            
+            <p>A patched version of OVS version 2.3 has been included in HPE Helion
+                OpenStack 2.1.4 to address this vulnerability.</p>           
+            
+            <p><b>Hardening of RabbitMQ</b></p>
+            <p>A number of changes have been made to improve the reliability of RabbitMQ in shutdown/restart and upgrade scenarios. </p>
+            <p>In addition, version 2.1.4 includes further hardening of RabbitMQ.</p>
+            <p>To upgrade, follow the instructions in <xref
+                    href="installation/upgrade_to_214.dita">Upgrading to HPE Helion
+                    OpenStack 2.1.4</xref></p>
+            <p>To perform a full install of HPE Helion OpenStack 2.1.4, follow the instructions for
+                your specifications in the <xref
+                    href="installation/installation_overview.dita#install_overview">installation
+                    section.</xref></p>
+        </section>
+ 
+ 
+        <section id="known_issues">
+            <title>Known Issues in this Release</title>
+            
+            
+            
+        </section>
+        
+        <section conref="installation/upgrade_to_214.dita#upgradeto21/recover_rabbit"/>
+        
+        <section id="no_module_named_yaml">
+            <!-- https://jira.hpcloud.net/browse/DOCS-3023 -->
+            <title>"No module named yaml" Error during Upgrade</title>
+            
+            <p>If you see an error similar to the following during upgrade, re-deploy cobbler and 
+            re-run upgrade.</p>
+            
+<codeblock>
+TASK: [cobbler | set variables | Get baremetal server information] ************ 
+failed: [hlm201-cp1-cluster0-m1-mgmt -> 127.0.0.1] => {"failed": true, "parsed": false}
+Traceback (most recent call last):
+  File "/home/stack/.ansible/tmp/ansible-tmp-1460995124.97-42543074272233/bmconfig", line 44, in &lt;module>
+    import yaml
+ImportError: No module named yaml
+</codeblock>            
+            
+            <p><b>Resolution:</b></p>
+            
+<codeblock>
+ansible-playbook -i hosts/localhost cobbler-deploy.yml
+ansible-playbook -i hosts/verb_hosts hlm-upgrade.yml
+</codeblock>            
+            
+        </section>
+
+    </body>
+</topic>
