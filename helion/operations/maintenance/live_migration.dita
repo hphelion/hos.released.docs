@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--Edit status: not edited-->
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "topic.dtd">
-<topic id="liveInstMigration">
-  <title><ph conkeyref="HOS-conrefs/product-title"/>Live Migration of Instances</title>
+<topic id="live_migration">
+  <title><ph conkeyref="HOS-conrefs/product-title"/>Compute Host Live Migration</title>
   <abstract><shortdesc outputclass="hdphidden">Live migration allows you to move active Compute
       instances between Compute nodes, allowing for less downtime during
     maintenance.</shortdesc></abstract>
@@ -148,13 +148,12 @@
             checkboxes for additional options, which are described below: <p><b>Disk Over Commit</b>
               - If this is not checked then the value will be <codeph>False</codeph>. If you check
               this box then it will allow you to override the check that occurs to ensure the
-              destination host has the available disk space to host the instance.</p>
-            <p><b>Block Migration</b> - If this is not checked then the value will be
-                <codeph>False</codeph>. If you check this box then it will migrate the local disks
-              by using block migration. Use this option if you are only using ephemeral storage on
-              your instances. If you are using block storage for your instance then ensure this box
-              is not checked.</p>
-            <p><image href="../../../media/hos.docs/livemigration2.png"/></p></li>
+              destination host has the available disk space to host the instance.</p><p><b>Block
+                Migration</b> - If this is not checked then the value will be
+              <codeph>False</codeph>. If you check this box then it will migrate the local disks by
+              using block migration. Use this option if you are only using ephemeral storage on your
+              instances. If you are using block storage for your instance then ensure this box is
+              not checked.</p><p><image href="../../../media/hos.docs/livemigration2.png"/></p></li>
           <li>Select the <b>Live Migrate Instance</b> button to begin your live migration.</li>
         </ol>
       </sectiondiv>
@@ -191,9 +190,10 @@ Optional arguments:
         <p>Here are the steps to perform:</p>
         <ol>
           <li>Log in to the lifecycle manager.</li>
-          <li>Identify the instances on the compute node you wish to migrate: <codeblock>nova list --all-tenants --host &lt;hostname&gt;</codeblock>
-            <p>Example showing a host with a single Compute instance on it:</p>
-            <codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0001-mgmt --all-tenants
+          <li>Identify the instances on the compute node you wish to migrate:
+              <codeblock>nova list --all-tenants --host &lt;hostname&gt;</codeblock><p>Example
+              showing a host with a single Compute instance on
+            it:</p><codeblock>stack@helion-cp1-c1-m1-mgmt:~$ nova list --host helion-cp1-comp0001-mgmt --all-tenants
 +--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+
 | ID                                   | Name | Tenant ID                        | Status | Task State | Power State | Networks              |
 +--------------------------------------+------+----------------------------------+--------+------------+-------------+-----------------------+
@@ -205,20 +205,19 @@ Optional arguments:
             <codeblock>nova host-list</codeblock></li>
           <li>Migrate the instance(s) on the compute node using the notes below. <p>If your instance
               is booted from a block storage volume or has any number of block storage volumes
-              attached, use the <codeph>nova live-migration</codeph> command with this syntax:</p>
-            <codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
-            <p>If your instance has local (ephemeral) disk(s) only or if your instance has a mix of
+              attached, use the <codeph>nova live-migration</codeph> command with this
+              syntax:</p><codeblock>nova live-migration &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock><p>If
+              your instance has local (ephemeral) disk(s) only or if your instance has a mix of
               ephemeral disk(s) and block storage volume(s), you should use the
-                <codeph>--block-migrate</codeph> option:</p>
-            <codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock>
-            <note>The [&lt;target compute host&gt;] option is optional. If you do not specify a
-              target host then the nova scheduler will choose a node for you.</note>
-          </li>
+                <codeph>--block-migrate</codeph>
+              option:</p><codeblock>nova live-migration --block-migrate &lt;instance uuid&gt; [&lt;target compute host&gt;]</codeblock><note>The
+              [&lt;target compute host&gt;] option is optional. If you do not specify a target host
+              then the nova scheduler will choose a node for you.</note></li>
         </ol>
       </sectiondiv>
     </section>
     <section id="multi"><title outputclass="headerH">Multiple Instance Live Migration using the
-        NovaCLient CLI</title>
+        NovaClient CLI</title>
       <sectiondiv outputclass="insideSection">
         <p>If you want to live migrate all of the instances off a single Compute host you can
           utilize the <codeph>nova host-evacuate-live</codeph> command.</p>
@@ -235,21 +234,20 @@ Optional arguments:
         <ol>
           <li>Using admin credentials, determine the hostname of the Compute host you wish to live
             migrate. <p>You can determing the hostname by getting a list of instances using this
-              command:</p>
-            <codeblock>nova list --all-tenants --fields=name,status,task_state,host,flavor</codeblock></li>
+              command:</p><codeblock>nova list --all-tenants --fields=name,status,task_state,host,flavor</codeblock></li>
           <li>You will want to ensure that all of the instances on the host are in either
               <codeph>Active</codeph> or <codeph>Paused</codeph> state:
             <codeblock>nova list --all-tenants --host &lt;hostname></codeblock></li>
           <li>Issue the host-evacuate-live command, which will begin the live migration process.
               <p>If all of the instances on the host are using at least one local (ephemeral) disk,
-              you should use this syntax:</p>
-            <codeblock>nova host-evacuate-live --block-migrate &lt;hostname></codeblock>
-            <p>Alternatively, if all of the instances are only using block storage volumes then omit
-              the <codeph>--block-migrate</codeph> option:</p>
-            <codeblock>nova host-evacuate-live &lt;hostname></codeblock>
-            <note>You can either let the nova-scheduler choose a suitable target host or you can
-              specify one using the <codeph>--target-host &lt;hostname> </codeph> switch. See
-                <codeph>nova help host-evacuate-live</codeph> for details.</note></li>
+              you should use this
+              syntax:</p><codeblock>nova host-evacuate-live --block-migrate &lt;hostname></codeblock><p>Alternatively,
+              if all of the instances are only using block storage volumes then omit the
+                <codeph>--block-migrate</codeph>
+              option:</p><codeblock>nova host-evacuate-live &lt;hostname></codeblock><note>You can
+              either let the nova-scheduler choose a suitable target host or you can specify one
+              using the <codeph>--target-host &lt;hostname> </codeph> switch. See <codeph>nova help
+                host-evacuate-live</codeph> for details.</note></li>
           <li>You can then monitor the migrations by using the command below:
             <codeblock>nova list --all-tenants --fields=name,status,task_state,host,flavor</codeblock></li>
         </ol>
