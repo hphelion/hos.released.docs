@@ -34,7 +34,33 @@
           <p>
             <b>RabbitMQ</b> RabbitMQ is a messaging broker used by many Openstack services. <!--It is used by Helion Centralized Logging only for backwards compatibility with Helion OpenStack 2.x Helion Development Platform services.--></p>
         </li>
-        <li><b>Kafka</b> is a messaging broker used for collection of Helion OpenStack 3.0 centralized logging data across nodes. It is highly available, scalable and performant. Kafka stores logs in disk instead of memory and is therefore more tolerant to consumer down times.</li>
+        <li><b>Kafka</b> is a messaging broker used for collection of Helion OpenStack 3.0
+          centralized logging data across nodes. It is highly available, scalable and performant.
+          Kafka stores logs in disk instead of memory and is therefore more tolerant to consumer
+          down times. <note type="important">Make sure not to undersized your Kafka partition or the
+            data retention period may be lower than expected. If Helion OpenStack receives more data
+            than expected, then Kafka will fall back to the following settings: <table>
+              <tgroup cols="2">
+                <colspec colname="col" colwidth="1.41*"/>
+                <colspec colname="co2" colwidth="1.59*"/>
+                <thead>
+                  <row>
+                    <entry>Kafka Partition Capacity</entry>
+                    <entry>Retention Period</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>85%</entry>
+                    <entry>30 minutes</entry>
+                  </row>
+                  <row>
+                    <entry>25%</entry>
+                    <entry>Default</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </table> Over time Kafka will also eject old data.</note></li>
         <li>
           <p>
             <b>Logstash</b> is a log processing system for receiving, processing and outputting

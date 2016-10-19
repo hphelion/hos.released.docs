@@ -75,7 +75,7 @@ $ nano config/designate/pool-manager.conf.j2</codeblock></p>
                      password="MySecretPassword", 
                      ns_group="designate",
                      nameservers=['192.0.2.1', '192.0.2.2', '192.0.2.3'],
-                     also_notifies=[],
+                     also_notifies=['192.0.2.1', '192.0.2.2', '192.0.2.3'],
                      masters=designate_pool_masters) }}</codeblock></p>
         
       <p>You will need to inspect and commit the changes before proceeding with the deployment:
@@ -103,7 +103,14 @@ masters=designate_pool_masters) #}
           
 {# End Pool Assisted Configuration #}
         </codeblock></p>
-          <p>Commit changes.
+      <p>Modify <codeph>helion/hos/ansible/roles/designate-pool-manager/templates/_backend-macros.j2</codeph> 
+        by removing the quotes (")  and the <codeph>sslverify</codeph> flag in the <codeph>pool_target</codeph> 
+        section.  After updating the block will look like the following example:
+        <codeblock>[pool_target:00000000-0000-0005-0002-000000000001]
+type = infoblox
+options = wapi_url: {{ wapi_url }}, username: {{ username }}, password: {{ password }}, ns_group: {{ ns_group }}, http_pool_connections: {{ http_pool_connections }}, http_pool_maxsize: {{ http_pool_maxsize }}, dns_view: {{ dns_view }}, network_view: {{ network_view }}</codeblock>
+      </p>
+      <p>Commit changes.
         <codeblock>$ git commit -a -m "Configure Designate's InfoBlox Backend"
 [site 7a00f61] Configure Designate's InfoBlox Backend
  1 file changed, 5 insertions(+), 5 deletions(-)</codeblock></p>

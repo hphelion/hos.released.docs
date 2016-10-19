@@ -170,5 +170,16 @@ Decryption successful</codeblock></li>
         </ol>
       </p>
     </section>
+    <section>
+      <title>Nova continually tries to migrate compute instances that have been deleted</title>
+      <p><b>Issue: You have deleted instances which Nova is attempting to migrate.</b></p>
+      <p><b>Fix:</b> It is possible that when an instance is deleted, the migration records for that instance is not deleted. You can manually remove them from the database with the following steps.</p>
+      <p>Perform the following SQL operation, replacing the value for
+          <codeph>&lt;instance_uuid></codeph> with the UUID for your deleted compute instance:</p>
+      <codeblock>use nova;
+select * from migrations where instance_uuid = '&lt;instance-uuid>';
+update migrations set deleted = id, deleted_at = UTC_TIMESTAMP() where instance_uuid = '&lt;instance uuid>';
+select * from migrations where instance_uuid = '&lt;instance-uuid>';</codeblock>
+    </section>
   </body>
 </topic>
